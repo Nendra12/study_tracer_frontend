@@ -57,8 +57,9 @@ export default function UserManagement() {
   const [activeTab, setActiveTab] = useState('Semua');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-
   // Stats
+  //
+  console.log(debouncedSearch)
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -580,7 +581,7 @@ export default function UserManagement() {
                 <div className="p-6 space-y-5">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-black text-primary">Detail Alumni</h2>
-                    <button onClick={() => setShowDetail(false)} className="p-2 hover:bg-slate-100 rounded-lg"><X size={20} /></button>
+                    <button onClick={() => setShowDetail(false)} className="cursor-pointer p-2 hover:bg-slate-100 rounded-lg"><X size={20} /></button>
                   </div>
 
                   <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
