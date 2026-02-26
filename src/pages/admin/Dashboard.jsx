@@ -201,8 +201,8 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           <div className="flex justify-center items-center">
             <ChartsPenyelesaian
-              approved={dashData?.total_users ? (dashData.total_users - (dashData?.pending_users ?? 0)) : 0}
-              total={dashData?.total_users ?? 0}
+              approved={dashData?.total_users ?? 0}
+              total={(dashData?.total_users ?? 0) + (dashData?.pending_users ?? 0)}
             />
           </div>
 

@@ -4,8 +4,9 @@ import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 
-const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
+const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const { isAdmin } = useAuth();
+  const isEditMode = !!editJob;
   const [formData, setFormData] = useState({
     judul: '',
     perusahaan: '',
@@ -32,6 +33,32 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
     today.setDate(today.getDate() + 1);
     setMinDate(today.toISOString().split('T')[0]);
   }, []);
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editJob && isOpen) {
+      setFormData({
+        judul: editJob.judul || '',
+        perusahaan: editJob.perusahaan?.nama || editJob.nama_perusahaan || '',
+        tanggal_berakhir: editJob.lowongan_selesai || '',
+        deskripsi: editJob.deskripsi || '',
+        tipe_pekerjaan: editJob.tipe_pekerjaan || '',
+        lokasi: editJob.lokasi || '',
+        foto: null,
+        id_provinsi: '',
+        id_kota: '',
+      });
+      setPreviewUrl(null);
+      setErrors({});
+    } else if (!editJob && isOpen) {
+      setFormData({
+        judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
+        tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+      });
+      setPreviewUrl(null);
+      setErrors({});
+    }
+  }, [editJob, isOpen]);
 
   // Fetch provinsi on mount
   useEffect(() => {
@@ -102,7 +129,31 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
     setSubmitting(true);
     setErrors({});
     try {
-      const fd = new FormData();
+      if (isEditMode) {
+        // Update existing lowongan
+        const updateData = {
+          judul_lowongan: formData.judul,
+          nama_perusahaan: formData.perusahaan,
+          tipe_pekerjaan: formData.tipe_pekerjaan || undefined,
+          deskripsi: formData.deskripsi || undefined,
+        };
+        if (formData.tanggal_berakhir) updateData.lowongan_selesai = formData.tanggal_berakhir;
+
+        // Build lokasi from selected kota/provinsi names or use existing
+        const selectedProvinsi = provinsiList.find(p => String(p.id) === String(formData.id_provinsi));
+        const selectedKota = kotaList.find(k => String(k.id) === String(formData.id_kota));
+        let lokasiStr = formData.lokasi;
+        if (selectedKota && selectedProvinsi) {
+          lokasiStr = `${selectedKota.nama}, ${selectedProvinsi.nama}`;
+        } else if (selectedProvinsi) {
+          lokasiStr = selectedProvinsi.nama;
+        }
+        if (lokasiStr) updateData.lokasi = lokasiStr;
+
+        await adminApi.updateLowongan(editJob.id, updateData);
+      } else {
+        // Create new lowongan
+        const fd = new FormData();
       fd.append('judul_lowongan', formData.judul);
       fd.append('nama_perusahaan', formData.perusahaan);
       if (formData.tanggal_berakhir) fd.append('lowongan_selesai', formData.tanggal_berakhir);
@@ -136,6 +187,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
           try { await adminApi.approveLowongan(newJobId); } catch { /* ignore */ }
         }
       }
+      } // end else (create mode)
       
       // Reset form
       setFormData({
@@ -150,7 +202,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
-        alert(err.response?.data?.message || 'Gagal membuat lowongan');
+        alert(err.response?.data?.message || (isEditMode ? 'Gagal memperbarui lowongan' : 'Gagal membuat lowongan'));
       }
     } finally {
       setSubmitting(false);
@@ -163,7 +215,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
         
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-[#3C5759]">Pasang Lowongan Kerja</h2>
+          <h2 className="text-xl font-bold text-[#3C5759]">{isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
             <X size={20} />
           </button>
@@ -319,7 +371,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess }) => {
             disabled={submitting || !formData.judul || !formData.perusahaan}
             className="flex items-center gap-2 px-8 py-3 bg-[#3C5759] text-white font-bold rounded-2xl hover:bg-[#2e4344] transition-all shadow-lg shadow-[#3C5759]/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? <><Loader2 size={18} className="animate-spin" /> Mengirim...</> : <>Kirim <Send size={18} /></>}
+            {submitting ? <><Loader2 size={18} className="animate-spin" /> {isEditMode ? 'Memperbarui...' : 'Mengirim...'}</> : <>{isEditMode ? 'Perbarui' : 'Kirim'} <Send size={18} /></>}
           </button>
         </div>
       </div>
