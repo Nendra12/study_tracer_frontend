@@ -4,7 +4,6 @@ import {
   School,
   BookOpen,
   Store,
-  Briefcase,
   FileText,
   Download,
   Trash2,
@@ -13,11 +12,23 @@ import {
   Loader2,
   X,
   Check,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { alertSuccess, alertError, alertConfirm } from "../../utilitis/alert";
 import SmoothDropdown from "../../components/admin/SmoothDropdown";
 import { adminApi } from "../../api/admin";
+
+const ITEMS_PER_PAGE = 7;
+
+// Pagination helper: show max 7 page numbers
+const getPageNumbers = (current, last) => {
+  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, '...', last];
+  if (current >= last - 3) return [1, '...', last - 4, last - 3, last - 2, last - 1, last];
+  return [1, '...', current - 1, current, current + 1, '...', last];
+};
 
 // --- KOMPONEN CUSTOM: MULTI-SELECT DROPDOWN ---
 const MultiSelectDropdown = ({ options = [], selected = [], onChange, placeholder }) => {
@@ -51,12 +62,11 @@ const MultiSelectDropdown = ({ options = [], selected = [], onChange, placeholde
   };
 
   const filteredOptions = options.filter(opt =>
-    opt.nama.toLowerCase().includes(search.toLowerCase())
+    (opt.nama || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      {/* Trigger Area */}
       <div
         className="w-full px-2 py-2 min-h-[38px] text-xs border border-gray-200 rounded focus-within:ring-1 focus-within:ring-primary bg-white cursor-text flex flex-wrap gap-1 items-center"
         onClick={() => setIsOpen(true)}
@@ -64,14 +74,12 @@ const MultiSelectDropdown = ({ options = [], selected = [], onChange, placeholde
         {selected.length === 0 && !search && (
           <span className="text-gray-400 absolute left-2 pointer-events-none">{placeholder}</span>
         )}
-
         {selected.map((item, idx) => (
           <span key={idx} className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1">
             {item}
             <X size={12} className="cursor-pointer hover:text-blue-800" onClick={(e) => removeOption(e, item)} />
           </span>
         ))}
-
         <input
           type="text"
           className="flex-1 min-w-[60px] outline-none bg-transparent"
@@ -82,7 +90,6 @@ const MultiSelectDropdown = ({ options = [], selected = [], onChange, placeholde
         <ChevronDown size={14} className="text-gray-400 ml-auto" />
       </div>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto">
           {filteredOptions.length > 0 ? (
@@ -126,41 +133,62 @@ const ManagedTable = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredData = (data || []).filter((item) =>
     (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination Logic
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const resetForm = () => setFormData({ nama: "", jurusan: [] });
 
   const handleCreate = async () => {
     if (!formData.nama.trim()) return;
     setSaving(true);
-    setTimeout(() => {
+    try {
       const payload = {
         [nameKey]: formData.nama.trim(),
         jurusan: withJurusan ? formData.jurusan : []
       };
-      onCreate(payload);
+      await onCreate(payload);
       resetForm();
       setIsAdding(false);
+    } catch (err) {
+      console.error('Create failed:', err);
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const handleUpdate = async (id) => {
     if (!formData.nama.trim()) return;
     setSaving(true);
-    setTimeout(() => {
+    try {
       const payload = {
         [nameKey]: formData.nama.trim(),
         jurusan: withJurusan ? formData.jurusan : []
       };
-      onUpdate(id, payload);
+      await onUpdate(id, payload);
       setEditId(null);
       resetForm();
+    } catch (err) {
+      console.error('Update failed:', err);
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const startEdit = (item) => {
@@ -178,16 +206,12 @@ const ManagedTable = ({
     onDelete(id);
   };
 
-  // Logika untuk menentukan tinggi tabel
-  // Jika sedang Edit atau Tambah, beri min-height agar dropdown muat
-  // Jika tidak, biarkan auto (pendek sesuai konten)
   const tableContainerClass = (isAdding || editId)
-    ? "p-4 overflow-x-auto min-h-[250px] transition-all duration-300" // Mode Edit: Tinggi
-    : "p-4 overflow-x-auto transition-all duration-300"; // Mode Lihat: Pendek (Auto)
+    ? "p-4 overflow-x-auto min-h-[250px] transition-all duration-300"
+    : "p-4 overflow-x-auto transition-all duration-300";
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 mb-6 shadow-sm relative">
-      {/* Header Table */}
       <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-white to-gray-50 rounded-t-lg">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <div className="p-1.5 bg-blue-100 rounded-lg text-primary flex-shrink-0">
@@ -207,7 +231,6 @@ const ManagedTable = ({
         )}
       </div>
 
-      {/* Search Bar */}
       <div className="px-4 pt-4">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -223,7 +246,6 @@ const ManagedTable = ({
         </div>
       </div>
 
-      {/* Table Content */}
       <div className={tableContainerClass}>
         <table className="w-full text-left">
           <thead>
@@ -234,10 +256,8 @@ const ManagedTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {/* Input Row */}
             {isAdding && !readOnly && (
               <tr className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-
                 <td className="py-3 px-3">
                   <input
                     type="text"
@@ -270,13 +290,12 @@ const ManagedTable = ({
               </tr>
             )}
 
-            {/* Data Rows */}
             {loading ? (
               <tr><td colSpan={withJurusan ? 4 : 3} className="py-8 text-center"><Loader2 size={20} className="animate-spin text-primary mx-auto" /><p className="text-xs text-slate-400 mt-1">Memuat data...</p></td></tr>
-            ) : filteredData.length === 0 ? (
+            ) : paginatedData.length === 0 ? (
               <tr><td colSpan={withJurusan ? 4 : 3} className="py-6 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
             ) : (
-              filteredData.map((item) => (
+              paginatedData.map((item) => (
                 <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
                   <td className="py-3 px-3">
                     {editId === item.id ? (
@@ -335,6 +354,38 @@ const ManagedTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination UI */}
+      {totalPages > 1 && (
+        <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between rounded-b-lg">
+          <span className="text-xs text-slate-500 font-medium">Hal. {currentPage} dari {totalPages}</span>
+          <div className="flex items-center gap-1">
+            <button 
+              disabled={currentPage <= 1} 
+              onClick={() => setCurrentPage(p => p - 1)} 
+              className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+            >
+              <ChevronLeft size={14}/>
+            </button>
+            {getPageNumbers(currentPage, totalPages).map((page, i) => (
+              <button 
+                key={i} 
+                onClick={() => typeof page === 'number' && setCurrentPage(page)} 
+                className={`min-w-[28px] h-7 rounded-lg text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                {page}
+              </button>
+            ))}
+            <button 
+              disabled={currentPage >= totalPages} 
+              onClick={() => setCurrentPage(p => p + 1)} 
+              className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+            >
+              <ChevronRight size={14}/>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -348,25 +399,25 @@ export default function StatusKarir() {
   const [univData, setUnivData] = useState([]);
   const [prodiData, setProdiData] = useState([]);
   const [wirausahaData, setWirausahaData] = useState([]);
-  const [posisiData, setPosisiData] = useState([]);
-  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true, posisi: true });
+  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true});
 
-  // Fetch all data from API
   const fetchUniversitas = useCallback(async () => {
     setLoading((prev) => ({ ...prev, univ: true }));
     try {
       const res = await adminApi.getStatusKarierUniversitas();
       const data = res.data?.data || [];
       setUnivData(
-        data.map((u) => ({
-          id: u.id,
-          nama: u.nama || u.nama_universitas,
-          jurusan: Array.isArray(u.jurusan_kuliah)
-            ? u.jurusan_kuliah.map(j => j.nama || j.nama_jurusan)
-            : u.jurusan_kuliah
-              ? [u.jurusan_kuliah.nama || u.jurusan_kuliah.nama_jurusan]
-              : (u.jurusan || []),
-        }))
+        data.map((u) => {
+          const rawJurusan = Array.isArray(u.jurusan_kuliah)
+            ? u.jurusan_kuliah
+            : u.jurusan_kuliah ? [u.jurusan_kuliah] : [];
+          return {
+            id: u.id,
+            nama: u.nama || u.nama_universitas,
+            jurusan: rawJurusan.map(j => j.nama || j.nama_jurusan),
+            _jurusanRaw: rawJurusan,
+          };
+        })
       );
     } catch (err) {
       console.error("Gagal memuat universitas:", err);
@@ -380,12 +431,7 @@ export default function StatusKarir() {
     try {
       const res = await adminApi.getStatusKarierProdi();
       const data = res.data?.data || [];
-      setProdiData(
-        data.map((p) => ({
-          id: p.id,
-          nama: p.nama || p.nama_jurusan,
-        }))
-      );
+      setProdiData(data.map((p) => ({ id: p.id, nama: p.nama || p.nama_jurusan })));
     } catch (err) {
       console.error("Gagal memuat prodi:", err);
     } finally {
@@ -398,12 +444,7 @@ export default function StatusKarir() {
     try {
       const res = await adminApi.getStatusKarierBidangUsaha();
       const data = res.data?.data || [];
-      setWirausahaData(
-        data.map((w) => ({
-          id: w.id,
-          nama: w.nama || w.nama_bidang,
-        }))
-      );
+      setWirausahaData(data.map((w) => ({ id: w.id, nama: w.nama || w.nama_bidang })));
     } catch (err) {
       console.error("Gagal memuat bidang usaha:", err);
     } finally {
@@ -411,36 +452,23 @@ export default function StatusKarir() {
     }
   }, []);
 
-  const fetchPosisi = useCallback(async () => {
-    setLoading((prev) => ({ ...prev, posisi: true }));
-    try {
-      const res = await adminApi.getStatusKarierPosisi();
-      const data = res.data?.data || [];
-      setPosisiData(
-        data.map((p, idx) => ({
-          id: p.id || idx + 1,
-          nama: p.nama || p.posisi,
-        }))
-      );
-    } catch (err) {
-      console.error("Gagal memuat posisi:", err);
-    } finally {
-      setLoading((prev) => ({ ...prev, posisi: false }));
-    }
-  }, []);
-
   useEffect(() => {
     fetchUniversitas();
     fetchProdi();
     fetchWirausaha();
-    fetchPosisi();
-  }, [fetchUniversitas, fetchProdi, fetchWirausaha, fetchPosisi]);
+  }, [fetchUniversitas, fetchProdi, fetchWirausaha]);
 
-  // CRUD Handlers
   const handleCreate = async (category, data) => {
     try {
       if (category === "univ") {
-        await adminApi.createStatusKarierUniversitas({ nama: data.nama_universitas || data.nama });
+        const res = await adminApi.createStatusKarierUniversitas({ nama: data.nama_universitas || data.nama });
+        const newUnivId = res.data?.data?.id;
+        if (newUnivId && data.jurusan && data.jurusan.length > 0) {
+          const createPromises = data.jurusan.map(jurusanNama =>
+            adminApi.createStatusKarierProdi({ nama_prodi: jurusanNama, id_universitas: newUnivId })
+          );
+          await Promise.all(createPromises);
+        }
         fetchUniversitas();
       } else if (category === "prodi") {
         await adminApi.createStatusKarierProdi({ nama_jurusan: data.nama_prodi || data.nama });
@@ -451,46 +479,51 @@ export default function StatusKarir() {
       }
       alertSuccess("Data berhasil ditambahkan!");
     } catch (err) {
-      console.error("Gagal menambahkan:", err);
       alertError(err.response?.data?.message || "Gagal menambahkan data");
     }
   };
 
   const handleUpdate = async (category, id, data) => {
     try {
-      const nama = Object.values(data)[0];
       if (category === "univ") {
+        const nama = data.nama_universitas || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierUniversitas(id, { nama });
+        const currentUniv = univData.find(u => u.id === id);
+        const currentJurusan = currentUniv?.jurusan || [];
+        const rawJurusan = currentUniv?._jurusanRaw || [];
+        const newJurusan = data.jurusan || [];
+        const toAdd = newJurusan.filter(j => !currentJurusan.includes(j));
+        const toRemove = currentJurusan.filter(j => !newJurusan.includes(j));
+        const syncPromises = [];
+        toAdd.forEach(jurusanNama => syncPromises.push(adminApi.createStatusKarierProdi({ nama_prodi: jurusanNama, id_universitas: id })));
+        toRemove.forEach(jurusanNama => {
+          const rawJ = rawJurusan.find(j => (j.nama || j.nama_jurusan) === jurusanNama);
+          if (rawJ) syncPromises.push(adminApi.deleteStatusKarierProdi(rawJ.id));
+        });
+        if (syncPromises.length > 0) await Promise.all(syncPromises);
         fetchUniversitas();
       } else if (category === "prodi") {
+        const nama = data.nama_prodi || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierProdi(id, { nama_jurusan: nama });
         fetchProdi();
       } else if (category === "wirausaha") {
+        const nama = data.nama_bidang || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: nama });
         fetchWirausaha();
       }
       alertSuccess("Data berhasil diubah!");
     } catch (err) {
-      console.error("Gagal memperbarui:", err);
       alertError(err.response?.data?.message || "Gagal memperbarui data");
     }
   };
 
   const handleDelete = async (category, id) => {
     try {
-      if (category === "univ") {
-        await adminApi.deleteStatusKarierUniversitas(id);
-        fetchUniversitas();
-      } else if (category === "prodi") {
-        await adminApi.deleteStatusKarierProdi(id);
-        fetchProdi();
-      } else if (category === "wirausaha") {
-        await adminApi.deleteStatusKarierBidangUsaha(id);
-        fetchWirausaha();
-      }
+      if (category === "univ") { await adminApi.deleteStatusKarierUniversitas(id); fetchUniversitas(); }
+      else if (category === "prodi") { await adminApi.deleteStatusKarierProdi(id); fetchProdi(); }
+      else if (category === "wirausaha") { await adminApi.deleteStatusKarierBidangUsaha(id); fetchWirausaha(); }
       alertSuccess("Data berhasil dihapus!");
     } catch (err) {
-      console.error("Gagal menghapus:", err);
       alertError(err.response?.data?.message || "Gagal menghapus data");
     }
   };
@@ -498,22 +531,11 @@ export default function StatusKarir() {
   const handleBuatLaporan = async () => {
     setExportingReport(true);
     try {
-      // Map report type
-      const typeMap = {
-        "Data Universitas": "universitas",
-        "Data Program Studi": "prodi",
-        "Bidang Wirausaha": "wirausaha",
-        "Posisi Pekerjaan": "posisi",
-      };
+      const typeMap = { "Data Universitas": "universitas", "Data Program Studi": "prodi", "Bidang Wirausaha": "wirausaha" };
       const type = typeMap[selectedReport] || "universitas";
       const format = selectedFormat.toLowerCase();
-
       const res = await adminApi.exportStatusKarierReport({ type, format });
-
-      // Create download link
-      const blob = new Blob([res.data], {
-        type: format === "pdf" ? "application/pdf" : "text/csv",
-      });
+      const blob = new Blob([res.data], { type: format === "pdf" ? "application/pdf" : "text/csv" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -522,10 +544,8 @@ export default function StatusKarir() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
       alertSuccess("Laporan berhasil diunduh!");
     } catch (err) {
-      console.error("Gagal mengunduh:", err);
       alertError("Gagal mengunduh laporan");
     } finally {
       setExportingReport(false);
@@ -536,7 +556,6 @@ export default function StatusKarir() {
     <div className="space-y-6">
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6 order-last lg:order-first">
-
           <ManagedTable
             title="Data Universitas & Jurusan"
             icon={School}
@@ -551,7 +570,6 @@ export default function StatusKarir() {
             onUpdate={(id, data) => handleUpdate('univ', id, data)}
             onDelete={(id) => handleDelete('univ', id)}
           />
-
           <ManagedTable
             title="Master Program Studi (Umum)"
             icon={BookOpen}
@@ -564,7 +582,6 @@ export default function StatusKarir() {
             onUpdate={(id, data) => handleUpdate('prodi', id, data)}
             onDelete={(id) => handleDelete('prodi', id)}
           />
-
           <ManagedTable
             title="Bidang Wirausaha"
             icon={Store}
@@ -577,16 +594,7 @@ export default function StatusKarir() {
             onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
             onDelete={(id) => handleDelete('wirausaha', id)}
           />
-
-          <ManagedTable
-            title="Posisi Pekerjaan"
-            icon={Briefcase}
-            data={posisiData}
-            loading={loading.posisi}
-            readOnly={true}
-          />
         </div>
-
         <div className="lg:col-span-4 space-y-4 order-first lg:order-last">
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4 space-y-4 sticky top-6">
             <div className="flex items-center gap-2">
@@ -594,15 +602,13 @@ export default function StatusKarir() {
               <h3 className="font-bold text-primary text-sm">Laporan Status</h3>
             </div>
             <div className="space-y-4">
-              <div className="space-y-1.5">
-                <SmoothDropdown
-                  label="Jenis Data"
-                  options={["Data Universitas", "Data Program Studi", "Bidang Wirausaha", "Posisi Pekerjaan"]}
-                  placeholder="Pilih data"
-                  isRequired={true}
-                  onSelect={(val) => setSelectedReport(val)}
-                  />
-              </div>
+              <SmoothDropdown
+                label="Jenis Data"
+                options={["Data Universitas", "Data Program Studi", "Bidang Wirausaha"]}
+                placeholder="Pilih data"
+                isRequired={true}
+                onSelect={(val) => setSelectedReport(val)}
+              />
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Format Laporan</label>
                 <div className="flex gap-2 mt-2">

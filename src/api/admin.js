@@ -118,8 +118,8 @@ export const adminApi = {
     return api.get('/admin/pertanyaan')
   },
 
-  addPertanyaan(kuesionerId, data) {
-    return api.post(`/admin/kuesioner/${kuesionerId}/pertanyaan`, data);
+  addPertanyaan(data) {
+    return api.post('/admin/pertanyaan', data);
   },
 
   updatePertanyaan(kuesionerId, pertanyaanId, data) {
