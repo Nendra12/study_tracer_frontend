@@ -138,6 +138,18 @@ export default function Dashboard() {
 
   const presentaseKerja = hitungPersen(statusDistribution)
 
+  function badgePresentaseKerja(presentaseKerja) {
+    if (presentaseKerja > 81) {
+      return "Sangat Baik"
+    } else if (presentaseKerja > 61) {
+      return "Baik"
+    } else if (presentaseKerja > 31) {
+      return "Cukup"
+    } else {
+      return "Rendah"
+    }
+  }
+
   const dynamicStats = [
     {
       label: "Total Pengguna Aktif",
@@ -150,7 +162,7 @@ export default function Dashboard() {
       label: "Status Bekerja",
       value: `${presentaseKerja}%`,
       icon: ShieldCheck,
-      badge: "Optimal",
+      badge: `${badgePresentaseKerja()}`,
       badgeColor: "bg-fourth text-secondary",
     },
     {
@@ -291,7 +303,7 @@ export default function Dashboard() {
 
           {/* Distribusi Geografis */}
           <div className="space-y-4">
-            <h2 className="text-lg md:text-xl font-bold text-primary">Distribursi Geografis</h2>
+            <h2 className="text-lg md:text-xl font-bold text-primary">Distribursi Geografis Pekerja</h2>
             <div className="bg-white border border-fourth rounded-2xl p-5 md:p-8 shadow-sm flex flex-col gap-5">
               {geographicDist.length > 0 ? geographicDist.map((item, index) => (
                 <div key={index} className="space-y-2">

@@ -106,6 +106,10 @@ export const adminApi = {
     return api.delete(`/admin/kuesioner/${id}`);
   },
 
+  getPertanyaanAll() {
+    return api.get('/admin/pertanyaan')
+  },
+
   addPertanyaan(kuesionerId, data) {
     return api.post(`/admin/kuesioner/${kuesionerId}/pertanyaan`, data);
   },
