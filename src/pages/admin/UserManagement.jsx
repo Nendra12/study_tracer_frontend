@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   UserPlus, FileEdit, Users, Search,
   Filter, Check, X, Image as ImageIcon,
-  Download, ChevronLeft, ChevronRight, Trash2, Loader2, Eye
+  Download, ChevronLeft, ChevronRight, Trash2, Loader2, Eye, Ban
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { adminApi } from '../../api/admin';
@@ -74,6 +74,11 @@ export default function UserManagement() {
   const [selectedJurusan, setSelectedJurusan] = useState('Semua');
   const [jurusanList, setJurusanList] = useState([]);
 
+  // Filter 2 (Tahun Lulus)
+  const [isTahunFilterOpen, setIsTahunFilterOpen] = useState(false);
+  const [selectedTahunLulus, setSelectedTahunLulus] = useState('Semua');
+  const [tahunLulusList, setTahunLulusList] = useState([]);
+
   // Action loading
   const [actionLoading, setActionLoading] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
@@ -89,6 +94,7 @@ export default function UserManagement() {
     { label: 'Menunggu', value: 'pending' },
     { label: 'Aktif', value: 'ok' },
     { label: 'Ditolak', value: 'rejected' },
+    { label: 'Banned', value: 'banned' },
   ];
 
   // Debounce search
@@ -112,12 +118,20 @@ export default function UserManagement() {
     }
   }, []);
 
-  // Fetch jurusan for filter
+  // Fetch jurusan & tahun lulus for filter
   useEffect(() => {
     (async () => {
       try {
         const res = await adminApi.getJurusan();
         setJurusanList(res.data.data || []);
+        
+        // Generate years (current year down to 2010)
+        const currentYear = new Date().getFullYear();
+        const years = [];
+        for (let i = currentYear; i >= 2010; i--) {
+          years.push(i);
+        }
+        setTahunLulusList(years);
       } catch { /* ignore */ }
     })();
   }, []);
@@ -129,13 +143,14 @@ export default function UserManagement() {
     if (currentTab?.value) filters.status_create = currentTab.value;
     if (debouncedSearch) filters.search = debouncedSearch;
     if (selectedJurusan !== 'Semua') filters.id_jurusan = selectedJurusan;
+    if (selectedTahunLulus !== 'Semua') filters.tahun_lulus = selectedTahunLulus;
     return filters;
   };
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, debouncedSearch, selectedJurusan]);
+  }, [activeTab, debouncedSearch, selectedJurusan, selectedTahunLulus]);
 
   // Fetch alumni when page/filters/trigger change
   useEffect(() => {
@@ -143,11 +158,7 @@ export default function UserManagement() {
     const doFetch = async () => {
       setAlumniLoading(true);
       try {
-        const currentTab = tabs.find(t => t.label === activeTab);
-        const filters = {};
-        if (currentTab?.value) filters.status_create = currentTab.value;
-        if (debouncedSearch) filters.search = debouncedSearch;
-        if (selectedJurusan !== 'Semua') filters.id_jurusan = selectedJurusan;
+        const filters = getFilters(); // Use existing helper
 
         const res = await adminApi.getAllAlumni({ ...filters, page: currentPage }, PER_PAGE);
         if (cancelled) return;
@@ -182,7 +193,7 @@ export default function UserManagement() {
     doFetch();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, activeTab, debouncedSearch, selectedJurusan, fetchTrigger]);
+  }, [currentPage, activeTab, debouncedSearch, selectedJurusan, selectedTahunLulus, fetchTrigger]);
 
   // Force re-fetch after actions
   const refreshAlumni = () => setFetchTrigger(c => c + 1);
@@ -228,6 +239,34 @@ export default function UserManagement() {
       fetchStats();
     } catch (err) {
       alertError(err.response?.data?.message || 'Gagal menolak alumni');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Ban user
+  const handleBan = async (alumniId, name) => {
+    const { isConfirmed, value: alasan } = await Swal.fire({
+      title: `Ban User "${name}"?`,
+      input: 'textarea',
+      inputLabel: 'Alasan Banned',
+      inputPlaceholder: 'Tulis alasan banned...',
+      showCancelButton: true,
+      cancelButtonText: 'Batal',
+      confirmButtonText: 'Ban User',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+    });
+    if (!isConfirmed) return;
+
+    setActionLoading(alumniId);
+    try {
+      await adminApi.banUser(alumniId, { alasan });
+      alertSuccess(`User "${name}" berhasil di-banned`);
+      refreshAlumni();
+      fetchStats();
+    } catch (err) {
+      alertError(err.response?.data?.message || 'Gagal melakukan banned user');
     } finally {
       setActionLoading(null);
     }
@@ -291,6 +330,7 @@ export default function UserManagement() {
       pending: { bg: 'bg-orange-50 text-orange-600 border-orange-100', label: 'Menunggu' },
       ok: { bg: 'bg-emerald-50 text-emerald-600 border-emerald-100', label: 'Aktif' },
       rejected: { bg: 'bg-red-50 text-red-500 border-red-100', label: 'Ditolak' },
+      banned: { bg: 'bg-slate-50 text-slate-500 border-slate-100', label: 'Banned' },
     };
     const s = map[status] || map.pending;
     return (
@@ -412,6 +452,54 @@ export default function UserManagement() {
                   </div>
                 )}
               </div>
+
+              {/* Filter Tahun Lulus */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsTahunFilterOpen(!isTahunFilterOpen)}
+                  className={`cursor-pointer p-2.5 rounded-xl transition-all border
+                    ${isTahunFilterOpen || selectedTahunLulus !== 'Semua'
+                      ? 'bg-primary/10 text-primary border-primary/20'
+                      : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+                    }`}
+                  title="Filter Tahun Lulus"
+                >
+                  <span className="text-xs font-bold mr-1">Tahun</span>
+                  <Filter size={14} className="inline" />
+                </button>
+
+                {isTahunFilterOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tahun Lulus</span>
+                      {selectedTahunLulus !== 'Semua' && (
+                        <button onClick={() => { setSelectedTahunLulus('Semua'); setIsTahunFilterOpen(false); }} className="text-[10px] text-primary font-bold hover:underline">Reset</button>
+                      )}
+                    </div>
+                    <div className="p-1 max-h-60 overflow-y-auto">
+                      <button
+                        onClick={() => { setSelectedTahunLulus('Semua'); setIsTahunFilterOpen(false); }}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg transition-colors flex justify-between items-center
+                          ${selectedTahunLulus === 'Semua' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                      >
+                        Semua Tahun
+                        {selectedTahunLulus === 'Semua' && <Check size={14} />}
+                      </button>
+                      {tahunLulusList.map((year) => (
+                        <button
+                          key={year}
+                          onClick={() => { setSelectedTahunLulus(year); setIsTahunFilterOpen(false); }}
+                          className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg transition-colors flex justify-between items-center
+                            ${selectedTahunLulus === year ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                        >
+                          {year}
+                          {selectedTahunLulus === year && <Check size={14} />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -510,14 +598,26 @@ export default function UserManagement() {
                               </>
                             )}
                             {item.status_create !== 'pending' && item.user && (
-                              <button
-                                title="Hapus User"
-                                disabled={actionLoading === item.user?.id}
-                                onClick={() => handleDelete(item.user?.id, item.nama)}
-                                className="cursor-pointer p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                              >
-                                <Trash2 size={18} />
-                              </button>
+                              <>
+                                {item.status_create === 'ok' && (
+                                  <button
+                                    title="Ban User"
+                                    disabled={actionLoading === item.id}
+                                    onClick={() => handleBan(item.id, item.nama)}
+                                    className="cursor-pointer p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all disabled:opacity-50"
+                                  >
+                                    <Ban size={18} />
+                                  </button>
+                                )}
+                                <button
+                                  title="Hapus User"
+                                  disabled={actionLoading === item.user?.id}
+                                  onClick={() => handleDelete(item.user?.id, item.nama)}
+                                  className="cursor-pointer p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>
