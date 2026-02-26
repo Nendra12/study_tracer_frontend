@@ -8,13 +8,16 @@ import {
   ArrowLeft,
   Loader2,
   CheckCircle2,
+  Archive,
 } from "lucide-react";
 import SmoothDropdown from "../../components/admin/SmoothDropdown";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { masterDataApi } from "../../api/masterData";
+import { alertError, alertSuccess } from "../../utilitis/alert";
 
 export default function TambahPertanyaan() {
+  const navigate = useNavigate()
   // State untuk kategori yang dipilih
   const [selectedCategory, setSelectedCategory] = useState("Bekerja");
   const [questionText, setQuestionText] = useState("");
@@ -28,8 +31,14 @@ export default function TambahPertanyaan() {
   const [structureData, setstructureData] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  // State untuk modal tambah judul
+  const [showModal, setShowModal] = useState(false);
+  const [newJudulPertanyaan, setNewJudulPertanyaan] = useState("");
+  const [savingJudul, setSavingJudul] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -41,7 +50,7 @@ export default function TambahPertanyaan() {
         ]);
 
         let statusData = [];
-
+      
         if (statusRes?.data?.data && Array.isArray(statusRes.data.data)) {
           statusData = statusRes.data.data;
         } else if (Array.isArray(statusRes?.data)) {
@@ -68,7 +77,6 @@ export default function TambahPertanyaan() {
           setIdQues(stru[selectedCategory][0][0].id_sectionques);
         }
 
-        console.log("Structure Data:", stru);
       } catch (error) {
         console.error("Failed to fetch data", error);
         setError("Gagal memuat data kuesioner");
@@ -111,16 +119,16 @@ export default function TambahPertanyaan() {
     }
   };
 
-  const handlesave = async () => {
+  const handleSaveWithStatus = async (status) => {
     try {
       // Validasi
       if (!questionText.trim()) {
-        alert("Pertanyaan wajib diisi!");
+        await alertError("Pertanyaan wajib diisi!")
         return;
       }
 
       if (!idQues) {
-        alert("Judul bagian wajib dipilih!");
+        await alertError("Judul bagian wajib dipilih!")
         return;
       }
 
@@ -128,47 +136,127 @@ export default function TambahPertanyaan() {
       const filteredOptions = options.filter(opt => opt.trim() !== "");
 
       if (filteredOptions.length === 0) {
-        alert("Minimal harus ada 1 opsi jawaban!");
+        await alertError("Minimal harus ada 1 opsi jawaban!")
         return;
       }
 
-      setSaving(true);
+      // Set loading state based on status
+      if (status === "draft") {
+        setSavingDraft(true);
+      } else {
+        setSaving(true);
+      }
       setError(null);
       setSuccess(false);
 
       let dataBody = {
         "id_sectionques": idQues,
         "isi_pertanyaan": questionText,
+        "status_pertanyaan": status, // 'publish' atau 'draft'
         "opsi": filteredOptions
       };
 
-      console.log("Data Body:", dataBody);
 
       // Kirim ke API
-      const response = await adminApi.addPertanyaan(dataBody);
-
-      console.log("Response:", response);
+      await adminApi.addPertanyaan(dataBody);
 
       // Success!
       setSuccess(true);
-      alert("✅ Pertanyaan berhasil ditambahkan!");
+      const statusText = status === "publish" ? "dipublikasikan" : "disimpan sebagai draft";
 
-      // Reset form
-      setQuestionText("");
-      setOptions(["Bekerja Penuh Waktu", "Tidak Bekerja"]);
+      await alertSuccess(statusText)
 
-      // Hide success message after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
-
+      navigate("/wb-admin/kuisoner")
     } catch (error) {
       console.error("Failed to save:", error);
       const errorMessage = error?.response?.data?.message ||
         error?.response?.data?.errors ||
         "Gagal menyimpan pertanyaan. Silakan coba lagi.";
       setError(typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
-      alert("❌ " + (typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage));
+      await alertError("❌ " + (typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage));
     } finally {
       setSaving(false);
+      setSavingDraft(false);
+    }
+  };
+
+  console.log(structureData)
+
+  const handleAddJudulPertanyaan = async () => {
+    try {
+      if (!newJudulPertanyaan.trim()) {
+        await alertError("Judul pertanyaan wajib diisi!");
+        return;
+      }
+
+      setSavingJudul(true);
+
+      // Cari id_kuesioner berdasarkan selectedCategory
+      let idKuesioner = null;
+      const selectedSection = structureData[selectedCategory]?.[0]?.[0];
+      if (selectedSection) {
+        idKuesioner = selectedSection.id_kuesioner;
+      } else {
+        idKuesioner = 4
+      }
+      
+      // console.log(idKuesioner)
+      if (!idKuesioner) {
+        await alertError("Kuesioner tidak ditemukan!");
+        return;
+      }
+
+      const data = {
+        id_kuesioner: idKuesioner,
+        judul_pertanyaan: newJudulPertanyaan.trim()
+      };
+
+
+      const response = await adminApi.createSectionQues(data);
+
+      await alertSuccess("Judul pertanyaan berhasil ditambahkan!");
+
+      // Close modal and reset
+      setShowModal(false);
+      setNewJudulPertanyaan("");
+
+      // Refresh data
+      const [kuesionerRes, statusRes] = await Promise.all([
+        adminApi.getKuesioner().catch(() => null),
+        masterDataApi.getStatus().catch(() => null)
+      ]);
+
+      let statusData = [];
+      if (statusRes?.data?.data && Array.isArray(statusRes.data.data)) {
+        statusData = statusRes.data.data;
+      } else if (Array.isArray(statusRes?.data)) {
+        statusData = statusRes.data;
+      }
+
+      let stru = {};
+      statusData.forEach((st) => {
+        stru[st.nama] = {};
+      });
+
+      kuesionerRes?.data?.data?.data?.forEach((dat) => {
+        const statusNama = dat?.status?.nama;
+        stru[statusNama] = [dat.section_ques];
+      });
+
+      setstructureData(stru);
+
+      // Set id ke section yang baru dibuat jika ada
+      if (response?.data?.data?.id_sectionques) {
+        setIdQues(response.data.data.id_sectionques);
+      }
+
+    } catch (error) {
+      console.error("Failed to add judul:", error);
+      const errorMessage = error?.response?.data?.message ||
+        "Gagal menambahkan judul pertanyaan. Silakan coba lagi.";
+      await alertError("❌ " + errorMessage);
+    } finally {
+      setSavingJudul(false);
     }
   };
 
@@ -255,11 +343,6 @@ export default function TambahPertanyaan() {
                     isRequired={true}
                     onSelect={(val) => setIdQues(onSelect(val))}
                   />
-                  {idQues && (
-                    <p className="mt-2 text-xs text-slate-500">
-                      Section ID: {idQues}
-                    </p>
-                  )}
                 </div>
 
                 <div className="bg-slate-50/50 border border-dashed border-gray-200 rounded-2xl p-6">
@@ -308,8 +391,8 @@ export default function TambahPertanyaan() {
                     <div
                       key={item.id_sectionques || index}
                       className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${idQues === item.id_sectionques
-                          ? "bg-slate-50 border-[#3D5A5C]/20 shadow-sm"
-                          : "bg-white border-gray-100 opacity-60"
+                        ? "bg-slate-50 border-[#3D5A5C]/20 shadow-sm"
+                        : "bg-white border-gray-100 opacity-60"
                         }`}
                     >
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${idQues === item.id_sectionques ? "bg-[#3D5A5C] text-white" : "bg-slate-100 text-slate-400"
@@ -322,9 +405,11 @@ export default function TambahPertanyaan() {
                     </div>
                   ))}
 
-                  <button className="w-full mt-4 flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs hover:border-[#3D5A5C] hover:text-[#3D5A5C] transition-all group">
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="cursor-pointer w-full mt-4 flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs hover:border-[#3D5A5C] hover:text-[#3D5A5C] transition-all group">
                     <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-                    Tambah Pertanyaan Baru
+                    Tambah Judul Pertanyaan
                   </button>
                 </div>
               </div>
@@ -335,19 +420,37 @@ export default function TambahPertanyaan() {
                 <button className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
                   <Eye size={18} /> Pratinjau
                 </button>
+              </div>
+              <div className="flex gap-3">
                 <button
-                  onClick={handlesave}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => handleSaveWithStatus("draft")}
+                  disabled={saving || savingDraft}
+                  className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {saving ? (
+                  {savingDraft ? (
                     <>
                       <Loader2 size={18} className="animate-spin" />
                       Menyimpan...
                     </>
                   ) : (
                     <>
-                      <Save size={18} /> Simpan Pertanyaan
+                      <Archive size={18} /> Simpan Draft
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => handleSaveWithStatus("publish")}
+                  disabled={saving || savingDraft}
+                  className="cursor-pointer flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={18} /> Publish
                     </>
                   )}
                 </button>
@@ -355,6 +458,70 @@ export default function TambahPertanyaan() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Modal Tambah Judul Pertanyaan */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-[#3D5A5C] mb-8 text-center">
+              Tambah Judul Pertanyaan
+            </h3>
+
+            <div className="mb-4">
+              <label className="text-md font-bold text-secondary mb-2 block">
+                Kategori Terpilih
+              </label>
+              <div className="bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium text-slate-700">
+                {selectedCategory}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="text-md font-bold text-secondary mb-2 block">
+                Judul Pertanyaan <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={newJudulPertanyaan}
+                onChange={(e) => setNewJudulPertanyaan(e.target.value)}
+                placeholder="Contoh: Informasi Perusahaan"
+                className="w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setNewJudulPertanyaan("");
+                }}
+                disabled={savingJudul}
+                className="cursor-pointer flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm font-bold text-slate-600 hover:bg-gray-50 transition-all disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleAddJudulPertanyaan}
+                disabled={savingJudul}
+                className="cursor-pointer flex-1 px-4 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold hover:bg-[#2D4345] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {savingJudul ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} />
+                    Tambah
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
