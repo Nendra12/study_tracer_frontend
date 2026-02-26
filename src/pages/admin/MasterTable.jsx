@@ -497,7 +497,7 @@ const MasterTable = () => {
               <h3 className="font-bold text-primary text-sm">Ekspor Laporan</h3>
             </div>
             <div className="space-y-4">
-              <SmoothDropdown label="Jenis Data" options={["Data Jurusan", "Data Perusahaan"]} onSelect={(e) => setSelectedReport(e.target.value)} />
+              <SmoothDropdown label="Jenis Data" options={["Data Jurusan", "Data Perusahaan"]} onSelect={(val) => setSelectedReport(val)} />
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-400 uppercase">Format</label>
                 <div className="flex gap-2">

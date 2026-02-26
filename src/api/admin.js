@@ -89,6 +89,10 @@ export const adminApi = {
     return api.post(`/admin/lowongan/${id}/reject`);
   },
 
+  repostLowongan(id) {
+    return api.post(`/admin/lowongan/${id}/repost`);
+  },
+
   // ── Kuesioner Management ───────────────────────
   getKuesioner(filters = {}, perPage = 15) {
     return api.get('/admin/kuesioner', { params: { ...filters, per_page: perPage } });
