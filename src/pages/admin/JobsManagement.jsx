@@ -80,7 +80,7 @@ const getDisplayStatus = (job) => {
   return job.status?.toUpperCase() || "-";
 };
 
-const JobCard = ({ job, onApprove, onReject, onDelete }) => {
+const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
   const navigate = useNavigate();
   const displayStatus = getDisplayStatus(job);
 
@@ -170,14 +170,14 @@ const JobCard = ({ job, onApprove, onReject, onDelete }) => {
                 </button>
             </div>
             <div className="w-px h-6 bg-gray-200 mx-1 hidden sm:block"></div>
-            <button title="Edit" className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-lg transition-all active:scale-95"><Pencil size={18} /></button>
+            <button onClick={() => onEdit(job)} title="Edit" className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-lg transition-all active:scale-95"><Pencil size={18} /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
              {(displayStatus === "BERAKHIR" || displayStatus === "DITOLAK") && (
-                <button title="Posting Ulang" className="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all active:scale-95 border border-blue-100"><RotateCcw size={18} /></button>
+                <button onClick={() => onRepost(job.id)} title="Posting Ulang" className="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all active:scale-95 border border-blue-100"><RotateCcw size={18} /></button>
              )}
-            <button title="Edit" className="p-2 text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-primary rounded-xl transition-all active:scale-95 border border-slate-100"><Pencil size={18} /></button>
+            <button onClick={() => onEdit(job)} title="Edit" className="p-2 text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-primary rounded-xl transition-all active:scale-95 border border-slate-100"><Pencil size={18} /></button>
             <button onClick={() => onDelete(job.id)} title="Hapus" className="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all active:scale-95 border border-rose-100"><Trash2 size={18} /></button>
           </div>
         )}
@@ -237,10 +237,25 @@ export default function ManajemenPekerjaan() {
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
+  const [editingJob, setEditingJob] = useState(null);
+
   const handleApprove = async (id) => { await adminApi.approveLowongan(id); fetchJobs(); fetchStats(); };
   const handleReject = async (id) => { await adminApi.rejectLowongan(id); fetchJobs(); fetchStats(); };
   const handleDelete = async (id) => { if (confirm("Yakin hapus?")) { await adminApi.deleteLowongan(id); fetchJobs(); fetchStats(); } };
-  const handleLowonganCreated = () => { setIsModalOpen(false); fetchJobs(); fetchStats(); };
+  const handleRepost = async (id) => {
+    try {
+      await adminApi.repostLowongan(id);
+      fetchJobs();
+      fetchStats();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal memposting ulang lowongan');
+    }
+  };
+  const handleEdit = (job) => {
+    setEditingJob(job);
+    setIsModalOpen(true);
+  };
+  const handleLowonganCreated = () => { setIsModalOpen(false); setEditingJob(null); fetchJobs(); fetchStats(); };
 
   const handleExportCSV = () => {
     if (filteredJobs.length === 0) return;
@@ -291,7 +306,7 @@ export default function ManajemenPekerjaan() {
                 [...Array(5)].map((_, i) => <JobSkeleton key={i} />)
               ) : filteredJobs.length > 0 ? (
                 filteredJobs.map((job) => (
-                  <JobCard key={job.id} job={job} onApprove={handleApprove} onReject={handleReject} onDelete={handleDelete} />
+                  <JobCard key={job.id} job={job} onApprove={handleApprove} onReject={handleReject} onDelete={handleDelete} onRepost={handleRepost} onEdit={handleEdit} />
                 ))
               ) : (
                 <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
@@ -358,7 +373,7 @@ export default function ManajemenPekerjaan() {
           </div>
         </div>
       </div>
-      <TambahLowongan isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={handleLowonganCreated} />
+      <TambahLowongan isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingJob(null); }} onSuccess={handleLowonganCreated} editJob={editingJob} />
     </div>
   );
 }

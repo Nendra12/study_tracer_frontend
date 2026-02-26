@@ -361,7 +361,11 @@ export default function StatusKarir() {
         data.map((u) => ({
           id: u.id,
           nama: u.nama || u.nama_universitas,
-          jurusan: u.jurusan_kuliah ? [u.jurusan_kuliah.nama || u.jurusan_kuliah.nama_jurusan] : (u.jurusan || []),
+          jurusan: Array.isArray(u.jurusan_kuliah)
+            ? u.jurusan_kuliah.map(j => j.nama || j.nama_jurusan)
+            : u.jurusan_kuliah
+              ? [u.jurusan_kuliah.nama || u.jurusan_kuliah.nama_jurusan]
+              : (u.jurusan || []),
         }))
       );
     } catch (err) {

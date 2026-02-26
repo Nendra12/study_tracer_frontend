@@ -345,6 +345,15 @@ export default function UserManagement() {
     return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   };
 
+  // Extract year from tahun_lulus (could be date string "2023-06-01", ISO string, or number)
+  const extractYear = (val) => {
+    if (!val) return null;
+    if (typeof val === 'number') return String(val);
+    const str = String(val);
+    const match = str.match(/\d{4}/);
+    return match ? match[0] : str;
+  };
+
   const statsCards = [
     { title: "Menunggu Verifikasi", value: stats?.pending ?? '-', trend: null, icon: UserPlus, iconBg: "bg-orange-50", iconColor: "text-orange-500" },
     { title: "Alumni Aktif", value: stats?.active ?? '-', trend: null, icon: Users, iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
@@ -546,7 +555,7 @@ export default function UserManagement() {
                             <span className="text-xs font-bold text-slate-600">{item.jurusan?.nama || '-'}</span>
                             {item.tahun_lulus && (
                               <span className="text-[10px] text-slate-400 bg-slate-100 w-fit px-1.5 py-0.5 rounded mt-1">
-                                Lulus {item.tahun_lulus?.slice(0, 4)}
+                                Lulus {extractYear(item.tahun_lulus)}
                               </span>
                             )}
                           </div>
@@ -716,7 +725,7 @@ export default function UserManagement() {
                       ['Tempat Lahir', detailAlumni.tempat_lahir],
                       ['Tanggal Lahir', detailAlumni.tanggal_lahir],
                       ['Tahun Masuk', detailAlumni.tahun_masuk],
-                      ['Tahun Lulus', detailAlumni.tahun_lulus?.slice(0, 4)],
+                      ['Tahun Lulus', extractYear(detailAlumni.tahun_lulus)],
                       ['Jurusan', detailAlumni.jurusan?.nama],
                       ['Alamat', detailAlumni.alamat],
                       ['No HP', detailAlumni.no_hp],
