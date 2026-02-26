@@ -17,33 +17,7 @@ import {
 } from "lucide-react";
 import { alertSuccess, alertError, alertConfirm } from "../../utilitis/alert";
 import SmoothDropdown from "../../components/admin/SmoothDropdown";
-
-// --- DUMMY DATA SEED ---
-const DUMMY_UNIV = [
-  { id: 1, nama: "Universitas Indonesia", jurusan: ["Ilmu Hukum", "Psikologi"] },
-  { id: 2, nama: "Universitas Gadjah Mada", jurusan: ["Manajemen", "Akuntansi"] },
-];
-
-const DUMMY_PRODI = [
-  { id: 1, nama: "Teknik Informatika" },
-  { id: 2, nama: "Sistem Informasi" },
-  { id: 3, nama: "Manajemen" },
-  { id: 4, nama: "Akuntansi" },
-  { id: 5, nama: "Ilmu Komunikasi" },
-  { id: 6, nama: "Ilmu Hukum" },
-  { id: 7, nama: "Psikologi" },
-  { id: 8, nama: "Kedokteran" },
-];
-
-const DUMMY_WIRAUSAHA = [
-  { id: 1, nama: "Kuliner" },
-  { id: 2, nama: "Fashion" },
-];
-
-const DUMMY_POSISI = [
-  { id: 1, nama: "Software Engineer" },
-  { id: 2, nama: "Data Analyst" },
-];
+import { adminApi } from "../../api/admin";
 
 // --- KOMPONEN CUSTOM: MULTI-SELECT DROPDOWN ---
 const MultiSelectDropdown = ({ options = [], selected = [], onChange, placeholder }) => {
@@ -377,58 +351,181 @@ export default function StatusKarir() {
   const [posisiData, setPosisiData] = useState([]);
   const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true, posisi: true });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setUnivData(DUMMY_UNIV);
-      setProdiData(DUMMY_PRODI);
-      setWirausahaData(DUMMY_WIRAUSAHA);
-      setPosisiData(DUMMY_POSISI);
-      setLoading({ univ: false, prodi: false, wirausaha: false, posisi: false });
-    }, 800);
-    return () => clearTimeout(timer);
+  // Fetch all data from API
+  const fetchUniversitas = useCallback(async () => {
+    setLoading((prev) => ({ ...prev, univ: true }));
+    try {
+      const res = await adminApi.getStatusKarierUniversitas();
+      const data = res.data?.data || [];
+      setUnivData(
+        data.map((u) => ({
+          id: u.id,
+          nama: u.nama || u.nama_universitas,
+          jurusan: u.jurusan_kuliah ? [u.jurusan_kuliah.nama || u.jurusan_kuliah.nama_jurusan] : (u.jurusan || []),
+        }))
+      );
+    } catch (err) {
+      console.error("Gagal memuat universitas:", err);
+    } finally {
+      setLoading((prev) => ({ ...prev, univ: false }));
+    }
   }, []);
 
-  const handleCreateLocal = (category, data) => {
-    const newItem = {
-      id: Math.floor(Math.random() * 10000) + 100,
-      nama: data.nama_universitas || data.nama_prodi || data.nama_bidang || data.nama_posisi,
-      jurusan: data.jurusan || []
-    };
-    if (category === 'univ') setUnivData(prev => [...prev, newItem]);
-    if (category === 'prodi') setProdiData(prev => [...prev, newItem]);
-    if (category === 'wirausaha') setWirausahaData(prev => [...prev, newItem]);
-    if (category === 'posisi') setPosisiData(prev => [...prev, newItem]);
-    alertSuccess("Data berhasil ditambahkan!");
+  const fetchProdi = useCallback(async () => {
+    setLoading((prev) => ({ ...prev, prodi: true }));
+    try {
+      const res = await adminApi.getStatusKarierProdi();
+      const data = res.data?.data || [];
+      setProdiData(
+        data.map((p) => ({
+          id: p.id,
+          nama: p.nama || p.nama_jurusan,
+        }))
+      );
+    } catch (err) {
+      console.error("Gagal memuat prodi:", err);
+    } finally {
+      setLoading((prev) => ({ ...prev, prodi: false }));
+    }
+  }, []);
+
+  const fetchWirausaha = useCallback(async () => {
+    setLoading((prev) => ({ ...prev, wirausaha: true }));
+    try {
+      const res = await adminApi.getStatusKarierBidangUsaha();
+      const data = res.data?.data || [];
+      setWirausahaData(
+        data.map((w) => ({
+          id: w.id,
+          nama: w.nama || w.nama_bidang,
+        }))
+      );
+    } catch (err) {
+      console.error("Gagal memuat bidang usaha:", err);
+    } finally {
+      setLoading((prev) => ({ ...prev, wirausaha: false }));
+    }
+  }, []);
+
+  const fetchPosisi = useCallback(async () => {
+    setLoading((prev) => ({ ...prev, posisi: true }));
+    try {
+      const res = await adminApi.getStatusKarierPosisi();
+      const data = res.data?.data || [];
+      setPosisiData(
+        data.map((p, idx) => ({
+          id: p.id || idx + 1,
+          nama: p.nama || p.posisi,
+        }))
+      );
+    } catch (err) {
+      console.error("Gagal memuat posisi:", err);
+    } finally {
+      setLoading((prev) => ({ ...prev, posisi: false }));
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUniversitas();
+    fetchProdi();
+    fetchWirausaha();
+    fetchPosisi();
+  }, [fetchUniversitas, fetchProdi, fetchWirausaha, fetchPosisi]);
+
+  // CRUD Handlers
+  const handleCreate = async (category, data) => {
+    try {
+      if (category === "univ") {
+        await adminApi.createStatusKarierUniversitas({ nama: data.nama_universitas || data.nama });
+        fetchUniversitas();
+      } else if (category === "prodi") {
+        await adminApi.createStatusKarierProdi({ nama_jurusan: data.nama_prodi || data.nama });
+        fetchProdi();
+      } else if (category === "wirausaha") {
+        await adminApi.createStatusKarierBidangUsaha({ nama_bidang: data.nama_bidang || data.nama });
+        fetchWirausaha();
+      }
+      alertSuccess("Data berhasil ditambahkan!");
+    } catch (err) {
+      console.error("Gagal menambahkan:", err);
+      alertError(err.response?.data?.message || "Gagal menambahkan data");
+    }
   };
 
-  const handleUpdateLocal = (category, id, data) => {
-    const newName = Object.values(data)[0];
-    const newJurusan = data.jurusan;
-    const updater = (prevData) => prevData.map(item =>
-      item.id === id ? { ...item, nama: newName, jurusan: newJurusan !== undefined ? newJurusan : item.jurusan } : item
-    );
-    if (category === 'univ') setUnivData(updater);
-    if (category === 'prodi') setProdiData(updater);
-    if (category === 'wirausaha') setWirausahaData(updater);
-    if (category === 'posisi') setPosisiData(updater);
-    alertSuccess("Data berhasil diubah!");
+  const handleUpdate = async (category, id, data) => {
+    try {
+      const nama = Object.values(data)[0];
+      if (category === "univ") {
+        await adminApi.updateStatusKarierUniversitas(id, { nama });
+        fetchUniversitas();
+      } else if (category === "prodi") {
+        await adminApi.updateStatusKarierProdi(id, { nama_jurusan: nama });
+        fetchProdi();
+      } else if (category === "wirausaha") {
+        await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: nama });
+        fetchWirausaha();
+      }
+      alertSuccess("Data berhasil diubah!");
+    } catch (err) {
+      console.error("Gagal memperbarui:", err);
+      alertError(err.response?.data?.message || "Gagal memperbarui data");
+    }
   };
 
-  const handleDeleteLocal = (category, id) => {
-    const filter = (prevData) => prevData.filter(item => item.id !== id);
-    if (category === 'univ') setUnivData(filter);
-    if (category === 'prodi') setProdiData(filter);
-    if (category === 'wirausaha') setWirausahaData(filter);
-    if (category === 'posisi') setPosisiData(filter);
-    alertSuccess("Data berhasil dihapus!");
+  const handleDelete = async (category, id) => {
+    try {
+      if (category === "univ") {
+        await adminApi.deleteStatusKarierUniversitas(id);
+        fetchUniversitas();
+      } else if (category === "prodi") {
+        await adminApi.deleteStatusKarierProdi(id);
+        fetchProdi();
+      } else if (category === "wirausaha") {
+        await adminApi.deleteStatusKarierBidangUsaha(id);
+        fetchWirausaha();
+      }
+      alertSuccess("Data berhasil dihapus!");
+    } catch (err) {
+      console.error("Gagal menghapus:", err);
+      alertError(err.response?.data?.message || "Gagal menghapus data");
+    }
   };
 
   const handleBuatLaporan = async () => {
     setExportingReport(true);
-    setTimeout(() => {
-      alertSuccess('Laporan berhasil diunduh (Simulasi)');
+    try {
+      // Map report type
+      const typeMap = {
+        "Data Universitas": "universitas",
+        "Data Program Studi": "prodi",
+        "Bidang Wirausaha": "wirausaha",
+        "Posisi Pekerjaan": "posisi",
+      };
+      const type = typeMap[selectedReport] || "universitas";
+      const format = selectedFormat.toLowerCase();
+
+      const res = await adminApi.exportStatusKarierReport({ type, format });
+
+      // Create download link
+      const blob = new Blob([res.data], {
+        type: format === "pdf" ? "application/pdf" : "text/csv",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `status_karier_${type}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      alertSuccess("Laporan berhasil diunduh!");
+    } catch (err) {
+      console.error("Gagal mengunduh:", err);
+      alertError("Gagal mengunduh laporan");
+    } finally {
       setExportingReport(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -446,9 +543,9 @@ export default function StatusKarir() {
             nameKey="nama_universitas"
             withJurusan={true}
             dropdownOptions={prodiData}
-            onCreate={(data) => handleCreateLocal('univ', data)}
-            onUpdate={(id, data) => handleUpdateLocal('univ', id, data)}
-            onDelete={(id) => handleDeleteLocal('univ', id)}
+            onCreate={(data) => handleCreate('univ', data)}
+            onUpdate={(id, data) => handleUpdate('univ', id, data)}
+            onDelete={(id) => handleDelete('univ', id)}
           />
 
           <ManagedTable
@@ -459,9 +556,9 @@ export default function StatusKarir() {
             placeholder="Contoh: Ilmu Komunikasi"
             onAddLabel="Tambah Prodi"
             nameKey="nama_prodi"
-            onCreate={(data) => handleCreateLocal('prodi', data)}
-            onUpdate={(id, data) => handleUpdateLocal('prodi', id, data)}
-            onDelete={(id) => handleDeleteLocal('prodi', id)}
+            onCreate={(data) => handleCreate('prodi', data)}
+            onUpdate={(id, data) => handleUpdate('prodi', id, data)}
+            onDelete={(id) => handleDelete('prodi', id)}
           />
 
           <ManagedTable
@@ -472,9 +569,9 @@ export default function StatusKarir() {
             placeholder="Contoh: Kuliner"
             onAddLabel="Tambah Bidang"
             nameKey="nama_bidang"
-            onCreate={(data) => handleCreateLocal('wirausaha', data)}
-            onUpdate={(id, data) => handleUpdateLocal('wirausaha', id, data)}
-            onDelete={(id) => handleDeleteLocal('wirausaha', id)}
+            onCreate={(data) => handleCreate('wirausaha', data)}
+            onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
+            onDelete={(id) => handleDelete('wirausaha', id)}
           />
 
           <ManagedTable
@@ -482,12 +579,7 @@ export default function StatusKarir() {
             icon={Briefcase}
             data={posisiData}
             loading={loading.posisi}
-            placeholder="Contoh: Staff"
-            onAddLabel="Tambah Posisi"
-            nameKey="nama_posisi"
-            onCreate={(data) => handleCreateLocal('posisi', data)}
-            onUpdate={(id, data) => handleUpdateLocal('posisi', id, data)}
-            onDelete={(id) => handleDeleteLocal('posisi', id)}
+            readOnly={true}
           />
         </div>
 
@@ -504,6 +596,7 @@ export default function StatusKarir() {
                   options={["Data Universitas", "Data Program Studi", "Bidang Wirausaha", "Posisi Pekerjaan"]}
                   placeholder="Pilih data"
                   isRequired={true}
+                  onSelect={(val) => setSelectedReport(val)}
                   />
               </div>
               <div className="space-y-1.5">

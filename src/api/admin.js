@@ -118,6 +118,50 @@ export const adminApi = {
     return api.delete(`/admin/kuesioner/${kuesionerId}/pertanyaan/${pertanyaanId}`);
   },
 
+  updateKuesionerStatus(id, status) {
+    return api.patch(`/admin/kuesioner/${id}/status`, { status_kuesioner: status });
+  },
+
+  // ── Jawaban Kuesioner (admin view) ─────────────
+  getKuesionerJawaban(kuesionerId, filters = {}) {
+    return api.get(`/admin/kuesioner/${kuesionerId}/jawaban`, { params: filters });
+  },
+
+  getKuesionerJawabanDetail(kuesionerId, alumniId) {
+    return api.get(`/admin/kuesioner/${kuesionerId}/jawaban/${alumniId}`);
+  },
+
+  // ── Status Karier Management ───────────────────
+  // Universitas
+  getStatusKarierUniversitas() { return api.get('/admin/status-karier/universitas'); },
+  createStatusKarierUniversitas(data) { return api.post('/admin/status-karier/universitas', data); },
+  updateStatusKarierUniversitas(id, data) { return api.put(`/admin/status-karier/universitas/${id}`, data); },
+  deleteStatusKarierUniversitas(id) { return api.delete(`/admin/status-karier/universitas/${id}`); },
+
+  // Program Studi
+  getStatusKarierProdi() { return api.get('/admin/status-karier/prodi'); },
+  createStatusKarierProdi(data) { return api.post('/admin/status-karier/prodi', data); },
+  updateStatusKarierProdi(id, data) { return api.put(`/admin/status-karier/prodi/${id}`, data); },
+  deleteStatusKarierProdi(id) { return api.delete(`/admin/status-karier/prodi/${id}`); },
+
+  // Bidang Usaha (Wirausaha)
+  getStatusKarierBidangUsaha() { return api.get('/admin/status-karier/bidang-usaha'); },
+  createStatusKarierBidangUsaha(data) { return api.post('/admin/status-karier/bidang-usaha', data); },
+  updateStatusKarierBidangUsaha(id, data) { return api.put(`/admin/status-karier/bidang-usaha/${id}`, data); },
+  deleteStatusKarierBidangUsaha(id) { return api.delete(`/admin/status-karier/bidang-usaha/${id}`); },
+
+  // Posisi Pekerjaan (read-only)
+  getStatusKarierPosisi() { return api.get('/admin/status-karier/posisi'); },
+
+  // Report & Export
+  getStatusKarierReport() { return api.get('/admin/status-karier/report'); },
+  exportStatusKarierReport(params = {}) {
+    return api.get('/admin/status-karier/export', {
+      params,
+      responseType: 'blob',
+    });
+  },
+
   // ── Master Data CRUD (admin only) ─────────────
   // Provinsi
   getProvinsi() { return api.get('/admin/master/provinsi'); },
