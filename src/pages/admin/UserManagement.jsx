@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   UserPlus, FileEdit, Users, Search,
   Filter, Check, X, Image as ImageIcon,
-  Download, ChevronLeft, ChevronRight, Trash2, Loader2, Eye, Ban
+  Download, ChevronLeft, ChevronRight, Trash2, Loader2, Eye, Ban,
+  Instagram, Linkedin, Facebook, Globe, Github
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { adminApi } from '../../api/admin';
@@ -94,7 +95,7 @@ export default function UserManagement() {
     { label: 'Menunggu', value: 'pending' },
     { label: 'Aktif', value: 'ok' },
     { label: 'Ditolak', value: 'rejected' },
-    { label: 'Banned', value: 'banned' },
+    { label: 'Blacklist', value: 'banned' },
   ];
 
   // Debounce search
@@ -247,13 +248,13 @@ export default function UserManagement() {
   // Ban user
   const handleBan = async (alumniId, name) => {
     const { isConfirmed, value: alasan } = await Swal.fire({
-      title: `Ban User "${name}"?`,
+      title: `Blacklist Pengguna "${name}"?`,
       input: 'textarea',
-      inputLabel: 'Alasan Banned',
-      inputPlaceholder: 'Tulis alasan banned...',
+      inputLabel: 'Alasan Blacklist',
+      inputPlaceholder: 'Tulis alasan blacklist...',
       showCancelButton: true,
       cancelButtonText: 'Batal',
-      confirmButtonText: 'Ban User',
+      confirmButtonText: 'Blacklist User',
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#6b7280',
     });
@@ -262,11 +263,11 @@ export default function UserManagement() {
     setActionLoading(alumniId);
     try {
       await adminApi.banUser(alumniId, { alasan });
-      alertSuccess(`User "${name}" berhasil di-banned`);
+      alertSuccess(`User "${name}" berhasil diblacklist`);
       refreshAlumni();
       fetchStats();
     } catch (err) {
-      alertError(err.response?.data?.message || 'Gagal melakukan banned user');
+      alertError(err.response?.data?.message || 'Gagal melakukan blacklist user');
     } finally {
       setActionLoading(null);
     }
@@ -330,7 +331,7 @@ export default function UserManagement() {
       pending: { bg: 'bg-orange-50 text-orange-600 border-orange-100', label: 'Menunggu' },
       ok: { bg: 'bg-emerald-50 text-emerald-600 border-emerald-100', label: 'Aktif' },
       rejected: { bg: 'bg-red-50 text-red-500 border-red-100', label: 'Ditolak' },
-      banned: { bg: 'bg-slate-50 text-slate-500 border-slate-100', label: 'Banned' },
+      banned: { bg: 'bg-slate-50 text-slate-500 border-slate-100', label: 'Blacklist' },
     };
     const s = map[status] || map.pending;
     return (
@@ -705,11 +706,11 @@ export default function UserManagement() {
                         }}
                       />
                     ) : null}
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-slate-700 text-white items-center justify-center font-bold text-xl shadow-md"
-                        style={{ display: detailAlumni.foto ? 'none' : 'flex' }}
-                      >
-                        {getInitials(detailAlumni.nama)}
-                      </div>
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-slate-700 text-white items-center justify-center font-bold text-xl shadow-md"
+                      style={{ display: detailAlumni.foto ? 'none' : 'flex' }}
+                    >
+                      {getInitials(detailAlumni.nama)}
+                    </div>
                     <div>
                       <h3 className="font-bold text-slate-800 text-lg">{detailAlumni.nama}</h3>
                       <p className="text-sm text-slate-500">{detailAlumni.user?.email || '-'}</p>
@@ -737,50 +738,111 @@ export default function UserManagement() {
                     ))}
                   </div>
 
-                  {detailAlumni.skills?.length > 0 && (
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase mb-2">Skills</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {detailAlumni.skills.map(s => (
-                          <span key={s.id} className="px-2.5 py-1 bg-blue-50 text-blue-600 text-[11px] font-bold rounded-full border border-blue-100">
-                            {s.nama}
-                          </span>
+                  {/* --- BAGIAN MEDIA SOSIAL --- */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Media Sosial & Tautan</p>
+                    
+                    {/* Logika: Cek apakah setidaknya ada satu sosmed yang memiliki isi (val) */}
+                    {Object.values({
+                      ig: detailAlumni.instagram,
+                      li: detailAlumni.linkedin,
+                      gh: detailAlumni.github,
+                      fb: detailAlumni.facebook,
+                      ws: detailAlumni.website
+                    }).some(val => val) ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          { label: 'Instagram', val: detailAlumni.instagram, icon: Instagram, color: 'text-pink-600', bg: 'bg-pink-50' },
+                          { label: 'LinkedIn', val: detailAlumni.linkedin, icon: Linkedin, color: 'text-blue-700', bg: 'bg-blue-50' },
+                          { label: 'GitHub', val: detailAlumni.github, icon: Github, color: 'text-slate-800', bg: 'bg-slate-100' },
+                          { label: 'Facebook', val: detailAlumni.facebook, icon: Facebook, color: 'text-blue-600', bg: 'bg-blue-50' },
+                          { label: 'Website', val: detailAlumni.website, icon: Globe, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        ].map((soc, i) => (
+                          // Tampilkan hanya jika soc.val ada isinya
+                          soc.val && (
+                            <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border border-slate-100 ${soc.bg}`}>
+                              <soc.icon size={18} className={soc.color} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">{soc.label}</p>
+                                <a 
+                                  href={soc.val.startsWith('http') ? soc.val : `https://${soc.val}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-xs font-bold text-slate-700 hover:text-primary truncate block transition-colors"
+                                >
+                                  {soc.val.replace(/^https?:\/\/(www\.)?/, '')}
+                                </a>
+                              </div>
+                            </div>
+                          )
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      /* Tampilkan "-" jika semua field sosial media kosong */
+                      <p className="text-sm text-slate-400 font-medium italic">-</p>
+                    )}
+                  </div>
 
-                  {detailAlumni.riwayat_status?.length > 0 && (
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase mb-2">Riwayat Karir</p>
-                      <div className="space-y-2">
-                        {detailAlumni.riwayat_status.map(r => (
-                          <div key={r.id} className="bg-slate-50 rounded-lg p-3 text-sm">
+                  {/* --- BAGIAN SKILLS (Pastikan juga menampilkan "-" jika kosong) --- */}
+                  <div className="mt-5">
+                    <p className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {detailAlumni.skills && detailAlumni.skills.length > 0 ? (
+                        detailAlumni.skills.map(s => (
+                          <span key={s.id} className="px-3 py-1.5 bg-white text-primary text-[11px] font-bold rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            {s.nama}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-sm text-slate-400 font-medium italic">-</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* --- RIWAYAT KARIR --- */}
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase mb-2">Riwayat Karir</p>
+                    <div className="space-y-2">
+                      {detailAlumni.riwayat_status && detailAlumni.riwayat_status.length > 0 ? (
+                        detailAlumni.riwayat_status.map((r) => (
+                          <div key={r.id} className="bg-slate-50 rounded-lg p-3 text-sm border border-slate-100">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-primary">{r.status?.nama || 'Status'}</span>
-                              <span className="text-slate-400 text-xs">({r.tahun_mulai}{r.tahun_selesai ? ` - ${r.tahun_selesai}` : ' - Sekarang'})</span>
+                              <span className="text-slate-400 text-xs">
+                                ({r.tahun_mulai}{r.tahun_selesai ? ` - ${r.tahun_selesai}` : ' - Sekarang'})
+                              </span>
                             </div>
+                            
+                            {/* Detail Pekerjaan */}
                             {r.pekerjaan && (
-                              <p className="text-slate-600 text-xs mt-1">
-                                {r.pekerjaan.posisi} di {r.pekerjaan.perusahaan?.nama || '-'}
+                              <p className="text-slate-600 text-xs mt-1 font-medium">
+                                {r.pekerjaan.posisi} di <span className="text-slate-800">{r.pekerjaan.perusahaan?.nama || '-'}</span>
                               </p>
                             )}
+
+                            {/* Detail Kuliah */}
                             {r.universitas && (
-                              <p className="text-slate-600 text-xs mt-1">
-                                {r.universitas.nama} — {r.universitas.jurusan_kuliah?.nama || ''}
+                              <p className="text-slate-600 text-xs mt-1 font-medium">
+                                {r.universitas.nama} — <span className="text-slate-800">{r.universitas.jurusan_kuliah?.nama || '-'}</span>
                               </p>
                             )}
+
+                            {/* Detail Wirausaha */}
                             {r.wirausaha && (
-                              <p className="text-slate-600 text-xs mt-1">
-                                {r.wirausaha.nama_usaha} ({r.wirausaha.bidang_usaha?.nama || ''})
+                              <p className="text-slate-600 text-xs mt-1 font-medium">
+                                {r.wirausaha.nama_usaha} (<span className="text-slate-800">{r.wirausaha.bidang_usaha?.nama || '-'}</span>)
                               </p>
                             )}
                           </div>
-                        ))}
-                      </div>
+                        ))
+                      ) : (
+                        <span className="text-sm text-slate-400 font-medium italic">Pencari Kerja</span>
+                      )}
                     </div>
-                  )}
+                  </div>
 
+                  {/* --- TOMBOL AKSI --- */}
                   {detailAlumni.status_create === 'pending' && (
                     <div className="flex gap-3 pt-3 border-t border-slate-100">
                       <button
