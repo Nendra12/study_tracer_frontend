@@ -136,31 +136,37 @@ const ManagedTable = ({
   const handleCreate = async () => {
     if (!formData.nama.trim()) return;
     setSaving(true);
-    setTimeout(() => {
+    try {
       const payload = {
         [nameKey]: formData.nama.trim(),
         jurusan: withJurusan ? formData.jurusan : []
       };
-      onCreate(payload);
+      await onCreate(payload);
       resetForm();
       setIsAdding(false);
+    } catch (err) {
+      console.error('Create failed:', err);
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const handleUpdate = async (id) => {
     if (!formData.nama.trim()) return;
     setSaving(true);
-    setTimeout(() => {
+    try {
       const payload = {
         [nameKey]: formData.nama.trim(),
         jurusan: withJurusan ? formData.jurusan : []
       };
-      onUpdate(id, payload);
+      await onUpdate(id, payload);
       setEditId(null);
       resetForm();
+    } catch (err) {
+      console.error('Update failed:', err);
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const startEdit = (item) => {
@@ -348,8 +354,7 @@ export default function StatusKarir() {
   const [univData, setUnivData] = useState([]);
   const [prodiData, setProdiData] = useState([]);
   const [wirausahaData, setWirausahaData] = useState([]);
-  const [posisiData, setPosisiData] = useState([]);
-  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true, posisi: true });
+  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true});
 
   // Fetch all data from API
   const fetchUniversitas = useCallback(async () => {
@@ -358,15 +363,17 @@ export default function StatusKarir() {
       const res = await adminApi.getStatusKarierUniversitas();
       const data = res.data?.data || [];
       setUnivData(
-        data.map((u) => ({
-          id: u.id,
-          nama: u.nama || u.nama_universitas,
-          jurusan: Array.isArray(u.jurusan_kuliah)
-            ? u.jurusan_kuliah.map(j => j.nama || j.nama_jurusan)
-            : u.jurusan_kuliah
-              ? [u.jurusan_kuliah.nama || u.jurusan_kuliah.nama_jurusan]
-              : (u.jurusan || []),
-        }))
+        data.map((u) => {
+          const rawJurusan = Array.isArray(u.jurusan_kuliah)
+            ? u.jurusan_kuliah
+            : u.jurusan_kuliah ? [u.jurusan_kuliah] : [];
+          return {
+            id: u.id,
+            nama: u.nama || u.nama_universitas,
+            jurusan: rawJurusan.map(j => j.nama || j.nama_jurusan),
+            _jurusanRaw: rawJurusan, // keep {id, nama} for delete/sync
+          };
+        })
       );
     } catch (err) {
       console.error("Gagal memuat universitas:", err);
@@ -411,36 +418,26 @@ export default function StatusKarir() {
     }
   }, []);
 
-  const fetchPosisi = useCallback(async () => {
-    setLoading((prev) => ({ ...prev, posisi: true }));
-    try {
-      const res = await adminApi.getStatusKarierPosisi();
-      const data = res.data?.data || [];
-      setPosisiData(
-        data.map((p, idx) => ({
-          id: p.id || idx + 1,
-          nama: p.nama || p.posisi,
-        }))
-      );
-    } catch (err) {
-      console.error("Gagal memuat posisi:", err);
-    } finally {
-      setLoading((prev) => ({ ...prev, posisi: false }));
-    }
-  }, []);
 
   useEffect(() => {
     fetchUniversitas();
     fetchProdi();
     fetchWirausaha();
-    fetchPosisi();
-  }, [fetchUniversitas, fetchProdi, fetchWirausaha, fetchPosisi]);
+  }, [fetchUniversitas, fetchProdi, fetchWirausaha]);
 
   // CRUD Handlers
   const handleCreate = async (category, data) => {
     try {
       if (category === "univ") {
-        await adminApi.createStatusKarierUniversitas({ nama: data.nama_universitas || data.nama });
+        const res = await adminApi.createStatusKarierUniversitas({ nama: data.nama_universitas || data.nama });
+        const newUnivId = res.data?.data?.id;
+        if (newUnivId && data.jurusan && data.jurusan.length > 0) {
+          const createPromises = data.jurusan.map(jurusanNama =>
+            adminApi.createStatusKarierProdi({ nama_prodi: jurusanNama, id_universitas: newUnivId })
+          );
+          await Promise.all(createPromises);
+        }
+
         fetchUniversitas();
       } else if (category === "prodi") {
         await adminApi.createStatusKarierProdi({ nama_jurusan: data.nama_prodi || data.nama });
@@ -458,14 +455,44 @@ export default function StatusKarir() {
 
   const handleUpdate = async (category, id, data) => {
     try {
-      const nama = Object.values(data)[0];
       if (category === "univ") {
+        const nama = data.nama_universitas || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierUniversitas(id, { nama });
+
+        // Sync jurusan: diff current vs new selections
+        const currentUniv = univData.find(u => u.id === id);
+        const currentJurusan = currentUniv?.jurusan || [];
+        const rawJurusan = currentUniv?._jurusanRaw || [];
+        const newJurusan = data.jurusan || [];
+
+        const toAdd = newJurusan.filter(j => !currentJurusan.includes(j));
+        const toRemove = currentJurusan.filter(j => !newJurusan.includes(j));
+
+        const syncPromises = [];
+
+        // Create NEW prodi records for added jurusan (allows sharing across universities)
+        toAdd.forEach(jurusanNama => {
+          syncPromises.push(
+            adminApi.createStatusKarierProdi({ nama_prodi: jurusanNama, id_universitas: id })
+          );
+        });
+
+        // Delete the university-specific prodi records for removed jurusan
+        toRemove.forEach(jurusanNama => {
+          const rawJ = rawJurusan.find(j => (j.nama || j.nama_jurusan) === jurusanNama);
+          if (rawJ) {
+            syncPromises.push(adminApi.deleteStatusKarierProdi(rawJ.id));
+          }
+        });
+
+        if (syncPromises.length > 0) await Promise.all(syncPromises);
         fetchUniversitas();
       } else if (category === "prodi") {
+        const nama = data.nama_prodi || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierProdi(id, { nama_jurusan: nama });
         fetchProdi();
       } else if (category === "wirausaha") {
+        const nama = data.nama_bidang || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: nama });
         fetchWirausaha();
       }
@@ -503,7 +530,6 @@ export default function StatusKarir() {
         "Data Universitas": "universitas",
         "Data Program Studi": "prodi",
         "Bidang Wirausaha": "wirausaha",
-        "Posisi Pekerjaan": "posisi",
       };
       const type = typeMap[selectedReport] || "universitas";
       const format = selectedFormat.toLowerCase();
@@ -578,13 +604,6 @@ export default function StatusKarir() {
             onDelete={(id) => handleDelete('wirausaha', id)}
           />
 
-          <ManagedTable
-            title="Posisi Pekerjaan"
-            icon={Briefcase}
-            data={posisiData}
-            loading={loading.posisi}
-            readOnly={true}
-          />
         </div>
 
         <div className="lg:col-span-4 space-y-4 order-first lg:order-last">
@@ -597,7 +616,7 @@ export default function StatusKarir() {
               <div className="space-y-1.5">
                 <SmoothDropdown
                   label="Jenis Data"
-                  options={["Data Universitas", "Data Program Studi", "Bidang Wirausaha", "Posisi Pekerjaan"]}
+                  options={["Data Universitas", "Data Program Studi", "Bidang Wirausaha"]}
                   placeholder="Pilih data"
                   isRequired={true}
                   onSelect={(val) => setSelectedReport(val)}

@@ -216,7 +216,7 @@ export default function ManajemenPekerjaan() {
     } catch {
       setJobs([]);
     } finally {
-      setTimeout(() => setLoading(false), 500); // Sedikit delay agar transisi skeleton halus
+      setTimeout(() => setLoading(false), 100); 
     }
   }, [activeTab, searchQuery]);
 
