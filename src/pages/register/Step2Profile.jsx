@@ -182,7 +182,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     if (formData.tanggal_lahir && formData.tahun_masuk) {
       const birthYear = new Date(formData.tanggal_lahir).getFullYear();
       if (birthYear >= parseInt(formData.tahun_masuk)) {
-        errs.tanggal_lahir = 'Tanggal lahir harus sebelum tahun masuk';
+        errs.tanggal_lahir = 'Tanggal lahir invalid';
       }
     }
 

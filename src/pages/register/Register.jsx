@@ -7,6 +7,7 @@ import Step2Profile from './Step2Profile';
 import Step3Status from './Step3Status';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { alumniApi } from '../../api/alumni';
 
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -127,6 +128,50 @@ export default function Register() {
       }
 
       await register(fd);
+
+      // Backend register endpoint doesn't save career status to riwayat_status table.
+      // After registration (token is now set), call career-status API to save it.
+      if (formData.id_status) {
+        try {
+          const careerPayload = {
+            id_status: formData.id_status,
+            tahun_mulai: formData.tahun_mulai || null,
+            tahun_selesai: formData.tahun_selesai || null,
+          };
+
+          if (formData.pekerjaan) {
+            careerPayload.pekerjaan = {
+              posisi: formData.pekerjaan.posisi,
+              nama_perusahaan: formData.pekerjaan.nama_perusahaan,
+              id_kota: formData.pekerjaan.id_kota,
+              jalan: formData.pekerjaan.jalan || '',
+            };
+          }
+
+          if (formData.universitas) {
+            // UniversitySelector passes university ID via nama_universitas field
+            careerPayload.kuliah = {
+              id_universitas: formData.universitas.nama_universitas,
+              id_jurusanKuliah: formData.universitas.id_jurusanKuliah,
+              jalur_masuk: formData.universitas.jalur_masuk,
+              jenjang: formData.universitas.jenjang,
+            };
+          }
+
+          if (formData.wirausaha) {
+            careerPayload.wirausaha = {
+              id_bidang: formData.wirausaha.id_bidang,
+              nama_usaha: formData.wirausaha.nama_usaha,
+            };
+          }
+
+          await alumniApi.updateCareerStatus(careerPayload);
+        } catch (careerErr) {
+          console.error('Career status save failed:', careerErr);
+          // Don't block registration for career status failure
+        }
+      }
+
       navigate('/');
     } catch (err) {
       const data = err.response?.data;

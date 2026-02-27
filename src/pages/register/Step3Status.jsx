@@ -23,6 +23,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [statusList, setStatusList] = useState([]);
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [bidangUsahaMap, setBidangUsahaMap] = useState({});
+  const [perusahaanList, setPerusahaanList] = useState([]);
+  const [pekerjaanList, setPekerjaanList] = useState([]);
 
   // 2. Gunakan useEffect untuk sinkronisasi otomatis ke Parent setiap kali state lokal berubah
   // Ini jauh lebih aman daripada hanya mengandalkan tombol Back/Finish
@@ -42,12 +44,25 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       data.forEach((b) => { map[b.nama_bidang || b.nama] = b.id; });
       setBidangUsahaMap(map);
     });
+    // Fetch perusahaan names for dropdown
+    masterDataApi.getPerusahaan()
+      .then((res) => {
+        const data = res.data.data || res.data || [];
+        const names = Array.isArray(data)
+          ? data.map((p) => p.nama_perusahaan || p.nama || p).filter(Boolean)
+          : [];
+        setPerusahaanList(names);
+      })
+      .catch(() => setPerusahaanList([]));
   }, []);
 
   // 3. FUNGSI PENYIMPANAN OTOMATIS
   // Setiap kali ada perubahan di state lokal, kita kirim ke parent agar tidak hilang saat navigasi
   useEffect(() => {
-    const matched = statusList.find((s) => (s.nama_status || s.nama) === selectedStatus);
+    // Map frontend label to backend status name
+    const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
+    const backendName = statusNameMap[selectedStatus] || selectedStatus;
+    const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
     const updates = {
       id_status: matched?.id || formData.id_status,
       tahun_mulai: tahunMulai,
@@ -113,13 +128,13 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               onSelect={(val) => setPekerjaan({ ...pekerjaan, posisi: val })}
             />
             <InputDropdownEdit
-              label="Nama Perusahaan"
-              value={pekerjaan.nama_perusahaan}
-              options={["Hummatech", "Pertamina", "Telkom"]}
-              placeholder="Masukkan nama perusahaan"
-              isRequired={true}
-              onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
-            />
+            label="Nama Perusahaan"
+            value={pekerjaan.nama_perusahaan}
+            options={perusahaanList} // <-- Gunakan state perusahaanList
+            placeholder="Ketik atau pilih nama perusahaan" // <-- Sesuaikan placeholder
+            isRequired={true}
+            onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
+          />
             <YearsInput
               label="Tahun Masuk"
               isRequired={true}

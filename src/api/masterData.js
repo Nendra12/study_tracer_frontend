@@ -46,4 +46,9 @@ export const masterDataApi = {
   getUniversitas() {
     return api.get('/master/universitas');
   },
+
+  // Perusahaan (for registration dropdown)
+  getPerusahaan() {
+    return api.get('/master/perusahaan');
+  },
 };
