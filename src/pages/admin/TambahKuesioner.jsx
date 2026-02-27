@@ -15,6 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { masterDataApi } from "../../api/masterData";
 import { alertError, alertSuccess } from "../../utilitis/alert";
+import TinjauQues from "../../components/admin/TinjauQues";
 
 export default function TambahPertanyaan() {
   const navigate = useNavigate()
@@ -260,8 +261,12 @@ export default function TambahPertanyaan() {
     }
   };
 
+  const [tinjau, setTinjau] = useState(false)
+  const filteredOptions = options.filter(opt => opt.trim() !== "");
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans text-slate-700">
+      <TinjauQues isOpen={tinjau} onClose={() => setTinjau(prev => !prev)} datas={filteredOptions} pertanyaan={questionText} />
       {loading ? (
         <div className="flex items-center justify-center" style={{ minHeight: '400px' }}>
           <div className="text-center">
@@ -417,7 +422,7 @@ export default function TambahPertanyaan() {
 
             <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
+                <button onClick={() => (setTinjau(prev => !prev))} className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
                   <Eye size={18} /> Pratinjau
                 </button>
               </div>
