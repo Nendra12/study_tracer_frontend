@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 export default function SmoothDropdown({
@@ -6,6 +6,7 @@ export default function SmoothDropdown({
   options = [],
   placeholder = "Pilih opsi",
   isRequired = false,
+  value = null,
   message = '',
   onSelect // Callback fungsi jika kamu butuh data di komponen parent
 }) {
@@ -17,6 +18,12 @@ export default function SmoothDropdown({
     setIsOpen(false);
     if (onSelect) onSelect(option); // Mengirim data ke parent jika ada
   };
+
+  useEffect(() => {
+    setSelected(value)
+  }, [value])
+
+  // console.log("Komxol : ", value)
 
   return (
     <div className="space-y-1 w-full relative">

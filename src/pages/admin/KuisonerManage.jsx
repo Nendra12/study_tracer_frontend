@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { masterDataApi } from "../../api/masterData";
+import { alertConfirm } from "../../utilitis/alert";
 
 export default function KuisonerManage() {
   const [filter, setFilter] = useState("Semua");
@@ -79,6 +80,24 @@ export default function KuisonerManage() {
       const mappedQuestions = pertanyaanData.map(q => {
         const statusName = q.kuesioner?.status?.nama_status;
 
+        // Map status_pertanyaan dari backend ke UI
+        let displayStatus = "TERLIHAT"; // default
+        if (q.status_pertanyaan) {
+          switch (q.status_pertanyaan.toLowerCase()) {
+            case 'publish':
+              displayStatus = "TERLIHAT";
+              break;
+            case 'draft':
+              displayStatus = "DRAF";
+              break;
+            case 'hidden':
+              displayStatus = "TERSEMBUNYI";
+              break;
+            default:
+              displayStatus = "TERLIHAT";
+          }
+        }
+
         return {
           id: q.id,
           id_sectionques: q.id_sectionques,
@@ -88,18 +107,16 @@ export default function KuisonerManage() {
           options: q.opsi?.length > 0
             ? `Opsi: ${q.opsi.map(o => o.opsi).join(", ")}`
             : "Jawaban terbuka",
-          status: "TERLIHAT",
+          status: displayStatus,
+          status_pertanyaan: q.status_pertanyaan, // Simpan status asli dari backend
           category: statusName ? `Kuesioner ${statusName}` : "Umum",
           statusName: statusName || null, // Untuk debugging
           created_at: q.created_at,
         };
       });
 
-      // console.log("Mapped questions with categories:", mappedQuestions.map(q => ({
-      //   text: q.text.substring(0, 30),
-      //   category: q.category,
-      //   statusName: q.statusName
-      // })));
+      console.log("Sample pertanyaan data from API:", pertanyaanData[0]);
+      console.log("Mapped questions sample:", mappedQuestions[0]);
 
       setQuestions(mappedQuestions);
 
@@ -114,41 +131,83 @@ export default function KuisonerManage() {
   // Fungsi Aksi
   const updateStatus = async (id, newStatus) => {
     try {
+      // Map UI status ke backend status
+      let backendStatus = 'publish';
+      if (newStatus === "TERLIHAT") backendStatus = 'publish';
+      else if (newStatus === "DRAF") backendStatus = 'draft';
+      else if (newStatus === "TERSEMBUNYI") backendStatus = 'hidden';
+
+      // Cari pertanyaan untuk mendapatkan kuesionerId dan pertanyaanId
+      const question = questions.find(q => q.id === id);
+
+      console.log("Question data:", question);
+      console.log("Section data:", question?.section);
+
+      // Ambil kuesioner ID dari section atau dari kuesioner langsung
+      const kuesionerId = question?.section?.id_kuesioner || question?.kuesioner?.id;
+
+      if (!kuesionerId) {
+        console.error("Data kuesioner tidak lengkap. Question:", question);
+        alert("Gagal mengubah status: Data kuesioner tidak lengkap");
+        return;
+      }
+
       // Update local state optimistically
       setQuestions((prev) =>
-        prev.map((q) => (q.id === id ? { ...q, status: newStatus } : q))
+        prev.map((q) => (q.id === id ? { ...q, status: newStatus, status_pertanyaan: backendStatus } : q))
       );
 
-      // TODO: Implementasi API update status ketika endpoint tersedia
-      console.log(`Update status pertanyaan ${id} ke ${newStatus}`);
+      // Kirim ke backend
+      await adminApi.updatePertanyaan(
+        kuesionerId,
+        id,
+        { status_pertanyaan: backendStatus }
+      );
+
+      console.log(`✅ Status pertanyaan ${id} berhasil diupdate ke ${backendStatus}`);
 
     } catch (error) {
-      console.error("Gagal update status:", error);
+      console.error("❌ Gagal update status:", error);
+      console.error("Error details:", error.response?.data);
+      alert("Gagal mengubah status pertanyaan: " + (error.response?.data?.message || error.message));
       // Revert jika gagal
       fetchData();
     }
   };
 
   const deleteQuestion = async (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus pertanyaan ini?")) {
-      return;
+    const confrim = await alertConfirm("Apakah Anda yakin ingin menghapus pertanyaan ini?")
+
+    if (!confrim.isConfirmed) {
+      return
     }
+
 
     try {
       // Cari pertanyaan untuk mendapatkan kuesionerId
       const question = questions.find(q => q.id === id);
-      if (!question?.section) {
-        throw new Error("Data pertanyaan tidak lengkap");
+
+      // Ambil kuesioner ID dari section atau dari kuesioner langsung
+      const kuesionerId = question?.section?.id_kuesioner || question?.kuesioner?.id;
+
+      if (!kuesionerId) {
+        console.error("Data kuesioner tidak lengkap. Question:", question);
+        alert("Gagal menghapus pertanyaan: Data kuesioner tidak lengkap");
+        return;
       }
 
       // Optimistic update
       setQuestions((prev) => prev.filter((q) => q.id !== id));
 
-      // console.log("Delete pertanyaan:", id);
+      // Panggil API untuk delete permanent
+      await adminApi.deletePertanyaan(kuesionerId, id);
+
+      console.log(`✅ Pertanyaan ${id} berhasil dihapus`);
 
     } catch (error) {
       console.error("Gagal menghapus pertanyaan:", error);
-      alert("Gagal menghapus pertanyaan. Silakan coba lagi.");
+      console.error("Error details:", error.response?.data);
+      alert("Gagal menghapus pertanyaan: " + (error.response?.data?.message || error.message));
       // Revert jika gagal
       fetchData();
     }
@@ -315,21 +374,60 @@ export default function KuisonerManage() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-gray-100 pt-3 sm:pt-0 mt-2 sm:mt-0">
-                <button className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all" title="Edit">
+                <button
+                  onClick={() => navigate(`/wb-admin/kuisoner/update-pertanyaan/${q.id}`)}
+                  className="cursor-pointer p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                  title="Edit"
+                >
                   <Pencil size={18} />
                 </button>
 
-                <button
-                  onClick={() => updateStatus(q.id, q.status === "TERSEMBUNYI" ? "TERLIHAT" : "TERSEMBUNYI")}
-                  className={`p-2 rounded-lg transition-all ${q.status === "TERSEMBUNYI" ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"}`}
-                  title={q.status === "TERSEMBUNYI" ? "Tampilkan" : "Sembunyikan"}
-                >
-                  {q.status === "TERSEMBUNYI" ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                {/* Tombol Status - Conditional berdasarkan status saat ini */}
+                {q.status === "DRAF" && (
+                  // DRAF: hanya tombol Publish
+                  <button
+                    onClick={() => updateStatus(q.id, "TERLIHAT")}
+                    className="cursor-pointer p-2 rounded-lg transition-all text-green-600 bg-green-50 hover:bg-green-100"
+                    title="Publish"
+                  >
+                    <Eye size={18} />
+                  </button>
+                )}
+
+                {q.status === "TERLIHAT" && (
+                  // TERLIHAT: tombol Draft dan Hidden
+                  <>
+                    <button
+                      onClick={() => updateStatus(q.id, "DRAF")}
+                      className="cursor-pointer p-2 rounded-lg transition-all text-orange-600 bg-orange-50 hover:bg-orange-100"
+                      title="Ubah ke Draf"
+                    >
+                      <Archive size={18} />
+                    </button>
+                    <button
+                      onClick={() => updateStatus(q.id, "TERSEMBUNYI")}
+                      className="cursor-pointer p-2 rounded-lg transition-all text-slate-600 bg-slate-100 hover:bg-slate-200"
+                      title="Sembunyikan"
+                    >
+                      <EyeOff size={18} />
+                    </button>
+                  </>
+                )}
+
+                {q.status === "TERSEMBUNYI" && (
+                  // TERSEMBUNYI: hanya tombol Publish (tanpa Draft)
+                  <button
+                    onClick={() => updateStatus(q.id, "TERLIHAT")}
+                    className="cursor-pointer p-2 rounded-lg transition-all text-green-600 bg-green-50 hover:bg-green-100"
+                    title="Publish"
+                  >
+                    <Eye size={18} />
+                  </button>
+                )}
 
                 <button
                   onClick={() => deleteQuestion(q.id)}
-                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  className="cursor-pointer p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                   title="Hapus"
                 >
                   <Trash2 size={18} />

@@ -130,9 +130,15 @@ export const adminApi = {
     return api.delete(`/admin/kuesioner/${kuesionerId}/pertanyaan/${pertanyaanId}`);
   },
 
-  updateKuesionerStatus(id, status) {
-    return api.patch(`/admin/kuesioner/${id}/status`, { status_kuesioner: status });
+  // Section Ques (Judul Pertanyaan)
+  createSectionQues(data) {
+    return api.post('/admin/section-ques', data);
   },
+
+  // DEPRECATED: Status moved to pertanyaan level
+  // updateKuesionerStatus(id, status) {
+  //   return api.patch(`/admin/kuesioner/${id}/status`, { status_kuesioner: status });
+  // },
 
   // ── Jawaban Kuesioner (admin view) ─────────────
   getKuesionerJawaban(kuesionerId, filters = {}) {

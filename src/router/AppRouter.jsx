@@ -13,6 +13,7 @@ import Register from "../pages/register/Register";
 import { useAuth } from "../context/AuthContext";
 import Logout from "../pages/Logout";
 import TambahPertanyaan from "../pages/admin/TambahKuesioner";
+import UpdateKuesioner from "../pages/admin/UpdateKuesioner";
 import LihatJawaban from "../pages/admin/LihatJawaban";
 import LihatJawabanDetail from "../pages/admin/LihatJawabanDetail";
 import StatusKarir from "../pages/admin/StatusKarir";
@@ -33,7 +34,7 @@ export default function AppRouter() {
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/"} /> : <Login />} />
       <Route path="/reset-password" element={<LupaPass />} />
-      <Route path="/logout" element={<Logout /> } />
+      <Route path="/logout" element={<Logout />} />
       <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
       <Route path="/wb-admin" element={
         <ProtectedRoute isAllowed={isAuthenticated && isAdmin} redirectTo="/login" />
@@ -41,7 +42,7 @@ export default function AppRouter() {
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="manage-user" >
-            <Route index element={ <UserManagement /> } />
+            <Route index element={<UserManagement />} />
           </Route>
           <Route path="jobs">
             <Route index element={<JobsManagement />} />
@@ -54,7 +55,8 @@ export default function AppRouter() {
           <Route path="kuisoner">
             <Route index element={<KuisonerManage />} />
             <Route path="tambah-pertanyaan" element={<TambahPertanyaan />} />
-            <Route path="lihat-jawaban" > 
+            <Route path="update-pertanyaan/:id" element={<UpdateKuesioner />} />
+            <Route path="lihat-jawaban" >
               <Route index element={<LihatJawaban />} />
               <Route path="detail/:id" element={<LihatJawabanDetail />} />
             </Route>

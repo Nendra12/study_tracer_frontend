@@ -132,7 +132,6 @@ export default function Dashboard() {
   function hitungPersen(data) {
     const bagian = data[0]?.total?? 0
     const total = data.reduce((sum, item) => sum + item.total, 0);
-    console.log(total)
     return Math.round((bagian / total) * 100);
   }
 
@@ -148,7 +147,9 @@ export default function Dashboard() {
     } else {
       return "Rendah"
     }
-  }
+  } 
+
+  console.log("kontol", dashData)
 
   const dynamicStats = [
     {
