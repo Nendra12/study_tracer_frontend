@@ -45,15 +45,20 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       setBidangUsahaMap(map);
     });
     // Fetch perusahaan names for dropdown
-    masterDataApi.getPerusahaan()
+   masterDataApi.getPerusahaan()
       .then((res) => {
-        const data = res.data.data || res.data || [];
-        const names = Array.isArray(data)
-          ? data.map((p) => p.nama_perusahaan || p.nama || p).filter(Boolean)
+        // 👇 PERBAIKAN DI SINI: tambahkan ?.data?.data untuk format paginasi
+        const rawData = res.data?.data?.data || res.data?.data || [];
+        
+        const names = Array.isArray(rawData)
+          ? rawData.map((p) => p.nama_perusahaan || p.nama || p).filter(Boolean)
           : [];
         setPerusahaanList(names);
       })
-      .catch(() => setPerusahaanList([]));
+      .catch((err) => {
+        console.error("Gagal mengambil data perusahaan", err);
+        setPerusahaanList([]);
+      });
   }, []);
 
   // 3. FUNGSI PENYIMPANAN OTOMATIS
