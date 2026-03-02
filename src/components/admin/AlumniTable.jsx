@@ -1,52 +1,9 @@
 import React from 'react';
-import {
-  Check, X, Eye, Ban, Trash2, Loader2,
-  Image as ImageIcon, ChevronLeft, ChevronRight
-} from 'lucide-react';
-
-// Pagination helper: show max 7 page numbers
-const getPageNumbers = (current, last) => {
-  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, '...', last];
-  if (current >= last - 3) return [1, '...', last - 4, last - 3, last - 2, last - 1, last];
-  return [1, '...', current - 1, current, current + 1, '...', last];
-};
-
-// Normalize foto URL from backend
-const buildFotoUrl = (foto, STORAGE_BASE_URL) => {
-  if (!foto) return null;
-  if (foto.startsWith('http')) return foto;
-  const path = foto.replace(/^\/?(storage\/)?/, '');
-  return `${STORAGE_BASE_URL}/${path}`;
-};
-
-// Extract year from tahun_lulus
-const extractYear = (val) => {
-  if (!val) return null;
-  if (typeof val === 'number') return String(val);
-  const str = String(val);
-  const match = str.match(/\d{4}/);
-  return match ? match[0] : str;
-};
-
-// Status badge
-const statusBadge = (status) => {
-  const map = {
-    pending: { bg: 'bg-orange-50 text-orange-600 border-orange-100', label: 'Menunggu' },
-    ok: { bg: 'bg-emerald-50 text-emerald-600 border-emerald-100', label: 'Aktif' },
-    rejected: { bg: 'bg-red-50 text-red-500 border-red-100', label: 'Ditolak' },
-    banned: { bg: 'bg-slate-50 text-slate-500 border-slate-100', label: 'Blacklist' },
-  };
-  const s = map[status] || map.pending;
-  return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border ${s.bg}`}>
-      {s.label}
-    </span>
-  );
-};
+import { Eye, Trash2, Check, X, Ban, Search } from 'lucide-react';
+import Pagination from './Pagination';
 
 const AlumniTable = ({
-  alumni,
+  alumni = [],
   alumniLoading,
   pagination,
   currentPage,
@@ -57,172 +14,170 @@ const AlumniTable = ({
   handleReject,
   handleBan,
   handleDelete,
-  STORAGE_BASE_URL,
-}) => (
-  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-        <thead className="bg-slate-50 border-b border-slate-200">
-          <tr>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Alumni</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jurusan</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Foto</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {alumniLoading ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-16 text-center">
-                <Loader2 size={28} className="animate-spin text-primary mx-auto" />
-                <p className="text-sm text-slate-400 mt-2">Memuat data...</p>
-              </td>
+  handlePhotoClick, // Pastikan prop ini diterima
+  STORAGE_BASE_URL
+}) => {
+
+  // Fungsi helper untuk status badge
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'ok': return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">Aktif</span>;
+      case 'pending': return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-100 uppercase">Menunggu</span>;
+      case 'rejected': return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100 uppercase">Ditolak</span>;
+      case 'banned': return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase">Blacklist</span>;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50/50 border-b border-slate-100">
+              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Alumni</th>
+              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jurusan</th>
+              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Foto</th>
+              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">AKSI</th>
             </tr>
-          ) : alumni.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-16 text-center">
-                <p className="text-sm text-slate-400">Tidak ada data alumni ditemukan.</p>
-              </td>
-            </tr>
-          ) : (
-            alumni.map((item) => (
-              <tr key={item.id} className="hover:bg-slate-50/80 transition-colors group">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-bold text-slate-700 text-sm group-hover:text-primary transition-colors">{item.nama}</p>
-                      <p className="text-[11px] text-slate-400">NIS: {item.nis || '-'} &bull; NISN: {item.nisn || '-'}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-600">{item.jurusan?.nama || '-'}</span>
-                    {item.tahun_lulus && (
-                      <span className="text-[10px] text-slate-400 bg-slate-100 w-fit px-1.5 py-0.5 rounded mt-1">
-                        Lulus {extractYear(item.tahun_lulus)}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  {item.foto ? (
-                    <a
-                      href={buildFotoUrl(item.foto, STORAGE_BASE_URL)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-medium text-slate-500 hover:text-primary hover:underline flex items-center justify-center gap-1 mx-auto"
-                    >
-                      <ImageIcon size={14} /> Lihat
-                    </a>
-                  ) : (
-                    <span className="text-xs text-slate-300">-</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-center">
-                  {statusBadge(item.status_create)}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      title="Lihat Detail"
-                      onClick={() => handleViewDetail(item.id)}
-                      className="cursor-pointer p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
-                    >
-                      <Eye size={18} />
-                    </button>
-                    {item.status_create === 'pending' && (
-                      <>
-                        <button
-                          title="Tolak"
-                          disabled={actionLoading === item.id}
-                          onClick={() => handleReject(item.id)}
-                          className="cursor-pointer p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                        >
-                          <X size={18} />
-                        </button>
-                        <button
-                          title="Setujui"
-                          disabled={actionLoading === item.id}
-                          onClick={() => handleApprove(item.id)}
-                          className="cursor-pointer p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all disabled:opacity-50"
-                        >
-                          <Check size={18} />
-                        </button>
-                      </>
-                    )}
-                    {item.status_create !== 'pending' && item.user && (
-                      <>
-                        {item.status_create === 'ok' && (
-                          <button
-                            title="Ban User"
-                            disabled={actionLoading === item.id}
-                            onClick={() => handleBan(item.id, item.nama)}
-                            className="cursor-pointer p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all disabled:opacity-50"
-                          >
-                            <Ban size={18} />
-                          </button>
-                        )}
-                        <button
-                          title="Hapus User"
-                          disabled={actionLoading === item.user?.id}
-                          onClick={() => handleDelete(item.user?.id, item.nama)}
-                          className="cursor-pointer p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+          </thead>
+          
+          <tbody className="divide-y divide-slate-50">
+            {alumni.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="px-4 py-12 text-center text-slate-400 text-sm italic">
+                  Tidak ada data alumni ditemukan.
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              alumni.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
+                  {/* KOLOM NAMA ALUMNI (Sesuai perbaikan agar nama muncul) */}
+                  <td className="px-4 py-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-700 text-sm group-hover:text-primary transition-colors">
+                        {item.nama || item.nama_alumni || 'Tanpa Nama'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        NIS: {item.nis || '-'} • NISN: {item.nisn || '-'}
+                      </span>
+                    </div>
+                  </td>
+                  
+                  {/* KOLOM JURUSAN */}
+                  <td className="px-4 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-600">
+                        {item.jurusan?.nama_jurusan || item.jurusan?.nama || '-'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Lulus {item.tahun_lulus || '-'}
+                      </span>
+                    </div>
+                  </td>
 
-    {/* Pagination */}
-    <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-      <span className="text-xs text-slate-500 font-medium">
-        Hal. {pagination.current_page} dari {pagination.last_page} &bull; Total: {pagination.total}
-      </span>
-      <div className="flex items-center gap-1">
-        <button
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage(prev => prev - 1)}
-          className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-50"
-        >
-          <ChevronLeft size={16}/>
-        </button>
-        {getPageNumbers(currentPage, pagination.last_page).map((page, i) =>
-          page === '...' ? (
-            <span key={`dots-${i}`} className="px-2 text-slate-400 text-xs select-none">...</span>
-          ) : (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`min-w-[32px] h-8 rounded-lg text-xs font-bold transition-all
-                ${currentPage === page
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
-                }`}
-            >
-              {page}
-            </button>
-          )
-        )}
-        <button
-          disabled={currentPage >= pagination.last_page}
-          onClick={() => setCurrentPage(prev => prev + 1)}
-          className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-50"
-        >
-          <ChevronRight size={16}/>
-        </button>
+                  {/* KOLOM FOTO (Bulat dan Clickable untuk Pop-up) */}
+                  <td className="px-4 py-4">
+                    <div className="flex justify-center">
+                      {item.foto ? (
+                        <button 
+                          onClick={() => handlePhotoClick(`${STORAGE_BASE_URL}/${item.foto}`)}
+                          className="group/thumb relative w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 hover:border-primary transition-all shadow-sm cursor-pointer"
+                        >
+                          <img 
+                            src={`${STORAGE_BASE_URL}/${item.foto}`} 
+                            alt="Alumni" 
+                            className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300"
+                            onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + (item.nama || item.nama_alumni); }}
+                          />
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                            <Search size={12} className="text-white" />
+                          </div>
+                        </button>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">
+                          <X size={16} />
+                        </div>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* KOLOM STATUS */}
+                  <td className="px-4 py-4 text-center">
+                    {getStatusBadge(item.status_create)}
+                  </td>
+
+                  {/* KOLOM AKSI (Kembali seperti fungsionalitas sebelumnya) */}
+                  <td className="px-4 py-4">
+                    <div className="flex justify-center items-center gap-1">
+                      {/* Tombol Lihat Detail */}
+                      <button 
+                        onClick={() => handleViewDetail(item.user_id || item.id_alumni || item.id)}
+                        className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                        title="Lihat Detail"
+                      >
+                        <Eye size={18} />
+
+                      </button>
+
+                      {/* Aksi khusus status PENDING (Approve & Reject) */}
+                      {item.status_create === 'pending' && (
+                        <>
+                          <button 
+                            onClick={() => handleApprove(item.id)}
+                            className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                            title="Setujui"
+                          >
+                            <Check size={18} />
+                          </button>
+                          <button 
+                            onClick={() => handleReject(item.id)}
+                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                            title="Tolak"
+                          >
+                            <X size={18} />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Aksi khusus status AKTIF/OK (Blacklist) */}
+                      {item.status_create === 'ok' && (
+                        <button 
+                          onClick={() => handleBan(item.id, item.nama || item.nama_alumni)}
+                          className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                          title="Blacklist"
+                        >
+                          <Ban size={18} />
+                        </button>
+                      )}
+
+                      {/* Tombol Hapus Permanen */}
+                      <button 
+                        onClick={() => handleDelete(item.id, item.nama || item.nama_alumni)}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-xl transition-all active:scale-90 cursor-pointer"
+                        title="Hapus Permanen"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-4 border-t border-slate-50">
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={pagination.last_page}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AlumniTable;
