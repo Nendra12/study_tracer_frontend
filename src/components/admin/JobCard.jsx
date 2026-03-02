@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Layers, CalendarClock, Check, X, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { MapPin, Layers, CalendarClock, Check, X, Pencil, RotateCcw, Trash2, Tag } from "lucide-react";
 import banner from "../../assets/banner.jfif";
 import { STORAGE_BASE_URL } from "../../api/axios";
 
@@ -69,6 +69,19 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
                 <div className="flex items-center gap-1.5"><Layers size={12} className="text-gray-400"/> {job.tipe_pekerjaan}</div>
             )}
           </div>
+          {/* Skills tags */}
+          {job.skills && job.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {job.skills.slice(0, 4).map((skill) => (
+                <span key={skill.id} className="flex items-center gap-1 px-2 py-0.5 bg-[#E8F0F0] text-[#3C5759] text-[10px] font-bold rounded-md">
+                  <Tag size={9} /> {skill.nama}
+                </span>
+              ))}
+              {job.skills.length > 4 && (
+                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-bold rounded-md">+{job.skills.length - 4}</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

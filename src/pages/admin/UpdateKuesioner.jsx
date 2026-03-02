@@ -14,7 +14,7 @@ import SmoothDropdown from "../../components/admin/SmoothDropdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { masterDataApi } from "../../api/masterData";
-import { alertError, alertSuccess } from "../../utilitis/alert";
+import { alertError, alertSuccess, alertConfirm } from "../../utilitis/alert";
 import TinjauQues from "../../components/admin/TinjauQues";
 
 export default function UpdateKuesioner() {
@@ -209,6 +209,14 @@ export default function UpdateKuesioner() {
             };
 
             console.log(dataBody)
+
+            // Konfirmasi sebelum update
+            const confirmResult = await alertConfirm(`Yakin ingin mengupdate pertanyaan ini?`);
+            if (!confirmResult.isConfirmed) {
+                setSavingDraft(false);
+                setSaving(false);
+                return;
+            }
 
             // Kirim ke API untuk update
             await adminApi.updatePertanyaan(kuesionerId, id, dataBody);

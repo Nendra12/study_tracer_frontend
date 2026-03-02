@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Send, Image as ImageIcon, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Send, Image as ImageIcon, Loader2, ChevronDown, Check, Plus } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +17,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     foto: null,
     id_provinsi: '',
     id_kota: '',
+    jam_mulai: '',
+    jam_berakhir: '',
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [minDate, setMinDate] = useState('');
@@ -26,6 +28,13 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const [loadingKota, setLoadingKota] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Skills state
+  const [skillsList, setSkillsList] = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]); // [{id, nama}]
+  const [skillSearch, setSkillSearch] = useState('');
+  const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const skillDropdownRef = useRef(null);
 
   // Set minimal tanggal adalah besok
   useEffect(() => {
@@ -47,14 +56,24 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         foto: null,
         id_provinsi: '',
         id_kota: '',
+        jam_mulai: editJob.jam_mulai || '',
+        jam_berakhir: editJob.jam_berakhir || '',
       });
+      // Pre-fill skills from editJob
+      if (editJob.skills && Array.isArray(editJob.skills)) {
+        setSelectedSkills(editJob.skills.map(s => ({ id: s.id, nama: s.nama })));
+      } else {
+        setSelectedSkills([]);
+      }
       setPreviewUrl(null);
       setErrors({});
     } else if (!editJob && isOpen) {
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
         tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+        jam_mulai: '', jam_berakhir: '',
       });
+      setSelectedSkills([]);
       setPreviewUrl(null);
       setErrors({});
     }
@@ -77,6 +96,32 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     fetchProvinsi();
   }, [isOpen]);
 
+  // Fetch skills on mount
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchSkills = async () => {
+      try {
+        const res = await masterDataApi.getSkills();
+        const data = res.data?.data || res.data || [];
+        setSkillsList(data.map(s => ({ id: s.id, nama: s.nama })));
+      } catch {
+        setSkillsList([]);
+      }
+    };
+    fetchSkills();
+  }, [isOpen]);
+
+  // Close skill dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (skillDropdownRef.current && !skillDropdownRef.current.contains(e.target)) {
+        setShowSkillDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Fetch kota when provinsi changes
   useEffect(() => {
     if (!formData.id_provinsi) {
@@ -96,6 +141,24 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     };
     fetchKota();
   }, [formData.id_provinsi]);
+
+  // Skill helpers
+  const filteredSkills = skillsList.filter(
+    s => s.nama.toLowerCase().includes(skillSearch.toLowerCase()) &&
+      !selectedSkills.some(sel => sel.id === s.id)
+  );
+
+  const addSkill = (skill) => {
+    if (!selectedSkills.some(s => s.id === skill.id)) {
+      setSelectedSkills(prev => [...prev, skill]);
+    }
+    setSkillSearch('');
+    setShowSkillDropdown(false);
+  };
+
+  const removeSkill = (skillId) => {
+    setSelectedSkills(prev => prev.filter(s => s.id !== skillId));
+  };
 
   if (!isOpen) return null;
 
@@ -137,6 +200,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         if (formData.tipe_pekerjaan) fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
         if (formData.deskripsi) fd.append('deskripsi', formData.deskripsi);
         if (formData.tanggal_berakhir) fd.append('lowongan_selesai', formData.tanggal_berakhir);
+        if (formData.jam_mulai) fd.append('jam_mulai', formData.jam_mulai);
+        if (formData.jam_berakhir) fd.append('jam_berakhir', formData.jam_berakhir);
 
         // Build lokasi from selected kota/provinsi names or use existing
         const selectedProvinsi = provinsiList.find(p => String(p.id) === String(formData.id_provinsi));
@@ -152,6 +217,9 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         // Include foto if a new one was selected
         if (formData.foto) fd.append('foto_lowongan', formData.foto);
 
+        // Skills (send array of IDs)
+        selectedSkills.forEach(s => fd.append('skills[]', s.id));
+
         await adminApi.updateLowongan(editJob.id, fd);
       } else {
         // Create new lowongan
@@ -161,6 +229,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       if (formData.tanggal_berakhir) fd.append('lowongan_selesai', formData.tanggal_berakhir);
       if (formData.deskripsi) fd.append('deskripsi', formData.deskripsi);
       if (formData.tipe_pekerjaan) fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
+      if (formData.jam_mulai) fd.append('jam_mulai', formData.jam_mulai);
+      if (formData.jam_berakhir) fd.append('jam_berakhir', formData.jam_berakhir);
       
       // Build lokasi from selected kota/provinsi names
       const selectedProvinsi = provinsiList.find(p => String(p.id) === String(formData.id_provinsi));
@@ -174,6 +244,9 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       if (lokasiStr) fd.append('lokasi', lokasiStr);
       
       if (formData.foto) fd.append('foto_lowongan', formData.foto);
+
+      // Skills (send array of IDs)
+      selectedSkills.forEach(s => fd.append('skills[]', s.id));
 
       // Admin: auto-publish, skip pending approval
       if (isAdmin) {
@@ -195,7 +268,9 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
         tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+        jam_mulai: '', jam_berakhir: '',
       });
+      setSelectedSkills([]);
       setPreviewUrl(null);
       
       if (onSuccess) onSuccess();
@@ -299,6 +374,32 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
               </div>
             </div>
 
+            {/* Jam Mulai & Jam Berakhir */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Jam Mulai <span className="text-gray-400 font-normal text-[10px]">(opsional)</span></label>
+                <input 
+                  name="jam_mulai"
+                  type="time" 
+                  value={formData.jam_mulai}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#3C5759]/20 focus:border-[#3C5759] outline-none transition-all text-gray-600"
+                  onChange={handleInputChange}
+                />
+                {errors.jam_mulai && <p className="text-red-500 text-xs">{errors.jam_mulai[0]}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Jam Berakhir <span className="text-gray-400 font-normal text-[10px]">(opsional)</span></label>
+                <input 
+                  name="jam_berakhir"
+                  type="time" 
+                  value={formData.jam_berakhir}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#3C5759]/20 focus:border-[#3C5759] outline-none transition-all text-gray-600"
+                  onChange={handleInputChange}
+                />
+                {errors.jam_berakhir && <p className="text-red-500 text-xs">{errors.jam_berakhir[0]}</p>}
+              </div>
+            </div>
+
             {/* Tipe Pekerjaan */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Tipe Pekerjaan</label>
@@ -349,6 +450,70 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Skills Input */}
+            <div className="space-y-1.5" ref={skillDropdownRef}>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Skills <span className="text-gray-400 font-normal text-[10px]">(opsional)</span>
+              </label>
+              
+              {/* Selected Skills Tags */}
+              {selectedSkills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedSkills.map(skill => (
+                    <span key={skill.id} className="flex items-center gap-1 px-2.5 py-1 bg-[#E8F0F0] text-[#3C5759] text-xs font-bold rounded-lg">
+                      {skill.nama}
+                      <button type="button" onClick={() => removeSkill(skill.id)} className="hover:text-red-500 cursor-pointer ml-0.5">
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Skill Search/Dropdown */}
+              <div className="relative">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={skillSearch}
+                    onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
+                    onFocus={() => setShowSkillDropdown(true)}
+                    placeholder="Cari skill..."
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#3C5759]/20 focus:border-[#3C5759] outline-none transition-all"
+                  />
+                  <ChevronDown
+                    size={18}
+                    className={`absolute right-3 text-gray-400 cursor-pointer transition-transform ${showSkillDropdown ? 'rotate-180 text-[#3C5759]' : ''}`}
+                    onClick={() => setShowSkillDropdown(!showSkillDropdown)}
+                  />
+                </div>
+                
+                {showSkillDropdown && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                    <ul className="max-h-40 overflow-y-auto py-1">
+                      {filteredSkills.length > 0 ? (
+                        filteredSkills.map(skill => (
+                          <li
+                            key={skill.id}
+                            onClick={() => addSkill(skill)}
+                            className="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 text-gray-700 hover:text-[#3C5759] transition-colors"
+                          >
+                            {skill.nama}
+                            <Check size={14} className="text-gray-300" />
+                          </li>
+                        ))
+                      ) : (
+                        <li className="px-4 py-3 text-xs text-gray-400 italic text-center">
+                          {skillSearch ? 'Skill tidak ditemukan' : 'Semua skill sudah dipilih'}
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              {errors.skills && <p className="text-red-500 text-xs">{errors.skills[0]}</p>}
             </div>
 
             <div className="space-y-1.5">

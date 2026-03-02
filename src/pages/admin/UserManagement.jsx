@@ -197,6 +197,8 @@ export default function UserManagement() {
 
   // --- ACTION HANDLERS ---
   const handleApprove = async (alumniId) => {
+    const { isConfirmed } = await alertConfirm('Setujui alumni ini?');
+    if (!isConfirmed) return;
     setActionLoading(alumniId);
     try {
       await adminApi.approveUser(alumniId);

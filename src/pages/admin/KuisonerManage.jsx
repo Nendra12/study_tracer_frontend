@@ -65,6 +65,8 @@ export default function KuisonerManage() {
   };
 
   const updateStatus = async (id, newStatus) => {
+    const confirm = await alertConfirm(`Ubah status pertanyaan menjadi "${newStatus}"?`);
+    if (!confirm.isConfirmed) return;
     try {
       let backendStatus = newStatus === "TERLIHAT" ? 'publish' : newStatus === "DRAF" ? 'draft' : 'hidden';
       const question = questions.find(q => q.id === id);
