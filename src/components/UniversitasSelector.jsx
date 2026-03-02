@@ -6,6 +6,7 @@ export default function UniversitySelector({ onUnivSelect, onJurusanSelect }) {
   const [universities, setUniversities] = useState([]);
   const [univMap, setUnivMap] = useState({});
   const [selectedUniv, setSelectedUniv] = useState("");
+  const [allMajors, setAllMajors] = useState([]); // raw data from API
   const [availableMajors, setAvailableMajors] = useState([]);
   const [majorMap, setMajorMap] = useState({});
 
@@ -29,25 +30,36 @@ export default function UniversitySelector({ onUnivSelect, onJurusanSelect }) {
     masterDataApi.getJurusanKuliah()
       .then((res) => {
         const data = res.data.data || [];
-        setAvailableMajors(data.map((j) => j.nama_jurusan_kuliah || j.nama));
-        const map = {};
-        data.forEach((j) => { map[j.nama_jurusan_kuliah || j.nama] = j.id; });
-        setMajorMap(map);
+        setAllMajors(data);
       })
       .catch(() => {
-        setAvailableMajors(["Teknik Informatika", "Sistem Informasi", "Manajemen", "Akuntansi", "Ilmu Komunikasi"]);
+        setAllMajors([]);
       });
   }, []);
+
+  // Update available majors and map whenever allMajors or selectedUniv changes
+  useEffect(() => {
+    if (allMajors.length === 0) return;
+    // Show all jurusan (backend jurusan_kuliah are global, not per-university)
+    const names = allMajors.map((j) => j.nama_jurusan_kuliah || j.nama);
+    const map = {};
+    allMajors.forEach((j) => { map[j.nama_jurusan_kuliah || j.nama] = j.id; });
+    setAvailableMajors(names);
+    setMajorMap(map);
+  }, [allMajors, selectedUniv]);
 
   const handleUnivSelect = (val) => {
     setSelectedUniv(val);
     const univId = univMap[val];
     if (onUnivSelect) onUnivSelect(univId || val);
+    // Reset jurusan when university changes
+    if (onJurusanSelect) onJurusanSelect(null);
   };
 
   const handleJurusanSelect = (val) => {
     const majorId = majorMap[val];
-    if (onJurusanSelect) onJurusanSelect(majorId || val);
+    // Only pass resolved numeric ID — backend requires exists:jurusan_kuliah,id_jurusanKuliah
+    if (onJurusanSelect) onJurusanSelect(majorId ?? null);
   };
 
   return (

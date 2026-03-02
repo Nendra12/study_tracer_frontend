@@ -32,4 +32,20 @@ export const authApi = {
   me() {
     return api.get('/me');
   },
+
+  /**
+   * POST /forgot-password — send OTP to email
+   * @param {{ email: string }} data
+   */
+  forgotPassword(data) {
+    return api.post('/forgot-password', data);
+  },
+
+  /**
+   * POST /reset-password — verify OTP & set new password
+   * @param {{ email: string, token: string, password: string, password_confirmation: string }} data
+   */
+  resetPassword(data) {
+    return api.post('/reset-password', data);
+  },
 };

@@ -26,7 +26,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
   // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { posisi: '', nama_perusahaan: '', id_kota: '', jalan: '' });
-  const [universitas, setUniversitas] = useState(formData.universitas || { nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '' });
+  const [universitas, setUniversitas] = useState(formData.universitas || { nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '' });
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { id_bidang: '', nama_usaha: '' });
   
   const [tahunMulai, setTahunMulai] = useState(formData.tahun_mulai || '');
@@ -205,8 +205,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <UniversitySelector
-                onUnivSelect={(val) => setUniversitas({ ...universitas, nama_universitas: val })}
-                onJurusanSelect={(val) => setUniversitas({ ...universitas, id_jurusanKuliah: val })}
+                onUnivSelect={(val) => setUniversitas(prev => ({ ...prev, nama_universitas: val }))}
+                onJurusanSelect={(val) => setUniversitas(prev => ({ ...prev, id_jurusan_kuliah: val }))}
               />
             </div>
             <SmoothDropdown

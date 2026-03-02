@@ -67,6 +67,25 @@ export default function Register() {
     setError('');
     setLoading(true);
 
+    // Client-side validation for Kuliah fields
+    if (formData.universitas) {
+      if (!formData.universitas.id_jurusan_kuliah) {
+        setError('Jurusan kuliah wajib dipilih dari daftar yang tersedia.');
+        setLoading(false);
+        return;
+      }
+      if (!formData.universitas.jalur_masuk) {
+        setError('Jalur masuk kuliah wajib dipilih.');
+        setLoading(false);
+        return;
+      }
+      if (!formData.universitas.jenjang) {
+        setError('Jenjang kuliah wajib dipilih.');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       // Build FormData for multipart upload
       const fd = new FormData();
@@ -116,7 +135,7 @@ export default function Register() {
 
         if (formData.universitas) {
           fd.append('universitas[nama_universitas]', formData.universitas.nama_universitas);
-          if (formData.universitas.id_jurusanKuliah) fd.append('universitas[id_jurusanKuliah]', formData.universitas.id_jurusanKuliah);
+          fd.append('universitas[id_jurusanKuliah]', formData.universitas.id_jurusan_kuliah);
           fd.append('universitas[jalur_masuk]', formData.universitas.jalur_masuk);
           fd.append('universitas[jenjang]', formData.universitas.jenjang);
         }
@@ -152,7 +171,7 @@ export default function Register() {
             // UniversitySelector passes university ID via nama_universitas field
             careerPayload.kuliah = {
               id_universitas: formData.universitas.nama_universitas,
-              id_jurusanKuliah: formData.universitas.id_jurusanKuliah,
+              id_jurusanKuliah: formData.universitas.id_jurusan_kuliah,
               jalur_masuk: formData.universitas.jalur_masuk,
               jenjang: formData.universitas.jenjang,
             };
