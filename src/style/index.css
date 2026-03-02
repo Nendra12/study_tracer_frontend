@@ -13,3 +13,178 @@
 :root {
   font-family: "Lexend", sans-serif;
 }
+/* TipTap Editor Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.prose {
+  max-width: none;
+}
+
+.prose p {
+  margin: 0.5rem 0;
+}
+
+.prose h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem 0;
+  color: var(--color-primary);
+}
+
+.prose h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem 0;
+  color: var(--color-secondary);
+}
+
+.prose ul, .prose ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.prose ul li {
+  list-style-type: disc;
+  margin: 0.25rem 0;
+}
+
+.prose ol li {
+  list-style-type: decimal;
+  margin: 0.25rem 0;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose code {
+  background-color: #f1f5f9;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.75rem 0;
+  display: block;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.ProseMirror img {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.ProseMirror img:hover {
+  transform: scale(1.02);
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 3px solid #3C5759;
+  outline-offset: 2px;
+}
+
+/* Additional TipTap Styles */
+.prose a {
+  color: #3C5759;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.prose a:hover {
+  color: #526061;
+}
+
+.prose blockquote {
+  border-left: 4px solid #3C5759;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #526061;
+  background-color: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+}
+
+.prose mark {
+  background-color: #fef08a;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.125rem;
+}
+
+.prose u {
+  text-decoration: underline;
+}
+
+.prose s {
+  text-decoration: line-through;
+}
+
+.prose hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 1.5rem 0;
+}
+
+.ProseMirror .has-focus {
+  outline: 2px solid #3C5759;
+  outline-offset: 2px;
+}
+
+/* Text Alignment */
+.ProseMirror [style*='text-align: left'] {
+  text-align: left;
+}
+
+.ProseMirror [style*='text-align: center'] {
+  text-align: center;
+}
+
+.ProseMirror [style*='text-align: right'] {
+  text-align: right;
+}
+
+.ProseMirror [style*='text-align: justify'] {
+  text-align: justify;
+}
+
+/* Toolbar Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+.toolbar-container {
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth fade in effect */
+.toolbar-container > div {
+  transition: opacity 0.2s ease-in-out;
+}
