@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, ChevronDown, Check } from "lucide-react";
 
-export default function MultiSelectDropdown({ label, options = [], selected = [], onChange, placeholder }) {
+export default function MultiSelectDropdown({ label, options = [], selected = [], onChange, placeholder, valueKey = "nama" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const ref = useRef(null);
@@ -14,16 +14,24 @@ export default function MultiSelectDropdown({ label, options = [], selected = []
     return () => document.removeEventListener("mousedown", clickOut);
   }, []);
 
-  const toggleOption = (optionName) => {
-    let newSelected = selected.includes(optionName) 
-      ? selected.filter(item => item !== optionName) 
-      : [...selected, optionName];
+  const getValue = (opt) => opt[valueKey] ?? opt.nama;
+
+  const getLabel = (val) => {
+    const opt = options.find(o => getValue(o) === val);
+    return opt ? opt.nama : val;
+  };
+
+  const toggleOption = (opt) => {
+    const val = getValue(opt);
+    let newSelected = selected.includes(val) 
+      ? selected.filter(item => item !== val) 
+      : [...selected, val];
     onChange(newSelected);
   };
 
-  const removeOption = (e, optionName) => {
+  const removeOption = (e, val) => {
     e.stopPropagation();
-    onChange(selected.filter(item => item !== optionName));
+    onChange(selected.filter(item => item !== val));
   };
 
   const filteredOptions = options.filter(opt =>
@@ -46,7 +54,7 @@ export default function MultiSelectDropdown({ label, options = [], selected = []
         {/* Render item yang dipilih */}
         {selected.map((item, idx) => (
           <span key={idx} className="bg-fourth text-secondary px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 border border-slate-200">
-            {item} 
+            {getLabel(item)} 
             <X size={10} className="cursor-pointer hover:text-red-500 transition-colors" onClick={(e) => removeOption(e, item)} />
           </span>
         ))}
@@ -67,11 +75,11 @@ export default function MultiSelectDropdown({ label, options = [], selected = []
             filteredOptions.map((opt) => (
               <div 
                 key={opt.id} 
-                className={`px-3 py-2 text-xs cursor-pointer hover:bg-blue-50 flex justify-between ${selected.includes(opt.nama) ? 'text-primary font-bold bg-blue-50/50' : 'text-slate-600'}`} 
-                onClick={() => toggleOption(opt.nama)}
+                className={`px-3 py-2 text-xs cursor-pointer hover:bg-blue-50 flex justify-between ${selected.includes(getValue(opt)) ? 'text-primary font-bold bg-blue-50/50' : 'text-slate-600'}`} 
+                onClick={() => toggleOption(opt)}
               >
                 <span>{opt.nama}</span> 
-                {selected.includes(opt.nama) && <Check size={12} />}
+                {selected.includes(getValue(opt)) && <Check size={12} />}
               </div>
             ))
           ) : (

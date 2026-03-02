@@ -1,29 +1,42 @@
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2';
 
-export const alertSuccess = async (message) => {
-  return Swal.fire({
-    icon: "success",
-    title: "Success",
+export const alertSuccess = (message) => {
+  Swal.fire({
+    icon: 'success',
+    title: 'Berhasil',
     text: message,
+    confirmButtonColor: '#3C5759',
   });
 };
 
-export const alertError = async (message) => {
-  return Swal.fire({
-    icon: "error",
-    title: "Ups",
+export const alertError = (message) => {
+  Swal.fire({
+    icon: 'error',
+    title: 'Gagal',
     text: message,
+    confirmButtonColor: '#3C5759',
+  });
+};
+
+// TAMBAHKAN INI:
+export const alertWarning = (message) => {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Peringatan',
+    text: message,
+    confirmButtonColor: '#3C5759',
   });
 };
 
 export const alertConfirm = async (message) => {
-  return Swal.fire({
-    icon: "warning",
-    title: message,
+  return await Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: message,
+    icon: 'question',
     showCancelButton: true,
-    cancelButtonText: "Batal",
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Ya",
+    confirmButtonColor: '#3C5759',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Ya, Lanjutkan!',
+    cancelButtonText: 'Batal'
   });
 };

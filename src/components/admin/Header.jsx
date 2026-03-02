@@ -36,6 +36,11 @@ export default function Header({ toggleSidebar }) {
       text: "Kelola konfigurasi sistem, jurusan, jenis pekerjaan, dan laporan tracer study",
     },
     {
+      path: "/wb-admin/kuisoner/tambah-kuesioner",
+      title: "Buat Kuesioner Baru",
+      text: "Lengkapi detail dan buat daftar pertanyaan",
+    },
+    {
       path: "/wb-admin/kuisoner/*",
       title: "Manajemen Kuesioner",
       text: "Kelola dan atur kuesioner untuk Studi Penelusuran Lulusan",

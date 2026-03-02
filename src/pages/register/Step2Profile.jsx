@@ -19,7 +19,6 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    // Fetch Jurusan & format langsung ke bentuk Object { value, label }
     masterDataApi.getJurusan().then((res) => {
       const data = res.data.data || [];
       const formattedData = data.map(j => ({
@@ -233,6 +232,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
             options={skillOptions} 
             selected={formData.skills || []} 
             onChange={(val) => updateFormData({ skills: val })} 
+            valueKey="id"
           />
         </div>
       </div>
