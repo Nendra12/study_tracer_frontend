@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Plus,
     Trash2,
@@ -12,20 +12,66 @@ import {
     ArrowLeft,
     Archive
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { data, Link } from 'react-router-dom';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import DateRangePicker from '../../components/DatePicker';
 import RichTextEditor from '../../components/admin/RichTextEditor';
+import { adminApi } from '../../api/admin';
+import { alertSuccess } from '../../utilitis/alert';
 
 const TambahKuisioner = () => {
     // State untuk Data Kuesioner (Box Kiri)
+
+
+    const [statusKarir, setStatusKarir] = useState('')
+    const [statusKarirData, setStatusKarirData] = useState([])
+
+    const fetchData = async () => {
+        try {
+            const [dataKarir] = await Promise.all([
+                adminApi.getStatus().catch(() => null)
+            ])
+
+            let datast = []
+            if (dataKarir?.data?.data) {
+                setStatusKarir(dataKarir.data.data)
+                dataKarir.data.data.map((val) => {
+                    datast.push(val.nama)
+                })
+            }
+
+            setStatusKarirData(datast)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     const [formData, setFormData] = useState({
-        judul: '',
-        jenis: 'bekerja',
+        title: '',
+        id_status: '',
         deskripsi: '',
         tanggalMulai: '',
-        tanggalSelesai: ''
+        tanggalSelesai: '',
+        status: ''
     });
+
+    useEffect(() => {
+        const call = async () => {
+            const data = await fetchData()
+        }
+
+        call()
+    }, [])
+
+
+    useEffect(() => {
+        if (statusKarirData?.length > 0) {
+            setFormData(prev => ({
+                ...prev,
+                id_status: statusKarirData[0]
+            }))
+        }
+    }, [statusKarirData])
 
     // State untuk Pertanyaan (Box Kanan)
     const [questions, setQuestions] = useState([
@@ -75,6 +121,35 @@ const TambahKuisioner = () => {
         }));
     };
 
+    const saveKuisioner = async (data) => {
+        try {
+            const temp = await adminApi.createKuesioner(data)
+            alertSuccess(temp.message)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const handleDraft = async () => {
+        const { tanggalMulai, tanggalSelesai, ...rest } = formData
+
+        const statusObj = statusKarir.find(
+            item => item.nama === formData.id_status
+        )
+
+        const payload = {
+            ...rest,
+            tanggal_mulai: tanggalMulai,
+            tanggal_selesai: tanggalSelesai,
+            id_status: statusObj?.id,
+            status: "draft",
+            created_at: new Date().toISOString()
+        }
+
+        await saveKuisioner(payload)
+    }
+
+    // console.log(statusKarir)
     return (
         <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
@@ -90,7 +165,7 @@ const TambahKuisioner = () => {
                     </Link>
                     <div className="flex items-center gap-3">
                         <button
-                            className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleDraft} className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Archive size={18} /> Simpan Draft
                         </button>
@@ -112,15 +187,15 @@ const TambahKuisioner = () => {
                             </h2>
 
                             <div className="space-y-5">
-                                {/* Judul */}
+                                {/* title */}
                                 <div>
                                     <label className="text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
                                     <div className="relative mt-3">
                                         <input
                                             type="text"
                                             className="w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
-                                            placeholder="Masukan judul kuesioner.."
-                                            onChange={(e) => setFormData({ ...formData, judul: e.target.value })}
+                                            placeholder="Masukan title kuesioner.."
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         />
                                     </div>
                                 </div>
@@ -129,11 +204,11 @@ const TambahKuisioner = () => {
                                 <div>
                                     <SmoothDropdown
                                         label="Target Karier"
-                                        options={["Bekerja", "Kuliah", "Wirausaha", "Mencari Kerja"]}
+                                        options={statusKarirData}
                                         placeholder="Pilih status karier"
                                         isRequired={true}
-                                        value={formData.jenis}
-                                        onSelect={(val) => setFormData({ ...formData, jenis: val })}
+                                        value={'Bekerja'}
+                                        onSelect={(val) => setFormData({ ...formData, id_status: val })}
                                     />
                                 </div>
 

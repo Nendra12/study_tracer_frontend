@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -39,37 +39,40 @@ const RichTextEditor = ({ content, onChange, placeholder = "Tulis di sini...", m
     const [linkUrl, setLinkUrl] = useState('');
     const [isFocused, setIsFocused] = useState(false);
 
+    // Memoize extensions to prevent duplicate warnings
+    const extensions = useMemo(() => [
+        StarterKit.configure({
+            heading: {
+                levels: [2, 3],
+            },
+        }),
+        Placeholder.configure({
+            placeholder: placeholder,
+        }),
+        Image.configure({
+            inline: true,
+            allowBase64: true,
+            HTMLAttributes: {
+                class: 'max-w-full h-auto rounded-lg my-2',
+            },
+        }),
+        Link.configure({
+            openOnClick: false,
+            HTMLAttributes: {
+                class: 'text-primary underline hover:text-secondary cursor-pointer',
+            },
+        }),
+        Underline,
+        TextAlign.configure({
+            types: ['heading', 'paragraph'],
+        }),
+        Highlight.configure({
+            multicolor: false,
+        }),
+    ], [placeholder]);
+
     const editor = useEditor({
-        extensions: [
-            StarterKit.configure({
-                heading: {
-                    levels: [2, 3],
-                },
-            }),
-            Placeholder.configure({
-                placeholder: placeholder,
-            }),
-            Image.configure({
-                inline: true,
-                allowBase64: true,
-                HTMLAttributes: {
-                    class: 'max-w-full h-auto rounded-lg my-2',
-                },
-            }),
-            Link.configure({
-                openOnClick: false,
-                HTMLAttributes: {
-                    class: 'text-primary underline hover:text-secondary cursor-pointer',
-                },
-            }),
-            Underline,
-            TextAlign.configure({
-                types: ['heading', 'paragraph'],
-            }),
-            Highlight.configure({
-                multicolor: false,
-            }),
-        ],
+        extensions,
         content: content,
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML());
