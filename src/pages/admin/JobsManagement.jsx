@@ -21,7 +21,6 @@ import Pagination from "../../components/admin/Pagination";
 
 const JOBS_PER_PAGE = 7;
 
-// Helper khusus untuk Eksport CSV
 const getDisplayStatus = (job) => {
   if (job.approval_status === "pending") return "MENUNGGU PERSETUJUAN";
   if (job.status === "closed") return "BERAKHIR";
@@ -87,22 +86,42 @@ export default function ManajemenPekerjaan() {
     if (!result.isConfirmed) return;
     try { await adminApi.approveLowongan(id); alertSuccess("Lowongan disetujui"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal menyetujui lowongan'); }
   };
+
   const handleReject = async (id) => {
     const result = await alertConfirm("Tolak lowongan ini?");
     if (!result.isConfirmed) return;
     try { await adminApi.rejectLowongan(id); alertSuccess("Lowongan ditolak"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal menolak lowongan'); }
   };
+
   const handleDelete = async (id) => {
     const result = await alertConfirm("Yakin hapus lowongan ini?");
     if (!result.isConfirmed) return;
     try { await adminApi.deleteLowongan(id); alertSuccess("Lowongan dihapus"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal menghapus lowongan'); }
   };
+
   const handleRepost = async (id) => {
     const result = await alertConfirm("Posting ulang lowongan ini?");
     if (!result.isConfirmed) return;
     try { await adminApi.repostLowongan(id); alertSuccess("Berhasil diposting ulang"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal memposting ulang'); }
   };
-  const handleEdit = (job) => { setEditingJob(job); setIsModalOpen(true); };
+
+  const handleEdit = (job) => { 
+    setEditingJob(job); 
+    setIsModalOpen(true); 
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingJob(null);
+  };
+
+  const handleFormSuccess = () => {
+    const isEdit = !!editingJob;
+    handleModalClose();
+    alertSuccess(isEdit ? "Lowongan berhasil diperbarui" : "Lowongan berhasil ditambahkan");
+    fetchJobs();
+    fetchStats();
+  };
 
   // --- FILTER & PAGINATION ---
   const filteredJobs = useMemo(() => {
@@ -115,7 +134,6 @@ export default function ManajemenPekerjaan() {
 
   useEffect(() => { setCurrentPage(1); }, [activeTab, searchQuery, selectedCategory]);
 
-  // --- EXPORT CSV ---
   const handleExportCSV = () => {
     if (filteredJobs.length === 0) return;
     const headers = ['Judul', 'Perusahaan', 'Lokasi', 'Tipe Pekerjaan', 'Status', 'Tanggal Berakhir'];
@@ -132,11 +150,12 @@ export default function ManajemenPekerjaan() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a'); 
     link.href = url; 
-    link.download = `lowongan.csv`;
+    link.download = `lowongan_pekerjaan_${new Date().toISOString().slice(0,10)}.csv`;
     document.body.appendChild(link); 
     link.click(); 
     document.body.removeChild(link); 
     URL.revokeObjectURL(url);
+    alertSuccess("Data berhasil diekspor");
   };
 
   return (
@@ -152,10 +171,10 @@ export default function ManajemenPekerjaan() {
             </>
           ) : (
             <>
-              <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 text-primary font-bold rounded-xl active:scale-95 transition-all text-xs shadow-sm">
+              <button onClick={handleExportCSV} className="cursor-pointer flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 text-primary font-bold rounded-xl active:scale-95 transition-all text-xs shadow-sm ">
                 <Download size={16} /> <span>Eksport CSV</span>
               </button>
-              <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 p-3 bg-primary text-white font-bold rounded-xl active:scale-95 transition-all text-xs shadow-md shadow-primary/20">
+              <button onClick={() => setIsModalOpen(true)} className="cursor-pointer flex items-center justify-center gap-2 p-3 bg-primary text-white font-bold rounded-xl active:scale-95 transition-all text-xs shadow-md shadow-primary/20">
                 <Plus size={16} /> <span>Buat Lowongan</span>
               </button>
             </>
@@ -163,21 +182,11 @@ export default function ManajemenPekerjaan() {
         </div>
 
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6">
-          
-          {/* KOLOM KIRI (Main Content) */}
           <div className="lg:col-span-8 space-y-4">
-            
-            {/* AREA TAB & SEARCH */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              
-              {/* TAB FILTER (Dengan Skeleton) */}
               {loading ? (
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-hidden animate-pulse">
-                  <div className="w-16 h-8 bg-gray-300 rounded-md"></div>
-                  <div className="w-20 h-8 bg-gray-200 rounded-md"></div>
-                  <div className="w-14 h-8 bg-gray-200 rounded-md"></div>
-                  <div className="w-20 h-8 bg-gray-200 rounded-md"></div>
-                  <div className="w-16 h-8 bg-gray-200 rounded-md"></div>
+                  {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-16 h-8 bg-gray-300 rounded-md"></div>)}
                 </div>
               ) : (
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto no-scrollbar">
@@ -189,7 +198,6 @@ export default function ManajemenPekerjaan() {
                 </div>
               )}
 
-              {/* SEARCH BAR (Disabled saat Skeleton) */}
               <div className="relative flex-1 group w-full">
                 <Search className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${loading ? 'text-gray-300' : 'text-gray-400 group-focus-within:text-primary'}`} size={16} />
                 <input 
@@ -205,15 +213,12 @@ export default function ManajemenPekerjaan() {
 
             <div className="space-y-3">
               {loading ? (
-                // Menampilkan 5 Skeleton
                 [...Array(5)].map((_, i) => <JobCardSkeleton key={i} />)
               ) : paginatedJobs.length > 0 ? (
                 <>
                   {paginatedJobs.map((job) => (
                     <JobCard key={job.id} job={job} onApprove={handleApprove} onReject={handleReject} onDelete={handleDelete} onRepost={handleRepost} onEdit={handleEdit} />
                   ))}
-                  
-                  {/* Komponen Pagination */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-4">
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                   </div>
@@ -226,21 +231,20 @@ export default function ManajemenPekerjaan() {
             </div>
           </div>
 
-          {/* KOLOM KANAN (Sidebar) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="hidden lg:grid grid-cols-2 gap-3">
               {loading ? (
-                <>
+                <div className="contents">
                   <div className="h-11 bg-gray-200 rounded-xl animate-pulse"></div>
                   <div className="h-11 bg-gray-200 rounded-xl animate-pulse"></div>
-                </>
+                </div>
               ) : (
                 <>
-                  <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 text-primary font-bold rounded-xl hover:bg-gray-50 active:scale-95 transition-all text-xs shadow-sm group">
+                  <button onClick={handleExportCSV} className="cursor-pointer flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 text-primary font-bold rounded-xl hover:bg-gray-50 active:scale-95 transition-all text-xs shadow-sm group">
                     <Download size={16} className="group-hover:scale-110 transition-transform"/>
                     <span>Eksport CSV</span>
                   </button>
-                  <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 p-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all text-xs shadow-md shadow-primary/20 group">
+                  <button onClick={() => setIsModalOpen(true)} className="cursor-pointer flex items-center justify-center gap-2 p-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all text-xs shadow-md shadow-primary/20 group">
                     <Plus size={16} className="group-hover:rotate-90 transition-transform"/>
                     <span>Buat Lowongan</span>
                   </button>
@@ -291,8 +295,8 @@ export default function ManajemenPekerjaan() {
       
       <TambahLowongan 
         isOpen={isModalOpen} 
-        onClose={() => { setIsModalOpen(false); setEditingJob(null); }} 
-        onSuccess={() => { setIsModalOpen(false); setEditingJob(null); fetchJobs(); fetchStats(); }} 
+        onClose={handleModalClose} 
+        onSuccess={handleFormSuccess} 
         editJob={editingJob} 
       />
     </div>
