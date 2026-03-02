@@ -29,14 +29,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         label: j.nama_jurusan || j.nama
       }));
       setJurusanOpts(formattedData);
-    }).catch(() => {
-      // Fallback (Data Darurat) jika API gagal/loading lama
-      setJurusanOpts([
-        { value: "RPL", label: "RPL" },
-        { value: "TKJ", label: "TKJ" },
-        { value: "MM", label: "MM" }
-      ]);
-    });
+    })
 
     masterDataApi.getSkills().then((res) => {
       setSkillOptions(res.data.data || []);
