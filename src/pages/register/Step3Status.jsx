@@ -10,11 +10,9 @@ import { masterDataApi } from '../../api/masterData';
 export default function Step3Status({ onBack, formData, updateFormData, onSubmit, loading }) {
   // 1. Sinkronisasi Status Awal dari formData
   const getInitialStatus = () => {
-    // Cek id_status jika sudah ada dari API/Master data sebelumnya
     if (formData.pekerjaan) return 'Bekerja';
     if (formData.universitas) return 'Kuliah';
     if (formData.wirausaha) return 'Wirausaha';
-    // Jika user pernah memilih 'Mencari Kerja', kita butuh flag di formData
     if (formData.id_status && !formData.pekerjaan && !formData.universitas && !formData.wirausaha) return 'Mencari Kerja';
     return 'Bekerja';
   };
@@ -26,13 +24,16 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [pekerjaanList, setPekerjaanList] = useState([]);
 
-  // 2. Gunakan useEffect untuk sinkronisasi otomatis ke Parent setiap kali state lokal berubah
-  // Ini jauh lebih aman daripada hanya mengandalkan tombol Back/Finish
+  // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { posisi: '', nama_perusahaan: '', id_kota: '', jalan: '' });
   const [universitas, setUniversitas] = useState(formData.universitas || { nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '' });
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { id_bidang: '', nama_usaha: '' });
+  
   const [tahunMulai, setTahunMulai] = useState(formData.tahun_mulai || '');
   const [tahunSelesai, setTahunSelesai] = useState(formData.tahun_selesai || '');
+  
+  // STATE BARU: Untuk mengecek apakah masih berlangsung (Saat ini)
+  const [isSaatIni, setIsSaatIni] = useState(!formData.tahun_selesai);
 
   // Fetch data master
   useEffect(() => {
@@ -57,23 +58,23 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   }, []);
 
   // 3. FUNGSI PENYIMPANAN OTOMATIS
-  // Setiap kali ada perubahan di state lokal, kita kirim ke parent agar tidak hilang saat navigasi
   useEffect(() => {
-    // Map frontend label to backend status name
     const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
     const backendName = statusNameMap[selectedStatus] || selectedStatus;
     const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
+    
     const updates = {
       id_status: matched?.id || formData.id_status,
       tahun_mulai: tahunMulai,
-      tahun_selesai: tahunSelesai,
+      // Jika "Saat Ini" dicentang, kita kirimkan string kosong atau null sesuai kebutuhan backend
+      tahun_selesai: isSaatIni ? "" : tahunSelesai,
       pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
       universitas: selectedStatus === 'Kuliah' ? universitas : null,
       wirausaha: selectedStatus === 'Wirausaha' ? wirausaha : null,
     };
     updateFormData(updates);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedStatus, pekerjaan, universitas, wirausaha, tahunMulai, tahunSelesai, statusList]);
+  }, [selectedStatus, pekerjaan, universitas, wirausaha, tahunMulai, tahunSelesai, isSaatIni, statusList]);
 
   const statusOptions = [
     { id: 'Bekerja', label: 'Bekerja', sub: '(Working)', icon: Briefcase },
@@ -81,6 +82,43 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     { id: 'Wirausaha', label: 'Wirausaha', sub: '(Entrepreneur)', icon: Store },
     { id: 'Mencari Kerja', label: 'Mencari Kerja', sub: '(Unemployed)', icon: Search },
   ];
+
+  // HELPER COMPONENT: Untuk merender inputan Tahun Selesai & Checkbox
+  const renderTahunSelesai = (label) => (
+    <div className="space-y-1">
+      {!isSaatIni ? (
+        <YearsInput
+          label={label}
+          text='(opsional)'
+          value={tahunSelesai}
+          onSelect={(val) => setTahunSelesai(val)}
+        />
+      ) : (
+        <div className="space-y-1">
+          <label className="text-[11px] font-bold text-secondary uppercase">
+            {label} <span className="text-gray-400 normal-case font-normal">(opsional)</span>
+          </label>
+          <div className="w-full px-3 py-2.5 bg-gray-100 border border-fourth rounded-xl text-sm text-gray-500 font-medium cursor-not-allowed">
+            Sedang Berlangsung 
+          </div>
+        </div>
+      )}
+      
+      {/* Checkbox "Masih Berlangsung" dengan warna kustom #3C5759 */}
+      <label className="flex items-center gap-2 pt-1.5 text-[11px] text-secondary cursor-pointer hover:text-[#3C5759] transition-colors w-fit">
+        <input
+          type="checkbox"
+          checked={isSaatIni}
+          onChange={(e) => {
+            setIsSaatIni(e.target.checked);
+            if (e.target.checked) setTahunSelesai(''); // Reset tahun jika dicentang
+          }}
+          className="w-4 h-4 rounded border-gray-300 text-[#3C5759] focus:ring-[#3C5759] accent-[#3C5759] cursor-pointer transition-all"
+        />
+        <span className="font-bold">Masih berlangsung (Saat ini)</span>
+      </label>
+    </div>
+  );
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -101,11 +139,13 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               : 'border-fourth border-dashed hover:border-primary/40'
             }`}
           >
+            {/* CENTANG KARTU DENGAN WARNA #3C5759 */}
             {selectedStatus === option.id && (
-              <div className="absolute top-2 right-2 text-primary">
-                <CheckCircle size={16} fill="currentColor" className="text-white fill-primary" />
+              <div className="absolute top-2 right-2 text-[#3C5759]">
+                <CheckCircle size={16} fill="currentColor" className="text-white fill-[#3C5759]" />
               </div>
             )}
+            
             <option.icon size={28} className={selectedStatus === option.id ? 'text-primary' : 'text-third'} />
             <div className="text-center">
               <p className={`text-sm font-bold ${selectedStatus === option.id ? 'text-primary' : 'text-secondary'}`}>{option.label}</p>
@@ -117,6 +157,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
       {/* Dynamic Form */}
       <div className="p-4 md:p-8 border border-third border-dashed rounded-2xl bg-gray-50/50">
+        
+        {/* FORM BEKERJA */}
         {selectedStatus === 'Bekerja' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <InputDropdownEdit
@@ -128,39 +170,36 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               onSelect={(val) => setPekerjaan({ ...pekerjaan, posisi: val })}
             />
             <InputDropdownEdit
-            label="Nama Perusahaan"
-            value={pekerjaan.nama_perusahaan}
-            options={perusahaanList} // <-- Gunakan state perusahaanList
-            placeholder="Ketik atau pilih nama perusahaan" // <-- Sesuaikan placeholder
-            isRequired={true}
-            onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
-          />
+              label="Nama Perusahaan"
+              value={pekerjaan.nama_perusahaan}
+              options={perusahaanList}
+              placeholder="Ketik atau pilih nama perusahaan"
+              isRequired={true}
+              onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
+            />
             <YearsInput
               label="Tahun Masuk"
               isRequired={true}
               value={tahunMulai}
               onSelect={(val) => setTahunMulai(val)}
             />
-            <YearsInput
-              label="Tahun Selesai"
-              text='(opsional)'
-              value={tahunSelesai}
-              onSelect={(val) => setTahunSelesai(val)}
-            />
-            <div className='md:col-span-2'>
+            
+            {/* Panggil fungsi Helper Tahun Selesai */}
+            {renderTahunSelesai("Tahun Selesai")}
+
+            <div className='md:col-span-2 mt-2'>
               <LocationSelector
-                // Jika LocationSelector punya prop untuk value, masukkan di sini
                 onCitySelect={(cityId) => setPekerjaan({ ...pekerjaan, id_kota: cityId })}
               />
             </div>
           </div>
         )}
 
+        {/* FORM KULIAH */}
         {selectedStatus === 'Kuliah' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <UniversitySelector
-                // Pastikan UniversitySelector menerima value dari state universitas
                 onUnivSelect={(val) => setUniversitas({ ...universitas, nama_universitas: val })}
                 onJurusanSelect={(val) => setUniversitas({ ...universitas, id_jurusanKuliah: val })}
               />
@@ -180,10 +219,13 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               onSelect={(val) => setUniversitas({ ...universitas, jenjang: val })}
             />
             <YearsInput label="Tahun Masuk" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            <YearsInput label="Tahun Lulus" value={tahunSelesai} onSelect={(val) => setTahunSelesai(val)} />
+            
+            {/* Panggil fungsi Helper Tahun Selesai */}
+            {renderTahunSelesai("Tahun Lulus")}
           </div>
         )}
 
+        {/* FORM WIRAUSAHA */}
         {selectedStatus === 'Wirausaha' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
@@ -197,17 +239,19 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             </div>
             <SmoothDropdown
               label="Bidang Usaha"
-              // Cari label dari ID yang tersimpan
               value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
               options={bidangUsahaList}
               isRequired={true}
               onSelect={(val) => setWirausaha({ ...wirausaha, id_bidang: bidangUsahaMap[val] || val })}
             />
             <YearsInput label="Tahun Mulai" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            <YearsInput label="Tahun Berakhir" value={tahunSelesai} onSelect={(val) => setTahunSelesai(val)} />
+            
+            {/* Panggil fungsi Helper Tahun Selesai */}
+            {renderTahunSelesai("Tahun Berakhir")}
           </div>
         )}
 
+        {/* MENCARI KERJA */}
         {selectedStatus === 'Mencari Kerja' && (
           <p className="text-center text-sm text-third py-4 italic">Semangat! Tetaplah berusaha dan tingkatkan skill Anda.</p>
         )}
@@ -217,7 +261,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       <div className="pt-4 flex justify-between">
         <button
           type="button"
-          onClick={onBack} // Langsung onBack karena useEffect sudah menyimpan data
+          onClick={onBack}
           className="flex items-center gap-2 px-4 md:px-6 py-2 border border-fourth rounded-xl text-xs md:text-sm font-bold text-secondary hover:bg-fourth transition-all cursor-pointer"
         >
           <ArrowLeft size={16} /> Kembali

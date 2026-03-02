@@ -1,111 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import { User, ArrowLeft, ArrowRight, Upload, Image as ImageIcon, MapPin, X, ChevronDown, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { User, ArrowLeft, ArrowRight, Upload, Image as ImageIcon, MapPin, X } from "lucide-react";
 import YearsInput from "../../components/YearsInput";
 import SosmedInput from "../../components/SosmedInput";
 import DateOfBirthInput from "../../components/DateOfBirthInput";
 import { masterDataApi } from "../../api/masterData";
 
-// --- MULTI-SELECT DROPDOWN (Skills) ---
-const MultiSelectDropdown = ({ label, options = [], selected = [], onChange, placeholder }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const clickOut = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
-    document.addEventListener("mousedown", clickOut);
-    return () => document.removeEventListener("mousedown", clickOut);
-  }, []);
-
-  const toggle = (id) => {
-    onChange(selected.includes(id) ? selected.filter(i => i !== id) : [...selected, id]);
-  };
-
-  const getLabel = (id) => {
-    const found = options.find(opt => opt.id === id);
-    return found ? found.nama : id;
-  };
-
-  const filtered = options.filter(opt => opt.nama.toLowerCase().includes(search.toLowerCase()));
-
-  return (
-    <div className="space-y-1 relative" ref={ref}>
-      <label className="text-[11px] font-bold text-secondary uppercase">{label}</label>
-      <div 
-        className="w-full px-2 py-1.5 min-h-[42px] bg-white border border-fourth rounded-xl focus-within:ring-2 focus-within:ring-primary flex flex-wrap gap-1 items-center cursor-text" 
-        onClick={() => setIsOpen(true)}
-      >
-        {!selected.length && !search && (
-          <span className="text-gray-400 text-xs absolute left-2 pointer-events-none">{placeholder}</span>
-        )}
-        {selected.map((id, idx) => (
-          <span key={idx} className="bg-fourth text-secondary px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 border border-slate-200">
-            {getLabel(id)} 
-            <X size={10} className="cursor-pointer hover:text-red-500" onClick={(e) => { e.stopPropagation(); toggle(id); }} />
-          </span>
-        ))}
-        <input 
-          type="text" 
-          className="flex-1 min-w-[60px] outline-none bg-transparent text-sm h-full" 
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)} 
-          onFocus={() => setIsOpen(true)} 
-        />
-        <ChevronDown size={14} className="text-gray-400 ml-auto" />
-      </div>
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-fourth rounded-xl shadow-lg max-h-48 overflow-y-auto">
-          {filtered.length ? filtered.map((opt) => (
-            <div 
-              key={opt.id} 
-              className={`px-3 py-2 text-xs cursor-pointer hover:bg-blue-50 flex justify-between ${selected.includes(opt.id) ? 'text-primary font-bold bg-blue-50/50' : 'text-slate-600'}`} 
-              onClick={() => toggle(opt.id)}
-            >
-              <span>{opt.nama}</span> 
-              {selected.includes(opt.id) && <Check size={12} />}
-            </div>
-          )) : (
-            <div className="px-3 py-2 text-xs text-gray-400 text-center">Skill tidak ditemukan</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- SINGLE SELECT DROPDOWN ---
-const SelectInput = ({ label, value, options, onSelect, placeholder }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const clickOut = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
-    document.addEventListener("mousedown", clickOut);
-    return () => document.removeEventListener("mousedown", clickOut);
-  }, []);
-
-  return (
-    <div className="space-y-1 relative" ref={ref}>
-      <label className="text-[11px] font-bold text-secondary uppercase">{label} <span className="text-red-500">*</span></label>
-      <div onClick={() => setIsOpen(!isOpen)} className="w-full px-3 py-2.5 bg-white border border-fourth rounded-xl text-sm flex justify-between items-center cursor-pointer hover:border-primary transition-all">
-        <span className={value ? "text-slate-800" : "text-gray-400"}>{value || placeholder}</span>
-        <div className="flex gap-1 items-center">
-          {value && <X size={14} className="text-gray-400 hover:text-red-500" onClick={(e) => { e.stopPropagation(); onSelect(""); }} />}
-          <ChevronDown size={16} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </div>
-      </div>
-      {isOpen && (
-        <div className="absolute z-20 w-full mt-1 bg-white border border-fourth rounded-xl shadow-xl max-h-48 overflow-y-auto">
-          {options.map((opt, idx) => (
-            <div key={idx} onClick={() => { onSelect(opt); setIsOpen(false); }} className={`px-3 py-2 text-xs cursor-pointer hover:bg-fourth ${value === opt ? "font-bold text-primary" : "text-slate-600"}`}>
-              {opt}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+// --- IMPORT KOMPONEN YANG SUDAH DIPISAH ---
+import SelectInput from "../../components/admin/SelectInput";
+import MultiSelectDropdown from "../../components/admin/MultiSelectDropdown";
 
 export default function Step2Profile({ onNext, onBack, formData, updateFormData }) {
   const [preview, setPreview] = useState(() => {
@@ -115,24 +17,31 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
   });
   
   const [jurusanOpts, setJurusanOpts] = useState([]);
-  const [jurusanMapRev, setJurusanMapRev] = useState({});
-  const [jurusanMap, setJurusanMap] = useState({});
   const [skillOptions, setSkillOptions] = useState([]);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    // Fetch Jurusan & format langsung ke bentuk Object { value, label }
     masterDataApi.getJurusan().then((res) => {
       const data = res.data.data || [];
-      setJurusanOpts(data.map(j => j.nama_jurusan || j.nama));
-      const map = {}, mapRev = {};
-      data.forEach(j => { map[j.nama_jurusan || j.nama] = j.id; mapRev[j.id] = j.nama_jurusan || j.nama; });
-      setJurusanMap(map); setJurusanMapRev(mapRev);
-    }).catch(() => setJurusanOpts(["RPL", "TKJ", "MM"]));
+      const formattedData = data.map(j => ({
+        value: j.id, 
+        label: j.nama_jurusan || j.nama
+      }));
+      setJurusanOpts(formattedData);
+    }).catch(() => {
+      // Fallback (Data Darurat) jika API gagal/loading lama
+      setJurusanOpts([
+        { value: "RPL", label: "RPL" },
+        { value: "TKJ", label: "TKJ" },
+        { value: "MM", label: "MM" }
+      ]);
+    });
 
     masterDataApi.getSkills().then((res) => {
-        setSkillOptions(res.data.data || []);
+      setSkillOptions(res.data.data || []);
     }).catch(() => {
-        setSkillOptions([{ id: 1, nama: "ReactJS" }, { id: 2, nama: "NodeJS" }]);
+      setSkillOptions([{ id: 1, nama: "ReactJS" }, { id: 2, nama: "NodeJS" }]);
     });
   }, []);
 
@@ -162,7 +71,6 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     if (!formData.alamat?.trim()) errs.alamat = 'Alamat wajib diisi';
     if (!formData.tahun_masuk) errs.tahun_masuk = 'Tahun masuk wajib diisi';
 
-    // No HP: required, min 10, max 13
     if (!formData.no_hp?.trim()) {
       errs.no_hp = 'No HP wajib diisi';
     } else {
@@ -171,14 +79,12 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
       else if (digits.length > 13) errs.no_hp = 'No HP maksimal 13 digit';
     }
 
-    // Tahun lulus: must be >= 3 years after tahun masuk
     if (formData.tahun_lulus) {
       if (formData.tahun_masuk && (parseInt(formData.tahun_lulus) - parseInt(formData.tahun_masuk)) < 3) {
         errs.tahun_lulus = 'Tahun lulus harus minimal 3 tahun setelah tahun masuk';
       }
     }
 
-    // Tanggal lahir: must be before tahun masuk
     if (formData.tanggal_lahir && formData.tahun_masuk) {
       const birthYear = new Date(formData.tanggal_lahir).getFullYear();
       if (birthYear >= parseInt(formData.tahun_masuk)) {
@@ -193,13 +99,18 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
-      // Scroll to top to show errors
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     setErrors({});
     onNext();
   };
+
+  // Opsi statis untuk Jenis Kelamin menggunakan format baru { value, label }
+  const genderOptions = [
+    { value: "Laki-laki", label: "Laki-laki" },
+    { value: "Perempuan", label: "Perempuan" }
+  ];
 
   return (
     <div className="space-y-6">
@@ -220,13 +131,25 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         <div className="space-y-1">
-          <SelectInput label="Jurusan" placeholder="Pilih jurusan" options={jurusanOpts} value={jurusanMapRev[formData.id_jurusan] || formData.id_jurusan} onSelect={(val) => { updateFormData({ id_jurusan: val ? jurusanMap[val] : "" }); setErrors(prev => ({ ...prev, id_jurusan: undefined })); }} />
+          <SelectInput 
+            label="Jurusan" 
+            placeholder="Pilih jurusan" 
+            options={jurusanOpts} 
+            value={formData.id_jurusan || ""} 
+            onSelect={(val) => { updateFormData({ id_jurusan: val }); setErrors(prev => ({ ...prev, id_jurusan: undefined })); }} 
+          />
           {errors.id_jurusan && <p className="text-xs text-red-500 mt-0.5">{errors.id_jurusan}</p>}
         </div>
 
         {/* --- Baris 2 --- */}
         <div className="space-y-1">
-          <SelectInput label="Jenis Kelamin" placeholder="Pilih..." options={["Laki-laki", "Perempuan"]} value={formData.jenis_kelamin || ""} onSelect={(val) => { updateFormData({ jenis_kelamin: val }); setErrors(prev => ({ ...prev, jenis_kelamin: undefined })); }} />
+          <SelectInput 
+            label="Jenis Kelamin" 
+            placeholder="Pilih..." 
+            options={genderOptions} 
+            value={formData.jenis_kelamin || ""} 
+            onSelect={(val) => { updateFormData({ jenis_kelamin: val }); setErrors(prev => ({ ...prev, jenis_kelamin: undefined })); }} 
+          />
           {errors.jenis_kelamin && <p className="text-xs text-red-500 mt-0.5">{errors.jenis_kelamin}</p>}
         </div>
 
@@ -304,7 +227,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
            </div>
         </div>
 
-        {/* --- Baris 7 (SEJAJAR: SOSMED & SKILL) --- */}
+        {/* --- Baris 7 --- */}
         <div className="md:col-span-1">
           <SosmedInput 
             value={formData.social_media} 
@@ -312,7 +235,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           />
         </div>
         
-        <div className="md:col-span-1 pt-[2px]"> {/* Sedikit padding top agar label sejajar secara visual */}
+        <div className="md:col-span-1 pt-[2px]">
           <MultiSelectDropdown 
             label="Keahlian / Skills" 
             placeholder="Cari skill..." 
