@@ -96,7 +96,7 @@ export default function StatusKarir() {
         }
         fetchUniversitas();
       } else if (category === "prodi") {
-        await adminApi.createStatusKarierProdi({ nama_jurusan: data.nama_prodi || data.nama }); 
+        await adminApi.createStatusKarierProdi({ nama_prodi: data.nama_prodi || data.nama }); 
         fetchProdi();
       } else if (category === "wirausaha") {
         await adminApi.createStatusKarierBidangUsaha({ nama_bidang: data.nama_bidang || data.nama }); 
@@ -133,7 +133,7 @@ export default function StatusKarir() {
         
         fetchUniversitas();
       } else if (category === "prodi") {
-        await adminApi.updateStatusKarierProdi(id, { nama_jurusan: data.nama_prodi || data.nama || Object.values(data)[0] }); 
+        await adminApi.updateStatusKarierProdi(id, { nama_prodi: data.nama_prodi || data.nama || Object.values(data)[0] }); 
         fetchProdi();
       } else if (category === "wirausaha") {
         await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: data.nama_bidang || data.nama || Object.values(data)[0] }); 
