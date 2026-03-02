@@ -4,8 +4,6 @@ import YearsInput from "../../components/YearsInput";
 import SosmedInput from "../../components/SosmedInput";
 import DateOfBirthInput from "../../components/DateOfBirthInput";
 import { masterDataApi } from "../../api/masterData";
-
-// --- IMPORT KOMPONEN YANG SUDAH DIPISAH ---
 import SelectInput from "../../components/admin/SelectInput";
 import MultiSelectDropdown from "../../components/admin/MultiSelectDropdown";
 
@@ -29,14 +27,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         label: j.nama_jurusan || j.nama
       }));
       setJurusanOpts(formattedData);
-    }).catch(() => {
-      // Fallback (Data Darurat) jika API gagal/loading lama
-      setJurusanOpts([
-        { value: "RPL", label: "RPL" },
-        { value: "TKJ", label: "TKJ" },
-        { value: "MM", label: "MM" }
-      ]);
-    });
+    })
 
     masterDataApi.getSkills().then((res) => {
       setSkillOptions(res.data.data || []);
