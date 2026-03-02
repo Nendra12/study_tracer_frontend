@@ -10,7 +10,9 @@ import {
   AlertCircle,
   Loader2,
   FileText,
-  ArrowLeft
+  ArrowLeft,
+  Tag,
+  Timer
 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
@@ -183,7 +185,9 @@ const JobDetail = () => {
                     { icon: MapPin, label: "Lokasi", value: job.lokasi || job.perusahaan?.kota?.nama },
                     { icon: Clock, label: "Tipe Pekerjaan", value: job.tipe_pekerjaan },
                     { icon: Calendar, label: "Batas Melamar", value: job.lowongan_selesai },
-                    { icon: Briefcase, label: "Perusahaan", value: job.perusahaan?.nama }
+                    { icon: Briefcase, label: "Perusahaan", value: job.perusahaan?.nama },
+                    { icon: Timer, label: "Jam Mulai", value: job.jam_mulai || '-' },
+                    { icon: Timer, label: "Jam Berakhir", value: job.jam_berakhir || '-' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-3 text-gray-600 group/item">
                       <div className="p-2 bg-gray-50 rounded-lg text-[#3C5759] group-hover/item:bg-[#3C5759] group-hover/item:text-white transition-colors shrink-0 mt-0.5">
@@ -196,6 +200,27 @@ const JobDetail = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Skills */}
+                {job.skills && job.skills.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="flex items-start gap-3 text-gray-600">
+                      <div className="p-2 bg-gray-50 rounded-lg text-[#3C5759] shrink-0 mt-0.5">
+                        <Tag size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">Skills</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {job.skills.map((skill) => (
+                            <span key={skill.id} className="px-2.5 py-1 bg-[#E8F0F0] text-[#3C5759] text-[11px] font-bold rounded-lg">
+                              {skill.nama}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Tips Card */}

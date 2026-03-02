@@ -8,11 +8,7 @@ import {
   X,
   Check
 } from "lucide-react";
-
-// Periksa apakah path utility alert ini sudah sesuai dengan foldermu
 import { alertConfirm } from "../../utilitis/alert"; 
-
-// --- IMPORT KOMPONEN YANG SUDAH DIPISAH ---
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import Pagination from "./Pagination";
 

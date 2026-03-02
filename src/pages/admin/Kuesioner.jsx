@@ -78,6 +78,8 @@ export default function Kuesioner() {
     });
 
     const handleStatus = async (id, data) => {
+        const confirm = await alertConfirm(`Ubah status kuesioner menjadi "${data}"?`)
+        if (!confirm.isConfirmed) return;
         try {
             setLoadingUpdate(true)
             let bodyPas = {

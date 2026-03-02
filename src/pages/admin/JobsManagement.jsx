@@ -12,7 +12,7 @@ import {
 
 import { adminApi } from "../../api/admin";
 import TambahLowongan from "./TambahLowongan";
-import { alertSuccess, alertError } from "../../utilitis/alert";
+import { alertSuccess, alertError, alertConfirm } from "../../utilitis/alert";
 
 // --- IMPORT KOMPONEN YANG SUDAH DIPISAH ---
 import JobCard from "../../components/admin/JobCard";
@@ -82,10 +82,26 @@ export default function ManajemenPekerjaan() {
   }, [fetchJobs, fetchStats]);
 
   // --- HANDLERS ---
-  const handleApprove = async (id) => { await adminApi.approveLowongan(id); alertSuccess("Lowongan disetujui"); fetchJobs(); fetchStats(); };
-  const handleReject = async (id) => { await adminApi.rejectLowongan(id); alertSuccess("Lowongan ditolak"); fetchJobs(); fetchStats(); };
-  const handleDelete = async (id) => { if (window.confirm("Yakin hapus lowongan ini?")) { await adminApi.deleteLowongan(id); alertSuccess("Lowongan dihapus"); fetchJobs(); fetchStats(); } };
-  const handleRepost = async (id) => { try { await adminApi.repostLowongan(id); alertSuccess("Berhasil diposting ulang"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal memposting ulang'); } };
+  const handleApprove = async (id) => {
+    const result = await alertConfirm("Setujui lowongan ini?");
+    if (!result.isConfirmed) return;
+    try { await adminApi.approveLowongan(id); alertSuccess("Lowongan disetujui"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal menyetujui lowongan'); }
+  };
+  const handleReject = async (id) => {
+    const result = await alertConfirm("Tolak lowongan ini?");
+    if (!result.isConfirmed) return;
+    try { await adminApi.rejectLowongan(id); alertSuccess("Lowongan ditolak"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal menolak lowongan'); }
+  };
+  const handleDelete = async (id) => {
+    const result = await alertConfirm("Yakin hapus lowongan ini?");
+    if (!result.isConfirmed) return;
+    try { await adminApi.deleteLowongan(id); alertSuccess("Lowongan dihapus"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal menghapus lowongan'); }
+  };
+  const handleRepost = async (id) => {
+    const result = await alertConfirm("Posting ulang lowongan ini?");
+    if (!result.isConfirmed) return;
+    try { await adminApi.repostLowongan(id); alertSuccess("Berhasil diposting ulang"); fetchJobs(); fetchStats(); } catch (err) { alertError(err.response?.data?.message || 'Gagal memposting ulang'); }
+  };
   const handleEdit = (job) => { setEditingJob(job); setIsModalOpen(true); };
 
   // --- FILTER & PAGINATION ---
