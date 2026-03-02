@@ -35,8 +35,15 @@ export default function InputDropdownEdit({
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
-        // Jika tidak memilih apapun dan dropdown tertutup, kembalikan ke selected terakhir
-        if (selected) setQuery(selected);
+        
+        // JIKA ada ketikan (query) dan berbeda dari yang sudah dipilih, simpan yang baru!
+        if (query && query !== selected) {
+           handleSelect(query); 
+        } 
+        // JIKA input malah dikosongkan, kembalikan ke pilihan terakhir (selected)
+        else if (!query && selected) {
+           setQuery(selected);
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
