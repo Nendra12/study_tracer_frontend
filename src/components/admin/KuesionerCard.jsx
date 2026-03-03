@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
 import { useNavigate } from 'react-router-dom';
+import { adminApi } from '../../api/admin';
 
 
 export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loadingHapus }) => {
@@ -32,8 +33,24 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
         hapus(id)
     }
 
-    const durasi = hitungMundur(tanggal_selesai)
-    // console.log(id)
+    let durasi = ''
+    if (new Date(tanggal_selesai) <= new Date()) {
+        if (tanggal_selesai != null) {
+            durasi = "selesai"
+            const action = async () => {
+                let bodyPas = {
+                    "status": 'hidden'
+                }
+                await adminApi.updateStatusKuesioner(id, bodyPas)
+            }
+            action()
+        } else {
+            durasi = '-'
+        }
+    } else {
+        durasi = hitungMundur(tanggal_selesai)
+    }
+
     return (
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
             <div className="flex justify-between items-start mb-4">
@@ -47,7 +64,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                     </span>
                     <button onClick={() => handleHapus(id)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
                         {
-                            loadingHapus? (
+                            loadingHapus ? (
                                 <>
                                     <Loader2 size={14} className="animate-spin" />
                                 </>
@@ -71,12 +88,12 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                     {status_karir.nama}
                 </span>
             </div>
-            
+
             <div className='flex gap-2'>
                 <button onClick={() => navigate(`/wb-admin/kuisoner/preview-kuesioner/${id}`)} className="mb-3  flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
                     <ScanEye size={14} /> Preview
                 </button>
-                <button onClick={() => navigate(`/wb-admin/kuisoner/tinjau-jawaban/${id}`)}  className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
+                <button onClick={() => navigate(`/wb-admin/kuisoner/tinjau-jawaban/${id}`)} className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
                     <FolderSync size={14} />Tinjau Jawaban
                 </button>
             </div>
@@ -91,7 +108,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                             loadingUpdate ? (
                                 <>
                                     <Loader2 size={14} className="animate-spin" />
-                                    
+
                                 </>
                             ) : (
                                 <>
@@ -108,7 +125,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                                 loadingUpdate ? (
                                     <>
                                         <Loader2 size={14} className="animate-spin" />
-                                        
+
                                     </>
                                 ) : (
                                     <>
@@ -126,7 +143,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                                 loadingUpdate ? (
                                     <>
                                         <Loader2 size={14} className="animate-spin" />
-                                        
+
                                     </>
                                 ) : (
                                     <>
@@ -144,7 +161,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                                 loadingUpdate ? (
                                     <>
                                         <Loader2 size={14} className="animate-spin" />
-                                        
+
                                     </>
                                 ) : (
                                     <>
@@ -158,7 +175,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                                 loadingUpdate ? (
                                     <>
                                         <Loader2 size={14} className="animate-spin" />
-                                        
+
                                     </>
                                 ) : (
                                     <>

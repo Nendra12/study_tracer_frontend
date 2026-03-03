@@ -146,10 +146,6 @@ export default function LihatJawaban() {
     return matchesSearch && matchesJurusan && matchesTahun
   })
 
-  // filteredAlumni.map((alumni) => {
-  //   console.log(alumni.alumni.foto)
-  // })
-  // Get unique jurusan for filter options
   const jurusanOptions = ["Semua Jurusan", ...new Set(dataAlumni.map(a => a.alumni.jurusan).filter(Boolean))]
 
   // Get unique tahun for filter options

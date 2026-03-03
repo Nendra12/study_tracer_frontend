@@ -3,14 +3,10 @@ import {
     Plus,
     Trash2,
     Save,
-    ChevronLeft,
     GripVertical,
     Calendar as CalendarIcon,
-    Type,
-    AlignLeft,
     LayoutList,
     ArrowLeft,
-    Archive,
     AlertCircle
 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -20,6 +16,7 @@ import RichTextEditor from '../../components/admin/RichTextEditor';
 import { adminApi } from '../../api/admin';
 import { alertSuccess, alertError } from '../../utilitis/alert';
 import { parseISO, isBefore } from 'date-fns';
+import TambahKuesionerSkeleton from '../../components/admin/TambahKuesionerSkeleton';
 
 const UpdateKuesioner = () => {
     // State untuk Data Kuesioner (Box Kiri)
@@ -30,6 +27,7 @@ const UpdateKuesioner = () => {
     const [statusKarirData, setStatusKarirData] = useState([])
     const [errors, setErrors] = useState({})
     const [isValidating, setIsValidating] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const [formData, setFormData] = useState({
         title: '',
@@ -47,6 +45,7 @@ const UpdateKuesioner = () => {
 
     const fetchData = async (id) => {
         try {
+            setLoading(true)
             const [dataKarir, kuesionerDatas] = await Promise.all([
                 adminApi.getStatus().catch(() => null),
                 adminApi.getKuesionerDetail(id).catch(() => null)
@@ -96,6 +95,8 @@ const UpdateKuesioner = () => {
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -277,6 +278,12 @@ const UpdateKuesioner = () => {
 
         await saveKuisioner(payload)
         setIsValidating(false);
+    }
+
+    if (loading) {
+        return (
+            <TambahKuesionerSkeleton />
+        )
     }
 
     // console.log(statusKarir)
