@@ -122,8 +122,8 @@ export default function SosmedInput({ value, onChange }) {
 
           return (
             <div key={index} className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-              <div className={`flex-1 flex items-center bg-white border rounded-xl transition-all duration-300
-                ${openDropdownIndex === index ? 'border-primary ring-2 ring-primary/5' : 'border-fourth hover:border-primary/50'}`}>
+              <div className={`flex-1 flex items-center bg-white border rounded-xl transition-all duration-300 relative
+                ${openDropdownIndex === index ? 'border-primary ring-2 ring-primary/5 z-30' : 'border-fourth hover:border-primary/50 z-10'}`}>
 
                 {/* Custom Dropdown */}
                 <div className="relative border-r border-fourth">
@@ -136,13 +136,18 @@ export default function SosmedInput({ value, onChange }) {
                     <ChevronDown size={14} className={`text-third transition-transform duration-300 ${openDropdownIndex === index ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {openDropdownIndex === index && (
-                    <div className="absolute left-0 top-full z-30 mt-2 w-48 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden">
-                      <ul className="py-1">
+                 {openDropdownIndex === index && (
+                  <div 
+                    className="absolute left-0 top-full z-50 mt-2 w-48 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ul className="py-1">
                         {availablePlatforms.map((p) => (
                           <li
                             key={p.id}
-                            onClick={() => {
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               updateSocial(index, 'platformId', p.id);
                               setOpenDropdownIndex(null);
                             }}
@@ -184,7 +189,7 @@ export default function SosmedInput({ value, onChange }) {
 
       {/* Overlay Close Dropdown */}
       {openDropdownIndex !== null && (
-        <div className="fixed inset-0 z-20" onClick={() => setOpenDropdownIndex(null)} />
+        <div className="fixed inset-0 z-20 pointer-events-none" onClick={() => setOpenDropdownIndex(null)} />
       )}
     </div>
   );
