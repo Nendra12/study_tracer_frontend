@@ -129,8 +129,15 @@ export default function Dashboard() {
     return dist;
   }, [dashData]);
 
+  console.log(statusDistribution)
+
   function hitungPersen(data) {
-    const bagian = data[0]?.total ?? 0
+    let bagian = 0
+    data.map((temp) => {
+      if (temp.status === "Bekerja") {
+        bagian = temp.total ?? 0
+      }
+    })
     const total = data.reduce((sum, item) => sum + item.total, 0);
     return Math.round((bagian / total) * 100);
   }

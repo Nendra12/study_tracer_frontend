@@ -3,12 +3,25 @@ import { Link, useParams } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { useEffect, useState } from "react";
 import ReviewKuesionerSkeleton from "../../components/admin/ReviewKuesionerSkeleton";
+import { parseISO, format } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
 
 export default function PreviewKuesioner() {
     const { id } = useParams()
     const [questions, setQuestions] = useState([])
     const [loading, setLoading] = useState(false)
     const [dataHeader, setDataHeader] = useState({})
+
+    // Format datetime untuk display
+    const formatDateTime = (dateTimeString) => {
+        if (!dateTimeString) return '-';
+        try {
+            const date = parseISO(dateTimeString);
+            return format(date, 'dd MMMM yyyy, HH:mm', { locale: idLocale });
+        } catch (e) {
+            return dateTimeString;
+        }
+    };
 
     const fetchData = async (id) => {
         try {
@@ -88,7 +101,7 @@ export default function PreviewKuesioner() {
                                                 Waktu Mulai
                                             </p>
                                             <p className="text-sm font-medium text-gray-800">
-                                                {dataHeader.tanggal_mulai ? dataHeader.tanggal_mulai : ''}
+                                                {formatDateTime(dataHeader.tanggal_mulai)}
                                             </p>
                                         </div>
 
@@ -97,7 +110,7 @@ export default function PreviewKuesioner() {
                                                 Waktu Selesai
                                             </p>
                                             <p className="text-sm font-semibold text-red-600">
-                                                {dataHeader.tanggal_selesai ? dataHeader.tanggal_selesai : ''}
+                                                {formatDateTime(dataHeader.tanggal_selesai)}
                                             </p>
                                         </div>
 

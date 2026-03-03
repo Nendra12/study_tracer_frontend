@@ -378,7 +378,7 @@ export default function LihatJawabanDetail() {
                     src={alumni.foto ? `${STORAGE_BASE_URL}/${alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.id}`}
                     alt={alumni.nama}
                     className="w-full h-full object-cover"
-                    onError={(e) => { e.target.src = 'https://via.placeholder.com/150' }}
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150' }}
                   />
                 </div>
               </div>
@@ -547,7 +547,7 @@ export default function LihatJawabanDetail() {
                       )
                     )}
 
-                
+
                   </div>
 
                 </div>

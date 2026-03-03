@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -96,6 +96,13 @@ const RichTextEditor = ({ content, onChange, placeholder = "Tulis di sini...", m
             },
         },
     });
+
+    // Sync content when prop changes (untuk update page)
+    useEffect(() => {
+        if (editor && content !== editor.getHTML()) {
+            editor.commands.setContent(content || '');
+        }
+    }, [content, editor]);
 
     const handleImageUpload = (event) => {
         const file = event.target.files?.[0];

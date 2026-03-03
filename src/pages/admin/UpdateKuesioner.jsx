@@ -1,611 +1,539 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
-    Eye,
-    Save,
-    X,
     Plus,
-    FileQuestionMark,
+    Trash2,
+    Save,
+    ChevronLeft,
+    GripVertical,
+    Calendar as CalendarIcon,
+    Type,
+    AlignLeft,
+    LayoutList,
     ArrowLeft,
-    Loader2,
-    CheckCircle2,
     Archive,
-} from "lucide-react";
-import SmoothDropdown from "../../components/admin/SmoothDropdown";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { adminApi } from "../../api/admin";
-import { masterDataApi } from "../../api/masterData";
-import { alertError, alertSuccess, alertConfirm } from "../../utilitis/alert";
-import TinjauQues from "../../components/admin/TinjauQues";
+    AlertCircle
+} from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import SmoothDropdown from '../../components/admin/SmoothDropdown';
+import DateRangePicker from '../../components/DatePicker';
+import RichTextEditor from '../../components/admin/RichTextEditor';
+import { adminApi } from '../../api/admin';
+import { alertSuccess, alertError } from '../../utilitis/alert';
+import { parseISO, isBefore } from 'date-fns';
 
-export default function UpdateKuesioner() {
-    const navigate = useNavigate();
-    const { id } = useParams(); // ID pertanyaan dari route
+const UpdateKuesioner = () => {
+    // State untuk Data Kuesioner (Box Kiri)
 
-    // State untuk kategori yang dipilih
-    const [selectedCategory, setSelectedCategory] = useState("Bekerja");
-    const [questionText, setQuestionText] = useState("");
-    const [idQues, setIdQues] = useState(1);
-    const [currentStatus, setCurrentStatus] = useState("publish");
+    const { id } = useParams()
+    const navigate = useNavigate()
+    const [statusKarir, setStatusKarir] = useState('')
+    const [statusKarirData, setStatusKarirData] = useState([])
+    const [errors, setErrors] = useState({})
+    const [isValidating, setIsValidating] = useState(false)
 
-    const [options, setOptions] = useState([
-        "Bekerja Penuh Waktu",
-        "Tidak Bekerja"
-    ]);
-
-    const [structureData, setstructureData] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [savingDraft, setSavingDraft] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [kuesionerId, setKuesionerId] = useState(null);
-
-    // State untuk modal tambah judul
-    const [showModal, setShowModal] = useState(false);
-    const [newJudulPertanyaan, setNewJudulPertanyaan] = useState("");
-    const [savingJudul, setSavingJudul] = useState(false);
-
-    useEffect(() => {
-        const fetchAll = async () => {
-            try {
-                setLoading(true);
-
-                // Fetch kuesioner structure dan status
-                const [kuesionerRes, statusRes, pertanyaanRes] = await Promise.all([
-                    adminApi.getKuesioner().catch(() => null),
-                    masterDataApi.getStatus().catch(() => null),
-                    adminApi.getPertanyaanAll().catch(() => null)
-                ]);
-
-                let statusData = [];
-
-                if (statusRes?.data?.data && Array.isArray(statusRes.data.data)) {
-                    statusData = statusRes.data.data;
-                } else if (Array.isArray(statusRes?.data)) {
-                    statusData = statusRes.data;
-                }
-
-                let stru = {};
-
-                statusData.forEach((st) => {
-                    stru[st.nama] = {};
-                });
-
-                kuesionerRes?.data?.data?.data?.forEach((dat) => {
-                    const statusNama = dat?.status?.nama;
-                    stru[statusNama] = [
-                        dat.section_ques
-                    ];
-                });
-
-                setstructureData(stru);
-
-                // Fetch pertanyaan yang akan di-update
-                let pertanyaanData = [];
-                if (pertanyaanRes?.data?.data?.data) {
-                    pertanyaanData = pertanyaanRes.data.data.data;
-                } else if (pertanyaanRes?.data?.data && Array.isArray(pertanyaanRes.data.data)) {
-                    pertanyaanData = pertanyaanRes.data.data;
-                } else if (Array.isArray(pertanyaanRes?.data)) {
-                    pertanyaanData = pertanyaanRes.data;
-                }
-
-                // Cari pertanyaan berdasarkan ID
-                const questionToEdit = pertanyaanData.find(q => q.id === parseInt(id));
-
-                if (questionToEdit) {
-                    // Set form dengan data existing
-                    setQuestionText(questionToEdit.isi_pertanyaan);
-                    setIdQues(questionToEdit.id_sectionques);
-                    setCurrentStatus(questionToEdit.status_pertanyaan || 'publish');
-
-                    // Set opsi jawaban
-                    if (questionToEdit.opsi && questionToEdit.opsi.length > 0) {
-                        setOptions(questionToEdit.opsi.map(o => o.opsi));
-                    } else {
-                        setOptions(["Opsi 1", "Opsi 2"]);
-                    }
-
-                    // console.log("eek", questionToEdit.kuisoner.status)
-
-                    // Set kategori berdasarkan status dari kuesioner
-                    const statusName = questionToEdit.kuesioner?.status?.nama_status;
-                    if (statusName) {
-                        setSelectedCategory(statusName);
-                    }
-
-
-
-
-                    // Set kuesioner ID
-                    const quesKuesionerId = questionToEdit.section?.id_kuesioner || questionToEdit.kuesioner?.id;
-                    setKuesionerId(quesKuesionerId);
-                } else {
-                    setError("Pertanyaan tidak ditemukan");
-                }
-
-            } catch (error) {
-                console.error("Failed to fetch data", error);
-                setError("Gagal memuat data kuesioner");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAll();
-    }, [id]);
-
-
-    const addOption = () => setOptions([...options, ""]);
-
-    const handleOptionChange = (index, value) => {
-        const newOptions = [...options];
-        newOptions[index] = value;
-        setOptions(newOptions);
-    };
-
-    const removeOption = (index) => {
-        if (options.length > 2) {
-            const newOptions = options.filter((_, i) => i !== index);
-            setOptions(newOptions);
-        }
-    };
-
-    let dataJudul = [];
-    structureData[selectedCategory]?.[0]?.forEach((items) => {
-        dataJudul.push(items.judul_pertanyaan);
+    const [formData, setFormData] = useState({
+        title: '',
+        id_status: '',
+        deskripsi: '',
+        tanggalMulai: '',
+        tanggalSelesai: '',
+        status: ''
     });
 
-    const onSelect = (selectedTitle) => {
-        // Cari ID berdasarkan judul yang diklik di dropdown
-        const selectedItem = structureData[selectedCategory]?.[0]?.find(
-            (item) => item.judul_pertanyaan === selectedTitle
-        );
+    // State untuk Pertanyaan (Box Kanan)
+    const [questions, setQuestions] = useState([
+        { id: 1, text: '', options: ['Opsi 1'] }
+    ]);
 
-        if (selectedItem) {
-            return selectedItem.id;
-        }
-    };
-
-    const handleUpdateWithStatus = async (status) => {
+    const fetchData = async (id) => {
         try {
-            // Validasi
-            if (!questionText.trim()) {
-                await alertError("Pertanyaan wajib diisi!")
-                return;
+            const [dataKarir, kuesionerDatas] = await Promise.all([
+                adminApi.getStatus().catch(() => null),
+                adminApi.getKuesionerDetail(id).catch(() => null)
+            ])
+
+            let datast = []
+            if (dataKarir?.data?.data) {
+                setStatusKarir(dataKarir.data.data)
+                dataKarir.data.data.map((val) => {
+                    datast.push(val.nama)
+                })
             }
 
-            if (!idQues) {
-                await alertError("Judul bagian wajib dipilih!")
-                return;
+            setStatusKarirData(datast)
+            
+            let dataKuess = {} 
+            let loadedQuestions = []
+            
+            if (kuesionerDatas?.data?.data) {
+                const kuesiners = kuesionerDatas.data.data
+                dataKuess = {
+                    "title" : kuesiners.title,
+                    "id_status" : kuesiners.status_karir.nama,
+                    "deskripsi" : kuesiners.deskripsi,
+                    "tanggalMulai" : kuesiners.tanggal_mulai,
+                    "tanggalSelesai" : kuesiners.tanggal_selesai,
+                    "status" : kuesiners.status
+                }
+                
+                // Load pertanyaan dan opsi jawaban
+                if (kuesiners.pertanyaan && kuesiners.pertanyaan.length > 0) {
+                    loadedQuestions = kuesiners.pertanyaan.map((pertanyaan) => ({
+                        id: pertanyaan.id,
+                        text: pertanyaan.isi_pertanyaan || '', // HTML content dari database
+                        options: pertanyaan.opsi && pertanyaan.opsi.length > 0 
+                            ? pertanyaan.opsi.map(opt => opt.opsi) // HTML content dari database
+                            : ['Opsi 1']
+                    }))
+                }
             }
 
-            // console.log("horee", idQues)
-            if (!kuesionerId) {
-                await alertError("Data kuesioner tidak lengkap!")
-                return;
+            setFormData(dataKuess)
+            
+            // Set questions jika ada data, atau gunakan default
+            if (loadedQuestions.length > 0) {
+                setQuestions(loadedQuestions)
             }
-
-            // Filter opsi yang tidak kosong
-            const filteredOptions = options.filter(opt => opt.trim() !== "");
-
-            if (filteredOptions.length === 0) {
-                await alertError("Minimal harus ada 1 opsi jawaban!")
-                return;
-            }
-
-            // Set loading state based on status
-            if (status === "draft") {
-                setSavingDraft(true);
-            } else {
-                setSaving(true);
-            }
-            setError(null);
-            setSuccess(false);
-            let dataBody = {
-                "id_sectionques": idQues,
-                "isi_pertanyaan": questionText,
-                "status_pertanyaan": status, // 'publish' atau 'draft'
-                "opsi": filteredOptions
-            };
-
-            console.log(dataBody)
-
-            // Konfirmasi sebelum update
-            const confirmResult = await alertConfirm(`Yakin ingin mengupdate pertanyaan ini?`);
-            if (!confirmResult.isConfirmed) {
-                setSavingDraft(false);
-                setSaving(false);
-                return;
-            }
-
-            // Kirim ke API untuk update
-            await adminApi.updatePertanyaan(kuesionerId, id, dataBody);
-
-            // Success!
-            setSuccess(true);
-            const statusText = status === "publish" ? "dipublikasikan" : "disimpan sebagai draft";
-
-            await alertSuccess(`Pertanyaan berhasil diupdate dan ${statusText}!`);
-
-            navigate("/wb-admin/kuisoner");
-
         } catch (error) {
-            console.error("Failed to update:", error);
-            const errorMessage = error?.response?.data?.message ||
-                error?.response?.data?.errors ||
-                "Gagal mengupdate pertanyaan. Silakan coba lagi.";
-            setError(typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
-            await alertError("❌ " + (typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage));
-        } finally {
-            setSaving(false);
-            setSavingDraft(false);
+            console.log(error)
         }
+    }
+
+
+    useEffect(() => {
+        fetchData(id)
+    }, [id])
+
+    // Handlers untuk Pertanyaan
+    const addQuestion = () => {
+        const newId = questions.length > 0 ? questions[questions.length - 1].id + 1 : 1;
+        setQuestions([...questions, { id: newId, text: '', options: ['Opsi 1'] }]);
     };
 
-    const handleAddJudulPertanyaan = async () => {
+    const removeQuestion = (id) => {
+        setQuestions(questions.filter(q => q.id !== id));
+    };
+
+    const updateQuestionText = (id, text) => {
+        setQuestions(questions.map(q => q.id === id ? { ...q, text } : q));
+    };
+
+    const addOption = (qId) => {
+        setQuestions(questions.map(q => {
+            if (q.id === qId) {
+                return { ...q, options: [...q.options, `Opsi ${q.options.length + 1}`] };
+            }
+            return q;
+        }));
+    };
+
+    const updateOptionText = (qId, optIndex, text) => {
+        setQuestions(questions.map(q => {
+            if (q.id === qId) {
+                const newOptions = [...q.options];
+                newOptions[optIndex] = text;
+                return { ...q, options: newOptions };
+            }
+            return q;
+        }));
+    };
+
+    const removeOption = (qId, optIndex) => {
+        setQuestions(questions.map(q => {
+            if (q.id === qId && q.options.length > 1) {
+                return { ...q, options: q.options.filter((_, i) => i !== optIndex) };
+            }
+            return q;
+        }));
+    };
+
+    // Fungsi Validasi
+    const validateForm = (isDraft = false) => {
+        const newErrors = {};
+        const now = new Date();
+
+        // Validasi Title
+        if (!formData.title || formData.title.trim() === '') {
+            newErrors.title = 'Judul kuesioner wajib diisi';
+        } else if (formData.title.trim().length < 5) {
+            newErrors.title = 'Judul minimal 5 karakter';
+        }
+
+        // Validasi Status Karier
+        if (!formData.id_status) {
+            newErrors.id_status = 'Target karier wajib dipilih';
+        }
+
+        // Validasi Tanggal untuk Publish (wajib), optional untuk Draft
+        if (!isDraft) {
+            if (!formData.tanggalMulai) {
+                newErrors.tanggalMulai = 'Tanggal mulai wajib diisi untuk publish';
+            } else {
+                // Validasi waktu mulai tidak boleh kurang dari sekarang
+                const startDate = parseISO(formData.tanggalMulai);
+                if (isBefore(startDate, now)) {
+                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
+                }
+            }
+
+            if (!formData.tanggalSelesai) {
+                newErrors.tanggalSelesai = 'Tanggal selesai wajib diisi untuk publish';
+            } else if (formData.tanggalMulai) {
+                const startDate = parseISO(formData.tanggalMulai);
+                const endDate = parseISO(formData.tanggalSelesai);
+                if (isBefore(endDate, startDate)) {
+                    newErrors.tanggalSelesai = 'Tanggal selesai harus lebih besar dari tanggal mulai';
+                }
+            }
+        } else {
+            // Untuk draft, jika tanggal diisi, tetap validasi
+            if (formData.tanggalMulai) {
+                const startDate = parseISO(formData.tanggalMulai);
+                if (isBefore(startDate, now)) {
+                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
+                }
+            }
+
+            if (formData.tanggalMulai && formData.tanggalSelesai) {
+                const startDate = parseISO(formData.tanggalMulai);
+                const endDate = parseISO(formData.tanggalSelesai);
+                if (isBefore(endDate, startDate)) {
+                    newErrors.tanggalSelesai = 'Tanggal selesai harus lebih besar dari tanggal mulai';
+                }
+            }
+        }
+
+        // Validasi Pertanyaan untuk Publish
+        if (!isDraft) {
+            if (questions.length === 0) {
+                newErrors.questions = 'Minimal harus ada 1 pertanyaan untuk publish';
+            } else {
+                // Validasi setiap pertanyaan
+                const emptyQuestions = questions.filter(q => !q.text || q.text.trim() === '' || q.text === '<p></p>');
+                if (emptyQuestions.length > 0) {
+                    newErrors.questions = `Ada ${emptyQuestions.length} pertanyaan yang belum diisi`;
+                }
+
+                // Validasi opsi jawaban
+                const invalidOptions = questions.filter(q => {
+                    const filledOptions = q.options.filter(opt => opt && opt.trim() !== '' && opt !== '<p></p>');
+                    return filledOptions.length < 2;
+                });
+
+                if (invalidOptions.length > 0) {
+                    newErrors.options = `Setiap pertanyaan harus memiliki minimal 2 opsi jawaban yang terisi`;
+                }
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const saveKuisioner = async (data) => {
+        data["questions"] = questions
         try {
-            if (!newJudulPertanyaan.trim()) {
-                await alertError("Judul pertanyaan wajib diisi!");
-                return;
-            }
-
-            setSavingJudul(true);
-
-            // Cari id_kuesioner berdasarkan selectedCategory
-            let idKuesioner = null;
-            const selectedSection = structureData[selectedCategory]?.[0]?.[0];
-            if (selectedSection) {
-                idKuesioner = selectedSection.id_kuesioner;
-            } else {
-                idKuesioner = 4
-            }
-
-            if (!idKuesioner) {
-                await alertError("Kuesioner tidak ditemukan!");
-                return;
-            }
-
-            const data = {
-                id_kuesioner: idKuesioner,
-                judul_pertanyaan: newJudulPertanyaan.trim()
-            };
-
-            const response = await adminApi.createSectionQues(data);
-
-            await alertSuccess("Judul pertanyaan berhasil ditambahkan!");
-
-            // Close modal and reset
-            setShowModal(false);
-            setNewJudulPertanyaan("");
-
-            // Refresh data
-            const [kuesionerRes, statusRes] = await Promise.all([
-                adminApi.getKuesioner().catch(() => null),
-                masterDataApi.getStatus().catch(() => null)
-            ]);
-
-            let statusData = [];
-            if (statusRes?.data?.data && Array.isArray(statusRes.data.data)) {
-                statusData = statusRes.data.data;
-            } else if (Array.isArray(statusRes?.data)) {
-                statusData = statusRes.data;
-            }
-
-            let stru = {};
-            statusData.forEach((st) => {
-                stru[st.nama] = {};
-            });
-
-            kuesionerRes?.data?.data?.data?.forEach((dat) => {
-                const statusNama = dat?.status?.nama;
-                stru[statusNama] = [dat.section_ques];
-            });
-
-            setstructureData(stru);
-
-            // Set id ke section yang baru dibuat jika ada
-            if (response?.data?.data?.id_sectionques) {
-                setIdQues(response.data.data.id_sectionques);
-            }
-
+            const temp = await adminApi.updateKuesioner(id, data)
+            alertSuccess(temp.data?.message || 'Kuesioner berhasil diperbarui')
+            navigate("/wb-admin/kuisoner")
         } catch (error) {
-            const errorMessage = error?.response?.data?.message ||
-                "Gagal menambahkan judul pertanyaan. Silakan coba lagi.";
-            await alertError(errorMessage);
-        } finally {
-            setSavingJudul(false);
+            console.log(error)
+            alertError(error.response?.data?.message || 'Gagal memperbarui kuesioner')
         }
-    };
+        console.log(data)
+    }
 
-    // Get current judul for display
-    const getCurrentJudulPertanyaan = () => {
-        const allSections = structureData[selectedCategory]?.[0] || [];
-        // console.log(allSections)
-        const currentSection = allSections.find(section => section.id === idQues);
-        return currentSection?.judul_pertanyaan || "";
-    };
+    const handleSimpan = async () => {
+        setIsValidating(true);
 
-    // console.log(getCurrentJudulPertanyaan())
+        // Validasi dengan mode publish (lebih ketat)
+        if (!validateForm(false)) {
+            setIsValidating(false);
+            alertError('Mohon lengkapi semua data yang diperlukan sebelum publish');
+            // Scroll ke error pertama
+            setTimeout(() => {
+                const errorElement = document.querySelector('[data-error="true"]');
+                if (errorElement) {
+                    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+            return;
+        }
 
+        const { tanggalMulai, tanggalSelesai, ...rest } = formData
 
-    // console.log(selectedCategory)
+        const statusObj = statusKarir.find(
+            item => item.nama === formData.id_status
+        )
 
-    const [tinjau, setTinjau] = useState(false)
-    const filteredOptions = options.filter(opt => opt.trim() !== "");
-    // const handleTinjauBox = () => {
-    //     setTinjau((prev) => !prev)
-    // }
+        const payload = {
+            ...rest,
+            tanggal_mulai: tanggalMulai,
+            tanggal_selesai: tanggalSelesai,
+            id_status: statusObj?.id,
+            status: "aktif",
+            created_at: new Date().toISOString()
+        }
 
+        await saveKuisioner(payload)
+        setIsValidating(false);
+    }
+
+    // console.log(statusKarir)
     return (
-        <div className="p-6 bg-gray-50 min-h-screen font-sans text-slate-700">
-            <TinjauQues isOpen={tinjau} onClose={() => setTinjau(prev => !prev)} datas={filteredOptions} pertanyaan={questionText} />
-            {loading ? (
-                <div className="flex items-center justify-center" style={{ minHeight: '400px' }}>
-                    <div className="text-center">
-                        <Loader2 className="animate-spin mx-auto mb-4 text-primary" size={48} />
-                        <p className="text-slate-600 font-medium">Memuat data pertanyaan...</p>
+        <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+
+                    <Link
+                        to="/wb-admin/kuisoner"
+                        className="flex items-center gap-2 text-third hover:text-primary transition-colors text-sm font-medium group"
+                    >
+                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                        Kembali
+                    </Link>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleSimpan}
+                            disabled={isValidating}
+                            className="cursor-pointer flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Save size={18} /> {isValidating ? 'Memproses...' : 'Simpan'}
+                        </button>
                     </div>
                 </div>
-            ) : (
-                <>
-                    <div>
-                        <Link
-                            to="/wb-admin/kuisoner"
-                            className="flex items-center gap-2 text-third hover:text-primary transition-colors mb-8 text-sm font-medium group"
-                        >
-                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                            Kembali
-                        </Link>
+
+                {/* Error Summary */}
+                {Object.keys(errors).length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-red-800 mb-2">Terdapat kesalahan pada form:</h3>
+                                <ul className="text-xs text-red-700 space-y-1 list-disc list-inside">
+                                    {Object.entries(errors).map(([key, value]) => (
+                                        <li key={key}>{value}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
+                )}
 
-                    {error && (
-                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">
-                            ⚠️ {error}
-                        </div>
-                    )}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                    {success && (
-                        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 text-green-600 text-sm flex items-center gap-2">
-                            <CheckCircle2 size={18} />
-                            <span>Pertanyaan berhasil diupdate!</span>
-                        </div>
-                    )}
+                    {/* LEFT BOX: Konfigurasi Kuesioner (Sesuai Sketsa) */}
+                    <div className="lg:col-span-4 space-y-6 sticky top-8">
+                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                            <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
+                                Data Kuesioner
+                            </h2>
 
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-                        <div className="flex justify-between items-center mb-8">
-                            <div className="flex items-center gap-2 text-[#3D5A5C] font-bold">
-                                <FileQuestionMark size={20} />
-                                <h2>Update Pertanyaan Kuesioner</h2>
-                            </div>
-                            <div className="flex flex-col items-end gap-1">
-                                <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest ${currentStatus === 'publish'
-                                    ? 'bg-green-100 text-green-700'
-                                    : currentStatus === 'draft'
-                                        ? 'bg-orange-100 text-orange-700'
-                                        : 'bg-slate-100 text-slate-500'
-                                    }`}>
-                                    Status: {currentStatus === 'publish' ? 'TERLIHAT' : currentStatus === 'draft' ? 'DRAF' : 'TERSEMBUNYI'}
-                                </span>
-                            </div>
-                        </div>
+                            <div className="space-y-5">
+                                {/* title */}
+                                <div data-error={!!errors.title}>
+                                    <label className="text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
+                                    <div className="relative mt-3">
+                                        <input
+                                            type="text"
+                                            className={`w-full p-3 bg-white border ${errors.title ? 'border-red-400 focus:ring-red-400' : 'border-fourth focus:ring-primary'} rounded-xl text-sm outline-none focus:ring-2 transition-all`}
+                                            placeholder="Masukan title kuesioner.."
+                                            value={formData.title}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, title: e.target.value });
+                                                if (errors.title) {
+                                                    setErrors({ ...errors, title: null });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    {errors.title && (
+                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                            <AlertCircle size={12} /> {errors.title}
+                                        </p>
+                                    )}
+                                </div>
 
-                        <div className="grid grid-cols-12 gap-12">
-                            {/* Left Column: Form */}
-                            <div className="col-span-8 space-y-6">
-                                <div>
-                                    {/* Dropdown Kategori */}
+                                {/* Jenis Kuesioner */}
+                                <div data-error={!!errors.id_status}>
                                     <SmoothDropdown
-                                        label="Kategori Status Karier"
-                                        options={Object.keys(structureData)}
+                                        label="Target Karier"
+                                        options={statusKarirData}
                                         placeholder="Pilih status karier"
                                         isRequired={true}
-                                        value={selectedCategory}
-                                        onSelect={(val) => setSelectedCategory(val)}
+                                        value={formData.id_status || 'Bekerja'}
+                                        onSelect={(val) => {
+                                            setFormData({ ...formData, id_status: val });
+                                            if (errors.id_status) {
+                                                setErrors({ ...errors, id_status: null });
+                                            }
+                                        }}
                                     />
+                                    {errors.id_status && (
+                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                            <AlertCircle size={12} /> {errors.id_status}
+                                        </p>
+                                    )}
                                 </div>
 
-                                <div>
-                                    <label className="text-[11px] font-bold text-secondary uppercase">
-                                        Pertanyaan <span className="text-red-500">*</span>
-                                    </label>
-                                    <textarea
-                                        value={questionText}
-                                        placeholder="Masukkan pertanyaan kuesioner..."
-                                        rows={4}
-                                        onChange={(e) => setQuestionText(e.target.value)}
-                                        className="mt-2 w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none"
+                                {/* Tanggal Mulai & Selesai */}
+                                <div data-error={!!(errors.tanggalMulai || errors.tanggalSelesai)}>
+                                    <DateRangePicker
+                                        formData={formData}
+                                        setFormData={(data) => {
+                                            setFormData(data);
+                                            // Clear errors when dates change
+                                            if (errors.tanggalMulai || errors.tanggalSelesai) {
+                                                const newErrors = { ...errors };
+                                                delete newErrors.tanggalMulai;
+                                                delete newErrors.tanggalSelesai;
+                                                setErrors(newErrors);
+                                            }
+                                        }}
+                                        errors={errors}
                                     />
-                                </div>
-
-                                <div>
-                                    <SmoothDropdown
-                                        label="Judul Bagian Pertanyaan"
-                                        options={dataJudul.length > 0 ? dataJudul : ["Umum"]}
-                                        placeholder="Pilih judul bagian"
-                                        isRequired={true}
-                                        value={getCurrentJudulPertanyaan()}
-                                        onSelect={(val) => setIdQues(onSelect(val))}
-                                    />
-                                </div>
-
-                                <div className="bg-slate-50/50 border border-dashed border-gray-200 rounded-2xl p-6">
-                                    <label className="block text-[10px] font-black text-slate-400 mb-4 uppercase tracking-[0.15em]">
-                                        Opsi Jawaban
-                                    </label>
-                                    <div className="space-y-3">
-                                        {options.map((option, idx) => (
-                                            <div key={idx} className="flex items-center gap-3 group animate-in fade-in slide-in-from-top-1">
-                                                <div className="w-5 h-5 border-2 border-slate-300 rounded-full shrink-0" />
-                                                <input
-                                                    type="text"
-                                                    value={option}
-                                                    onChange={(e) => handleOptionChange(idx, e.target.value)}
-                                                    placeholder={`Opsi ${idx + 1}`}
-                                                    className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm focus:border-[#3D5A5C] focus:outline-none transition-colors"
-                                                />
-                                                {options.length > 2 && (
-                                                    <button
-                                                        onClick={() => removeOption(idx)}
-                                                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                    >
-                                                        <X size={18} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <button
-                                        onClick={addOption}
-                                        className="mt-6 flex items-center gap-2 text-[#3D5A5C] font-bold text-xs hover:bg-[#3D5A5C] hover:text-white px-3 py-2 rounded-lg border border-[#3D5A5C] transition-all"
-                                    >
-                                        <Plus size={16} /> Tambahkan Opsi
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Right Column: Structure (Dinamis berdasarkan selectedCategory) */}
-                            <div className="col-span-4 border-l border-gray-100 pl-8">
-                                <h3 className="text-sm font-black text-slate-800 mb-6 uppercase tracking-wider">
-                                    Structure: {selectedCategory}
-                                </h3>
-                                <div className="space-y-3">
-                                    {/* Merender data berdasarkan kategori yang dipilih */}
-                                    {(structureData[selectedCategory]?.[0] || []).map((item, index) => (
-                                        <div
-                                            key={item.id_sectionques || index}
-                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${idQues === item.id_sectionques
-                                                ? "bg-slate-50 border-[#3D5A5C]/20 shadow-sm"
-                                                : "bg-white border-gray-100 opacity-60"
-                                                }`}
-                                        >
-                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${idQues === item.id_sectionques ? "bg-[#3D5A5C] text-white" : "bg-slate-100 text-slate-400"
-                                                }`}>
-                                                {index + 1}
-                                            </span>
-                                            <span className={`text-sm font-bold ${idQues === item.id_sectionques ? "text-[#3D5A5C]" : "text-slate-500"}`}>
-                                                {item.judul_pertanyaan}
-                                            </span>
+                                    {(errors.tanggalMulai || errors.tanggalSelesai) && (
+                                        <div className="mt-2 space-y-1">
+                                            {errors.tanggalMulai && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.tanggalMulai}
+                                                </p>
+                                            )}
+                                            {errors.tanggalSelesai && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.tanggalSelesai}
+                                                </p>
+                                            )}
                                         </div>
-                                    ))}
-
-                                    <button
-                                        onClick={() => setShowModal(true)}
-                                        className="cursor-pointer w-full mt-4 flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs hover:border-[#3D5A5C] hover:text-[#3D5A5C] transition-all group">
-                                        <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-                                        Tambah Judul Pertanyaan
-                                    </button>
+                                    )}
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
-                            <div className="flex gap-3">
-                                <button onClick={() => (setTinjau(prev => !prev))} className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
-                                    <Eye size={18} /> Pratinjau
-                                </button>
-                            </div>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => handleUpdateWithStatus("draft")}
-                                    disabled={saving || savingDraft}
-                                    className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {savingDraft ? (
-                                        <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            Menyimpan...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Archive size={18} /> Simpan Draft
-                                        </>
-                                    )}
-                                </button>
-                                <button
-                                    onClick={() => handleUpdateWithStatus("publish")}
-                                    disabled={saving || savingDraft}
-                                    className="cursor-pointer flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {saving ? (
-                                        <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            Updating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Save size={18} /> Update & Publish
-                                        </>
-                                    )}
-                                </button>
+                                {/* Deskripsi */}
+                                <div>
+                                    <label className="text-[11px] font-bold text-secondary uppercase">Deskripsi Singkat</label>
+                                    <div className="relative mt-3">                                        
+                                        <textarea
+                                            rows="4"
+                                            className={`w-full p-2.5 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-26.5`}
+                                            placeholder="Berikan instruksi atau tujuan kuesioner..."
+                                            onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
+                                            value={formData.deskripsi || ""}
+                                        ></textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </>
-            )}
 
-            {/* Modal Tambah Judul Pertanyaan */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-                        <h3 className="text-lg font-bold text-[#3D5A5C] mb-8 text-center">
-                            Tambah Judul Pertanyaan
-                        </h3>
-
-                        <div className="mb-4">
-                            <label className="text-md font-bold text-secondary mb-2 block">
-                                Kategori Terpilih
-                            </label>
-                            <div className="bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium text-slate-700">
-                                {selectedCategory}
+                    {/* RIGHT BOX: Daftar Pertanyaan (Google Form Style) */}
+                    <div className="lg:col-span-8 space-y-6">
+                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm min-h-150" data-error={!!(errors.questions || errors.options)}>
+                            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                                <div className="flex-1">
+                                    <h2 className="text-lg font-bold text-primary">Daftar Pertanyaan Pilihan Ganda</h2>
+                                    {(errors.questions || errors.options) && (
+                                        <div className="mt-2 space-y-1">
+                                            {errors.questions && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.questions}
+                                                </p>
+                                            )}
+                                            {errors.options && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.options}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={addQuestion}
+                                    className="cursor-pointer text-xs bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
+                                >
+                                    <Plus size={16} /> Tambah Pertanyaan
+                                </button>
                             </div>
-                        </div>
 
-                        <div className="mb-6">
-                            <label className="text-md font-bold text-secondary mb-2 block">
-                                Judul Pertanyaan <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={newJudulPertanyaan}
-                                onChange={(e) => setNewJudulPertanyaan(e.target.value)}
-                                placeholder="Contoh: Informasi Perusahaan"
-                                className="w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
-                                autoFocus
-                            />
-                        </div>
+                            <div className="space-y-8">
+                                {questions.map((q, qIndex) => (
+                                    <div key={q.id} className="group relative bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-6 rounded-2xl transition-all duration-300">
+                                        {/* Drag Handle (Visual Only) */}
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 p-1 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <GripVertical size={20} />
+                                        </div>
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowModal(false);
-                                    setNewJudulPertanyaan("");
-                                }}
-                                disabled={savingJudul}
-                                className="cursor-pointer flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm font-bold text-slate-600 hover:bg-gray-50 transition-all disabled:opacity-50"
-                            >
-                                Batal
-                            </button>
-                            <button
-                                onClick={handleAddJudulPertanyaan}
-                                disabled={savingJudul}
-                                className="cursor-pointer flex-1 px-4 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold hover:bg-[#2D4345] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {savingJudul ? (
-                                    <>
-                                        <Loader2 size={16} className="animate-spin" />
-                                        Menyimpan...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Plus size={16} />
-                                        Tambah
-                                    </>
+                                        <div className="flex gap-4">
+                                            <span className="flex-none w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                                                {qIndex + 1}
+                                            </span>
+                                            <div className="grow space-y-4">
+                                                {/* Input Pertanyaan */}
+                                                <div className="flex items-start gap-4">
+                                                    <div className="grow">
+                                                        <RichTextEditor
+                                                            content={q.text}
+                                                            onChange={(html) => updateQuestionText(q.id, html)}
+                                                            placeholder="Ketik pertanyaan di sini..."
+                                                            minHeight="80px"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeQuestion(q.id)}
+                                                        className="cursor-pointer p-2 text-slate-300 hover:text-red-500 transition-colors flex-none"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+
+                                                {/* Pilihan Jawaban */}
+                                                <div className="space-y-3 ml-2">
+                                                    {q.options.map((opt, optIndex) => (
+                                                        <div key={optIndex} className="flex items-start gap-3">
+                                                            <div className="w-4 h-4 rounded-full border-2 border-slate-300 flex-none mt-3"></div>
+                                                            <div className="grow">
+                                                                <RichTextEditor
+                                                                    content={opt}
+                                                                    onChange={(html) => updateOptionText(q.id, optIndex, html)}
+                                                                    placeholder={`Opsi ${optIndex + 1}`}
+                                                                    minHeight="60px"
+                                                                />
+                                                            </div>
+                                                            {q.options.length > 1 && (
+                                                                <button
+                                                                    onClick={() => removeOption(q.id, optIndex)}
+                                                                    className="cursor-pointer text-slate-300 hover:text-red-500 transition-colors p-2 flex-none"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <button
+                                                        onClick={() => addOption(q.id)}
+                                                        className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-7 pt-2 hover:underline active:opacity-70"
+                                                    >
+                                                        <Plus size={14} /> Tambah Opsi
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {questions.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-slate-100 rounded-3xl">
+                                        <LayoutList size={48} className="mb-4 opacity-20" />
+                                        <p className="text-sm font-medium">Belum ada pertanyaan ditambahkan.</p>
+                                    </div>
                                 )}
-                            </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
         </div>
     );
-}
+};
+
+export default UpdateKuesioner;

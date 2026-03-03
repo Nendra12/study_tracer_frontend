@@ -82,7 +82,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
             </div>
 
             <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-50">
-                <button title="Edit" className="flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer">
+                <button onClick={() => navigate(`/wb-admin/kuisoner/update-kuesioner/${id}`)} title="Edit" className="flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer">
                     <Pencil size={14} /> Edit
                 </button>
                 {status === 'draft' && (

@@ -21,6 +21,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import JawabanSkeleton from "../../components/admin/JawabanSkeleton";
+import { STORAGE_BASE_URL } from "../../api/axios";
 
 // Sub-komponen StatCard
 function StatCard({ icon, label, value, bgColor, iconColor, className = "" }) {
@@ -145,6 +146,9 @@ export default function LihatJawaban() {
     return matchesSearch && matchesJurusan && matchesTahun
   })
 
+  // filteredAlumni.map((alumni) => {
+  //   console.log(alumni.alumni.foto)
+  // })
   // Get unique jurusan for filter options
   const jurusanOptions = ["Semua Jurusan", ...new Set(dataAlumni.map(a => a.alumni.jurusan).filter(Boolean))]
 
@@ -252,26 +256,6 @@ export default function LihatJawaban() {
     XLSX.writeFile(wb, `Jawaban_Kuesioner_${activeTab}_${new Date().getTime()}.xlsx`);
   };
 
-  const handleFilter = async (tab) => {
-    try {
-      const [dataJawaban] = await Promise.all([
-        adminApi.getKuesionerJawaban(tab.id)
-      ])
-      let jawabanData = []
-      if (dataJawaban?.data?.data?.data) {
-        jawabanData = dataJawaban.data.data.data
-      }
-
-      setdataAlumni(jawabanData)
-
-      calculateStats(jawabanData)
-
-    } catch (error) {
-      console.log(error)
-    }
-    setActiveTab(tab.status)
-  }
-
   const handleViewDetail = (id) => {
     navigate(`/wb-admin/kuisoner/tinjau-jawaban/${jawabanid}/detail/${id}`);
   };
@@ -285,8 +269,6 @@ export default function LihatJawaban() {
           </>
         ) : (
           <>
-
-          
             {/* --- Header Section --- */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
               <Link
@@ -405,10 +387,10 @@ export default function LihatJawaban() {
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
                                 <img
-                                  src={alumni.alumni.foto || `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
+                                  src={alumni.alumni.foto ? `${STORAGE_BASE_URL}/${alumni.alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
                                   alt={alumni.alumni.nama}
                                   className="w-full h-full object-cover"
-                                  onError={(e) => { e.target.src = 'https://via.placeholder.com/150' }}
+                                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150' }}
                                 />
                               </div>
                               <div>

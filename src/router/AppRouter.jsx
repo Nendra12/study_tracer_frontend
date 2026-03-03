@@ -19,6 +19,7 @@ import PreviewKuesioner from "../pages/admin/PreviewKuesioner";
 import Beranda from "../pages/alumni/beranda";
 import LihatJawaban from "../pages/admin/LihatJawaban";
 import LihatJawabanDetail from "../pages/admin/LihatJawabanDetail";
+import UpdateKuesioner from "../pages/admin/UpdateKuesioner";
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -57,6 +58,7 @@ export default function AppRouter() {
             <Route index element={<Kuesioner />} />
             <Route path="tambah-kuesioner" element={<TambahKuisioner />} />      
             <Route path="preview-kuesioner/:id" element={<PreviewKuesioner />} />      
+            <Route path="update-kuesioner/:id" element={<UpdateKuesioner />} />      
             <Route path="tinjau-jawaban/:jawabanid" >
               <Route index element={<LihatJawaban />} />
               <Route path="detail/:detailid" element={<LihatJawabanDetail />} />
