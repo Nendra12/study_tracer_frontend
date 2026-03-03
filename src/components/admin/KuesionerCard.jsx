@@ -76,7 +76,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                 <button onClick={() => navigate(`/wb-admin/kuisoner/preview-kuesioner/${id}`)} className="mb-3  flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
                     <ScanEye size={14} /> Preview
                 </button>
-                <button className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
+                <button onClick={() => navigate(`/wb-admin/kuisoner/tinjau-jawaban/${id}`)}  className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
                     <FolderSync size={14} />Tinjau Jawaban
                 </button>
             </div>

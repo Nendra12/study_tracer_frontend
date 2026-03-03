@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import {
   X, Loader2,
   Instagram, Linkedin, Facebook, Globe, Github
@@ -53,8 +54,8 @@ const AlumniDetailModal = ({
 }) => {
   if (!showDetail) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowDetail(false)}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowDetail(false)}>
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
         {detailLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -114,7 +115,7 @@ const AlumniDetailModal = ({
             {/* --- BAGIAN MEDIA SOSIAL --- */}
             <div className="space-y-3">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Media Sosial & Tautan</p>
-              
+
               {Object.values({
                 ig: detailAlumni.instagram,
                 li: detailAlumni.linkedin,
@@ -135,10 +136,10 @@ const AlumniDetailModal = ({
                         <soc.icon size={18} className={soc.color} />
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] font-bold text-slate-400 uppercase">{soc.label}</p>
-                          <a 
-                            href={soc.val.startsWith('http') ? soc.val : `https://${soc.val}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={soc.val.startsWith('http') ? soc.val : `https://${soc.val}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-xs font-bold text-slate-700 hover:text-primary truncate block transition-colors"
                           >
                             {soc.val.replace(/^https?:\/\/(www\.)?/, '')}
@@ -183,7 +184,7 @@ const AlumniDetailModal = ({
                           ({r.tahun_mulai}{r.tahun_selesai ? ` - ${r.tahun_selesai}` : ' - Sekarang'})
                         </span>
                       </div>
-                      
+
                       {r.pekerjaan && (
                         <p className="text-slate-600 text-xs mt-1 font-medium">
                           {r.pekerjaan.posisi} di <span className="text-slate-800">{r.pekerjaan.perusahaan?.nama || '-'}</span>
@@ -229,7 +230,8 @@ const AlumniDetailModal = ({
           </div>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

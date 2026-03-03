@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   UserPlus, FileEdit, Users, Search,
   Download, Loader2, X
@@ -53,7 +54,7 @@ export default function UserManagement() {
   const [activeTab, setActiveTab] = useState('Semua');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  
+
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -139,7 +140,7 @@ export default function UserManagement() {
         const filters = getFilters();
         const res = await adminApi.getAllAlumni({ ...filters, page: currentPage }, PER_PAGE);
         if (cancelled) return;
-        
+
         const payload = res.data.data;
         setAlumni(payload.data || []);
         const meta = payload.meta || payload;
@@ -236,7 +237,7 @@ export default function UserManagement() {
 
   const handleViewDetail = async (alumniId) => {
     // 1. Cek apakah ID-nya masuk
-    console.log("Mencoba buka detail untuk ID:", alumniId); 
+    // console.log("Mencoba buka detail untuk ID:", alumniId); 
 
     if (!alumniId) {
       alertError('Gagal!', 'ID Alumni tidak valid/kosong.');
@@ -247,23 +248,23 @@ export default function UserManagement() {
     setShowDetail(true);
     try {
       const res = await adminApi.getAlumniDetail(alumniId);
-      
+
       // 2. Cek apakah data berhasil didapat
-      console.log("Data Detail dari API:", res.data); 
-      
+      console.log("Data Detail dari API:", res.data);
+
       // Kadang backend mengembalikan res.data, kadang res.data.data
-      setDetailAlumni(res.data.data || res.data); 
+      setDetailAlumni(res.data.data || res.data);
     } catch (error) {
       // 3. Cetak error merah di console agar mudah dilacak
-      console.error("Error Get Detail:", error); 
-      
+      console.error("Error Get Detail:", error);
+
       // Tampilkan pesan error bawaan dari backend (jika ada)
       const errorMsg = error.response?.data?.message || 'Tidak dapat memuat detail data alumni.';
       alertError('Gagal!', errorMsg);
-      
+
       setShowDetail(false);
-    } finally { 
-      setDetailLoading(false); 
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -282,8 +283,8 @@ export default function UserManagement() {
       a.remove();
       window.URL.revokeObjectURL(url);
       alertSuccess('Ekspor Berhasil', 'Data alumni telah diunduh dalam format CSV.');
-    } catch { 
-      alertError('Ekspor Gagal', 'Sistem gagal mengekspor data.'); 
+    } catch {
+      alertError('Ekspor Gagal', 'Sistem gagal mengekspor data.');
     } finally { setExportLoading(false); }
   };
 
@@ -301,7 +302,7 @@ export default function UserManagement() {
   if (statsLoading && alumniLoading && alumni.length === 0) return <UserManagementSkeleton />;
 
   return (
-    <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700 relative">
+    <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {statsCards.map((s, i) => (
@@ -329,7 +330,7 @@ export default function UserManagement() {
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 focus:border-primary rounded-xl text-sm outline-none transition-all"
                 />
               </div>
-              
+
               <button
                 onClick={handleExport}
                 disabled={exportLoading}
@@ -385,23 +386,23 @@ export default function UserManagement() {
         />
 
         {/* Modal Pop-up Foto Bulat */}
-        {showPhotoPreview && (
-          <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"
+        {showPhotoPreview && createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"
             onClick={() => setShowPhotoPreview(false)}
           >
             <div className="relative max-w-lg w-full bg-white p-2 rounded-3xl shadow-2xl" onClick={e => e.stopPropagation()}>
-              <button 
+              <button
                 className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur shadow-md rounded-full text-slate-600 hover:text-red-500 transition-colors z-10"
                 onClick={() => setShowPhotoPreview(false)}
               >
                 <X size={20} />
               </button>
               <div className="aspect-square w-full rounded-2xl overflow-hidden bg-slate-100">
-                <img 
-                  src={previewUrl} 
-                  className="w-full h-full object-cover" 
-                  alt="Preview Alumni" 
+                <img
+                  src={previewUrl}
+                  className="w-full h-full object-cover"
+                  alt="Preview Alumni"
                   onError={(e) => { e.target.src = '/default-avatar.png'; }}
                 />
               </div>
@@ -409,7 +410,8 @@ export default function UserManagement() {
                 <p className="font-bold text-slate-800">Pratinjau Foto Profil</p>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>

@@ -50,7 +50,8 @@ export default function SideBar({ active, setActive }) {
     { path: "/wb-admin/kuisoner", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/tambah-kuesioner", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/preview-kuesioner/:id", title: "Kuesioner" },
-    { path: "/wb-admin/kuisoner/lihat-jawaban", title: "Kuesioner" },
+    { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid", title: "Kuesioner" },
+    { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid/detail/:detailid", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/update-pertanyaan/:id", title: "Kuesioner" },
   ];
 

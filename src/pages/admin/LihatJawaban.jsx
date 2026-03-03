@@ -15,11 +15,12 @@ import {
   Ghost
 } from "lucide-react";
 import SmoothDropdown from "../../components/admin/SmoothDropdown";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import JawabanSkeleton from "../../components/admin/JawabanSkeleton";
 
 // Sub-komponen StatCard
 function StatCard({ icon, label, value, bgColor, iconColor, className = "" }) {
@@ -37,6 +38,7 @@ function StatCard({ icon, label, value, bgColor, iconColor, className = "" }) {
 }
 
 export default function LihatJawaban() {
+  const { jawabanid } = useParams()
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("Bekerja");
   const [tabs, setTabs] = useState([])
@@ -49,6 +51,7 @@ export default function LihatJawaban() {
   const [selectedJurusan, setSelectedJurusan] = useState("Semua Jurusan")
   const [selectedTahun, setSelectedTahun] = useState("Tahun Kelulusan")
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
 
   const getYearOnly = (dateString) => {
     const date = new Date(dateString);
@@ -85,11 +88,12 @@ export default function LihatJawaban() {
     })
   }
 
-  const fetchAPI = useCallback(async () => {
+  const fetchAPI = useCallback(async (id) => {
     try {
+      setLoading(true)
       const [kuisoner, jawaban] = await Promise.all([
         adminApi.getKuesioner().catch(() => null),
-        adminApi.getKuesionerJawaban(1)
+        adminApi.getKuesionerJawaban(id)
       ])
 
       let statusData = []
@@ -116,12 +120,14 @@ export default function LihatJawaban() {
 
     } catch (error) {
       console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchAPI()
-  }, [fetchAPI])
+    fetchAPI(jawabanid)
+  }, [])
 
   // Filter data alumni berdasarkan search, jurusan, dan tahun
   const filteredAlumni = dataAlumni.filter((alumni) => {
@@ -267,219 +273,210 @@ export default function LihatJawaban() {
   }
 
   const handleViewDetail = (id) => {
-    navigate(`/wb-admin/kuisoner/lihat-jawaban/detail/${id}`);
+    navigate(`/wb-admin/kuisoner/tinjau-jawaban/${jawabanid}/detail/${id}`);
   };
 
   return (
-    <div className="p-4 md:p-8 bg-[#F8FAFC] min-h-screen font-sans text-slate-700">
+    <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
+      {
+        loading ? (
+          <>
+            <JawabanSkeleton />
+          </>
+        ) : (
+          <>
 
-      {/* --- Header Section --- */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-        <Link
-          to="/wb-admin/kuisoner"
-          className="flex items-center gap-2 text-third hover:text-primary transition-colors text-sm font-medium group"
-        >
-          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          Kembali
-        </Link>
+          
+            {/* --- Header Section --- */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+              <Link
+                to="/wb-admin/kuisoner"
+                className="flex items-center gap-2 text-third hover:text-primary transition-colors text-sm font-medium group"
+              >
+                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                Kembali
+              </Link>
 
-        <div className="flex gap-2 w-full sm:w-auto">
-          <button
-            onClick={handleExportPDF}
-            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 text-sm font-bold shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
-          >
-            <FileDown size={18} />
-            <span className="hidden sm:inline">PDF</span>
-          </button>
-          <button
-            onClick={handleExportExcel}
-            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md shadow-[#3D5A5C]/20 hover:bg-[#2D4345] transition-all active:scale-95"
-          >
-            <FileSpreadsheet size={18} />
-            <span className="hidden sm:inline">Excel</span>
-          </button>
-        </div>
-      </div>
-
-      {/* --- Stats Cards --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <StatCard
-          icon={<Users size={24} />}
-          label="Total Responden"
-          value={stats.totalResponden}
-          bgColor="bg-white"
-          iconColor="text-[#3D5A5C]"
-        />
-        <StatCard
-          icon={<TrendingUp size={24} />}
-          label="Baru Minggu Ini"
-          value={`+${stats.baruMingguIni}`}
-          bgColor="bg-white"
-          iconColor="text-emerald-500"
-        />
-        <StatCard
-          icon={<ClipboardList size={24} />}
-          label="Menunggu Tinjauan"
-          value={stats.menungguTinjauan}
-          bgColor="bg-white"
-          iconColor="text-orange-500"
-          className="sm:col-span-2 lg:col-span-1"
-        />
-      </div>
-
-      {/* --- Classification Tabs --- */}
-      <div className="mb-6 overflow-x-auto">
-        <div className="flex p-1.5 bg-slate-200/50 backdrop-blur-sm rounded-2xl w-fit min-w-full sm:min-w-0 border border-slate-200">
-          {tabs?.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleFilter(tab)}
-              className={`
-                cursor-pointer flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap
-                ${activeTab === tab.status
-                  ? "bg-white text-[#3D5A5C] shadow-sm ring-1 ring-slate-200/50"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-white/40"}
-              `}
-            >
-              {tab.status}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* --- Filters Section --- */}
-      <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        <div className="relative flex-1 h-12">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input
-            type="text"
-            placeholder={`Cari alumni yang sedang ${activeTab.toLowerCase()}...`}
-            className="w-full pl-12 pr-4 h-full bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3D5A5C]/20 focus:border-[#3D5A5C] transition-all shadow-sm placeholder:text-slate-400"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-          <div className="w-full sm:w-56 h-12">
-            <SmoothDropdown
-              options={jurusanOptions}
-              placeholder="Semua Jurusan"
-              value={selectedJurusan}
-              onSelect={(value) => setSelectedJurusan(value)}
-            />
-          </div>
-          <div className="w-full sm:w-56 h-12">
-            <SmoothDropdown
-              options={tahunOptions}
-              placeholder="Tahun Kelulusan"
-              value={selectedTahun}
-              onSelect={(value) => setSelectedTahun(value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* --- Table Section --- */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-225">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                <th className="px-6 py-5 pl-8">Nama Alumni</th>
-                <th className="px-6 py-5">Jurusan</th>
-                <th className="px-6 py-5 text-center">Tahun</th>
-                <th className="px-6 py-5">Tgl. Pengisian</th>
-                <th className="px-6 py-5 text-center">Status</th>
-                <th className="px-6 py-5 pr-8 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {filteredAlumni.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-slate-400">
-                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
-                      <Ghost size={48} className="mx-auto text-slate-200 mb-3" />
-                      <p className="text-slate-400 font-medium text-sm">Tidak ada data jawbaan.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredAlumni.map((alumni) => (
-                  <tr key={alumni.alumni.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors group last:border-0">
-                    <td className="px-6 py-4 pl-8">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
-                          <img
-                            src={alumni.alumni.foto || `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
-                            alt={alumni.alumni.nama}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.target.src = 'https://via.placeholder.com/150' }}
-                          />
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-800">{alumni.alumni.nama}</p>
-                          <p className="text-[11px] text-slate-400 font-medium">NIS : {alumni.alumni.nis}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-medium text-slate-600 block truncate max-w-50">{alumni.alumni.jurusan || '-'}</span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">{getYearOnly(alumni.alumni.tahun_lulus)}</span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 font-medium">{formatTanggalIndo(alumni.tanggal_submit)}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border ${alumni.status === "Selesai"
-                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                        : "bg-orange-50 text-orange-600 border-orange-100"
-                        }`}>
-                        {alumni.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 pr-8 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleViewDetail(alumni.alumni.id)}
-                          className="p-2 text-slate-400 hover:text-[#3D5A5C] hover:bg-[#3D5A5C]/10 rounded-lg transition-all active:scale-95"
-                          title="Lihat Detail Jawaban"
-                        >
-                          <Eye size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* --- Pagination --- */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs font-bold text-slate-400 text-center sm:text-left">
-            Menampilkan <span className="text-slate-700">{filteredAlumni.length > 0 ? 1 : 0}-{filteredAlumni.length}</span> dari <span className="text-slate-700">{stats.totalResponden}</span> data {activeTab}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#3D5A5C] hover:border-[#3D5A5C] transition-all disabled:opacity-50"
-              disabled
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <div className="flex gap-1">
-              <button className="w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold bg-[#3D5A5C] text-white shadow-md shadow-[#3D5A5C]/20">1</button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  onClick={handleExportPDF}
+                  className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 text-sm font-bold shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
+                >
+                  <FileDown size={18} />
+                  <span className="hidden sm:inline">PDF</span>
+                </button>
+                <button
+                  onClick={handleExportExcel}
+                  className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md shadow-[#3D5A5C]/20 hover:bg-[#2D4345] transition-all active:scale-95"
+                >
+                  <FileSpreadsheet size={18} />
+                  <span className="hidden sm:inline">Excel</span>
+                </button>
+              </div>
             </div>
-            <button
-              className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#3D5A5C] hover:border-[#3D5A5C] transition-all"
-              disabled
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
+
+            {/* --- Stats Cards --- */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+              <StatCard
+                icon={<Users size={24} />}
+                label="Total Responden"
+                value={stats.totalResponden}
+                bgColor="bg-white"
+                iconColor="text-[#3D5A5C]"
+              />
+              <StatCard
+                icon={<TrendingUp size={24} />}
+                label="Baru Minggu Ini"
+                value={`+${stats.baruMingguIni}`}
+                bgColor="bg-white"
+                iconColor="text-emerald-500"
+              />
+              <StatCard
+                icon={<ClipboardList size={24} />}
+                label="Menunggu Tinjauan"
+                value={stats.menungguTinjauan}
+                bgColor="bg-white"
+                iconColor="text-orange-500"
+                className="sm:col-span-2 lg:col-span-1"
+              />
+            </div>
+
+            {/* --- Filters Section --- */}
+            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+              <div className="relative flex-1 h-12">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <input
+                  type="text"
+                  placeholder={`Cari nama alumni..`}
+                  className="w-full pl-12 pr-4 py-4 md:py-0 h-full bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-400"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                <div className="w-full sm:w-56 h-12">
+                  <SmoothDropdown
+                    options={jurusanOptions}
+                    placeholder="Semua Jurusan"
+                    value={selectedJurusan}
+                    onSelect={(value) => setSelectedJurusan(value)}
+                  />
+                </div>
+                <div className="w-full sm:w-56 h-12">
+                  <SmoothDropdown
+                    options={tahunOptions}
+                    placeholder="Tahun Kelulusan"
+                    value={selectedTahun}
+                    onSelect={(value) => setSelectedTahun(value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* --- Table Section --- */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-225">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                      <th className="px-6 py-5 pl-8">Nama Alumni</th>
+                      <th className="px-6 py-5">Jurusan</th>
+                      <th className="px-6 py-5 text-center">Tahun</th>
+                      <th className="px-6 py-5">Tgl. Pengisian</th>
+                      <th className="px-6 py-5 text-center">Status</th>
+                      <th className="px-6 py-5 pr-8 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm">
+                    {filteredAlumni.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-12 text-center text-slate-400">
+                          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                            <Ghost size={48} className="mx-auto text-slate-200 mb-3" />
+                            <p className="text-slate-400 font-medium text-sm">Tidak ada data jawbaan.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredAlumni.map((alumni) => (
+                        <tr key={alumni.alumni.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors group last:border-0">
+                          <td className="px-6 py-4 pl-8">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
+                                <img
+                                  src={alumni.alumni.foto || `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
+                                  alt={alumni.alumni.nama}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => { e.target.src = 'https://via.placeholder.com/150' }}
+                                />
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-800">{alumni.alumni.nama}</p>
+                                <p className="text-[11px] text-slate-400 font-medium">NIS : {alumni.alumni.nis}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="font-medium text-slate-600 block truncate max-w-50">{alumni.alumni.jurusan || '-'}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">{getYearOnly(alumni.alumni.tahun_lulus)}</span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-500 font-medium">{formatTanggalIndo(alumni.tanggal_submit)}</td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border ${alumni.status === "Selesai"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : "bg-orange-50 text-orange-600 border-orange-100"
+                              }`}>
+                              {alumni.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 pr-8 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleViewDetail(alumni.alumni.id)}
+                                className="cursor-pointer p-2 text-slate-400 hover:text-[#3D5A5C] hover:bg-[#3D5A5C]/10 rounded-lg transition-all active:scale-95"
+                                title="Lihat Detail Jawaban"
+                              >
+                                <Eye size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* --- Pagination --- */}
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p className="text-xs font-bold text-slate-400 text-center sm:text-left">
+                  Menampilkan <span className="text-slate-700">{filteredAlumni.length > 0 ? 1 : 0}-{filteredAlumni.length}</span> dari <span className="text-slate-700">{stats.totalResponden}</span> data {activeTab}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#3D5A5C] hover:border-[#3D5A5C] transition-all disabled:opacity-50"
+                    disabled
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <div className="flex gap-1">
+                    <button className="w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold bg-[#3D5A5C] text-white shadow-md shadow-[#3D5A5C]/20">1</button>
+                  </div>
+                  <button
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#3D5A5C] hover:border-[#3D5A5C] transition-all"
+                    disabled
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )
+      }
     </div>
   );
 }

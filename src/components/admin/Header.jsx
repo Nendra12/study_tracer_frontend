@@ -41,14 +41,14 @@ export default function Header({ toggleSidebar }) {
       text: "Lengkapi detail dan buat daftar pertanyaan",
     },
     {
+      path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid",
+      title: "Jawaban Alumni",
+      text: "Kelola dan tinjau jawaban individu",
+    },
+    {
       path: "/wb-admin/kuisoner/*",
       title: "Manajemen Kuesioner",
       text: "Kelola dan atur kuesioner untuk Studi Penelusuran Lulusan",
-    },
-    {
-      path: "/wb-admin/kuisoner/lihat-jawaban",
-      title: "Jawaban Alumni",
-      text: "Kelola dan tinjau jawaban individu",
     },
   ];
 
