@@ -8,8 +8,11 @@ import {
     Pencil,
     Trash2,
     Loader2,
+    ScanEye,
+    FolderSync,
 } from 'lucide-react';
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
+import { useNavigate } from 'react-router-dom';
 
 
 export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loadingHapus }) => {
@@ -20,6 +23,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
         nonaktif: "bg-red-100 text-red-700 border-red-200",
     };
 
+    const navigate = useNavigate()
     const handleStatus = (id, data) => {
         update(id, data)
     }
@@ -67,10 +71,15 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                     {status_karir.nama}
                 </span>
             </div>
-
-            <button className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
-                <Info size={14} /> Detail
-            </button>
+            
+            <div className='flex gap-2'>
+                <button onClick={() => navigate(`/wb-admin/kuisoner/preview-kuesioner/${id}`)} className="mb-3  flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
+                    <ScanEye size={14} /> Preview
+                </button>
+                <button className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
+                    <FolderSync size={14} />Tinjau Jawaban
+                </button>
+            </div>
 
             <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-50">
                 <button title="Edit" className="flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer">

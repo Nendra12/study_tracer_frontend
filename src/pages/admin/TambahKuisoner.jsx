@@ -10,21 +10,25 @@ import {
     AlignLeft,
     LayoutList,
     ArrowLeft,
-    Archive
+    Archive,
+    AlertCircle
 } from 'lucide-react';
-import { data, Link } from 'react-router-dom';
+import { data, Link, useNavigate } from 'react-router-dom';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import DateRangePicker from '../../components/DatePicker';
 import RichTextEditor from '../../components/admin/RichTextEditor';
 import { adminApi } from '../../api/admin';
-import { alertSuccess } from '../../utilitis/alert';
+import { alertSuccess, alertError } from '../../utilitis/alert';
+import { parseISO, isBefore } from 'date-fns';
 
 const TambahKuisioner = () => {
     // State untuk Data Kuesioner (Box Kiri)
 
-
+    const navigate = useNavigate()
     const [statusKarir, setStatusKarir] = useState('')
     const [statusKarirData, setStatusKarirData] = useState([])
+    const [errors, setErrors] = useState({})
+    const [isValidating, setIsValidating] = useState(false)
 
     const fetchData = async () => {
         try {
@@ -121,16 +125,155 @@ const TambahKuisioner = () => {
         }));
     };
 
+    // Fungsi Validasi
+    const validateForm = (isDraft = false) => {
+        const newErrors = {};
+        const now = new Date();
+
+        // Validasi Title
+        if (!formData.title || formData.title.trim() === '') {
+            newErrors.title = 'Judul kuesioner wajib diisi';
+        } else if (formData.title.trim().length < 5) {
+            newErrors.title = 'Judul minimal 5 karakter';
+        }
+
+        // Validasi Status Karier
+        if (!formData.id_status) {
+            newErrors.id_status = 'Target karier wajib dipilih';
+        }
+
+        // Validasi Tanggal untuk Publish (wajib), optional untuk Draft
+        if (!isDraft) {
+            if (!formData.tanggalMulai) {
+                newErrors.tanggalMulai = 'Tanggal mulai wajib diisi untuk publish';
+            } else {
+                // Validasi waktu mulai tidak boleh kurang dari sekarang
+                const startDate = parseISO(formData.tanggalMulai);
+                if (isBefore(startDate, now)) {
+                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
+                }
+            }
+
+            if (!formData.tanggalSelesai) {
+                newErrors.tanggalSelesai = 'Tanggal selesai wajib diisi untuk publish';
+            } else if (formData.tanggalMulai) {
+                const startDate = parseISO(formData.tanggalMulai);
+                const endDate = parseISO(formData.tanggalSelesai);
+                if (isBefore(endDate, startDate)) {
+                    newErrors.tanggalSelesai = 'Tanggal selesai harus lebih besar dari tanggal mulai';
+                }
+            }
+        } else {
+            // Untuk draft, jika tanggal diisi, tetap validasi
+            if (formData.tanggalMulai) {
+                const startDate = parseISO(formData.tanggalMulai);
+                if (isBefore(startDate, now)) {
+                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
+                }
+            }
+
+            if (formData.tanggalMulai && formData.tanggalSelesai) {
+                const startDate = parseISO(formData.tanggalMulai);
+                const endDate = parseISO(formData.tanggalSelesai);
+                if (isBefore(endDate, startDate)) {
+                    newErrors.tanggalSelesai = 'Tanggal selesai harus lebih besar dari tanggal mulai';
+                }
+            }
+        }
+
+        // Validasi Pertanyaan untuk Publish
+        if (!isDraft) {
+            if (questions.length === 0) {
+                newErrors.questions = 'Minimal harus ada 1 pertanyaan untuk publish';
+            } else {
+                // Validasi setiap pertanyaan
+                const emptyQuestions = questions.filter(q => !q.text || q.text.trim() === '' || q.text === '<p></p>');
+                if (emptyQuestions.length > 0) {
+                    newErrors.questions = `Ada ${emptyQuestions.length} pertanyaan yang belum diisi`;
+                }
+
+                // Validasi opsi jawaban
+                const invalidOptions = questions.filter(q => {
+                    const filledOptions = q.options.filter(opt => opt && opt.trim() !== '' && opt !== '<p></p>');
+                    return filledOptions.length < 2;
+                });
+
+                if (invalidOptions.length > 0) {
+                    newErrors.options = `Setiap pertanyaan harus memiliki minimal 2 opsi jawaban yang terisi`;
+                }
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const saveKuisioner = async (data) => {
+        data["questions"] = questions
         try {
             const temp = await adminApi.createKuesioner(data)
-            alertSuccess(temp.message)
+            alertSuccess(temp.message || 'Kuesioner berhasil disimpan')
+            navigate("/wb-admin/kuisoner")
         } catch (error) {
             console.log(error)
+            alertError(error.response?.data?.message || 'Gagal menyimpan kuesioner')
         }
     }
 
     const handleDraft = async () => {
+        setIsValidating(true);
+
+        // Validasi dengan mode draft
+        if (!validateForm(true)) {
+            setIsValidating(false);
+            alertError('Mohon perbaiki kesalahan pada form');
+            // Scroll ke error pertama
+            setTimeout(() => {
+                const errorElement = document.querySelector('[data-error="true"]');
+                if (errorElement) {
+                    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+            return;
+        }
+
+        const { tanggalMulai, tanggalSelesai, ...rest } = formData
+
+        const statusObj = statusKarir.find(
+            item => item.nama === formData.id_status
+        )
+
+        const payload = {
+            ...rest,
+            tanggal_mulai: tanggalMulai || null,
+            tanggal_selesai: tanggalSelesai || null,
+            id_status: statusObj?.id,
+            status: "draft",
+            created_at: new Date().toISOString()
+        }
+
+        await saveKuisioner(payload)
+        setIsValidating(false);
+    }
+
+
+    const handlePublish = async () => {
+        setIsValidating(true);
+
+        // Validasi dengan mode publish (lebih ketat)
+        if (!validateForm(false)) {
+            setIsValidating(false);
+            alertError('Mohon lengkapi semua data yang diperlukan sebelum publish');
+            // Scroll ke error pertama
+            setTimeout(() => {
+                const errorElement = document.querySelector('[data-error="true"]');
+                if (errorElement) {
+                    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+            return;
+        }
+
         const { tanggalMulai, tanggalSelesai, ...rest } = formData
 
         const statusObj = statusKarir.find(
@@ -142,11 +285,12 @@ const TambahKuisioner = () => {
             tanggal_mulai: tanggalMulai,
             tanggal_selesai: tanggalSelesai,
             id_status: statusObj?.id,
-            status: "draft",
+            status: "aktif",
             created_at: new Date().toISOString()
         }
 
         await saveKuisioner(payload)
+        setIsValidating(false);
     }
 
     // console.log(statusKarir)
@@ -165,17 +309,38 @@ const TambahKuisioner = () => {
                     </Link>
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={handleDraft} className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleDraft}
+                            disabled={isValidating}
+                            className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Archive size={18} /> Simpan Draft
+                            <Archive size={18} /> {isValidating ? 'Menyimpan...' : 'Simpan Draft'}
                         </button>
                         <button
+                            onClick={handlePublish}
+                            disabled={isValidating}
                             className="cursor-pointer flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save size={18} /> Publish
+                            <Save size={18} /> {isValidating ? 'Memproses...' : 'Publish'}
                         </button>
                     </div>
                 </div>
+
+                {/* Error Summary */}
+                {Object.keys(errors).length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-red-800 mb-2">Terdapat kesalahan pada form:</h3>
+                                <ul className="text-xs text-red-700 space-y-1 list-disc list-inside">
+                                    {Object.entries(errors).map(([key, value]) => (
+                                        <li key={key}>{value}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
@@ -188,32 +353,82 @@ const TambahKuisioner = () => {
 
                             <div className="space-y-5">
                                 {/* title */}
-                                <div>
+                                <div data-error={!!errors.title}>
                                     <label className="text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
                                     <div className="relative mt-3">
                                         <input
                                             type="text"
-                                            className="w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
+                                            className={`w-full p-3 bg-white border ${errors.title ? 'border-red-400 focus:ring-red-400' : 'border-fourth focus:ring-primary'} rounded-xl text-sm outline-none focus:ring-2 transition-all`}
                                             placeholder="Masukan title kuesioner.."
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            value={formData.title}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, title: e.target.value });
+                                                if (errors.title) {
+                                                    setErrors({ ...errors, title: null });
+                                                }
+                                            }}
                                         />
                                     </div>
+                                    {errors.title && (
+                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                            <AlertCircle size={12} /> {errors.title}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Jenis Kuesioner */}
-                                <div>
+                                <div data-error={!!errors.id_status}>
                                     <SmoothDropdown
                                         label="Target Karier"
                                         options={statusKarirData}
                                         placeholder="Pilih status karier"
                                         isRequired={true}
-                                        value={'Bekerja'}
-                                        onSelect={(val) => setFormData({ ...formData, id_status: val })}
+                                        value={formData.id_status || 'Bekerja'}
+                                        onSelect={(val) => {
+                                            setFormData({ ...formData, id_status: val });
+                                            if (errors.id_status) {
+                                                setErrors({ ...errors, id_status: null });
+                                            }
+                                        }}
                                     />
+                                    {errors.id_status && (
+                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                            <AlertCircle size={12} /> {errors.id_status}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Tanggal Mulai & Selesai */}
-                                <DateRangePicker formData={formData} setFormData={setFormData} />
+                                <div data-error={!!(errors.tanggalMulai || errors.tanggalSelesai)}>
+                                    <DateRangePicker
+                                        formData={formData}
+                                        setFormData={(data) => {
+                                            setFormData(data);
+                                            // Clear errors when dates change
+                                            if (errors.tanggalMulai || errors.tanggalSelesai) {
+                                                const newErrors = { ...errors };
+                                                delete newErrors.tanggalMulai;
+                                                delete newErrors.tanggalSelesai;
+                                                setErrors(newErrors);
+                                            }
+                                        }}
+                                        errors={errors}
+                                    />
+                                    {(errors.tanggalMulai || errors.tanggalSelesai) && (
+                                        <div className="mt-2 space-y-1">
+                                            {errors.tanggalMulai && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.tanggalMulai}
+                                                </p>
+                                            )}
+                                            {errors.tanggalSelesai && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.tanggalSelesai}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Deskripsi */}
                                 <div>
@@ -232,9 +447,25 @@ const TambahKuisioner = () => {
 
                     {/* RIGHT BOX: Daftar Pertanyaan (Google Form Style) */}
                     <div className="lg:col-span-8 space-y-6">
-                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm min-h-150">
+                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm min-h-150" data-error={!!(errors.questions || errors.options)}>
                             <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-                                <h2 className="text-lg font-bold text-primary">Daftar Pertanyaan Pilihan Ganda</h2>
+                                <div className="flex-1">
+                                    <h2 className="text-lg font-bold text-primary">Daftar Pertanyaan Pilihan Ganda</h2>
+                                    {(errors.questions || errors.options) && (
+                                        <div className="mt-2 space-y-1">
+                                            {errors.questions && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.questions}
+                                                </p>
+                                            )}
+                                            {errors.options && (
+                                                <p className="text-xs text-red-600 flex items-center gap-1">
+                                                    <AlertCircle size={12} /> {errors.options}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                                 <button
                                     onClick={addQuestion}
                                     className="cursor-pointer text-xs bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"

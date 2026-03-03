@@ -188,3 +188,147 @@
 .toolbar-container > div {
   transition: opacity 0.2s ease-in-out;
 }
+
+/* React DatePicker Time Picker Custom Styles */
+.react-datepicker__time-container {
+  border-left: 1px solid #e2e8f0;
+}
+
+.react-datepicker__time-list-item {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: #f1f5f9;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: #3C5759 !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.react-datepicker__header--time {
+  padding: 8px 0;
+}
+
+.react-datepicker-time__header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #526061;
+}
+
+.react-datepicker__time-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.react-datepicker__time-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.react-datepicker__time-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.react-datepicker__time-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* Custom Time Input Styling */
+input[type="time"] {
+  cursor: pointer;
+  color-scheme: light;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: opacity(0.6);
+  transition: filter 0.2s;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  filter: opacity(1);
+}
+
+input[type="time"]:focus {
+  outline: none;
+  border-color: #3C5759;
+  ring: 2px;
+  ring-color: #3C5759;
+}
+
+/* Smooth Animation for Time Input */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slideInFromTop 0.3s ease-out forwards;
+}
+
+/* HTML Content Display for Preview (dangerouslySetInnerHTML) */
+.prose p:first-child {
+  margin-top: 0;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+.prose a {
+  color: #3C5759;
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: #526061;
+}
+
+.prose blockquote {
+  border-left: 4px solid #e2e8f0;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #64748b;
+  margin: 1rem 0;
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.5rem 0;
+}
+
+/* Clean up nested paragraphs in rendered HTML */
+.prose > p:only-child {
+  display: inline;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -700px 0;
+  }
+  100% {
+    background-position: 700px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 25%,
+    #e2e8f0 37%,
+    #f1f5f9 63%
+  );
+  background-size: 1400px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
