@@ -16,10 +16,17 @@ import NotFound from "../pages/NotFound";
 import Kuesioner from "../pages/admin/Kuesioner";
 import TambahKuisioner from "../pages/admin/TambahKuisoner";
 import PreviewKuesioner from "../pages/admin/PreviewKuesioner";
-import Beranda from "../pages/alumni/beranda";
 import LihatJawaban from "../pages/admin/LihatJawaban";
 import LihatJawabanDetail from "../pages/admin/LihatJawabanDetail";
+<<<<<<< HEAD
 import UpdateKuesioner from "../pages/admin/UpdateKuesioner";
+=======
+import Beranda from "../pages/alumni/beranda";
+import Alumni from "../pages/alumni/alumni"; 
+import Lowongan from "../pages/alumni/lowongan"; 
+import Profil from "../pages/alumni/profil";
+
+>>>>>>> 68f44270455f794d3fe7a94ab45c95087ba6279c
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -66,14 +73,23 @@ export default function AppRouter() {
           </Route>
         </Route>
       </Route>
-      {/* Alumni/User Routes */}
-      {/* Alumni Routes - Perbaikan di sini */}
+      {/* --- Alumni/User Routes --- */}
+      
       <Route path="/" element={
-        isAuthenticated && !isAdmin ? (
-          <Beranda />
-        ) : (
-          <Navigate to="/login" replace />
-        )
+        isAuthenticated && !isAdmin ? <Beranda /> : <Navigate to="/login" replace />
+      } />
+      
+      <Route path="/alumni" element={
+        isAuthenticated && !isAdmin ? <Alumni /> : <Navigate to="/login" replace />
+      } />
+      
+      <Route path="/lowongan" element={
+        isAuthenticated && !isAdmin ? <Lowongan /> : <Navigate to="/login" replace />
+      } />
+
+      {/* --- Tambahkan Route Profil --- */}
+      <Route path="/profil" element={
+        isAuthenticated && !isAdmin ? <Profil /> : <Navigate to="/login" replace />
       } />
       <Route path="*" element={<NotFound />} />
     </Routes>

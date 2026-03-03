@@ -38,9 +38,11 @@ export default function ManajemenPekerjaan() {
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Untuk list pekerjaan
+  const [loadingStats, setLoadingStats] = useState(true); // Untuk sidebar/ringkasan
   const [currentPage, setCurrentPage] = useState(1);
   const [editingJob, setEditingJob] = useState(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const tabFilterMap = {
     "Semua": {},
@@ -54,7 +56,7 @@ export default function ManajemenPekerjaan() {
     setLoading(true);
     try {
       const filters = { ...tabFilterMap[activeTab] };
-      if (searchQuery.trim()) filters.search = searchQuery.trim();
+      if (debouncedSearch.trim()) filters.search = debouncedSearch.trim();
       
       const res = await adminApi.getLowongan(filters, 100);
       const data = res.data?.data?.data || res.data?.data || [];
@@ -62,23 +64,34 @@ export default function ManajemenPekerjaan() {
     } catch {
       setJobs([]);
     } finally {
-      setTimeout(() => setLoading(false), 500); 
+      setLoading(false);
     }
-  }, [activeTab, searchQuery]);
+  }, [activeTab, debouncedSearch]);
 
   const fetchStats = useCallback(async () => {
+    setLoadingStats(true); // Mulai loading stats
     try {
       const res = await adminApi.getLowonganStats();
       const data = res.data?.data || res.data || {};
       setLowonganStats(data);
       setCategories(data.categories || []);
-    } catch { }
+    } catch (err) { 
+      console.error("Error fetching stats:", err);
+    } finally {
+      setLoadingStats(false); // Selesai
+    }
   }, []);
-
   useEffect(() => { 
     fetchJobs(); 
     fetchStats(); 
   }, [fetchJobs, fetchStats]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+
 
   // --- HANDLERS ---
   const handleApprove = async (id) => {
@@ -184,20 +197,25 @@ export default function ManajemenPekerjaan() {
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 space-y-4">
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              {loading ? (
+              {/* Ganti loading menjadi loadingStats */}
+              {loadingStats && !lowonganStats ? (
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-hidden animate-pulse">
                   {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-16 h-8 bg-gray-300 rounded-md"></div>)}
                 </div>
               ) : (
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto no-scrollbar">
                   {["Semua", "Menunggu", "Aktif", "Berakhir", "Ditolak"].map((tab) => (
-                    <button key={tab} onClick={() => setActiveTab(tab)} className={`cursor-pointer px-3 py-2 rounded-md text-xs font-bold transition-all whitespace-nowrap ${activeTab === tab ? "bg-primary text-white shadow-md scale-105" : "text-gray-500 hover:bg-gray-200"}`}>
+                    <button 
+                      key={tab} 
+                      onClick={() => setActiveTab(tab)} 
+                      className={`cursor-pointer px-3 py-2 rounded-md text-xs font-bold transition-all whitespace-nowrap ${activeTab === tab ? "bg-primary text-white shadow-md scale-105" : "text-gray-500 hover:bg-gray-200"}`}
+                    >
                       {tab}
                     </button>
                   ))}
                 </div>
               )}
-
+              
               <div className="relative flex-1 group w-full">
                 <Search className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${loading ? 'text-gray-300' : 'text-gray-400 group-focus-within:text-primary'}`} size={16} />
                 <input 
@@ -205,39 +223,46 @@ export default function ManajemenPekerjaan() {
                   placeholder="Cari Lowongan..." 
                   value={searchQuery} 
                   onChange={(e) => setSearchQuery(e.target.value)} 
-                  disabled={loading}
-                  className={`w-full pl-10 pr-3 py-2 bg-white border rounded-xl text-sm outline-none transition-all shadow-sm ${loading ? 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed animate-pulse placeholder-transparent' : 'border-gray-200 focus:ring-2 focus:ring-primary/20'}`} 
+                  className={`w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20`}
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              {loading ? (
+             {loading && jobs.length === 0 ? (
                 [...Array(5)].map((_, i) => <JobCardSkeleton key={i} />)
               ) : paginatedJobs.length > 0 ? (
                 <>
                   {paginatedJobs.map((job) => (
-                    <JobCard key={job.id} job={job} onApprove={handleApprove} onReject={handleReject} onDelete={handleDelete} onRepost={handleRepost} onEdit={handleEdit} />
-                  ))}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-4">
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
-                  <p className="font-medium">Tidak ada lowongan ditemukan</p>
+                  <JobCard 
+                    key={job.id} 
+                    job={job} 
+                    onApprove={handleApprove} 
+                    onReject={handleReject} 
+                    onDelete={handleDelete} 
+                    onRepost={handleRepost} 
+                    onEdit={handleEdit} 
+                  />
+                ))}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-4">
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                 </div>
-              )}
+                </>
+              ) : !loading && (
+              <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                <p className="font-medium">Tidak ada lowongan ditemukan</p>
+              </div>
+      )}
             </div>
           </div>
 
           <div className="lg:col-span-4 space-y-6">
             <div className="hidden lg:grid grid-cols-2 gap-3">
-              {loading ? (
-                <div className="contents">
-                  <div className="h-11 bg-gray-200 rounded-xl animate-pulse"></div>
-                  <div className="h-11 bg-gray-200 rounded-xl animate-pulse"></div>
-                </div>
+             {loadingStats && !lowonganStats ? (
+              <div className="contents">
+                <div className="h-11 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div className="h-11 bg-gray-200 rounded-xl animate-pulse"></div>
+              </div>
               ) : (
                 <>
                   <button onClick={handleExportCSV} className="cursor-pointer flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 text-primary font-bold rounded-xl hover:bg-gray-50 active:scale-95 transition-all text-xs shadow-sm group">
@@ -252,7 +277,8 @@ export default function ManajemenPekerjaan() {
               )}
             </div>
 
-            {loading && !lowonganStats ? (
+            {/* Ganti kondisi loading sidebar lama dengan ini */}
+            {loadingStats && !lowonganStats ? (
               <JobSidebarSkeleton />
             ) : (
               <>
