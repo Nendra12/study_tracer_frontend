@@ -16,6 +16,7 @@ import NotFound from "../pages/NotFound";
 import Kuesioner from "../pages/admin/Kuesioner";
 import TambahKuisioner from "../pages/admin/TambahKuisoner";
 import PreviewKuesioner from "../pages/admin/PreviewKuesioner";
+import Beranda from "../pages/alumni/beranda";
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -63,7 +64,15 @@ export default function AppRouter() {
           </Route>
         </Route>
       </Route>
-      <Route path="/" element={isAuthenticated ? <div className="p-8 text-center"><h1 className="text-2xl font-bold text-primary">Selamat Datang, Alumni!</h1><p className="text-third mt-2">Halaman alumni akan segera hadir.</p></div> : <Navigate to="/login" />} />
+      {/* Alumni/User Routes */}
+      {/* Alumni Routes - Perbaikan di sini */}
+      <Route path="/" element={
+        isAuthenticated && !isAdmin ? (
+          <Beranda />
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -23,6 +23,7 @@
     "apexcharts": "^5.6.0",
     "axios": "^1.13.5",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.34.4",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "lucide": "^0.575.0",
