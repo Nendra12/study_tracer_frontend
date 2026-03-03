@@ -24,7 +24,6 @@ import Alumni from "../pages/alumni/alumni";
 import Lowongan from "../pages/alumni/lowongan"; 
 import Profil from "../pages/alumni/profil";
 
-
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
 
