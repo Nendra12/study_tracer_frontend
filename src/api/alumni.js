@@ -50,6 +50,15 @@ export const alumniApi = {
   submitKuesionerAnswers(kuesionerId, data) {
     return api.post(`/alumni/kuesioner/${kuesionerId}/jawaban`, data);
   },
+
+  // Alumni Directory (restricted - needs verified + kuesioner)
+  getAlumniDirectory(params = {}) {
+    return api.get('/alumni/directory', { params });
+  },
+
+  getAlumniDirectoryFilters() {
+    return api.get('/alumni/directory/filters');
+  },
 };
 
 // Public endpoints
