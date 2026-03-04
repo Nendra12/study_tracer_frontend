@@ -21,10 +21,10 @@ function getGreeting() {
 
 // --- Data Dummy ---
 const DUMMY_ALUMNI = [
-  { id: 1, name: "John Smith", angkatan: "2022", role: "MBA Candidate", company: "Harvard University", tags: "Kuliah" },
-  { id: 2, name: "Alice Johnson", angkatan: "2020", role: "Founder & CEO", company: "NextGen Solutions", tags: "Wirausaha" },
-  { id: 3, name: "Charlie Davis", angkatan: "2021", role: "Data Analyst", company: "Mencari Pekerjaan", tags: "Mencari" },
-  { id: 4, name: "Sarah Lee", angkatan: "2017", role: "Product Designer", company: "Creative Studio", tags: "Bekerja" },
+  { id: 1, name: "John Smith", angkatan: "2022", role: "MBA Candidate", company: "Harvard University", tags: "Kuliah", image: "https://randomuser.me/api/portraits/men/32.jpg" },
+  { id: 2, name: "Alice Johnson", angkatan: "2020", role: "Founder & CEO", company: "NextGen Solutions", tags: "Wirausaha", image: "https://randomuser.me/api/portraits/women/44.jpg" },
+  { id: 3, name: "Charlie Davis", angkatan: "2021", role: "Data Analyst", company: "Mencari Pekerjaan", tags: "Mencari", image: "https://randomuser.me/api/portraits/men/46.jpg" },
+  { id: 4, name: "Sarah Lee", angkatan: "2017", role: "Product Designer", company: "Creative Studio", tags: "Bekerja", image: "https://randomuser.me/api/portraits/women/68.jpg" },
 ];
 
 const DUMMY_JOBS = [
@@ -41,62 +41,67 @@ const DUMMY_COMPANIES = [
   { id: 4, name: "Manufacture Pro", location: "Surabaya, Indonesia", alumniCount: 54 },
   { id: 5, name: "State Bank Persero", location: "Jakarta, Indonesia", alumniCount: 42 },
 ];
-
-// --- Sub-Komponen ---
-
-function AlumniProfileCard({ data }) {
+// --- Komponen Card Profil Alumni ---
+function AlumniProfileCard({ data, onImageClick }) {
   if (!data) return null;
-
-  const tagColors = {
-    "Kuliah": "bg-blue-50 text-blue-600",
-    "Wirausaha": "bg-purple-50 text-purple-600",
-    "Mencari": "bg-amber-50 text-amber-600",
-    "Bekerja": "bg-[#3C5759]/10 text-[#3C5759]"
-  };
-
-  const initials = data.name 
-    ? data.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() 
-    : "??";
 
   return (
     <motion.div whileHover={{ y: -5 }} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full cursor-pointer">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex gap-3">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#3C5759] text-white text-sm font-bold border-2 border-white shadow-sm">
-             {initials}
-          </div>
-          <div>
-            <h3 className="font-bold text-[#3C5759] text-sm">{data.name}</h3>
+      
+      {/* --- BAGIAN 1 & 2: Kontainer Atas --- */}
+      <div className="flex gap-4 mb-4 relative">
+
+        {/* BAGIAN 1: Gambar Profil */}
+        <div 
+          className="w-20 h-24 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200 cursor-pointer group"
+          onClick={(e) => {
+            e.stopPropagation(); // Mencegah klik menyebar ke card utama
+            onImageClick(data.image); // Memanggil modal popup
+          }}
+        >
+          <img 
+            src={data.image || `https://ui-avatars.com/api/?name=${data.name.replace(' ', '+')}&background=3C5759&color=fff&size=150`} 
+            alt={data.name} 
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+        </div>
+
+        {/* BAGIAN 2: Penjelasan (Teks) */}
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="mb-2">
+            <h3 className="font-bold text-[#3C5759] text-sm line-clamp-1">{data.name}</h3>
             <p className="text-slate-400 text-[11px]">Angkatan {data.angkatan}</p>
           </div>
-        </div>
-        <button className="text-slate-300 hover:text-slate-500 cursor-pointer transition-colors"><X size={16} /></button>
-      </div>
-      
-      <div className="space-y-1.5 mb-4">
-        <div className="flex items-center gap-2 text-slate-600">
-          <GraduationCap size={14} className="text-[#3C5759]" />
-          <span className="text-[12px] font-semibold">{data.role}</span>
-        </div>
-        <div className="flex items-center gap-2 text-slate-500">
-          <Building2 size={14} className="text-slate-400" />
-          <span className="text-[11px] font-medium">{data.company}</span>
+          
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-1.5 text-slate-600">
+              <GraduationCap size={14} className="text-[#3C5759] shrink-0 mt-0.5" />
+              <span className="text-[11px] font-semibold line-clamp-2 leading-tight">{data.role}</span>
+            </div>
+            <div className="flex items-start gap-1.5 text-slate-500">
+              <Building2 size={14} className="text-slate-400 shrink-0 mt-0.5" />
+              <span className="text-[11px] font-medium line-clamp-2 leading-tight">{data.company}</span>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* --- BAGIAN 3: Footer (Tag Satu Warna) --- */}
       <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between">
-        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${tagColors[data.tags] || 'bg-slate-100'}`}>
+        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-[#3C5759]/10 text-[#3C5759]">
           {data.tags}
         </span>
+        
         <button className="flex items-center gap-1 text-[12px] font-bold text-[#3C5759] hover:underline transition-all cursor-pointer">
           Lihat Profil <ArrowRight size={14} />
         </button>
       </div>
+      
     </motion.div>
   );
 }
 
-// --- Komponen Card Lowongan (Penuh Kanan-Kiri, Potong Atas-Bawah) ---
+// --- Komponen Card Lowongan (Penuh Kanan-Kiri, Potong Atas-Bawah dengan Gelombang) ---
 function JobPosterCard({ data, onImageClick }) {
   if (!data) return null;
   return (
@@ -104,7 +109,7 @@ function JobPosterCard({ data, onImageClick }) {
       whileHover={{ y: -8, shadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }} 
       className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full cursor-pointer transition-all duration-300 group"
     >
-      {/* Kontainer Gambar (Tinggi dikurangi sedikit dari h-64 ke h-56 agar tidak terlalu panjang) */}
+      {/* Kontainer Gambar */}
       <div 
         className="h-56 overflow-hidden relative cursor-pointer"
         onClick={(e) => {
@@ -112,18 +117,31 @@ function JobPosterCard({ data, onImageClick }) {
           onImageClick(data.image);
         }}
       >
-        {/* Gambar Utama menggunakan object-cover agar penuh dan memotong atas-bawah */}
         <img 
           src={data.image || "/Desain Poster Job.jpg"} 
           alt="Lowongan" 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Poster+Not+Found"; }} 
         />
-        {/* Overlay gradasi halus di bawah gambar agar teks di bawahnya lebih menyatu */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent z-10" />
+        
+        {/* --- EFEK GELOMBANG MENGGUNAKAN SVG --- */}
+        <svg 
+          className="absolute -bottom-[1px] left-0 w-full h-8 z-20" 
+          viewBox="0 0 1440 100" 
+          preserveAspectRatio="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            fill="#ffffff" 
+            d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"
+          ></path>
+        </svg>
+        
+        {/* Overlay gradasi halus */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent z-10" />
       </div>
 
-      <div className="p-5 flex-1 flex flex-col relative z-20">
+      <div className="p-5 pt-4 flex-1 flex flex-col relative z-20">
         <div className="flex justify-between items-start mb-1">
           <h3 className="font-black text-[#3C5759] text-lg leading-tight flex-1 line-clamp-2">{data.title}</h3>
           <span className="text-red-500 text-[10px] font-black uppercase bg-red-50 px-2 py-1 rounded-md ml-2 shrink-0">
@@ -174,9 +192,6 @@ function JobPosterCard({ data, onImageClick }) {
     </motion.div>
   );
 }
-
-
-
 export default function Beranda() {
   const greeting = getGreeting();
   const user = { nama_alumni: 'Wiwik Ainun', status: 'pending' }; 
