@@ -60,27 +60,27 @@ const UpdateKuesioner = () => {
             }
 
             setStatusKarirData(datast)
-            
-            let dataKuess = {} 
+
+            let dataKuess = {}
             let loadedQuestions = []
-            
+
             if (kuesionerDatas?.data?.data) {
                 const kuesiners = kuesionerDatas.data.data
                 dataKuess = {
-                    "title" : kuesiners.title,
-                    "id_status" : kuesiners.status_karir.nama,
-                    "deskripsi" : kuesiners.deskripsi,
-                    "tanggalMulai" : kuesiners.tanggal_mulai,
-                    "tanggalSelesai" : kuesiners.tanggal_selesai,
-                    "status" : kuesiners.status
+                    "title": kuesiners.title,
+                    "id_status": kuesiners.status_karir.nama,
+                    "deskripsi": kuesiners.deskripsi,
+                    "tanggalMulai": kuesiners.tanggal_mulai,
+                    "tanggalSelesai": kuesiners.tanggal_selesai,
+                    "status": kuesiners.status
                 }
-                
+
                 // Load pertanyaan dan opsi jawaban
                 if (kuesiners.pertanyaan && kuesiners.pertanyaan.length > 0) {
                     loadedQuestions = kuesiners.pertanyaan.map((pertanyaan) => ({
                         id: pertanyaan.id,
                         text: pertanyaan.isi_pertanyaan || '', // HTML content dari database
-                        options: pertanyaan.opsi && pertanyaan.opsi.length > 0 
+                        options: pertanyaan.opsi && pertanyaan.opsi.length > 0
                             ? pertanyaan.opsi.map(opt => opt.opsi) // HTML content dari database
                             : ['Opsi 1']
                     }))
@@ -88,7 +88,7 @@ const UpdateKuesioner = () => {
             }
 
             setFormData(dataKuess)
-            
+
             // Set questions jika ada data, atau gunakan default
             if (loadedQuestions.length > 0) {
                 setQuestions(loadedQuestions)
@@ -272,7 +272,7 @@ const UpdateKuesioner = () => {
             tanggal_mulai: tanggalMulai,
             tanggal_selesai: tanggalSelesai,
             id_status: statusObj?.id,
-            status: "aktif",
+            status: formData.status,
             created_at: new Date().toISOString()
         }
 
@@ -285,7 +285,6 @@ const UpdateKuesioner = () => {
             <TambahKuesionerSkeleton />
         )
     }
-
     // console.log(statusKarir)
     return (
         <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
@@ -419,7 +418,7 @@ const UpdateKuesioner = () => {
                                 {/* Deskripsi */}
                                 <div>
                                     <label className="text-[11px] font-bold text-secondary uppercase">Deskripsi Singkat</label>
-                                    <div className="relative mt-3">                                        
+                                    <div className="relative mt-3">
                                         <textarea
                                             rows="4"
                                             className={`w-full p-2.5 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-26.5`}
