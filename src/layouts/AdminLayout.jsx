@@ -19,6 +19,8 @@ export default function AdminLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const user = JSON.parse(localStorage.getItem('user'))
+
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-gray-50">
       {/* Sidebar tetap di kiri */}
@@ -26,7 +28,7 @@ export default function AdminLayout() {
 
       {/* Area Utama: Header + Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <Header toggleSidebar={() => setSidebar(!sidebar)} />
+        <Header toggleSidebar={() => setSidebar(!sidebar)} user={user.admin_profile.nama}/>
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto pt-20 custom-scrollbar">

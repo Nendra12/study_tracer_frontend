@@ -1,14 +1,14 @@
 import { Menu } from "lucide-react";
 import { matchPath, useLocation } from "react-router-dom";
 
-export default function Header({ toggleSidebar }) {
+export default function Header({ toggleSidebar, user }) {
   const location = useLocation();
 
   const routes = [
     {
       path: "/wb-admin",
       title: "Beranda Admin",
-      text: "Selamat datang kembali, Admin",
+      text: `Selamat datang kembali, admin ${user}`,
     },
     {
       path: "/wb-admin/manage-user",
