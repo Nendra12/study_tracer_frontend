@@ -120,6 +120,10 @@ export const adminApi = {
     return api.delete(`/admin/kuesioner/${id}`);
   },
 
+  getStatsKuesioner(id) {
+    return api.get(`/admin/kuesioner/${id}/statistics`);
+  },
+
   getPertanyaanAll() {
     return api.get('/admin/pertanyaan')
   },

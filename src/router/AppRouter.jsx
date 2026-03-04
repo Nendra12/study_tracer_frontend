@@ -23,6 +23,7 @@ import Beranda from "../pages/alumni/beranda";
 import Alumni from "../pages/alumni/alumni"; 
 import Lowongan from "../pages/alumni/lowongan"; 
 import Profil from "../pages/alumni/profil";
+import StatistikKuesioner from "../pages/admin/StatistikKuesioner";
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -64,6 +65,7 @@ export default function AppRouter() {
             <Route path="update-kuesioner/:id" element={<UpdateKuesioner />} />      
             <Route path="tinjau-jawaban/:jawabanid" >
               <Route index element={<LihatJawaban />} />
+              <Route path="statistik" element={<StatistikKuesioner />} />
               <Route path="detail/:detailid" element={<LihatJawabanDetail />} />
             </Route>
           </Route>
