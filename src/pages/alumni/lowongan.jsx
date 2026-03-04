@@ -179,15 +179,35 @@ export default function Lowongan() {
 
       const responseData = res.data.data;
 
-      if (Array.isArray(responseData)) {
-        setLowongan(responseData);
-        setTotalPages(1);
-      } else if (responseData?.data) {
-        setLowongan(responseData.data);
-        setTotalPages(responseData.last_page || 1);
-        setCurrentPage(responseData.current_page || 1);
+      if (activeTab === 'disimpan') {
+        // SavedLowonganResource wraps lowongan data under .lowongan
+        const items = Array.isArray(responseData?.data) ? responseData.data : (Array.isArray(responseData) ? responseData : []);
+        const unwrapped = items.map(item => ({
+          ...(item.lowongan || item),
+          is_saved: true,
+          id_simpan: item.id_simpan,
+        }));
+        setLowongan(unwrapped);
+        setTotalPages(responseData?.last_page || 1);
+        setCurrentPage(responseData?.current_page || 1);
       } else {
-        setLowongan([]);
+        // LowonganAlumniResource + saved_ids as additional data
+        const savedIds = responseData?.saved_ids || [];
+
+        if (Array.isArray(responseData)) {
+          setLowongan(responseData.map(job => ({ ...job, is_saved: savedIds.includes(job.id) })));
+          setTotalPages(1);
+        } else if (responseData?.data) {
+          const items = responseData.data.map(job => ({
+            ...job,
+            is_saved: savedIds.includes(job.id),
+          }));
+          setLowongan(items);
+          setTotalPages(responseData.last_page || 1);
+          setCurrentPage(responseData.current_page || 1);
+        } else {
+          setLowongan([]);
+        }
       }
     } catch (err) {
       console.error('Failed to load lowongan:', err);

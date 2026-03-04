@@ -49,7 +49,7 @@ function LockOverlay({ message = "Fitur ini terkunci" }) {
 function AlumniProfileCard({ data, locked, onImageClick }) {
   if (!data) return null;
 
-  const defaultAvatar = `https://ui-avatars.com/api/?name=${data.nama ? data.nama.replace(' ', '+') : 'A'}&background=3C5759&color=fff&size=150`;
+  const defaultAvatar = `https://ui-avatars.com/api/?name=${data.name ? data.name.replace(' ', '+') : 'A'}&background=3C5759&color=fff&size=150`;
   const imageSrc = data.foto ? getImageUrl(data.foto) : defaultAvatar;
 
   return (
@@ -70,7 +70,7 @@ function AlumniProfileCard({ data, locked, onImageClick }) {
           >
             <img 
               src={imageSrc} 
-              alt={data.nama} 
+              alt={data.name} 
               className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-300 group-hover:scale-110'}`}
             />
           </div>
@@ -78,7 +78,7 @@ function AlumniProfileCard({ data, locked, onImageClick }) {
           {/* BAGIAN 2: Penjelasan (Teks) */}
           <div className="flex-1 flex flex-col justify-center">
             <div className="mb-2">
-              <h3 className="font-bold text-[#3C5759] text-sm line-clamp-1">{data.nama}</h3>
+              <h3 className="font-bold text-[#3C5759] text-sm line-clamp-1">{data.name}</h3>
               <p className="text-slate-400 text-[11px]">Angkatan {data.angkatan}</p>
             </div>
             
@@ -122,13 +122,17 @@ function JobPosterCard({ data, onImageClick, locked }) {
   const lokasi = data.perusahaan?.kota 
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
     : (data.lokasi || '-');
+  const waktuBerakhir = data.lowongan_selesai 
+    ? new Date(data.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', 23:59 WIB'
+    : null;
 
   return (
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div 
         whileHover={locked ? {} : { y: -8 }} 
-        className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full transition-all duration-300 group"
+        className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full cursor-pointer transition-all duration-300 group"
       >
+        {/* Kontainer Gambar */}
         <div 
           className={`h-56 overflow-hidden relative ${locked ? '' : 'cursor-pointer'}`}
           onClick={(e) => {
@@ -170,10 +174,10 @@ function JobPosterCard({ data, onImageClick, locked }) {
             )}
           </div>
           
-          {data.lowongan_selesai && (
+          {waktuBerakhir && (
             <div className="mb-3">
               <span className="text-slate-500 flex items-center gap-1 text-[11px] font-medium">
-                Berakhir: {new Date(data.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                Berakhir: {waktuBerakhir}
               </span>
             </div>
           )}
@@ -371,7 +375,7 @@ export default function Beranda() {
                       <div className="flex-1 ml-2 md:ml-0">
                         <h3 className="text-base font-bold text-slate-800 mb-1">Status Verifikasi Akun</h3>
                         <p className="text-slate-500 text-sm max-w-3xl leading-relaxed">
-                          Akun Anda sedang dalam proses peninjauan. Anda tetap dapat memperbarui profil dan mengisi kuesioner, namun akses ke fitur bursa kerja dan jejaring alumni akan dikunci hingga proses verifikasi selesai.
+                          Akun Anda sedang dalam proses peninjauan. Anda tetap dapat memperbarui profil, namun akses ke fitur bursa kerja dan jejaring alumni akan dikunci hingga proses verifikasi selesai.
                         </p>
                       </div>
                       <button 
@@ -400,10 +404,7 @@ export default function Beranda() {
                       <div className="flex-1 ml-2 md:ml-0">
                         <h3 className="text-base font-bold text-slate-800 mb-1">Tugas Kuesioner</h3>
                         <p className="text-slate-500 text-sm max-w-3xl leading-relaxed">
-                          {!isVerified 
-                            ? `Sambil menunggu verifikasi, silakan isi ${kuesionerPending.length} kuesioner tracer study sesuai status karir Anda.`
-                            : `Anda memiliki ${kuesionerPending.length} kuesioner yang belum diselesaikan. Isi kuesioner untuk membuka akses penuh ke semua fitur.`
-                          }
+                          Anda memiliki formulir kuesioner tracer study yang belum diselesaikan. Mohon luangkan waktu untuk mengisi kuesioner demi peningkatan kualitas pembelajaran almamater kita.
                         </p>
                       </div>
                       <button 
@@ -443,7 +444,7 @@ export default function Beranda() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
                 {alumniTerbaru.data?.length > 0 ? (
-                  alumniTerbaru.data.map((alumni) => (
+                  alumniTerbaru.data.slice(0, 4).map((alumni) => (
                     <AlumniProfileCard 
                       key={alumni.id} 
                       data={alumni} 
@@ -480,7 +481,7 @@ export default function Beranda() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch">
                 {lowonganTerbaru.data?.length > 0 ? (
-                  lowonganTerbaru.data.map((job) => (
+                  lowonganTerbaru.data.slice(0, 4).map((job) => (
                     <JobPosterCard 
                       key={job.id} 
                       data={job} 
@@ -504,7 +505,7 @@ export default function Beranda() {
                 <div className="divide-y divide-slate-50">
                   {topPerusahaan.data?.length > 0 ? (
                     topPerusahaan.data.map((comp, idx) => (
-                      <div key={comp.id || idx} className="flex items-center justify-between py-5 group hover:bg-slate-50/50 transition-all px-4 rounded-xl">
+                      <div key={comp.id || idx} className="flex items-center justify-between py-5 group hover:bg-slate-50/50 transition-all px-4 rounded-xl cursor-pointer">
                         <div className="flex items-center gap-5">
                           <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-[#3C5759] group-hover:bg-white group-hover:shadow-sm transition-all border border-slate-100">
                             <Building2 size={22} />
