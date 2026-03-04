@@ -1,6 +1,16 @@
 import api from './axios';
 
 export const alumniApi = {
+  // Beranda
+  getBeranda() {
+    return api.get('/alumni/beranda');
+  },
+
+  getStatusPengajuan() {
+    return api.get('/alumni/status-pengajuan');
+  },
+
+  // Profile
   getProfile() {
     return api.get('/alumni/profile');
   },
@@ -15,8 +25,13 @@ export const alumniApi = {
     return api.post('/alumni/career-status', data);
   },
 
-  getSavedLowongan() {
-    return api.get('/alumni/saved-lowongan');
+  // Lowongan (restricted - needs verified + kuesioner)
+  getLowongan(params = {}) {
+    return api.get('/alumni/lowongan', { params });
+  },
+
+  getSavedLowongan(params = {}) {
+    return api.get('/alumni/saved-lowongan', { params });
   },
 
   toggleSaveLowongan(id) {
@@ -24,6 +39,10 @@ export const alumniApi = {
   },
 
   // Kuesioner
+  getKuesionerByStatus(statusId) {
+    return api.get(`/alumni/kuesioner/status/${statusId}`);
+  },
+
   getKuesionerDetail(id) {
     return api.get(`/alumni/kuesioner/${id}`);
   },
@@ -35,8 +54,8 @@ export const alumniApi = {
 
 // Public endpoints
 export const publicApi = {
-  getPublishedLowongan() {
-    return api.get('/lowongan/published');
+  getPublishedLowongan(params = {}) {
+    return api.get('/lowongan/published', { params });
   },
 
   getLowonganDetail(id) {

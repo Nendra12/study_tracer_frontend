@@ -287,23 +287,23 @@ const UpdateKuesioner = () => {
     }
     // console.log(statusKarir)
     return (
-        <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
+        <div className="space-y-4 sm:space-y-6 max-w-full p-2 sm:p-4 lg:p-6 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
 
                     <Link
                         to="/wb-admin/kuisoner"
                         className="flex items-center gap-2 text-third hover:text-primary transition-colors text-sm font-medium group"
                     >
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        Kembali
+                        <span className="hidden sm:inline">Kembali</span>
                     </Link>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                         <button
                             onClick={handleSimpan}
                             disabled={isValidating}
-                            className="cursor-pointer flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Save size={18} /> {isValidating ? 'Memproses...' : 'Simpan'}
                         </button>
@@ -312,7 +312,7 @@ const UpdateKuesioner = () => {
 
                 {/* Error Summary */}
                 {Object.keys(errors).length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="flex items-start gap-3">
                             <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />
                             <div className="flex-1">
@@ -327,23 +327,23 @@ const UpdateKuesioner = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
 
                     {/* LEFT BOX: Konfigurasi Kuesioner (Sesuai Sketsa) */}
-                    <div className="lg:col-span-4 space-y-6 sticky top-8">
-                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                            <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
+                    <div className="lg:col-span-4 space-y-4 sm:space-y-6 lg:sticky lg:top-8">
+                        <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+                            <h2 className="text-base sm:text-lg font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2">
                                 Data Kuesioner
                             </h2>
 
-                            <div className="space-y-5">
+                            <div className="space-y-4 sm:space-y-5">
                                 {/* title */}
                                 <div data-error={!!errors.title}>
-                                    <label className="text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
-                                    <div className="relative mt-3">
+                                    <label className="text-[10px] sm:text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
+                                    <div className="relative mt-2 sm:mt-3">
                                         <input
                                             type="text"
-                                            className={`w-full p-3 bg-white border ${errors.title ? 'border-red-400 focus:ring-red-400' : 'border-fourth focus:ring-primary'} rounded-xl text-sm outline-none focus:ring-2 transition-all`}
+                                            className={`w-full p-2.5 sm:p-3 bg-white border ${errors.title ? 'border-red-400 focus:ring-red-400' : 'border-fourth focus:ring-primary'} rounded-lg sm:rounded-xl text-sm outline-none focus:ring-2 transition-all`}
                                             placeholder="Masukan title kuesioner.."
                                             value={formData.title}
                                             onChange={(e) => {
@@ -417,11 +417,11 @@ const UpdateKuesioner = () => {
 
                                 {/* Deskripsi */}
                                 <div>
-                                    <label className="text-[11px] font-bold text-secondary uppercase">Deskripsi Singkat</label>
-                                    <div className="relative mt-3">
+                                    <label className="text-[10px] sm:text-[11px] font-bold text-secondary uppercase">Deskripsi Singkat</label>
+                                    <div className="relative mt-2 sm:mt-3">
                                         <textarea
                                             rows="4"
-                                            className={`w-full p-2.5 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-26.5`}
+                                            className={`w-full p-2.5 bg-white border border-fourth rounded-lg sm:rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-26.5`}
                                             placeholder="Berikan instruksi atau tujuan kuesioner..."
                                             onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
                                             value={formData.deskripsi || ""}
@@ -433,11 +433,11 @@ const UpdateKuesioner = () => {
                     </div>
 
                     {/* RIGHT BOX: Daftar Pertanyaan (Google Form Style) */}
-                    <div className="lg:col-span-8 space-y-6">
-                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm min-h-150" data-error={!!(errors.questions || errors.options)}>
-                            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-                                <div className="flex-1">
-                                    <h2 className="text-lg font-bold text-primary">Daftar Pertanyaan Pilihan Ganda</h2>
+                    <div className="lg:col-span-8 space-y-4 sm:space-y-6">
+                        <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm min-h-150" data-error={!!(errors.questions || errors.options)}>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8 pb-4 border-b border-slate-100">
+                                <div className="flex-1 w-full sm:w-auto">
+                                    <h2 className="text-base sm:text-lg font-bold text-primary">Daftar Pertanyaan Pilihan Ganda</h2>
                                     {(errors.questions || errors.options) && (
                                         <div className="mt-2 space-y-1">
                                             {errors.questions && (
@@ -455,28 +455,28 @@ const UpdateKuesioner = () => {
                                 </div>
                                 <button
                                     onClick={addQuestion}
-                                    className="cursor-pointer text-xs bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
+                                    className="cursor-pointer w-full sm:w-auto text-xs bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Plus size={16} /> Tambah Pertanyaan
+                                    <Plus size={16} /> <span className="hidden sm:inline">Tambah Pertanyaan</span><span className="sm:hidden">Tambah</span>
                                 </button>
                             </div>
 
-                            <div className="space-y-8">
+                            <div className="space-y-6 sm:space-y-8">
                                 {questions.map((q, qIndex) => (
-                                    <div key={q.id} className="group relative bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-6 rounded-2xl transition-all duration-300">
-                                        {/* Drag Handle (Visual Only) */}
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 p-1 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div key={q.id} className="group relative bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-300">
+                                        {/* Drag Handle (Visual Only) - Hidden on mobile */}
+                                        <div className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 p-1 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <GripVertical size={20} />
                                         </div>
 
-                                        <div className="flex gap-4">
-                                            <span className="flex-none w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                                        <div className="flex gap-3 sm:gap-4">
+                                            <span className="flex-none w-7 h-7 sm:w-8 sm:h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm">
                                                 {qIndex + 1}
                                             </span>
-                                            <div className="grow space-y-4">
+                                            <div className="grow space-y-3 sm:space-y-4">
                                                 {/* Input Pertanyaan */}
-                                                <div className="flex items-start gap-4">
-                                                    <div className="grow">
+                                                <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
+                                                    <div className="grow w-full">
                                                         <RichTextEditor
                                                             content={q.text}
                                                             onChange={(html) => updateQuestionText(q.id, html)}
@@ -486,17 +486,17 @@ const UpdateKuesioner = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => removeQuestion(q.id)}
-                                                        className="cursor-pointer p-2 text-slate-300 hover:text-red-500 transition-colors flex-none"
+                                                        className="cursor-pointer self-end sm:self-start p-2 text-slate-300 hover:text-red-500 transition-colors flex-none rounded-lg hover:bg-red-50"
                                                     >
-                                                        <Trash2 size={18} />
+                                                        <Trash2 size={16} className="sm:w-4.5 sm:h-4.5" />
                                                     </button>
                                                 </div>
 
                                                 {/* Pilihan Jawaban */}
-                                                <div className="space-y-3 ml-2">
+                                                <div className="space-y-2 sm:space-y-3 ml-1 sm:ml-2">
                                                     {q.options.map((opt, optIndex) => (
-                                                        <div key={optIndex} className="flex items-start gap-3">
-                                                            <div className="w-4 h-4 rounded-full border-2 border-slate-300 flex-none mt-3"></div>
+                                                        <div key={optIndex} className="flex items-start gap-2 sm:gap-3">
+                                                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-slate-300 flex-none mt-2.5 sm:mt-3"></div>
                                                             <div className="grow">
                                                                 <RichTextEditor
                                                                     content={opt}
@@ -508,16 +508,16 @@ const UpdateKuesioner = () => {
                                                             {q.options.length > 1 && (
                                                                 <button
                                                                     onClick={() => removeOption(q.id, optIndex)}
-                                                                    className="cursor-pointer text-slate-300 hover:text-red-500 transition-colors p-2 flex-none"
+                                                                    className="cursor-pointer text-slate-300 hover:text-red-500 transition-colors p-1.5 sm:p-2 flex-none rounded-lg hover:bg-red-50"
                                                                 >
-                                                                    <Trash2 size={14} />
+                                                                    <Trash2 size={13} className="sm:w-3.5 sm:h-3.5" />
                                                                 </button>
                                                             )}
                                                         </div>
                                                     ))}
                                                     <button
                                                         onClick={() => addOption(q.id)}
-                                                        className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-7 pt-2 hover:underline active:opacity-70"
+                                                        className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-5 sm:ml-7 pt-2 hover:underline active:opacity-70"
                                                     >
                                                         <Plus size={14} /> Tambah Opsi
                                                     </button>
@@ -528,9 +528,9 @@ const UpdateKuesioner = () => {
                                 ))}
 
                                 {questions.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-slate-100 rounded-3xl">
-                                        <LayoutList size={48} className="mb-4 opacity-20" />
-                                        <p className="text-sm font-medium">Belum ada pertanyaan ditambahkan.</p>
+                                    <div className="flex flex-col items-center justify-center py-12 sm:py-20 text-slate-400 border-2 border-dashed border-slate-100 rounded-2xl sm:rounded-3xl">
+                                        <LayoutList size={36} className="sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-20" />
+                                        <p className="text-xs sm:text-sm font-medium text-center px-4">Belum ada pertanyaan ditambahkan.</p>
                                     </div>
                                 )}
                             </div>

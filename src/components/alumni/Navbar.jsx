@@ -1,16 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GraduationCap, Search, User, LogOut } from 'lucide-react';
+import { GraduationCap, Search, User, LogOut, Lock } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { STORAGE_BASE_URL } from '../../api/axios';
+
+function getImageUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${STORAGE_BASE_URL}/${path}`;
+}
 
 export default function Navbar({ user }) {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const canAccessAll = user?.can_access_all ?? true;
+
   const navItems = [
-    { label: 'Beranda', path: '/' },
-    { label: 'Alumni', path: '/alumni' },
-    { label: 'Lowongan Kerja', path: '/lowongan' }
+    { label: 'Beranda', path: '/', locked: false },
+    { label: 'Alumni', path: '/alumni', locked: !canAccessAll },
+    { label: 'Lowongan Kerja', path: '/lowongan', locked: !canAccessAll }
   ];
 
   // Fungsi untuk menutup dropdown saat klik di luar area
@@ -26,6 +35,8 @@ export default function Navbar({ user }) {
     };
   }, []);
 
+  const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-16 flex items-center justify-between">
@@ -39,6 +50,19 @@ export default function Navbar({ user }) {
         <div className="hidden md:flex bg-slate-100 rounded-full p-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
+
+            if (item.locked) {
+              return (
+                <span
+                  key={item.label}
+                  className="px-5 py-1.5 rounded-full text-xs font-bold text-slate-300 cursor-not-allowed flex items-center gap-1"
+                  title="Verifikasi & isi kuesioner untuk mengakses"
+                >
+                  <Lock size={10} /> {item.label}
+                </span>
+              );
+            }
+
             return (
               <Link 
                 key={item.label} 
@@ -64,9 +88,13 @@ export default function Navbar({ user }) {
             {/* Tombol Profil */}
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-[#3C5759] border-2 border-white shadow-sm flex items-center justify-center text-white text-xs font-bold hover:scale-105 transition-transform cursor-pointer focus:outline-none"
+              className="w-8 h-8 rounded-full bg-[#3C5759] border-2 border-white shadow-sm flex items-center justify-center text-white text-xs font-bold hover:scale-105 transition-transform cursor-pointer focus:outline-none overflow-hidden"
             >
-              {user?.nama_alumni?.charAt(0) || 'A'}
+              {fotoUrl ? (
+                <img src={fotoUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                user?.nama_alumni?.charAt(0) || 'A'
+              )}
             </button>
 
             {/* Menu Dropdown */}

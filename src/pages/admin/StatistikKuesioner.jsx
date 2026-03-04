@@ -20,6 +20,14 @@ function StatistikKuesioner() {
     const [totaljawaban, setTotalJawaban] = useState(0)
     const [kuesioner, setKuesioner] = useState({})
 
+    // Helper function to strip HTML tags for chart labels
+    const stripHtml = (html) => {
+        if (!html) return '';
+        const tmp = document.createElement('DIV');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+    };
+
     const fetchData = async (id) => {
         try {
             setLoading(true)
@@ -74,28 +82,75 @@ function StatistikKuesioner() {
                 windowWidth: element.scrollWidth,
                 windowHeight: element.scrollHeight,
                 onclone: (clonedDoc) => {
-                    // Add a style tag to override oklch with rgb fallbacks
+                    // Override all oklch colors with hex fallbacks
                     const style = clonedDoc.createElement('style');
                     style.textContent = `
+                        * {
+                            /* Reset any oklch in custom properties */
+                            --tw-bg-opacity: 1 !important;
+                            --tw-text-opacity: 1 !important;
+                            --tw-border-opacity: 1 !important;
+                        }
+                        
+                        /* Background colors */
                         .bg-primary { background-color: #3b82f6 !important; }
+                        .bg-white { background-color: #ffffff !important; }
+                        .bg-slate-50 { background-color: #f8fafc !important; }
+                        .bg-slate-100 { background-color: #f1f5f9 !important; }
+                        
+                        /* Text colors */
                         .text-primary { color: #3b82f6 !important; }
                         .text-third { color: #64748b !important; }
                         .text-fourth { color: #f8fafc !important; }
                         .text-white { color: #ffffff !important; }
-                        .text-slate-600 { color: #475569 !important; }
                         .text-slate-400 { color: #94a3b8 !important; }
+                        .text-slate-500 { color: #64748b !important; }
+                        .text-slate-600 { color: #475569 !important; }
+                        .text-slate-700 { color: #334155 !important; }
                         .text-slate-800 { color: #1e293b !important; }
                         .text-slate-900 { color: #0f172a !important; }
                         .text-gray-600 { color: #4b5563 !important; }
+                        .text-gray-700 { color: #374151 !important; }
                         .text-gray-900 { color: #111827 !important; }
-                        .bg-white { background-color: #ffffff !important; }
-                        .bg-slate-50 { background-color: #f8fafc !important; }
+                        
+                        /* Border colors */
+                        .border-slate-100 { border-color: #f1f5f9 !important; }
                         .border-slate-200 { border-color: #e2e8f0 !important; }
-                        .border-gray-200 { border-color: #e5e7eb !important; }
                         .border-gray-100 { border-color: #f3f4f6 !important; }
-                        .rounded-xl, .rounded-2xl { border-radius: 0.75rem !important; }
+                        .border-gray-200 { border-color: #e5e7eb !important; }
+                        
+                        /* Hover states */
+                        .hover\\:bg-slate-50 { background-color: #f8fafc !important; }
+                        
+                        /* Transitions and shadows - disable for PDF */
+                        .transition-all, .transition-colors, .transition-shadow, .transition-transform {
+                            transition: none !important;
+                        }
+                        
+                        /* HTML Content Styling for PDF */
+                        .html-content p { margin: 0.25rem 0 !important; }
+                        .html-content strong { font-weight: 700 !important; }
+                        .html-content em { font-style: italic !important; }
+                        .html-content u { text-decoration: underline !important; }
+                        .html-content ul, .html-content ol { margin-left: 1.5rem !important; padding-left: 0.5rem !important; }
+                        .html-content li { margin: 0.25rem 0 !important; }
+                        .html-content a { color: #3b82f6 !important; }
                     `;
                     clonedDoc.head.appendChild(style);
+
+                    // Also override any inline styles with oklch
+                    const allElements = clonedDoc.getElementsByTagName('*');
+                    for (let el of allElements) {
+                        if (el.style.color && el.style.color.includes('oklch')) {
+                            el.style.color = '#000000';
+                        }
+                        if (el.style.backgroundColor && el.style.backgroundColor.includes('oklch')) {
+                            el.style.backgroundColor = '#ffffff';
+                        }
+                        if (el.style.borderColor && el.style.borderColor.includes('oklch')) {
+                            el.style.borderColor = '#e2e8f0';
+                        }
+                    }
                 }
             });
 
@@ -143,6 +198,61 @@ function StatistikKuesioner() {
     return (
         <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
             <div className="max-w-6xl mx-auto">
+                {/* Global styles for HTML content */}
+                <style>{`
+                    .html-content p {
+                        margin: 0.25rem 0;
+                        line-height: 1.5;
+                    }
+                    .html-content strong {
+                        font-weight: 700;
+                    }
+                    .html-content em {
+                        font-style: italic;
+                    }
+                    .html-content u {
+                        text-decoration: underline;
+                    }
+                    .html-content ul, .html-content ol {
+                        margin-left: 1.5rem;
+                        padding-left: 0.5rem;
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.5rem;
+                    }
+                    .html-content li {
+                        margin: 0.25rem 0;
+                    }
+                    .html-content h1, .html-content h2, .html-content h3 {
+                        font-weight: 700;
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.5rem;
+                    }
+                    .html-content a {
+                        color: #3b82f6;
+                        text-decoration: underline;
+                    }
+                    .html-content code {
+                        background-color: #f1f5f9;
+                        padding: 0.125rem 0.25rem;
+                        border-radius: 0.25rem;
+                        font-family: monospace;
+                        font-size: 0.875em;
+                    }
+                    .html-content pre {
+                        background-color: #f1f5f9;
+                        padding: 0.75rem;
+                        border-radius: 0.5rem;
+                        overflow-x: auto;
+                        margin: 0.5rem 0;
+                    }
+                    .html-content blockquote {
+                        border-left: 4px solid #e2e8f0;
+                        padding-left: 1rem;
+                        margin: 0.5rem 0;
+                        color: #64748b;
+                    }
+                `}</style>
+
                 <div className="flex justify-between items-center gap-4 mb-6">
                     <Link
                         to="/wb-admin/kuisoner"
@@ -157,11 +267,11 @@ function StatistikKuesioner() {
                             onClick={handleExportPDF}
                             disabled={isExporting || statistik.length === 0}
                             className={`cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 text-sm font-bold shadow-sm transition-all ${isExporting || statistik.length === 0
-                                    ? 'opacity-50 cursor-not-allowed'
-                                    : 'hover:bg-slate-50 hover:border-slate-300'
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-slate-50 hover:border-slate-300'
                                 }`}
                         >
-                            <FileDown size={18} className={isExporting ? 'animate-bounce' : ''} />
+                            <FileDown size={18} className="shrink-0" />
                             <span className="inline">
                                 {isExporting ? 'Membuat PDF...' : 'PDF'}
                             </span>
@@ -198,7 +308,7 @@ function StatistikKuesioner() {
                         {/* Card Pertanyaan 2 */}
                         {
                             statistik?.map((st, index) => (
-                                
+
                                 <div
                                     key={index}
                                     className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
@@ -215,9 +325,10 @@ function StatistikKuesioner() {
                                             </span>
                                         </div>
 
-                                        <h3 className="mt-3 text-sm font-semibold text-fourth leading-snug">
-                                            {st.pertanyaan}
-                                        </h3>
+                                        <div
+                                            className="mt-3 text-sm font-semibold text-fourth leading-snug html-content"
+                                            dangerouslySetInnerHTML={{ __html: st.pertanyaan }}
+                                        />
                                     </div>
 
                                     {/* Chart Section */}
@@ -225,11 +336,50 @@ function StatistikKuesioner() {
                                         <ChartKuesioner
                                             subtitle=""
                                             series={st.statistiks?.map(item => item.percentage) || []}
-                                            labels={st.statistiks?.map(item => item.opsi) || []}
+                                            labels={st.statistiks?.map(item => stripHtml(item.opsi)) || []}
                                         />
-                                    </div>
+                                        {/* Detail Opsi Jawaban dengan HTML */}
+                                        <div className="mt-6 pt-6 border-t border-slate-100">
+                                            <h4 className="text-xs font-bold text-slate-600 uppercase mb-3">Detail Jawaban</h4>
+                                            <div className="space-y-2">
+                                                {st.statistiks?.map((item, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors"
+                                                    >
+                                                        <div
+                                                            className="w-3 h-3 rounded-full shrink-0 mt-1"
+                                                            style={{
+                                                                backgroundColor: [
+                                                                    "#6366f1",
+                                                                    "#3b82f6",
+                                                                    "#06b6d4",
+                                                                    "#10b981",
+                                                                    "#f59e0b",
+                                                                    "#f43f5e",
+                                                                ][idx % 6]
+                                                            }}
+                                                        />
+                                                        <div className="flex-1">
+                                                            <div
+                                                                className="text-sm text-slate-700 html-content"
+                                                                dangerouslySetInnerHTML={{ __html: item.opsi }}
+                                                            />
+                                                            <div className="flex gap-3 mt-1">
+                                                                <span className="text-xs text-slate-500">
+                                                                    {item.count} responden
+                                                                </span>
+                                                                <span className="text-xs font-semibold text-primary">
+                                                                    {item.percentage}%
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>                                    </div>
                                 </div>
-                            
+
                             ))
                         }
                     </div>

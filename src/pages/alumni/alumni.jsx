@@ -77,14 +77,11 @@ export default function Alumni() {
         {/* GAMBAR BACKGROUND */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="/backgroundAlumni.jpg" 
+            src="/background3.jpeg" 
             alt="Background" 
             className="w-full h-full object-cover" 
           />
-          {/* Overlay rata tanpa blur kiri-kanan agar teks tetap terbaca */}
-          <div className="absolute inset-0 bg-white/40"></div>
-          
-          {/* Efek Blur / Fade Out hanya ke arah bawah */}
+          <div className="absolute inset-0 bg-white/50 md:bg-gradient-to-r md:from-white/80 md:via-white/60 md:to-white/20"></div>
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#f8f9fa]"></div>
         </div>
 

@@ -129,8 +129,6 @@ export default function Dashboard() {
     return dist;
   }, [dashData]);
 
-  console.log(statusDistribution)
-
   function hitungPersen(data) {
     let bagian = 0
     data.map((temp) => {
