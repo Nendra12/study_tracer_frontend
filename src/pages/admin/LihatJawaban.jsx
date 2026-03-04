@@ -12,7 +12,8 @@ import {
   Users,
   ArrowLeft,
   UserSearch,
-  Ghost
+  Ghost,
+  ChartNoAxesCombined
 } from "lucide-react";
 import SmoothDropdown from "../../components/admin/SmoothDropdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -256,6 +257,10 @@ export default function LihatJawaban() {
     navigate(`/wb-admin/kuisoner/tinjau-jawaban/${jawabanid}/detail/${id}`);
   };
 
+  const handleStatistik = () => {
+    navigate(`/wb-admin/kuisoner/tinjau-jawaban/${jawabanid}/statistik`);
+  }
+
   return (
     <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
       {
@@ -290,6 +295,14 @@ export default function LihatJawaban() {
                   <FileSpreadsheet size={18} />
                   <span className="hidden sm:inline">Excel</span>
                 </button>
+                <button
+                  onClick={handleStatistik}
+                  className="cursor-pointer border-orange-200 border flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-orange-500 rounded-xl text-sm font-bold shadow-md shadow-[#3D5A5C]/20 hover:bg-orange-100 transition-all active:scale-95"
+                >
+                  <ChartNoAxesCombined size={18} />
+                  <span className="hidden sm:inline">Statistik</span>
+                </button>
+                
               </div>
             </div>
 

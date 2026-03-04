@@ -3,17 +3,13 @@ import {
     Plus,
     Trash2,
     Save,
-    ChevronLeft,
     GripVertical,
-    Calendar as CalendarIcon,
-    Type,
-    AlignLeft,
     LayoutList,
     ArrowLeft,
     Archive,
     AlertCircle
 } from 'lucide-react';
-import { data, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import DateRangePicker from '../../components/DatePicker';
 import RichTextEditor from '../../components/admin/RichTextEditor';
@@ -22,33 +18,11 @@ import { alertSuccess, alertError } from '../../utilitis/alert';
 import { parseISO, isBefore } from 'date-fns';
 
 const TambahKuisioner = () => {
-    // State untuk Data Kuesioner (Box Kiri)
-
-    const navigate = useNavigate()
-    const [statusKarir, setStatusKarir] = useState('')
-    const [statusKarirData, setStatusKarirData] = useState([])
-    const [errors, setErrors] = useState({})
-    const [isValidating, setIsValidating] = useState(false)
-
-    const fetchData = async () => {
-        try {
-            const [dataKarir] = await Promise.all([
-                adminApi.getStatus().catch(() => null)
-            ])
-
-            let datast = []
-            if (dataKarir?.data?.data) {
-                setStatusKarir(dataKarir.data.data)
-                dataKarir.data.data.map((val) => {
-                    datast.push(val.nama)
-                })
-            }
-
-            setStatusKarirData(datast)
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    const navigate = useNavigate();
+    const [statusKarir, setStatusKarir] = useState([]);
+    const [statusKarirData, setStatusKarirData] = useState([]);
+    const [errors, setErrors] = useState({});
+    const [isValidating, setIsValidating] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -59,30 +33,31 @@ const TambahKuisioner = () => {
         status: ''
     });
 
-    useEffect(() => {
-        const call = async () => {
-            const data = await fetchData()
-        }
-
-        call()
-    }, [])
-
-
-    useEffect(() => {
-        if (statusKarirData?.length > 0) {
-            setFormData(prev => ({
-                ...prev,
-                id_status: statusKarirData[0]
-            }))
-        }
-    }, [statusKarirData])
-
-    // State untuk Pertanyaan (Box Kanan)
     const [questions, setQuestions] = useState([
         { id: 1, text: '', options: ['Opsi 1'] }
     ]);
 
-    // Handlers untuk Pertanyaan
+    const fetchData = async () => {
+        try {
+            const dataKarir = await adminApi.getStatus();
+            if (dataKarir?.data?.data) {
+                setStatusKarir(dataKarir.data.data);
+                const names = dataKarir.data.data.map((val) => val.nama);
+                setStatusKarirData(names);
+                if (names.length > 0) {
+                    setFormData(prev => ({ ...prev, id_status: names[0] }));
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // Handlers
     const addQuestion = () => {
         const newId = questions.length > 0 ? questions[questions.length - 1].id + 1 : 1;
         setQuestions([...questions, { id: newId, text: '', options: ['Opsi 1'] }]);
@@ -125,82 +100,35 @@ const TambahKuisioner = () => {
         }));
     };
 
-    // Fungsi Validasi
     const validateForm = (isDraft = false) => {
         const newErrors = {};
         const now = new Date();
 
-        // Validasi Title
-        if (!formData.title || formData.title.trim() === '') {
+        if (!formData.title?.trim()) {
             newErrors.title = 'Judul kuesioner wajib diisi';
         } else if (formData.title.trim().length < 5) {
             newErrors.title = 'Judul minimal 5 karakter';
         }
 
-        // Validasi Status Karier
         if (!formData.id_status) {
             newErrors.id_status = 'Target karier wajib dipilih';
         }
 
-        // Validasi Tanggal untuk Publish (wajib), optional untuk Draft
         if (!isDraft) {
-            if (!formData.tanggalMulai) {
-                newErrors.tanggalMulai = 'Tanggal mulai wajib diisi untuk publish';
-            } else {
-                // Validasi waktu mulai tidak boleh kurang dari sekarang
-                const startDate = parseISO(formData.tanggalMulai);
-                if (isBefore(startDate, now)) {
-                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
-                }
-            }
-
-            if (!formData.tanggalSelesai) {
-                newErrors.tanggalSelesai = 'Tanggal selesai wajib diisi untuk publish';
-            } else if (formData.tanggalMulai) {
-                const startDate = parseISO(formData.tanggalMulai);
-                const endDate = parseISO(formData.tanggalSelesai);
-                if (isBefore(endDate, startDate)) {
-                    newErrors.tanggalSelesai = 'Tanggal selesai harus lebih besar dari tanggal mulai';
-                }
-            }
-        } else {
-            // Untuk draft, jika tanggal diisi, tetap validasi
-            if (formData.tanggalMulai) {
-                const startDate = parseISO(formData.tanggalMulai);
-                if (isBefore(startDate, now)) {
-                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
-                }
-            }
+            if (!formData.tanggalMulai) newErrors.tanggalMulai = 'Tanggal mulai wajib diisi';
+            if (!formData.tanggalSelesai) newErrors.tanggalSelesai = 'Tanggal selesai wajib diisi';
 
             if (formData.tanggalMulai && formData.tanggalSelesai) {
-                const startDate = parseISO(formData.tanggalMulai);
-                const endDate = parseISO(formData.tanggalSelesai);
-                if (isBefore(endDate, startDate)) {
-                    newErrors.tanggalSelesai = 'Tanggal selesai harus lebih besar dari tanggal mulai';
+                if (isBefore(parseISO(formData.tanggalSelesai), parseISO(formData.tanggalMulai))) {
+                    newErrors.tanggalSelesai = 'Tanggal selesai harus setelah tanggal mulai';
                 }
             }
-        }
 
-        // Validasi Pertanyaan untuk Publish
-        if (!isDraft) {
             if (questions.length === 0) {
-                newErrors.questions = 'Minimal harus ada 1 pertanyaan untuk publish';
+                newErrors.questions = 'Minimal harus ada 1 pertanyaan';
             } else {
-                // Validasi setiap pertanyaan
                 const emptyQuestions = questions.filter(q => !q.text || q.text.trim() === '' || q.text === '<p></p>');
-                if (emptyQuestions.length > 0) {
-                    newErrors.questions = `Ada ${emptyQuestions.length} pertanyaan yang belum diisi`;
-                }
-
-                // Validasi opsi jawaban
-                const invalidOptions = questions.filter(q => {
-                    const filledOptions = q.options.filter(opt => opt && opt.trim() !== '' && opt !== '<p></p>');
-                    return filledOptions.length < 2;
-                });
-
-                if (invalidOptions.length > 0) {
-                    newErrors.options = `Setiap pertanyaan harus memiliki minimal 2 opsi jawaban yang terisi`;
-                }
+                if (emptyQuestions.length > 0) newErrors.questions = `Ada ${emptyQuestions.length} pertanyaan kosong`;
             }
         }
 
@@ -208,342 +136,210 @@ const TambahKuisioner = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const saveKuisioner = async (data) => {
-        data["questions"] = questions
+    const saveKuisioner = async (payload) => {
         try {
-            const temp = await adminApi.createKuesioner(data)
-            alertSuccess(temp.message || 'Kuesioner berhasil disimpan')
-            navigate("/wb-admin/kuisoner")
+            const temp = await adminApi.createKuesioner(payload);
+            alertSuccess(temp.message || 'Kuesioner berhasil disimpan');
+            navigate("/wb-admin/kuisoner");
         } catch (error) {
-            console.log(error)
-            alertError(error.response?.data?.message || 'Gagal menyimpan kuesioner')
+            alertError(error.response?.data?.message || 'Gagal menyimpan');
         }
-    }
+    };
 
-    const handleDraft = async () => {
+    const handleAction = async (isDraft) => {
         setIsValidating(true);
-
-        // Validasi dengan mode draft
-        if (!validateForm(true)) {
+        if (!validateForm(isDraft)) {
             setIsValidating(false);
-            alertError('Mohon perbaiki kesalahan pada form');
-            // Scroll ke error pertama
-            setTimeout(() => {
-                const errorElement = document.querySelector('[data-error="true"]');
-                if (errorElement) {
-                    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 100);
+            alertError('Cek kembali pengisian form Anda');
             return;
         }
 
-        const { tanggalMulai, tanggalSelesai, ...rest } = formData
-
-        const statusObj = statusKarir.find(
-            item => item.nama === formData.id_status
-        )
-
+        const statusObj = statusKarir.find(item => item.nama === formData.id_status);
         const payload = {
-            ...rest,
-            tanggal_mulai: tanggalMulai || null,
-            tanggal_selesai: tanggalSelesai || null,
+            ...formData,
+            tanggal_mulai: formData.tanggalMulai || null,
+            tanggal_selesai: formData.tanggalSelesai || null,
             id_status: statusObj?.id,
-            status: "draft",
-            created_at: new Date().toISOString()
-        }
+            status: isDraft ? "draft" : "aktif",
+            questions: questions
+        };
 
-        await saveKuisioner(payload)
+        await saveKuisioner(payload);
         setIsValidating(false);
-    }
+    };
 
-
-    const handlePublish = async () => {
-        setIsValidating(true);
-
-        // Validasi dengan mode publish (lebih ketat)
-        if (!validateForm(false)) {
-            setIsValidating(false);
-            alertError('Mohon lengkapi semua data yang diperlukan sebelum publish');
-            // Scroll ke error pertama
-            setTimeout(() => {
-                const errorElement = document.querySelector('[data-error="true"]');
-                if (errorElement) {
-                    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 100);
-            return;
-        }
-
-        const { tanggalMulai, tanggalSelesai, ...rest } = formData
-
-        const statusObj = statusKarir.find(
-            item => item.nama === formData.id_status
-        )
-
-        const payload = {
-            ...rest,
-            tanggal_mulai: tanggalMulai,
-            tanggal_selesai: tanggalSelesai,
-            id_status: statusObj?.id,
-            status: "aktif",
-            created_at: new Date().toISOString()
-        }
-
-        await saveKuisioner(payload)
-        setIsValidating(false);
-    }
-
-    // console.log(statusKarir)
     return (
-        <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
+        <div className="min-h-screen bg-slate-50/50 p-3 md:p-6 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
 
+                {/* Responsive Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <Link
                         to="/wb-admin/kuisoner"
-                        className="flex items-center gap-2 text-third hover:text-primary transition-colors text-sm font-medium group"
+                        className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors text-sm font-medium group w-fit"
                     >
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                         Kembali
                     </Link>
-                    <div className="flex items-center gap-3">
+
+                    <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto">
                         <button
-                            onClick={handleDraft}
+                            onClick={() => handleAction(true)}
                             disabled={isValidating}
-                            className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50"
                         >
-                            <Archive size={18} /> {isValidating ? 'Menyimpan...' : 'Simpan Draft'}
+                            <Archive size={16} className="hidden xs:block" /> {isValidating ? '...' : 'Simpan Draft'}
                         </button>
                         <button
-                            onClick={handlePublish}
+                            onClick={() => handleAction(false)}
                             disabled={isValidating}
-                            className="cursor-pointer flex items-center gap-2 px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-8 py-2.5 bg-primary text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50"
                         >
-                            <Save size={18} /> {isValidating ? 'Memproses...' : 'Publish'}
+                            <Save size={16} className="hidden xs:block" /> {isValidating ? '...' : 'Publish'}
                         </button>
                     </div>
                 </div>
 
-                {/* Error Summary */}
+                {/* Error Box */}
                 {Object.keys(errors).length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                                <h3 className="text-sm font-bold text-red-800 mb-2">Terdapat kesalahan pada form:</h3>
-                                <ul className="text-xs text-red-700 space-y-1 list-disc list-inside">
-                                    {Object.entries(errors).map(([key, value]) => (
-                                        <li key={key}>{value}</li>
-                                    ))}
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                        <div className="flex items-start gap-3 text-red-800">
+                            <AlertCircle size={20} className="flex-shrink-0" />
+                            <div>
+                                <h3 className="text-sm font-bold">Lengkapi data berikut:</h3>
+                                <ul className="text-xs mt-1 list-disc list-inside opacity-80">
+                                    {Object.values(errors).map((err, i) => <li key={i}>{err}</li>)}
                                 </ul>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    {/* LEFT BOX: Konfigurasi Kuesioner (Sesuai Sketsa) */}
-                    <div className="lg:col-span-4 space-y-6 sticky top-8">
-                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                            <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
-                                Data Kuesioner
-                            </h2>
+                    {/* LEFT: Config (Static on mobile, Sticky on desktop) */}
+                    <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 h-fit">
+                        <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
+                            <h2 className="text-base md:text-lg font-bold text-primary mb-3 pb-3">Data Kuesioner</h2>
 
                             <div className="space-y-5">
-                                {/* title */}
                                 <div data-error={!!errors.title}>
-                                    <label className="text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
-                                    <div className="relative mt-3">
-                                        <input
-                                            type="text"
-                                            className={`w-full p-3 bg-white border ${errors.title ? 'border-red-400 focus:ring-red-400' : 'border-fourth focus:ring-primary'} rounded-xl text-sm outline-none focus:ring-2 transition-all`}
-                                            placeholder="Masukan title kuesioner.."
-                                            value={formData.title}
-                                            onChange={(e) => {
-                                                setFormData({ ...formData, title: e.target.value });
-                                                if (errors.title) {
-                                                    setErrors({ ...errors, title: null });
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                    {errors.title && (
-                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                                            <AlertCircle size={12} /> {errors.title}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Jenis Kuesioner */}
-                                <div data-error={!!errors.id_status}>
-                                    <SmoothDropdown
-                                        label="Target Karier"
-                                        options={statusKarirData}
-                                        placeholder="Pilih status karier"
-                                        isRequired={true}
-                                        value={formData.id_status || 'Bekerja'}
-                                        onSelect={(val) => {
-                                            setFormData({ ...formData, id_status: val });
-                                            if (errors.id_status) {
-                                                setErrors({ ...errors, id_status: null });
-                                            }
-                                        }}
+                                    <label className="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-wider">Judul Kuesioner</label>
+                                    <input
+                                        type="text"
+                                        className={`w-full mt-2 p-3 bg-slate-50 border ${errors.title ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all`}
+                                        placeholder="Contoh: Survei Kepuasan Alumni"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     />
-                                    {errors.id_status && (
-                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                                            <AlertCircle size={12} /> {errors.id_status}
-                                        </p>
-                                    )}
                                 </div>
 
-                                {/* Tanggal Mulai & Selesai */}
-                                <div data-error={!!(errors.tanggalMulai || errors.tanggalSelesai)}>
-                                    <DateRangePicker
-                                        formData={formData}
-                                        setFormData={(data) => {
-                                            setFormData(data);
-                                            // Clear errors when dates change
-                                            if (errors.tanggalMulai || errors.tanggalSelesai) {
-                                                const newErrors = { ...errors };
-                                                delete newErrors.tanggalMulai;
-                                                delete newErrors.tanggalSelesai;
-                                                setErrors(newErrors);
-                                            }
-                                        }}
-                                        errors={errors}
-                                    />
-                                    {(errors.tanggalMulai || errors.tanggalSelesai) && (
-                                        <div className="mt-2 space-y-1">
-                                            {errors.tanggalMulai && (
-                                                <p className="text-xs text-red-600 flex items-center gap-1">
-                                                    <AlertCircle size={12} /> {errors.tanggalMulai}
-                                                </p>
-                                            )}
-                                            {errors.tanggalSelesai && (
-                                                <p className="text-xs text-red-600 flex items-center gap-1">
-                                                    <AlertCircle size={12} /> {errors.tanggalSelesai}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                <SmoothDropdown
+                                    label="Target Karier"
+                                    options={statusKarirData}
+                                    value={formData.id_status}
+                                    onSelect={(val) => setFormData({ ...formData, id_status: val })}
+                                />
 
-                                {/* Deskripsi */}
+                                <DateRangePicker
+                                    formData={formData}
+                                    setFormData={setFormData}
+                                    errors={errors}
+                                />
+
                                 <div>
-                                    <label className="text-[11px] font-bold text-secondary uppercase">Deskripsi Singkat</label>
-                                    <div className="relative mt-3">                                        <textarea
-                                        rows="4"
-                                        className={`w-full p-2.5 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-26.5`}
-                                        placeholder="Berikan instruksi atau tujuan kuesioner..."
+                                    <label className="text-[11px] font-bold text-slate-500 uppercase">Deskripsi (Opsional)</label>
+                                    <textarea
+                                        rows="3"
+                                        className="w-full mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                        placeholder="Tulis instruksi singkat..."
+                                        value={formData.deskripsi}
                                         onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
                                     ></textarea>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* RIGHT BOX: Daftar Pertanyaan (Google Form Style) */}
+                    {/* RIGHT: Questions List */}
                     <div className="lg:col-span-8 space-y-6">
-                        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm min-h-150" data-error={!!(errors.questions || errors.options)}>
-                            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-                                <div className="flex-1">
-                                    <h2 className="text-lg font-bold text-primary">Daftar Pertanyaan Pilihan Ganda</h2>
-                                    {(errors.questions || errors.options) && (
-                                        <div className="mt-2 space-y-1">
-                                            {errors.questions && (
-                                                <p className="text-xs text-red-600 flex items-center gap-1">
-                                                    <AlertCircle size={12} /> {errors.questions}
-                                                </p>
-                                            )}
-                                            {errors.options && (
-                                                <p className="text-xs text-red-600 flex items-center gap-1">
-                                                    <AlertCircle size={12} /> {errors.options}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
+                        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-8 shadow-sm min-h-[500px]">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-slate-100 pb-5">
+                                <div>
+                                    <h2 className="text-lg font-bold text-primary">Daftar Pertanyaan</h2>
+                                    <p className="text-xs text-slate-400">Gunakan pilihan ganda untuk jawaban responden</p>
                                 </div>
                                 <button
                                     onClick={addQuestion}
-                                    className="cursor-pointer text-xs bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
+                                    className="flex items-center justify-center gap-2 bg-primary text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:bg-secondary cursor-pointer transition-all shadow-sm"
                                 >
                                     <Plus size={16} /> Tambah Pertanyaan
                                 </button>
                             </div>
 
-                            <div className="space-y-8">
+                            <div className="space-y-6 md:space-y-10">
                                 {questions.map((q, qIndex) => (
-                                    <div key={q.id} className="group relative bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-6 rounded-2xl transition-all duration-300">
-                                        {/* Drag Handle (Visual Only) */}
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 p-1 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <GripVertical size={20} />
+                                    <div key={q.id} className="relative bg-slate-50/50 p-4 md:p-6 rounded-2xl border border-slate-100 transition-all">
+
+                                        {/* Question Header */}
+                                        <div className="flex items-start gap-3 md:gap-4 mb-5">
+                                            <div className="flex-none w-7 h-7 md:w-8 md:h-8 bg-[#3D5A5C] text-white rounded-lg flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
+                                                {qIndex + 1}
+                                            </div>
+                                            <div className="grow">
+                                                <RichTextEditor
+                                                    content={q.text}
+                                                    onChange={(html) => updateQuestionText(q.id, html)}
+                                                    placeholder="Ketik pertanyaan Anda..."
+                                                    minHeight="60px"
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={() => removeQuestion(q.id)}
+                                                className="cursor-pointer p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
 
-                                        <div className="flex gap-4">
-                                            <span className="flex-none w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-sm">
-                                                {qIndex + 1}
-                                            </span>
-                                            <div className="grow space-y-4">
-                                                {/* Input Pertanyaan */}
-                                                <div className="flex items-start gap-4">
+                                        {/* Options Grid */}
+                                        <div className="ml-0 md:ml-12 space-y-3">
+                                            {q.options.map((opt, optIndex) => (
+                                                <div key={optIndex} className="flex items-start gap-3 group">
+                                                    <div className="w-5 h-5 rounded-full border-2 border-slate-300 mt-3 flex-none" />
                                                     <div className="grow">
                                                         <RichTextEditor
-                                                            content={q.text}
-                                                            onChange={(html) => updateQuestionText(q.id, html)}
-                                                            placeholder="Ketik pertanyaan di sini..."
-                                                            minHeight="80px"
+                                                            content={opt}
+                                                            onChange={(html) => updateOptionText(q.id, optIndex, html)}
+                                                            placeholder={`Opsi ${optIndex + 1}`}
+                                                            minHeight="40px"
                                                         />
                                                     </div>
-                                                    <button
-                                                        onClick={() => removeQuestion(q.id)}
-                                                        className="cursor-pointer p-2 text-slate-300 hover:text-red-500 transition-colors flex-none"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    {q.options.length > 1 && (
+                                                        <button
+                                                            onClick={() => removeOption(q.id, optIndex)}
+                                                            className="cursor-pointer p-2 text-slate-300 hover:text-red-500 transition-all"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    )}
                                                 </div>
+                                            ))}
 
-                                                {/* Pilihan Jawaban */}
-                                                <div className="space-y-3 ml-2">
-                                                    {q.options.map((opt, optIndex) => (
-                                                        <div key={optIndex} className="flex items-start gap-3">
-                                                            <div className="w-4 h-4 rounded-full border-2 border-slate-300 flex-none mt-3"></div>
-                                                            <div className="grow">
-                                                                <RichTextEditor
-                                                                    content={opt}
-                                                                    onChange={(html) => updateOptionText(q.id, optIndex, html)}
-                                                                    placeholder={`Opsi ${optIndex + 1}`}
-                                                                    minHeight="60px"
-                                                                />
-                                                            </div>
-                                                            {q.options.length > 1 && (
-                                                                <button
-                                                                    onClick={() => removeOption(q.id, optIndex)}
-                                                                    className="cursor-pointer text-slate-300 hover:text-red-500 transition-colors p-2 flex-none"
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        onClick={() => addOption(q.id)}
-                                                        className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-7 pt-2 hover:underline active:opacity-70"
-                                                    >
-                                                        <Plus size={14} /> Tambah Opsi
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <button
+                                                onClick={() => addOption(q.id)}
+                                                className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-5 sm:ml-7 pt-2 hover:underline active:opacity-70"
+                                            >
+                                                <Plus size={14} /> Tambah Opsi
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
 
                                 {questions.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-slate-100 rounded-3xl">
+                                    <div className="flex flex-col items-center justify-center py-20 text-slate-300">
                                         <LayoutList size={48} className="mb-4 opacity-20" />
-                                        <p className="text-sm font-medium">Belum ada pertanyaan ditambahkan.</p>
+                                        <p className="text-sm">Klik tombol di atas untuk membuat pertanyaan</p>
                                     </div>
                                 )}
                             </div>
