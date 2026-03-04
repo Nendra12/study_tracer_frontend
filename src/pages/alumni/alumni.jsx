@@ -20,7 +20,6 @@ import Pagination from '../../components/admin/Pagination';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
 
 // --- Helper to build image URL ---
 function getImageUrl(path) {
