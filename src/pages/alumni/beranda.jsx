@@ -49,7 +49,7 @@ function LockOverlay({ message = "Fitur ini terkunci" }) {
 function AlumniProfileCard({ data, locked, onImageClick }) {
   if (!data) return null;
 
-  const defaultAvatar = `https://ui-avatars.com/api/?name=${data.nama ? data.nama.replace(' ', '+') : 'A'}&background=3C5759&color=fff&size=150`;
+  const defaultAvatar = `https://ui-avatars.com/api/?name=${data.name ? data.name.replace(' ', '+') : 'A'}&background=3C5759&color=fff&size=150`;
   const imageSrc = data.foto ? getImageUrl(data.foto) : defaultAvatar;
 
   return (
@@ -70,7 +70,7 @@ function AlumniProfileCard({ data, locked, onImageClick }) {
           >
             <img 
               src={imageSrc} 
-              alt={data.nama} 
+              alt={data.name} 
               className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-300 group-hover:scale-110'}`}
             />
           </div>
@@ -78,7 +78,7 @@ function AlumniProfileCard({ data, locked, onImageClick }) {
           {/* BAGIAN 2: Penjelasan (Teks) */}
           <div className="flex-1 flex flex-col justify-center">
             <div className="mb-2">
-              <h3 className="font-bold text-[#3C5759] text-sm line-clamp-1">{data.nama}</h3>
+              <h3 className="font-bold text-[#3C5759] text-sm line-clamp-1">{data.name}</h3>
               <p className="text-slate-400 text-[11px]">Angkatan {data.angkatan}</p>
             </div>
             
