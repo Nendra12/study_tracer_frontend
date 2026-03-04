@@ -10,6 +10,7 @@ import {
   Rocket,
   LineChart
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/alumni/Navbar';
 import Footer from '../../components/alumni/Footer';
@@ -52,6 +53,7 @@ export default function Alumni() {
     foto: authUser?.alumni?.foto || authUser?.foto 
   };
   
+  const navigate = useNavigate();
   const [selectedTahun, setSelectedTahun] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedUniv, setSelectedUniv] = useState('');
@@ -191,7 +193,10 @@ export default function Alumni() {
 
                   {/* Tombol Lihat Profil (Hanya warna teks hijau, dipojok kanan bawah) */}
                   <div className="mt-auto pt-4 border-t border-[#3C5759]/10 flex items-center justify-end">
-                    <button className="flex items-center gap-1.5 text-[13px] font-bold text-[#3C5759] hover:text-[#2A3E3F] hover:underline transition-all cursor-pointer">
+                    <button 
+                      onClick={() => navigate(`/alumni/${alumni.id}`)}
+                      className="flex items-center gap-1.5 text-[13px] font-bold text-[#3C5759] hover:text-[#2A3E3F] hover:underline transition-all cursor-pointer"
+                    >
                       Lihat Profil <ArrowRight size={16} />
                     </button>
                   </div>

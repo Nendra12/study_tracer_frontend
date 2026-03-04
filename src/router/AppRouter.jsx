@@ -21,6 +21,7 @@ import LihatJawabanDetail from "../pages/admin/LihatJawabanDetail";
 import UpdateKuesioner from "../pages/admin/UpdateKuesioner";
 import Beranda from "../pages/alumni/beranda";
 import Alumni from "../pages/alumni/alumni"; 
+import AlumniDetail from "../pages/alumni/alumniDetail";
 import Lowongan from "../pages/alumni/lowongan"; 
 import Profil from "../pages/alumni/profil";
 import StatistikKuesioner from "../pages/admin/StatistikKuesioner";
@@ -79,6 +80,10 @@ export default function AppRouter() {
       
       <Route path="/alumni" element={
         isAuthenticated && !isAdmin ? <Alumni /> : <Navigate to="/login" replace />
+      } />
+
+      <Route path="/alumni/:id" element={
+        isAuthenticated && !isAdmin ? <AlumniDetail /> : <Navigate to="/login" replace />
       } />
       
       <Route path="/lowongan" element={
