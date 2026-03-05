@@ -32,6 +32,7 @@ const waktuOptions = ['Terbaru', 'Terlama', 'Mendekati Deadline'];
 
 // --- Lowongan Card ---
 function LowonganCard({ data, onImageClick, onToggleSave, savingId }) {
+  const navigate = useNavigate();
   const deadline = data.lowongan_selesai ? hitungMundur(data.lowongan_selesai) : null;
   const fotoUrl = getImageUrl(data.foto);
   const perusahaanNama = data.perusahaan?.nama || '-';
@@ -42,7 +43,8 @@ function LowonganCard({ data, onImageClick, onToggleSave, savingId }) {
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      className="bg-white rounded-3xl flex flex-col overflow-hidden border border-[#3C5759]/5 shadow-md hover:shadow-xl transition-all duration-300 group"
+      onClick={() => navigate(`/lowongan/${data.id}`)}
+      className="bg-white rounded-3xl flex flex-col overflow-hidden border border-[#3C5759]/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
     >
       <div
         className="h-56 w-full bg-white relative overflow-hidden cursor-pointer"
