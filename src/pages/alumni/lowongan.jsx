@@ -348,7 +348,7 @@ export default function Lowongan() {
             {/* BUTTON TRIGGER MODAL */}
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="bg-white border border-[#3C5759]/20 text-[#3C5759] px-5 py-2.5 rounded-2xl text-[13px] font-bold shadow-sm hover:bg-[#3C5759]/5 transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="bg-white border border-[#3C5759]/20 text-[#3C5759] px-5 py-2.5 rounded-2xl text-[13px] font-bold shadow-sm hover:bg-[#3C5759] hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Plus size={16} /> Tambah Lowongan
             </button>
@@ -372,17 +372,16 @@ export default function Lowongan() {
             </form>
 
             <div className="flex flex-wrap lg:flex-nowrap gap-3 shrink-0">
-              {/* Hapus bg-white, rounded-2xl, shadow-sm, dan border di sini */}
-              <div className="w-[calc(50%-6px)] lg:w-36 relative z-[60]">
+              <div className="w-[calc(50%-6px)] lg:w-36 border-[#3C5759]/10 relative z-[60]">
                 <SmoothDropdown options={tipeOptions} value={selectedTipe} onSelect={(val) => setSelectedTipe(val === 'Semua Tipe' ? '' : val)} placeholder="Tipe Pekerjaan" />
               </div>
-              <div className="w-[calc(50%-6px)] lg:w-40 relative z-[50]">
+              <div className="w-[calc(50%-6px)] lg:w-40 border-[#3C5759]/10 relative z-[50]">
                 <SmoothDropdown options={provinsiOptions} value={selectedProvinsi} onSelect={(val) => setSelectedProvinsi(val === 'Semua Provinsi' ? '' : val)} placeholder="Provinsi" isSearchable={true} />
               </div>
-              <div className="w-[calc(50%-6px)] lg:w-40 relative z-[40]">
+              <div className="w-[calc(50%-6px)] lg:w-40 border-[#3C5759]/10 relative z-[40]">
                 <SmoothDropdown options={kotaOptions} value={selectedKota} onSelect={(val) => setSelectedKota(val === 'Semua Kota' ? '' : val)} placeholder="Kota" isSearchable={true} />
               </div>
-              <div className="w-[calc(50%-6px)] lg:w-48 relative z-[30]">
+              <div className="w-[calc(50%-6px)] lg:w-48 border-[#3C5759]/10 relative z-[30]">
                 <SmoothDropdown options={waktuOptions} value={selectedWaktu} onSelect={(val) => setSelectedWaktu(val)} placeholder="Urutkan Waktu" />
               </div>
             </div>
