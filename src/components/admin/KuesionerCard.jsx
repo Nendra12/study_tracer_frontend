@@ -59,9 +59,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                     <span>Sisa: {durasi}</span>
                 </div>
                 <div className='flex items-center gap-1'>
-                    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${statusStyles[status]}`}>
-                        {status === 'hidden' ? 'nonaktif' : status}
-                    </span>
+
                     <button onClick={() => handleHapus(id)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
                         {
                             loadingHapus ? (
@@ -78,14 +76,17 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                 </div>
             </div>
 
-            <div className="mb-4 flex-grow">
+            <div className="mb-4 grow">
                 <h3 className="text-lg font-bold text-primary line-clamp-1 mb-1">{title}</h3>
                 <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{deskripsi}</p>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6 flex gap-3 items-center">
                 <span className={`text-[10px] text-primary uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border border-slate-200`}>
                     {status_karir.nama}
+                </span>
+                <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border ${statusStyles[status]}`}>
+                    {status === 'hidden' ? 'nonaktif' : status}
                 </span>
             </div>
 
@@ -120,7 +121,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                 )}
                 {status === 'aktif' && (
                     <>
-                        <button onClick={() => handleStatus(id, "hidden")} title="Hidden" className="flex items-center justify-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer">
+                        <button onClick={() => handleStatus(id, "hidden")} title="Hidden" className="flex items-center justify-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors cursor-pointer">
                             {
                                 loadingUpdate ? (
                                     <>

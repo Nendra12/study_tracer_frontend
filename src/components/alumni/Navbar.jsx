@@ -3,9 +3,6 @@ import { Search, User, LogOut, Lock } from 'lucide-react'; // GraduationCap diha
 import { Link, useLocation } from 'react-router-dom';
 import { STORAGE_BASE_URL } from '../../api/axios';
 
-// Impor logo custom dari folder assets
-import logoIcon from '../../assets/icon.png';
-
 function getImageUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
@@ -47,8 +44,10 @@ export default function Navbar({ user }) {
         {/* Logo Custom */}
         <div className="flex items-center gap-3">
           {/* Menggunakan img tag untuk logo. Ukuran w-8 h-8 (32px) agar konsisten dengan ukuran sebelumnya */}
-          <img src={logoIcon} alt="Alumni Tracer Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
-          <span className="font-black text-slate-800 tracking-tight text-lg">Alumni Tracer</span>
+          <img src="/icon.png" alt="Alumni Tracer Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+          <span className="font-black text-[#3C5759] tracking-tight text-lg">
+          Alumni Tracer
+          </span>
         </div>
         
         {/* Menu Navigasi Tengah */}
@@ -86,7 +85,7 @@ export default function Navbar({ user }) {
 
         {/* Ikon Pencarian & Profil */}
         <div className="flex items-center gap-4">
-          <Search size={18} className="text-slate-400 hover:text-[#3C5759] transition-colors cursor-pointer" />
+          
           
           {/* Wrapper Dropdown Profil */}
           <div className="relative" ref={dropdownRef}>

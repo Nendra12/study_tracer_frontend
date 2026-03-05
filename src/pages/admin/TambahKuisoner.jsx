@@ -169,7 +169,7 @@ const TambahKuisioner = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 p-3 md:p-6 animate-in fade-in duration-700">
+        <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
 
                 {/* Responsive Header */}
@@ -188,14 +188,14 @@ const TambahKuisioner = () => {
                             disabled={isValidating}
                             className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 bg-white border-2 border-orange-500 text-orange-600 rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-orange-50 transition-all disabled:opacity-50"
                         >
-                            <Archive size={16} className="hidden xs:block" /> {isValidating ? '...' : 'Simpan Draft'}
+                            <Archive size={16} /> {isValidating ? '...' : 'Simpan Draft'}
                         </button>
                         <button
                             onClick={() => handleAction(false)}
                             disabled={isValidating}
                             className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-8 py-2.5 bg-primary text-white rounded-xl text-xs md:text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50"
                         >
-                            <Save size={16} className="hidden xs:block" /> {isValidating ? '...' : 'Publish'}
+                            <Save size={16} /> {isValidating ? '...' : 'Publish'}
                         </button>
                     </div>
                 </div>
@@ -218,7 +218,7 @@ const TambahKuisioner = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                     {/* LEFT: Config (Static on mobile, Sticky on desktop) */}
-                    <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 h-fit">
+                    <div className="lg:col-span-4 space-y-6 lg:sticky h-fit">
                         <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
                             <h2 className="text-base md:text-lg font-bold text-primary mb-3 pb-3">Data Kuesioner</h2>
 

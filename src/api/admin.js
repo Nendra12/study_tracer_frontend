@@ -95,6 +95,14 @@ export const adminApi = {
     return api.post(`/admin/lowongan/${id}/repost`);
   },
 
+  updateLowonganStatus(id, status) {
+    return api.patch(`/admin/lowongan/${id}/status`, { status });
+  },
+
+  autoCloseExpiredLowongan() {
+    return api.post('/admin/lowongan/auto-close-expired');
+  },
+
   // ── Kuesioner Management ───────────────────────
   getKuesioner(filters = {}, perPage = 15) {
     return api.get('/admin/kuesioner', { params: { ...filters, per_page: perPage } });
