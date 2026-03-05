@@ -68,6 +68,13 @@ export const alumniApi = {
   getAlumniPublicProfile(id) {
     return api.get(`/alumni/directory/${id}`);
   },
+
+  // Download Public Profile as PDF
+  downloadPublicProfilePdf(id) {
+    return api.get(`/alumni/directory/${id}/pdf`, {
+      responseType: 'blob',
+    });
+  },
 };
 
 // Public endpoints

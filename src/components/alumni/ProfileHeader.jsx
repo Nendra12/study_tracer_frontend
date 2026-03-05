@@ -23,7 +23,7 @@ export default function ProfileHeader({ profile, onPerbarui }) {
             onClick={() => {
               const alumniId = profile?.id || profile?.id_alumni;
               if (alumniId) {
-                navigate(`/alumni/${alumniId}`);
+                navigate(`/alumni/${alumniId}`, { state: { fromProfile: true } });
               }
             }}
             className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#3C5759]/20 text-[#3C5759] rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
