@@ -1,65 +1,104 @@
-import React from 'react';
-import { Clock, ArrowRight, Check, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Clock, ArrowRight, Check, X, Loader2, RefreshCw } from 'lucide-react';
+import { adminApi } from '../../api/admin';
 
 export default function ProfileUpdateRequests() {
-  // Ditambahkan 1 data dummy agar pas 3 baris
-  const requests = [
-    {
-      id: 1,
-      name: 'David Chen',
-      angkatan: '2020',
-      userId: '2020-8912',
-      time: '2 jam lalu',
-      image: 'https://i.pravatar.cc/150?u=david',
-      field: 'Status Pekerjaan',
-      changes: [
-        { label: 'Pekerjaan', old: 'Unemployed', new: 'Employed Full-time' },
-        { label: 'Perusahaan', old: 'N/A', new: 'TechSolutions Inc.' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Emily Martinez',
-      angkatan: '2019',
-      userId: '2019-4451',
-      time: '5 jam lalu',
-      initials: 'EM',
-      field: 'Informasi Kontak',
-      changes: [
-        { label: 'Email', old: 'emily.m@university.edu', new: 'emily.work@gmail.com' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Sarah Johnson',
-      angkatan: '2021',
-      userId: '2021-1022',
-      time: '1 hari lalu',
-      image: 'https://i.pravatar.cc/150?u=sarah',
-      field: 'Domisili',
-      changes: [
-        { label: 'Kota', old: 'Surabaya', new: 'Jakarta Selatan' },
-        { label: 'Provinsi', old: 'Jawa Timur', new: 'DKI Jakarta' }
-      ]
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
+
+  const fetchPendingUpdates = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await adminApi.getPendingCareerUpdates();
+      setRequests(res.data?.data || []);
+    } catch (err) {
+      console.error('Failed to load pending career updates:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, []);
+
+  useEffect(() => {
+    fetchPendingUpdates();
+  }, [fetchPendingUpdates]);
+
+  async function handleApprove(id) {
+    try {
+      setActionLoading(id);
+      await adminApi.approveCareerUpdate(id);
+      setRequests(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error('Failed to approve career update:', err);
+      alert('Gagal menyetujui: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleReject(id) {
+    try {
+      setActionLoading(id);
+      await adminApi.rejectCareerUpdate(id);
+      setRequests(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error('Failed to reject career update:', err);
+      alert('Gagal menolak: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="mt-12 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-black text-[#3C5759] tracking-tight">Permintaan Pembaruan Status Karier</h2>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-[#3C5759]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="mt-12 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-black text-[#3C5759] tracking-tight">Permintaan Pembaruan Status Karier</h2>
+            <span className="px-3 py-1 bg-[#3C5759]/10 text-[#3C5759] text-xs font-black rounded-full">0 Menunggu</span>
+          </div>
+          <button onClick={fetchPendingUpdates} className="text-sm font-bold text-[#3C5759] hover:underline cursor-pointer flex items-center gap-1">
+            <RefreshCw size={14} /> Refresh
+          </button>
+        </div>
+        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm text-center">
+          <p className="text-sm font-medium text-slate-400">Tidak ada permintaan pembaruan status karier saat ini.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-12 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header Title */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-black text-[#3C5759] tracking-tight">Permintaan Pembaruan Profil</h2>
+          <h2 className="text-xl font-black text-[#3C5759] tracking-tight">Permintaan Pembaruan Status Karier</h2>
           <span className="px-3 py-1 bg-[#3C5759]/10 text-[#3C5759] text-xs font-black rounded-full">
             {requests.length} Menunggu
           </span>
         </div>
-        <button className="text-sm font-bold text-[#3C5759] hover:underline cursor-pointer">
-          Lihat Semua
+        <button onClick={fetchPendingUpdates} className="text-sm font-bold text-[#3C5759] hover:underline cursor-pointer flex items-center gap-1">
+          <RefreshCw size={14} /> Refresh
         </button>
       </div>
 
-      {/* Cards Grid - Dibuat 3 per baris di layar besar (xl:grid-cols-3) */}
+      {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {requests.map((req) => (
           <div 
@@ -76,7 +115,7 @@ export default function ProfileUpdateRequests() {
                   <img src={req.image} alt={req.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50" />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-[#3C5759]/10 text-[#3C5759] flex items-center justify-center font-black text-lg border-2 border-slate-50">
-                    {req.initials}
+                    {req.initials || (req.name || 'A').substring(0, 2).toUpperCase()}
                   </div>
                 )}
                 <div>
@@ -97,7 +136,7 @@ export default function ProfileUpdateRequests() {
 
             {/* Perubahan (Old -> New) */}
             <div className="bg-slate-50 rounded-2xl p-4 mb-6 space-y-4 flex-1 border border-slate-100">
-              {req.changes.map((change, idx) => (
+              {(req.changes || []).map((change, idx) => (
                 <div key={idx} className="flex flex-col gap-1.5">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">{change.label}</p>
                   <div className="flex items-center gap-2">
@@ -115,11 +154,19 @@ export default function ProfileUpdateRequests() {
 
             {/* Tombol Aksi */}
             <div className="flex items-center gap-3 mt-auto">
-              <button className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-slate-500 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors cursor-pointer text-xs">
-                <X size={14} strokeWidth={3} /> Tolak
+              <button 
+                onClick={() => handleReject(req.id)} 
+                disabled={actionLoading === req.id}
+                className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-slate-500 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
+              >
+                {actionLoading === req.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak
               </button>
-              <button className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-white bg-[#3C5759] shadow-md shadow-[#3C5759]/20 hover:bg-[#2A3E3F] transition-colors cursor-pointer text-xs">
-                <Check size={14} strokeWidth={3} /> Terima
+              <button 
+                onClick={() => handleApprove(req.id)} 
+                disabled={actionLoading === req.id}
+                className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-white bg-[#3C5759] shadow-md shadow-[#3C5759]/20 hover:bg-[#2A3E3F] transition-colors cursor-pointer text-xs disabled:opacity-50"
+              >
+                {actionLoading === req.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima
               </button>
             </div>
             

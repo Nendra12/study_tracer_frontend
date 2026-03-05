@@ -264,7 +264,7 @@ export default function Alumni() {
                   <motion.div 
                     whileHover={{ y: -8 }}
                     key={alumni.id} 
-                    onClick={() => navigate(`/alumni/${alumni.id}`)}
+                    onClick={() => navigate(`/alumni/${alumni.id}`, { state: { alumni } })}
                     className="bg-white rounded-3xl flex flex-col overflow-hidden border border-[#3C5759]/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
                   >
                     {/* AREA GAMBAR */}
@@ -323,7 +323,7 @@ export default function Alumni() {
                       {/* Tombol Lihat Profil */}
                       <div className="mt-auto pt-4 border-t border-[#3C5759]/10 flex items-center justify-end">
                         <button 
-                          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/${alumni.id}`); }}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/${alumni.id}`, { state: { alumni } }); }}
                           className="flex items-center gap-1.5 text-[13px] font-bold text-[#3C5759] hover:text-[#2A3E3F] hover:underline transition-all cursor-pointer"
                         >
                           Lihat Profil <ArrowRight size={16} />

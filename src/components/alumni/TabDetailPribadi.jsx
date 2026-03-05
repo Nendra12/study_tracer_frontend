@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Edit, Save, X, ChevronDown, Loader2 } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 
-export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess }) {
+export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, triggerEdit }) {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -10,6 +10,13 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess }) 
   useEffect(() => {
     initEditForm(profile);
   }, [profile]);
+
+  // Auto-enter edit mode when triggerEdit changes to true
+  useEffect(() => {
+    if (triggerEdit) {
+      setIsEditing(true);
+    }
+  }, [triggerEdit]);
 
   function initEditForm(data) {
     setEditForm({

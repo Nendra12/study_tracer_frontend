@@ -58,6 +58,19 @@ export const adminApi = {
     });
   },
 
+  // ── Pending Career Status Updates ─────────────
+  getPendingCareerUpdates() {
+    return api.get('/admin/pending-career-updates');
+  },
+
+  approveCareerUpdate(id) {
+    return api.post(`/admin/career-updates/${id}/approve`);
+  },
+
+  rejectCareerUpdate(id) {
+    return api.post(`/admin/career-updates/${id}/reject`);
+  },
+
   // ── Lowongan Management ────────────────────────
   getLowongan(filters = {}, perPage = 15) {
     return api.get('/admin/lowongan', { params: { ...filters, per_page: perPage } });

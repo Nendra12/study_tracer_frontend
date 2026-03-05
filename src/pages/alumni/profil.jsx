@@ -25,6 +25,12 @@ export default function Profil() {
   
   // State Navigasi Tab SPA
   const [activeTab, setActiveTab] = useState('detail'); // 'detail' | 'karier' | 'keahlian'
+  const [triggerEdit, setTriggerEdit] = useState(false);
+
+  function handlePerbarui() {
+    setActiveTab('detail');
+    setTriggerEdit(prev => !prev); // toggle to trigger useEffect
+  }
 
   useEffect(() => { 
     fetchProfile(); 
@@ -68,7 +74,7 @@ export default function Profil() {
           </div>
         )}
 
-        <ProfileHeader profile={profile} />
+        <ProfileHeader profile={profile} onPerbarui={handlePerbarui} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
@@ -96,7 +102,7 @@ export default function Profil() {
             </div>
 
             {/* Render Tab Konten Secara Dinamis */}
-            {activeTab === 'detail' && <TabDetailPribadi profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'detail' && <TabDetailPribadi profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} />}
             {activeTab === 'karier' && <TabStatusKarier profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
             {activeTab === 'keahlian' && <TabKeahlian profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
 
