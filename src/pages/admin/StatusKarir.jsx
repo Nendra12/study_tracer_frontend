@@ -6,7 +6,7 @@ import { adminApi } from "../../api/admin";
 // --- IMPORT KOMPONEN REUSABLE ---
 import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
-import TableLayoutSkeleton from "../../components/admin/TableLayoutSkeleton";
+import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 
 export default function StatusKarir() {
   // --- STATE UNTUK EKSPOR ---

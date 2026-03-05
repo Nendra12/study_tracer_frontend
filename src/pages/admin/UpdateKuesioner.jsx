@@ -16,7 +16,7 @@ import RichTextEditor from '../../components/admin/RichTextEditor';
 import { adminApi } from '../../api/admin';
 import { alertSuccess, alertError } from '../../utilitis/alert';
 import { parseISO, isBefore } from 'date-fns';
-import TambahKuesionerSkeleton from '../../components/admin/TambahKuesionerSkeleton';
+import TambahKuesionerSkeleton from '../../components/admin/skeleton/TambahKuesionerSkeleton';
 
 const UpdateKuesioner = () => {
     // State untuk Data Kuesioner (Box Kiri)

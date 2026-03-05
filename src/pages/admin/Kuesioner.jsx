@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { KuesionerCard } from '../../components/admin/KuesionerCard';
 import { adminApi } from '../../api/admin';
-import { KuesionerSkeleton1, StatistikSkeleton, ToolbarSkeleton } from '../../components/admin/KuesionerSkletenon2';
+import { KuesionerSkeleton1, StatistikSkeleton, ToolbarSkeleton } from '../../components/admin/skeleton/KuesionerSkletenon2';
 import { alertConfirm, alertError, alertSuccess } from '../../utilitis/alert';
 import { useNavigate } from 'react-router-dom';
 
