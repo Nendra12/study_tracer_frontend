@@ -15,6 +15,7 @@ import FilterJurusan from '../../components/admin/FilterJurusan';
 import FilterTahunLulus from '../../components/admin/FilterTahunLulus';
 import AlumniTable from '../../components/admin/AlumniTable';
 import AlumniDetailModal from '../../components/admin/AlumniDetailModal';
+import ProfileUpdateRequests from '../../components/admin/ProfileUpdateRequests';
 
 const PER_PAGE = 7;
 
@@ -77,7 +78,6 @@ export default function UserManagement() {
   const [showDetail, setShowDetail] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
 
-  // State baru untuk pratinjau foto
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
 
@@ -162,7 +162,6 @@ export default function UserManagement() {
 
   const refreshAlumni = () => setFetchTrigger(c => c + 1);
 
-  // --- ACTION HANDLERS ---
   const handleApprove = async (alumniId) => {
     const { isConfirmed } = await alertConfirm('Apakah Anda yakin ingin menyetujui alumni ini?');
     if (!isConfirmed) return;
@@ -236,32 +235,19 @@ export default function UserManagement() {
   };
 
   const handleViewDetail = async (alumniId) => {
-    // 1. Cek apakah ID-nya masuk
-    // console.log("Mencoba buka detail untuk ID:", alumniId); 
-
     if (!alumniId) {
       alertError('Gagal!', 'ID Alumni tidak valid/kosong.');
       return;
     }
-
     setDetailLoading(true);
     setShowDetail(true);
     try {
       const res = await adminApi.getAlumniDetail(alumniId);
-
-      // 2. Cek apakah data berhasil didapat
-      console.log("Data Detail dari API:", res.data);
-
-      // Kadang backend mengembalikan res.data, kadang res.data.data
       setDetailAlumni(res.data.data || res.data);
     } catch (error) {
-      // 3. Cetak error merah di console agar mudah dilacak
       console.error("Error Get Detail:", error);
-
-      // Tampilkan pesan error bawaan dari backend (jika ada)
       const errorMsg = error.response?.data?.message || 'Tidak dapat memuat detail data alumni.';
       alertError('Gagal!', errorMsg);
-
       setShowDetail(false);
     } finally {
       setDetailLoading(false);
@@ -304,12 +290,15 @@ export default function UserManagement() {
   return (
     <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
       <div className="space-y-8">
+        
+        {/* 1. Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {statsCards.map((s, i) => (
             <ManagementStatCard key={i} {...s} loading={statsLoading} />
           ))}
         </div>
 
+        {/* 2. User Management Table Section */}
         <div className="space-y-6">
           <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
             <UserManagementTabs
@@ -319,8 +308,8 @@ export default function UserManagement() {
               pendingCount={stats?.pending}
             />
 
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <div className="relative group flex-1 md:w-64">
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <div className="relative group flex-1 md:w-64 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
                 <input
                   type="text"
@@ -330,15 +319,6 @@ export default function UserManagement() {
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 focus:border-primary rounded-xl text-sm outline-none transition-all"
                 />
               </div>
-
-              <button
-                onClick={handleExport}
-                disabled={exportLoading}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-              >
-                {exportLoading ? <Loader2 size={16} className="animate-pulse" /> : <Download size={16} />}
-                <span className="hidden sm:inline">Eksport CSV</span>
-              </button>
 
               <FilterJurusan
                 isFilterOpen={isFilterOpen}
@@ -355,6 +335,15 @@ export default function UserManagement() {
                 setSelectedTahunLulus={setSelectedTahunLulus}
                 tahunLulusList={tahunLulusList}
               />
+
+              <button
+                onClick={handleExport}
+                disabled={exportLoading}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#3C5759] text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              >
+                {exportLoading ? <Loader2 size={16} className="animate-pulse" /> : <Download size={16} />}
+                <span className="hidden sm:inline">Eksport CSV</span>
+              </button>
             </div>
           </div>
 
@@ -375,6 +364,10 @@ export default function UserManagement() {
           />
         </div>
 
+        {/* 3. KOMPONEN UPDATE REQUEST (Dipindah ke bawah Tabel) */}
+        <ProfileUpdateRequests />
+
+        {/* Modals */}
         <AlumniDetailModal
           showDetail={showDetail}
           setShowDetail={setShowDetail}
@@ -393,7 +386,7 @@ export default function UserManagement() {
           >
             <div className="relative max-w-lg w-full bg-white p-2 rounded-3xl shadow-2xl" onClick={e => e.stopPropagation()}>
               <button
-                className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur shadow-md rounded-full text-slate-600 hover:text-red-500 transition-colors z-10"
+                className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur shadow-md rounded-full text-slate-600 hover:text-red-500 transition-colors z-10 cursor-pointer"
                 onClick={() => setShowPhotoPreview(false)}
               >
                 <X size={20} />
