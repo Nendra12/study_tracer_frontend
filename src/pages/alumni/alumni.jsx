@@ -98,7 +98,7 @@ export default function Alumni() {
   const navUser = {
     nama_alumni: namaAlumni,
     foto: authUser?.alumni?.foto,
-    can_access_all: true, // this page is behind alumni.verified so always true
+    can_access_all: true,
   };
 
   // Fetch filter options on mount
