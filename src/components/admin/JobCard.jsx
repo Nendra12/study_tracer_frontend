@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Layers, CalendarClock, Check, X, Pencil, RotateCcw, Trash2, Tag } from "lucide-react";
 import banner from "../../assets/banner.jfif";
 import { STORAGE_BASE_URL } from "../../api/axios";
+import hitungMundur from "../../utilitis/hitungMundurTanggal";
+import { adminApi } from "../../api/admin";
 
 // Fungsi helper status harus ada di sini
 const getDisplayStatus = (job) => {
@@ -40,6 +42,33 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
     ? (job.foto.startsWith('http') ? job.foto : `${STORAGE_BASE_URL}/${job.foto}`)
     : banner;
 
+  let durasi = ''
+  // console.log(job.id, " ; ", job.jam_berakhir)
+  const now = new Date()
+  if (job.lowongan_selesai && job.jam_berakhir) {
+    const tanggalJamSelesai = new Date(`${job.lowongan_selesai}T${job.jam_berakhir}`)
+
+    if (tanggalJamSelesai <= now) {
+      durasi = "selesai"
+
+      const action = async () => {
+        try {
+          await adminApi.updateLowonganStatus(job.id, "closed")
+
+        } catch (error) {
+          console.log(error)
+        }
+      }
+
+      action()
+    } else {
+      durasi = hitungMundur(tanggalJamSelesai)
+    }
+
+  } else {
+    durasi = "-"
+  }
+
   return (
     <div
       onClick={() => navigate(`/wb-admin/jobs/job-detail/${job.id}`)}
@@ -55,7 +84,7 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
             <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${getStatusColor(displayStatus)}`}>{displayStatus}</span>
             {job.lowongan_selesai && (
               <span className="flex items-center gap-1 text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-1 rounded-md">
-                <CalendarClock size={10} /> Berakhir {job.lowongan_selesai}
+                <CalendarClock size={10} /> Berakhir {durasi}
               </span>
             )}
           </div>
@@ -64,9 +93,9 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
             <p className="text-xs font-bold text-gray-400 mt-0.5">{job.perusahaan?.nama || '-'}</p>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500 font-bold items-center">
-            <div className="flex items-center gap-1.5"><MapPin size={12} className="text-gray-400"/> {job.lokasi || job.perusahaan?.kota?.nama || '-'}</div>
+            <div className="flex items-center gap-1.5"><MapPin size={12} className="text-gray-400" /> {job.lokasi || job.perusahaan?.kota?.nama || '-'}</div>
             {job.tipe_pekerjaan && (
-                <div className="flex items-center gap-1.5"><Layers size={12} className="text-gray-400"/> {job.tipe_pekerjaan}</div>
+              <div className="flex items-center gap-1.5"><Layers size={12} className="text-gray-400" /> {job.tipe_pekerjaan}</div>
             )}
           </div>
           {/* Skills tags */}
@@ -88,9 +117,9 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
       <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 border-gray-50 pt-3 md:pt-0 mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
         {displayStatus === "MENUNGGU PERSETUJUAN" ? (
           <div className="flex items-center gap-2">
-            <button onClick={() => onApprove(job.id)} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"><Check size={14}/> Setujui</button>
-            <button onClick={() => onReject(job.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X size={16}/></button>
-            <button onClick={() => onEdit(job)} className="p-2 text-gray-400 hover:text-primary cursor-pointer"><Pencil size={18}/></button>
+            <button onClick={() => onApprove(job.id)} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"><Check size={14} /> Setujui</button>
+            <button onClick={() => onReject(job.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X size={16} /></button>
+            <button onClick={() => onEdit(job)} className="p-2 text-gray-400 hover:text-primary cursor-pointer"><Pencil size={18} /></button>
           </div>
         ) : (
           <div className="flex items-center gap-2">

@@ -287,7 +287,7 @@ const UpdateKuesioner = () => {
     }
     // console.log(statusKarir)
     return (
-        <div className="space-y-4 sm:space-y-6 max-w-full p-2 sm:p-4 lg:p-6 animate-in fade-in duration-700">
+        <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -297,7 +297,7 @@ const UpdateKuesioner = () => {
                         className="flex items-center gap-2 text-third hover:text-primary transition-colors text-sm font-medium group"
                     >
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        <span className="hidden sm:inline">Kembali</span>
+                        <span className="inline">Kembali</span>
                     </Link>
                     <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                         <button
@@ -330,7 +330,7 @@ const UpdateKuesioner = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
 
                     {/* LEFT BOX: Konfigurasi Kuesioner (Sesuai Sketsa) */}
-                    <div className="lg:col-span-4 space-y-4 sm:space-y-6 lg:sticky lg:top-8">
+                    <div className="lg:col-span-4 space-y-4 sm:space-y-6 lg:sticky">
                         <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
                             <h2 className="text-base sm:text-lg font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2">
                                 Data Kuesioner
@@ -475,7 +475,7 @@ const UpdateKuesioner = () => {
                                             </span>
                                             <div className="grow space-y-3 sm:space-y-4">
                                                 {/* Input Pertanyaan */}
-                                                <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
+                                                <div className="flex items-center justify-between gap-2 sm:gap-4">
                                                     <div className="grow w-full">
                                                         <RichTextEditor
                                                             content={q.text}
@@ -486,7 +486,7 @@ const UpdateKuesioner = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => removeQuestion(q.id)}
-                                                        className="cursor-pointer self-end sm:self-start p-2 text-slate-300 hover:text-red-500 transition-colors flex-none rounded-lg hover:bg-red-50"
+                                                        className="cursor-pointer p-2 text-slate-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
                                                     >
                                                         <Trash2 size={16} className="sm:w-4.5 sm:h-4.5" />
                                                     </button>
