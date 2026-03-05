@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, ChevronDown, Search } from 'lucide-react';
-import SmoothDropdown from '../admin/SmoothDropdown'; // Sesuaikan path jika berbeda
+import { X, Send, Image as ImageIcon, Loader2, Search } from 'lucide-react';
+import SmoothDropdown from '../admin/SmoothDropdown';
+import { alumniApi } from '../../api/alumni';
+import { masterDataApi } from '../../api/masterData';
 
 export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
   const isEditMode = !!editJob;
@@ -28,29 +30,20 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   const [minDate, setMinDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState(null);
 
-  // --- DATA STATIS (DUMMY) ---
-  const [provinsiList] = useState([
-    { id: '1', nama: 'Jawa Timur' },
-    { id: '2', nama: 'Jawa Tengah' },
-    { id: '3', nama: 'DKI Jakarta' }
-  ]);
+  // --- DATA DARI API ---
+  const [provinsiList, setProvinsiList] = useState([]);
   const [kotaList, setKotaList] = useState([]);
   const [loadingKota, setLoadingKota] = useState(false);
 
-  const [skillsList] = useState([
-    { id: 1, nama: 'JavaScript' },
-    { id: 2, nama: 'React JS' },
-    { id: 3, nama: 'UI/UX Design' },
-    { id: 4, nama: 'Laravel' },
-    { id: 5, nama: 'Python' }
-  ]);
+  const [skillsList, setSkillsList] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
   const skillDropdownRef = useRef(null);
 
-  // Set Minimum Date
+  // Set Minimum Date + Click outside handler
   useEffect(() => {
     const today = new Date();
     today.setDate(today.getDate() + 1);
@@ -64,6 +57,50 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Fetch Provinsi & Skills saat modal dibuka
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchMasterData = async () => {
+      try {
+        const [provRes, skillsRes] = await Promise.all([
+          masterDataApi.getProvinsi(),
+          masterDataApi.getSkills(),
+        ]);
+        const provData = provRes.data?.data || provRes.data || [];
+        setProvinsiList(Array.isArray(provData) ? provData : []);
+
+        const skillsData = skillsRes.data?.data || skillsRes.data || [];
+        setSkillsList(Array.isArray(skillsData) ? skillsData : []);
+      } catch (err) {
+        console.error('Failed to fetch master data:', err);
+      }
+    };
+    fetchMasterData();
+  }, [isOpen]);
+
+  // Fetch Kota berdasarkan Provinsi
+  useEffect(() => {
+    if (!formData.id_provinsi) {
+      setKotaList([]);
+      return;
+    }
+    const fetchKota = async () => {
+      setLoadingKota(true);
+      try {
+        const res = await masterDataApi.getKota(formData.id_provinsi);
+        const data = res.data?.data || res.data || [];
+        setKotaList(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch kota:', err);
+        setKotaList([]);
+      } finally {
+        setLoadingKota(false);
+      }
+    };
+    fetchKota();
+  }, [formData.id_provinsi]);
 
   // Sinkronisasi Form Saat Buka Modal
   useEffect(() => {
@@ -81,11 +118,12 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         jam_mulai: formatTime(editJob.jam_mulai),
         jam_berakhir: formatTime(editJob.jam_berakhir),
       });
-      setPreviewUrl(editJob.foto ? `http://localhost:8000/storage/${editJob.foto}` : null); // Asumsi path
+      setPreviewUrl(editJob.foto ? `${import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage'}/${editJob.foto}` : null);
       if (editJob.skills && Array.isArray(editJob.skills)) {
         setSelectedSkills(editJob.skills.map(s => ({ id: s.id, nama: s.nama })));
       }
       setErrors({});
+      setSubmitError(null);
     } else if (!editJob && isOpen) {
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
@@ -95,36 +133,18 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       setSelectedSkills([]);
       setPreviewUrl(null);
       setErrors({});
+      setSubmitError(null);
     }
   }, [editJob, isOpen]);
 
-  // Simulasi Ambil Data Kota Berdasarkan Provinsi
-  useEffect(() => {
-    if (!formData.id_provinsi) {
-      setKotaList([]);
-      return;
-    }
-    setLoadingKota(true);
-    setTimeout(() => {
-      if (formData.id_provinsi === '1') {
-        setKotaList([{ id: '101', nama: 'Surabaya' }, { id: '102', nama: 'Malang' }]);
-      } else if (formData.id_provinsi === '3') {
-        setKotaList([{ id: '301', nama: 'Jakarta Selatan' }, { id: '302', nama: 'Jakarta Pusat' }]);
-      } else {
-        setKotaList([{ id: '201', nama: 'Semarang' }]);
-      }
-      setLoadingKota(false);
-    }, 500);
-  }, [formData.id_provinsi]);
-
   // Skill Helpers
-  const filteredSkills = skillsList.filter(s => 
-    s.nama.toLowerCase().includes(skillSearch.toLowerCase()) && 
+  const filteredSkills = skillsList.filter(s =>
+    (s.nama || s.name || '').toLowerCase().includes(skillSearch.toLowerCase()) &&
     !selectedSkills.some(sel => sel.id === s.id)
   );
 
   const addSkill = (skill) => {
-    setSelectedSkills(prev => [...prev, skill]);
+    setSelectedSkills(prev => [...prev, { id: skill.id, nama: skill.nama || skill.name }]);
     setSkillSearch('');
     setShowSkillDropdown(false);
   };
@@ -149,16 +169,57 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     }
   };
 
-  // Simulasi Submit
-  const handleSubmit = () => {
+  // Submit ke API
+  const handleSubmit = async () => {
     setSubmitting(true);
-    setTimeout(() => {
-      console.log("Data Disimpan (Statis):", formData, "Skills:", selectedSkills);
+    setSubmitError(null);
+    setErrors({});
+
+    try {
+      const fd = new FormData();
+      fd.append('judul_lowongan', formData.judul);
+      if (formData.perusahaan) fd.append('nama_perusahaan', formData.perusahaan);
+      if (formData.deskripsi) fd.append('deskripsi', formData.deskripsi);
+      if (formData.tipe_pekerjaan) fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
+      if (formData.lokasi) fd.append('lokasi', formData.lokasi);
+      if (formData.tanggal_berakhir) fd.append('lowongan_selesai', formData.tanggal_berakhir);
+      if (formData.jam_mulai) fd.append('jam_mulai', formData.jam_mulai);
+      if (formData.jam_berakhir) fd.append('jam_berakhir', formData.jam_berakhir);
+      if (formData.id_kota) fd.append('id_kota', formData.id_kota);
+      if (formData.foto) fd.append('foto_lowongan', formData.foto);
+
+      selectedSkills.forEach(skill => {
+        fd.append('skills[]', skill.id);
+      });
+
+      await alumniApi.submitLowongan(fd);
+
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error('Submit lowongan failed:', err);
+      if (err.response?.status === 422) {
+        const validationErrors = err.response.data?.errors || {};
+        // Map backend field names to form field names
+        const mapped = {};
+        if (validationErrors.judul_lowongan) mapped.judul = validationErrors.judul_lowongan[0];
+        if (validationErrors.nama_perusahaan) mapped.perusahaan = validationErrors.nama_perusahaan[0];
+        if (validationErrors.deskripsi) mapped.deskripsi = validationErrors.deskripsi[0];
+        if (validationErrors.tipe_pekerjaan) mapped.tipe_pekerjaan = validationErrors.tipe_pekerjaan[0];
+        if (validationErrors.lokasi) mapped.lokasi = validationErrors.lokasi[0];
+        if (validationErrors.lowongan_selesai) mapped.tanggal_berakhir = validationErrors.lowongan_selesai[0];
+        if (validationErrors.jam_mulai) mapped.jam_mulai = validationErrors.jam_mulai[0];
+        if (validationErrors.jam_berakhir) mapped.jam_berakhir = validationErrors.jam_berakhir[0];
+        if (validationErrors.foto_lowongan) mapped.foto = validationErrors.foto_lowongan[0];
+        if (validationErrors.id_kota) mapped.id_kota = validationErrors.id_kota[0];
+        if (validationErrors.skills) mapped.skills = validationErrors.skills[0];
+        setErrors(mapped);
+      } else {
+        setSubmitError(err.response?.data?.message || 'Gagal mengirim lowongan. Silakan coba lagi.');
+      }
+    } finally {
       setSubmitting(false);
-      onSuccess(); // Refresh tabel di belakang
-      onClose(); // Tutup modal
-      alert(`Lowongan berhasil ${isEditMode ? 'diperbarui' : 'ditambahkan'} (Statis)`);
-    }, 1500);
+    }
   };
 
   if (!isOpen) return null;
@@ -166,7 +227,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       {/* Modal Container */}
-      <div 
+      <div
         className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative"
         onClick={e => e.stopPropagation()}
       >
@@ -182,7 +243,14 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
         {/* Body Modal */}
         <div className="p-6 md:p-8 overflow-y-auto space-y-8 flex-1">
-          
+
+          {/* Submit Error Alert */}
+          {submitError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-medium">
+              {submitError}
+            </div>
+          )}
+
           {/* Upload Foto */}
           <div className="space-y-3">
             <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest">Gambar / Banner (Opsional)</label>
@@ -196,35 +264,40 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                   Pilih File
                   <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </label>
+                {errors.foto && <p className="text-xs text-red-500 font-medium mt-1">{errors.foto}</p>}
               </div>
             </div>
           </div>
 
           <div className="space-y-6">
             <div>
-              <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">Job Title *</label>
-              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+              <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Job Title *</label>
+              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.judul ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20`} />
+              {errors.judul && <p className="text-xs text-red-500 font-medium mt-1">{errors.judul}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">Nama Perusahaan *</label>
-                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Nama Perusahaan</label>
+                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
               </div>
               <div>
-                <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">Tanggal Berakhir</label>
-                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Tanggal Berakhir</label>
+                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                {errors.tanggal_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.tanggal_berakhir}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">Jam Mulai</label>
-                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Jam Mulai</label>
+                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                {errors.jam_mulai && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_mulai}</p>}
               </div>
               <div>
-                <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">Jam Berakhir</label>
-                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Jam Berakhir</label>
+                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                {errors.jam_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_berakhir}</p>}
               </div>
             </div>
 
@@ -232,7 +305,6 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
               <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">
                 Tipe Pekerjaan
               </label>
-              {/* Cukup gunakan w-full, hapus bg, border, dan shadow di sini */}
               <div className="w-full">
                 <SmoothDropdown
                   isSearchable={false}
@@ -281,7 +353,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
               <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">
                 Skills <span className="normal-case opacity-70">(Opsional)</span>
               </label>
-              
+
               <div className="flex flex-wrap gap-2 mb-3">
                 {selectedSkills.map(skill => (
                   <span key={skill.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg border border-primary/10">
@@ -304,13 +376,14 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                 {showSkillDropdown && (
                   <div className="absolute z-50 top-[105%] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto py-2">
                     {filteredSkills.length > 0 ? filteredSkills.map(s => (
-                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-primary">
-                        {s.nama}
+                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-[#3C5759]">
+                        {s.nama || s.name}
                       </div>
                     )) : <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Skill tidak ditemukan</div>}
                   </div>
                 )}
               </div>
+              {errors.skills && <p className="text-xs text-red-500 font-medium mt-1">{errors.skills}</p>}
             </div>
 
             <div>
@@ -326,7 +399,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
           <button onClick={onClose} disabled={submitting} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm cursor-pointer">
             Batal
           </button>
-          <button onClick={handleSubmit} disabled={submitting || !formData.judul || !formData.perusahaan} className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
+          <button onClick={handleSubmit} disabled={submitting || !formData.judul} className="flex items-center gap-2 px-8 py-3 bg-[#3C5759] text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Simpan' : 'Kirim'} <Send size={16} /></>}
           </button>
         </div>

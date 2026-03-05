@@ -38,6 +38,18 @@ export const alumniApi = {
     return api.post(`/alumni/lowongan/${id}/toggle-save`);
   },
 
+  // Alumni Submit Lowongan (auto pending + draft)
+  submitLowongan(data) {
+    return api.post('/alumni/lowongan', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  // My Lowongan (own submissions with progress timeline)
+  getMyLowongan(params = {}) {
+    return api.get('/alumni/my-lowongan', { params });
+  },
+
   // Kuesioner
   getKuesioner(filters = {}, perPage = 15) {
     return api.get('/alumni/kuesioner', { params: { ...filters, per_page: perPage } });
