@@ -31,12 +31,6 @@ export default function ProfileHeader({ profile, onPerbarui }) {
             <Eye size={16} /> Lihat Profil Publik
           </button>
           
-          <button 
-            onClick={() => onPerbarui?.()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#3C5759] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer"
-          >
-            <Edit size={16} /> Perbarui Profil
-          </button>
         </div>
       </div>
 
@@ -46,7 +40,7 @@ export default function ProfileHeader({ profile, onPerbarui }) {
         <div>
           <h3 className="text-sm font-bold text-amber-800 mb-0.5">Kebijakan Pembaruan</h3>
           <p className="text-xs text-amber-700/80 font-medium">
-            Pembaruan pada profil Anda memerlukan persetujuan Admin dan tidak akan langsung ditampilkan di direktori publik
+            Pembaruan pada status karir memerlukan persetujuan Admin
           </p>
         </div>
       </div>

@@ -63,6 +63,11 @@ export const alumniApi = {
   getAlumniDirectoryFilters() {
     return api.get('/alumni/directory/filters');
   },
+
+  // Public Profile (requires authenticated verified alumni)
+  getAlumniPublicProfile(id) {
+    return api.get(`/alumni/directory/${id}`);
+  },
 };
 
 // Public endpoints
