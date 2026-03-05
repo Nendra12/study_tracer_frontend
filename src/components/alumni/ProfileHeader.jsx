@@ -2,7 +2,7 @@ import React from 'react';
 import { Eye, Edit, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function ProfileHeader({ profile }) {
+export default function ProfileHeader({ profile, onPerbarui }) {
   const navigate = useNavigate();
 
   return (
@@ -31,7 +31,10 @@ export default function ProfileHeader({ profile }) {
             <Eye size={16} /> Lihat Profil Publik
           </button>
           
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-[#3C5759] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer">
+          <button 
+            onClick={() => onPerbarui?.()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#3C5759] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer"
+          >
             <Edit size={16} /> Perbarui Profil
           </button>
         </div>

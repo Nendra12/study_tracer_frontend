@@ -15,6 +15,10 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
   const [showSearch, setShowSearch] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // State untuk tambah skill baru
+  const [newSkillName, setNewSkillName] = useState('');
+  const [creatingSkill, setCreatingSkill] = useState(false);
 
   useEffect(() => {
     // Map skill dari profil yang sudah ada di database
@@ -63,6 +67,52 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
   function removeSkill(skillId) {
     setMySkills(prev => prev.filter(s => s.id !== skillId));
     setHasChanges(true);
+  }
+
+  // Membuat skill baru lalu menambahkannya ke daftar lokal
+  async function handleCreateSkill() {
+    if (!newSkillName.trim()) return;
+    
+    // Cek apakah skill sudah ada di master data
+    const exists = masterSkills.find(s => 
+      (s.nama_skill || s.nama || s.name || '').toLowerCase() === newSkillName.trim().toLowerCase()
+    );
+    
+    if (exists) {
+      // Skill sudah ada, langsung tambahkan
+      handleSelectSkill(exists.nama_skill || exists.nama || exists.name);
+      setNewSkillName('');
+      return;
+    }
+    
+    try {
+      setCreatingSkill(true);
+      const res = await masterDataApi.createSkill({ name_skills: newSkillName.trim() });
+      const created = res.data?.data || res.data;
+      
+      if (created) {
+        const newSkill = {
+          id: created.id || created.id_skills,
+          nama_skill: created.nama_skill || created.nama || created.name || newSkillName.trim(),
+        };
+        
+        // Tambah ke master data list dan ke daftar saya
+        setMasterSkills(prev => [...prev, newSkill]);
+        
+        const isAlreadyAdded = mySkills.find(s => s.id === newSkill.id);
+        if (!isAlreadyAdded) {
+          setMySkills(prev => [...prev, newSkill]);
+          setHasChanges(true);
+        }
+      }
+      
+      setNewSkillName('');
+    } catch (err) {
+      console.error('Failed to create new skill:', err);
+      alert('Gagal membuat keahlian baru: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setCreatingSkill(false);
+    }
   }
 
   // Fungsi untuk menyimpan ke API (Dijalankan manual lewat tombol)
@@ -150,8 +200,28 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
               />
             </div>
             <p className="text-[10px] text-[#3C5759]/50 mt-2 font-semibold px-2">
-              * Pilih keahlian dari daftar dropdown untuk menambahkannya ke profil Anda. Jangan lupa klik "Simpan Perubahan".
+              * Pilih keahlian dari daftar dropdown, atau tambahkan keahlian baru di bawah. Jangan lupa klik "Simpan Perubahan".
             </p>
+
+            {/* Input untuk membuat keahlian baru */}
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                type="text"
+                value={newSkillName}
+                onChange={(e) => setNewSkillName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateSkill(); } }}
+                placeholder="Keahlian tidak ada? Ketik nama keahlian baru..."
+                className="flex-1 px-4 py-2.5 border border-[#3C5759]/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3C5759]/30 bg-white"
+              />
+              <button
+                onClick={handleCreateSkill}
+                disabled={creatingSkill || !newSkillName.trim()}
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-[#3C5759] text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                Tambah Baru
+              </button>
+            </div>
           </div>
         )}
 

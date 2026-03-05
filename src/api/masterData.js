@@ -27,6 +27,10 @@ export const masterDataApi = {
     return api.get('/master/skills');
   },
 
+  createSkill(data) {
+    return api.post('/master/skills', data);
+  },
+
   // Social Media platforms
   getSocialMedia() {
     return api.get('/master/social-media');

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Briefcase, Plus, X, ChevronDown, Loader2, Save } from 'lucide-react';
+import { Briefcase, Plus, X, ChevronDown, Loader2, Save, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
 
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pendingAlert, setPendingAlert] = useState(false);
 
   const [statusList, setStatusList] = useState([]);
   const [provinsiList, setProvinsiList] = useState([]);
@@ -67,7 +68,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
         tahun_selesai: form.tahun_selesai || null,
       };
 
-      if (statusName.includes('kerja') || statusName.includes('bekerja')) {
+      const isBelum = statusName.includes('belum');
+      if (!isBelum && (statusName.includes('kerja') || statusName.includes('bekerja'))) {
         payload.pekerjaan = { posisi: form.posisi, nama_perusahaan: form.nama_perusahaan, id_kota: form.id_kota, jalan: form.jalan };
       } else if (statusName.includes('kuliah')) {
         payload.universitas = { nama_universitas: form.nama_universitas, id_jurusanKuliah: form.id_jurusanKuliah, jalur_masuk: form.jalur_masuk, jenjang: form.jenjang };
@@ -77,7 +79,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
 
       await alumniApi.updateCareerStatus(payload);
       setShowForm(false);
-      onShowSuccess('Status karier berhasil ditambahkan');
+      setPendingAlert(true);
+      onShowSuccess('Status karier berhasil dikirim, menunggu verifikasi admin');
       onRefresh();
     } catch (err) {
       console.error('Failed to save career status:', err);
@@ -88,7 +91,31 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   }
 
   const career = profile?.current_career;
-  const riwayat = profile?.riwayat_status || [];
+  // Deduplicate riwayat by id to prevent double entries
+  const rawRiwayat = profile?.riwayat_status || [];
+  const riwayat = rawRiwayat
+    .filter((item, index, self) => index === self.findIndex(r => r.id === item.id))
+    .filter((item) => {
+      // Exclude the current career from riwayat (it's already shown in "Status Saat Ini")
+      if (!career) return true;
+      // Match by comparing key fields
+      if (career.status && item.status?.nama === career.status &&
+          item.tahun_mulai === career.tahun_mulai) {
+        // Further check: compare detail fields
+        if (career.pekerjaan && item.pekerjaan) {
+          return !(item.pekerjaan.posisi === career.pekerjaan.posisi);
+        }
+        if (career.kuliah && item.kuliah) {
+          return !(item.kuliah.universitas?.nama === career.kuliah.universitas);
+        }
+        if (career.wirausaha && item.wirausaha) {
+          return !(item.wirausaha.nama_usaha === career.wirausaha.nama_usaha);
+        }
+        // If status matches but no detail to compare, exclude (it's likely the same)
+        if (!item.pekerjaan && !item.kuliah && !item.wirausaha) return false;
+      }
+      return true;
+    });
 
   function getCareerDisplayInfo() {
     if (!career) return null;
@@ -178,7 +205,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               <input type="number" placeholder="2025" value={form.tahun_selesai} onChange={(e) => setForm(prev => ({ ...prev, tahun_selesai: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
             </div>
 
-            {(statusName.includes('kerja') || statusName.includes('bekerja')) && (
+            {!statusName.includes('belum') && (statusName.includes('kerja') || statusName.includes('bekerja')) && (
               <>
                 <div>
                   <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Posisi / Judul Job</label>
@@ -283,8 +310,69 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
         </div>
       )}
 
+      {/* Show pending alert even when no riwayat exists */}
+      {pendingAlert && riwayat.length === 0 && (
+        <div className="mt-6 mb-4 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-300">
+          <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin. 
+              Status akan diperbarui setelah disetujui.
+            </p>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-green-500" />
+                <span className="text-[11px] font-bold text-green-700">Data Terkirim</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock size={14} className="text-amber-500" />
+                <span className="text-[11px] font-bold text-amber-700">Menunggu Review Admin</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <AlertCircle size={14} className="text-slate-300" />
+                <span className="text-[11px] font-bold text-slate-400">Disetujui</span>
+              </div>
+            </div>
+          </div>
+          <button onClick={() => setPendingAlert(false)} className="text-amber-400 hover:text-amber-600 cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {riwayat.length > 0 && (
         <div className="mt-6">
+          {/* Pending Verification Alert */}
+          {pendingAlert && (
+            <div className="mb-4 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-300">
+              <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
+                <p className="text-xs text-amber-700/80 font-medium">
+                  Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin. 
+                  Status akan diperbarui setelah disetujui.
+                </p>
+                <div className="flex items-center gap-4 mt-3">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-green-500" />
+                    <span className="text-[11px] font-bold text-green-700">Data Terkirim</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={14} className="text-amber-500" />
+                    <span className="text-[11px] font-bold text-amber-700">Menunggu Review Admin</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <AlertCircle size={14} className="text-slate-300" />
+                    <span className="text-[11px] font-bold text-slate-400">Disetujui</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setPendingAlert(false)} className="text-amber-400 hover:text-amber-600 cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+          )}
           <h3 className="text-sm font-black text-[#3C5759]/60 uppercase tracking-widest mb-4">Riwayat Status</h3>
           <div className="space-y-4">
             {riwayat.map((item) => {
