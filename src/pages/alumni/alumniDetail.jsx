@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, MapPin, GraduationCap, Briefcase, Globe, Award, Loader2, AlertCircle, Building2, Rocket, LineChart
@@ -8,6 +8,7 @@ import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-ic
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/alumni/Navbar';
 import Footer from '../../components/alumni/Footer';
+import PublicProfileBar from '../../components/alumni/PublicProfileBar';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
 
@@ -42,7 +43,9 @@ const getStatusColor = (status) => {
 export default function AlumniDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user: authUser } = useAuth();
+  const fromProfile = location.state?.fromProfile === true;
   
   const [alumni, setAlumni] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -155,6 +158,20 @@ export default function AlumniDetail() {
       {/* --- MAIN CONTENT AREA --- */}
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 relative z-20 -mt-32 pb-20">
 
+        {/* BAR PROFIL PUBLIK (hanya muncul jika dari halaman profil) */}
+        {fromProfile && <PublicProfileBar alumniId={id} alumniNama={alumni.nama} />}
+
+        {/* Tombol Kembali (hanya muncul jika dari direktori alumni) */}
+        {!fromProfile && (
+          <motion.button
+            whileHover={{ x: -3 }}
+            onClick={() => navigate('/alumni')}
+            className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest mb-4 transition-all cursor-pointer"
+          >
+            <ArrowLeft size={14} /> Kembali ke Direktori
+          </motion.button>
+        )}
+
         {/* PROFILE HEADER CARD */}
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
@@ -176,14 +193,6 @@ export default function AlumniDetail() {
             </motion.div>
 
             <div className="flex-1">
-              <motion.button
-                whileHover={{ x: -3 }}
-                onClick={() => navigate('/alumni')}
-                className="flex items-center gap-2 text-[#3C5759]/40 hover:text-[#3C5759] text-xs font-bold uppercase tracking-widest mb-4 transition-all cursor-pointer"
-              >
-                <ArrowLeft size={14} /> Kembali ke Direktori
-              </motion.button>
-
               <h1 className="text-3xl md:text-5xl font-black text-[#3C5759] tracking-tight leading-none mb-3">
                 {alumni.nama}
               </h1>

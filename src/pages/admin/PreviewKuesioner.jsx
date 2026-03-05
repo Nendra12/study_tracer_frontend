@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { adminApi } from "../../api/admin";
 import { useEffect, useState } from "react";
-import ReviewKuesionerSkeleton from "../../components/admin/ReviewKuesionerSkeleton";
+import ReviewKuesionerSkeleton from "../../components/admin/skeleton/ReviewKuesionerSkeleton";
 import { parseISO, format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 

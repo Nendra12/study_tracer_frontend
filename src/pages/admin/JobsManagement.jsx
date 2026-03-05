@@ -16,7 +16,7 @@ import { alertSuccess, alertError, alertConfirm } from "../../utilitis/alert";
 
 // --- IMPORT KOMPONEN YANG SUDAH DIPISAH ---
 import JobCard from "../../components/admin/JobCard";
-import { JobCardSkeleton, JobSidebarSkeleton } from "../../components/admin/JobSkeleton";
+import { JobCardSkeleton, JobSidebarSkeleton } from "../../components/admin/skeleton/JobSkeleton";
 import Pagination from "../../components/admin/Pagination";
 
 const JOBS_PER_PAGE = 7;

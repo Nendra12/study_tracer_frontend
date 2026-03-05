@@ -14,7 +14,7 @@ import { adminApi } from "../../api/admin";
 import { alertSuccess, alertError, alertConfirm, alertWarning } from "../../utilitis/alert"; 
 import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
-import TableLayoutSkeleton from "../../components/admin/TableLayoutSkeleton";
+import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 import Pagination from "../../components/admin/Pagination";
 
 const PERUSAHAAN_PER_PAGE = 7;

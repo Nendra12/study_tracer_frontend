@@ -6,7 +6,7 @@ import ChartKuesioner from '../../components/admin/ChartKuesioner';
 import { ArrowLeft, FileDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import SkeletonKuesionerAnswer from '../../components/admin/SkeletonKuesionerAnswer';
+import SkeletonKuesionerAnswer from '../../components/admin/skeleton/SkeletonKuesionerAnswer';
 
 function StatistikKuesioner() {
     // Data Pertanyaan 1 (Bar Chart)

@@ -25,6 +25,10 @@ export const alumniApi = {
     return api.post('/alumni/career-status', data);
   },
 
+  updateExistingCareerStatus(id, data) {
+    return api.put(`/alumni/career-status/${id}`, data);
+  },
+
   // Lowongan (restricted - needs verified + kuesioner)
   getLowongan(params = {}) {
     return api.get('/alumni/lowongan', { params });
@@ -67,6 +71,13 @@ export const alumniApi = {
   // Public Profile (requires authenticated verified alumni)
   getAlumniPublicProfile(id) {
     return api.get(`/alumni/directory/${id}`);
+  },
+
+  // Download Public Profile as PDF
+  downloadPublicProfilePdf(id) {
+    return api.get(`/alumni/directory/${id}/pdf`, {
+      responseType: 'blob',
+    });
   },
 };
 

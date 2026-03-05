@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Briefcase, Plus, X, ChevronDown, Loader2, Save, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Briefcase, Plus, X, ChevronDown, Loader2, Save, Clock, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
 
@@ -7,6 +7,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pendingAlert, setPendingAlert] = useState(false);
+  const [editingEndDate, setEditingEndDate] = useState(false);
+  const [endDateValue, setEndDateValue] = useState('');
 
   const [statusList, setStatusList] = useState([]);
   const [provinsiList, setProvinsiList] = useState([]);
@@ -15,9 +17,9 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   const [jurusanKuliahList, setJurusanKuliahList] = useState([]);
 
   const [form, setForm] = useState({
-    id_status: '', tahun_mulai: '', tahun_selesai: '', 
-    posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '', 
-    nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', 
+    id_status: '', tahun_mulai: '', tahun_selesai: '',
+    posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '',
+    nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '',
     id_bidang: '', nama_usaha: ''
   });
 
@@ -44,6 +46,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   }
 
   function handleOpenForm() {
+    // Cek apakah karir saat ini masih berjalan (tahun_selesai null)
+    if (career && !career.tahun_selesai) {
+      alert('Anda harus mengisi tanggal berakhir pada karir saat ini terlebih dahulu sebelum menambahkan status karir baru.');
+      return;
+    }
     setShowForm(true);
     setForm({ id_status: '', tahun_mulai: '', tahun_selesai: '', posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '', nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', id_bidang: '', nama_usaha: '' });
     loadMasterData();
@@ -90,6 +97,60 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
     }
   }
 
+  async function handleUpdateEndDate() {
+    if (!endDateValue) {
+      alert('Mohon isi tahun selesai');
+      return;
+    }
+    if (!career?.id_status || !career?.id_riwayat) {
+      alert('Data karir tidak lengkap. Silakan refresh halaman.');
+      return;
+    }
+    try {
+      setSaving(true);
+      const payload = {
+        id_status: career.id_status,
+        tahun_mulai: career.tahun_mulai,
+        tahun_selesai: endDateValue,
+      };
+
+      // Add career-specific data based on type
+      if (career.pekerjaan) {
+        payload.pekerjaan = {
+          posisi: career.pekerjaan.posisi,
+          nama_perusahaan: career.pekerjaan.perusahaan,
+          id_kota: career.pekerjaan.id_kota,
+          jalan: career.pekerjaan.jalan
+        };
+      } else if (career.kuliah) {
+        payload.universitas = {
+          nama_universitas: career.kuliah.universitas,
+          id_jurusanKuliah: career.kuliah.jurusan_kuliah?.id,
+          jalur_masuk: career.kuliah.jalur_masuk,
+          jenjang: career.kuliah.jenjang
+        };
+      } else if (career.wirausaha) {
+        payload.wirausaha = {
+          id_bidang: career.wirausaha.id_bidang,
+          nama_usaha: career.wirausaha.nama_usaha
+        };
+      }
+
+      // Use PUT endpoint to update existing career status directly
+      await alumniApi.updateExistingCareerStatus(career.id_riwayat, payload);
+      setEditingEndDate(false);
+      setEndDateValue('');
+      onShowSuccess('Tahun selesai berhasil diperbarui');
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to update end date:', err);
+      alert('Gagal memperbarui tahun selesai: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // console.log(profile)
   const career = profile?.current_career;
   // Deduplicate riwayat by id to prevent double entries
   const rawRiwayat = profile?.riwayat_status || [];
@@ -100,7 +161,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
       if (!career) return true;
       // Match by comparing key fields
       if (career.status && item.status?.nama === career.status &&
-          item.tahun_mulai === career.tahun_mulai) {
+        item.tahun_mulai === career.tahun_mulai) {
         // Further check: compare detail fields
         if (career.pekerjaan && item.pekerjaan) {
           return !(item.pekerjaan.posisi === career.pekerjaan.posisi);
@@ -119,12 +180,49 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
 
   function getCareerDisplayInfo() {
     if (!career) return null;
-    if (career.pekerjaan) return { posisi: career.pekerjaan.posisi || '-', perusahaan: career.pekerjaan.perusahaan || '-', kota: career.pekerjaan.kota || '-', provinsi: career.pekerjaan.provinsi || '-' };
-    if (career.kuliah) return { posisi: career.kuliah.jenjang ? `Mahasiswa ${career.kuliah.jenjang}` : 'Mahasiswa', perusahaan: career.kuliah.universitas || '-', kota: career.kuliah.jurusan_kuliah || '-', provinsi: career.kuliah.jalur_masuk || '-' };
-    if (career.wirausaha) return { posisi: 'Wirausaha', perusahaan: career.wirausaha.nama_usaha || '-', kota: career.wirausaha.bidang_usaha || '-', provinsi: '-' };
+
+    // Untuk Bekerja/Kerja
+    if (career.pekerjaan) {
+      return {
+        type: 'pekerjaan',
+        fields: [
+          { label: 'Posisi / Jabatan', value: career.pekerjaan.posisi || '-' },
+          { label: 'Perusahaan', value: career.pekerjaan.perusahaan || '-' },
+          { label: 'Kota', value: career.pekerjaan.kota || '-' },
+          { label: 'Provinsi', value: career.pekerjaan.provinsi || '-' },
+          { label: 'Alamat', value: career.pekerjaan.jalan || '-' }
+        ]
+      };
+    }
+
+    // Untuk Kuliah
+    if (career.kuliah) {
+      return {
+        type: 'kuliah',
+        fields: [
+          { label: 'Jenjang', value: career.kuliah.jenjang || '-' },
+          { label: 'Universitas', value: career.kuliah.universitas || '-' },
+          { label: 'Program Studi / Jurusan', value: career.kuliah.jurusan_kuliah.nama || '-' },
+          { label: 'Jalur Masuk', value: career.kuliah.jalur_masuk || '-' }
+        ]
+      };
+    }
+
+    // Untuk Wirausaha
+    if (career.wirausaha) {
+      return {
+        type: 'wirausaha',
+        fields: [
+          { label: 'Nama Usaha', value: career.wirausaha.nama_usaha || '-' },
+          { label: 'Bidang Usaha', value: career.wirausaha.bidang_usaha || '-' }
+        ]
+      };
+    }
+
     return null;
   }
   const careerInfo = getCareerDisplayInfo();
+  // console.log("rir karir", career)
 
   return (
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
@@ -134,52 +232,32 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
           <h2 className="text-lg font-black">Status Karier Saat Ini</h2>
         </div>
         {!showForm && (
-          <button onClick={handleOpenForm} className="flex items-center gap-1 text-xs font-bold text-[#3C5759] hover:underline cursor-pointer">
-            <Plus size={14} /> Tambahkan status baru
-          </button>
+          <div className="relative group">
+            <button
+              onClick={handleOpenForm}
+              className={`flex items-center gap-1 text-xs font-bold transition-all ${career && !career.tahun_selesai
+                ? 'text-slate-400 cursor-not-allowed'
+                : 'text-[#3C5759] hover:underline cursor-pointer'
+                }`}
+              disabled={career && !career.tahun_selesai}
+            >
+              <Plus size={14} /> Tambahkan status baru
+            </button>
+            {career && !career.tahun_selesai && (
+              <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10">
+                <div className="flex items-start gap-2">
+                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                  <p>Isi tanggal berakhir pada karir saat ini sebelum menambahkan status baru</p>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {careerInfo && !showForm && (
-        <div className="border-2 border-dashed border-slate-200 rounded-[1.5rem] p-6 mb-6 bg-white">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Status</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{career?.status || '-'}</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Posisi / Judul</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{careerInfo.posisi}</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Perusahaan / Institusi</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{careerInfo.perusahaan}</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Periode</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{career?.tahun_mulai || '-'} - {career?.tahun_selesai || 'Sekarang'}</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Kota / Detail</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{careerInfo.kota}</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Provinsi</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{careerInfo.provinsi}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!careerInfo && !showForm && (
-        <div className="border-2 border-dashed border-slate-200 rounded-[1.5rem] p-8 mb-6 bg-white text-center">
-          <Briefcase size={32} className="text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-400">Belum ada status karier. Klik "Tambahkan status baru" untuk memulai.</p>
-        </div>
-      )}
-
+      {/* Form Tambah Status - Muncul di atas dengan animasi */}
       {showForm && (
-        <div className="border-2 border-[#3C5759]/30 rounded-[1.5rem] p-6 mb-6 bg-[#3C5759]/5">
+        <div className="border-2 border-[#3C5759]/30 rounded-[1.5rem] p-6 mb-6 bg-[#3C5759]/5 animate-in slide-in-from-top duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-black text-[#3C5759]">Tambahkan Status Baru</h3>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer"><X size={18} /></button>
@@ -201,7 +279,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               <input type="number" placeholder="2024" value={form.tahun_mulai} onChange={(e) => setForm(prev => ({ ...prev, tahun_mulai: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Tahun Selesai <span className="lowercase normal-case font-medium">(opsional)</span></label>
+              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Tahun Selesai <span className="normal-case font-medium">(opsional)</span></label>
               <input type="number" placeholder="2025" value={form.tahun_selesai} onChange={(e) => setForm(prev => ({ ...prev, tahun_selesai: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
             </div>
 
@@ -236,7 +314,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Alamat / Jalan <span className="lowercase normal-case font-medium">(opsional)</span></label>
+                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Alamat / Jalan <span className="normal-case font-medium">(opsional)</span></label>
                   <input type="text" placeholder="Jl. Contoh No. 123" value={form.jalan} onChange={(e) => setForm(prev => ({ ...prev, jalan: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
                 </div>
               </>
@@ -310,6 +388,88 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
         </div>
       )}
 
+      {/* Current Career - Dengan animasi slide down ketika form dibuka */}
+      {careerInfo && (
+        <div className={`border-2 border-dashed border-slate-200 rounded-[1.5rem] p-6 mb-6 bg-white transition-all duration-300 ${showForm ? 'animate-in slide-in-from-top-4' : ''}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="sm:col-span-2">
+              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Status Karier</label>
+              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{career?.status || '-'}</div>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Periode</label>
+              {editingEndDate ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2">
+                    <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">
+                      {career?.tahun_mulai || '-'}
+                    </div>
+                    <span className="text-sm font-bold text-[#3C5759]">-</span>
+                    <input
+                      type="text"
+                      placeholder="2026"
+                      value={endDateValue}
+                      onChange={(e) => setEndDateValue(e.target.value)}
+                      className="flex-1 bg-white border-2 border-[#3C5759]/30 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20"
+                    />
+                  </div>
+                  <button
+                    onClick={handleUpdateEndDate}
+                    disabled={saving}
+                    className="flex items-center gap-1 px-3 py-3 bg-[#3C5759] text-white rounded-xl text-xs font-bold hover:bg-[#2A3E3F] transition-all disabled:opacity-50"
+                  >
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingEndDate(false);
+                      setEndDateValue('');
+                    }}
+                    className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">
+                    {career?.tahun_mulai || '-'} - {career?.tahun_selesai || 'Sekarang'}
+                  </div>
+                  {!career?.tahun_selesai && (
+                    <button
+                      onClick={() => setEditingEndDate(true)}
+                      className="flex items-center gap-1 px-3 py-3 bg-slate-100 text-[#3C5759] rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
+                      title="Edit tahun selesai"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Tampilkan field sesuai dengan jenis karir */}
+            {careerInfo.fields.map((field, index) => (
+              <div key={index} className={field.label === 'Alamat' || field.label === 'Program Studi / Jurusan' ? 'sm:col-span-2' : ''}>
+                <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">
+                  {field.label}
+                </label>
+                <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">
+                  {field.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!careerInfo && !showForm && (
+        <div className="border-2 border-dashed border-slate-200 rounded-[1.5rem] p-8 mb-6 bg-white text-center">
+          <Briefcase size={32} className="text-slate-300 mx-auto mb-3" />
+          <p className="text-sm font-medium text-slate-400">Belum ada status karier. Klik "Tambahkan status baru" untuk memulai.</p>
+        </div>
+      )}
+
       {/* Show pending alert even when no riwayat exists */}
       {pendingAlert && riwayat.length === 0 && (
         <div className="mt-6 mb-4 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-300">
@@ -317,7 +477,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
           <div className="flex-1">
             <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
             <p className="text-xs text-amber-700/80 font-medium">
-              Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin. 
+              Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin.
               Status akan diperbarui setelah disetujui.
             </p>
             <div className="flex items-center gap-4 mt-3">
@@ -350,7 +510,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               <div className="flex-1">
                 <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
                 <p className="text-xs text-amber-700/80 font-medium">
-                  Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin. 
+                  Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin.
                   Status akan diperbarui setelah disetujui.
                 </p>
                 <div className="flex items-center gap-4 mt-3">
@@ -377,25 +537,44 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
           <div className="space-y-4">
             {riwayat.map((item) => {
               let title = item.status?.nama || '-';
-              let subtitle = ''; let location = '';
+              let details = [];
 
+              // Untuk Pekerjaan
               if (item.pekerjaan) {
-                title = item.pekerjaan.posisi || title; subtitle = item.pekerjaan.perusahaan?.nama || '';
-                const kota = item.pekerjaan.perusahaan?.kota || ''; const prov = item.pekerjaan.perusahaan?.provinsi || '';
-                location = [kota, prov].filter(Boolean).join(', ');
-              } else if (item.kuliah) {
-                title = item.kuliah.jenjang ? `Mahasiswa ${item.kuliah.jenjang}` : (item.status?.nama || 'Kuliah');
-                subtitle = item.kuliah.universitas?.nama || ''; location = item.kuliah.jurusan_kuliah?.nama || '';
-              } else if (item.wirausaha) {
-                title = 'Wirausaha'; subtitle = item.wirausaha.nama_usaha || ''; location = item.wirausaha.bidang_usaha?.nama || '';
+                title = item.pekerjaan.posisi || title;
+                if (item.pekerjaan.perusahaan?.nama) details.push({ label: 'Perusahaan', value: item.pekerjaan.perusahaan.nama });
+                const lokasi = [item.pekerjaan.perusahaan?.kota, item.pekerjaan.perusahaan?.provinsi].filter(Boolean).join(', ');
+                if (lokasi) details.push({ label: 'Lokasi', value: lokasi });
               }
+              // Untuk Kuliah
+              else if (item.kuliah) {
+                title = item.kuliah.jenjang ? `Mahasiswa ${item.kuliah.jenjang}` : (item.status?.nama || 'Kuliah');
+                if (item.kuliah.universitas?.nama) details.push({ label: 'Universitas', value: item.kuliah.universitas.nama });
+                if (item.kuliah.jurusan_kuliah?.nama) details.push({ label: 'Program Studi', value: item.kuliah.jurusan_kuliah.nama });
+                if (item.kuliah.jalur_masuk) details.push({ label: 'Jalur Masuk', value: item.kuliah.jalur_masuk });
+              }
+              // Untuk Wirausaha
+              else if (item.wirausaha) {
+                title = 'Wirausaha';
+                if (item.wirausaha.nama_usaha) details.push({ label: 'Nama Usaha', value: item.wirausaha.nama_usaha });
+                if (item.wirausaha.bidang_usaha?.nama) details.push({ label: 'Bidang Usaha', value: item.wirausaha.bidang_usaha.nama });
+              }
+
               const periode = `${item.tahun_mulai || '-'} - ${item.tahun_selesai || 'Sekarang'}`;
+
               return (
-                <div key={item.id} className="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-[15px] font-black text-[#3C5759] mb-1">{title}</h3>
-                    {subtitle && <p className="text-sm font-semibold text-[#3C5759]/60">{subtitle}</p>}
-                    {location && <p className="text-sm font-semibold text-[#3C5759]/60">{location}</p>}
+                <div key={item.id} className="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-[15px] font-black text-[#3C5759] mb-2">{title}</h3>
+                    {details.length > 0 && (
+                      <div className="space-y-1">
+                        {details.map((detail, idx) => (
+                          <p key={idx} className="text-sm font-medium text-[#3C5759]/70">
+                            <span className="font-black text-[#3C5759]/50">{detail.label}:</span> {detail.value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="bg-white border border-slate-200 px-4 py-1.5 rounded-full text-xs font-black text-[#3C5759]/60 shrink-0 shadow-sm self-start sm:self-center">
                     {periode}

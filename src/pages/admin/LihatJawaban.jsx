@@ -21,7 +21,7 @@ import { adminApi } from "../../api/admin";
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import JawabanSkeleton from "../../components/admin/JawabanSkeleton";
+import JawabanSkeleton from "../../components/admin/skeleton/JawabanSkeleton";
 import { STORAGE_BASE_URL } from "../../api/axios";
 
 // Sub-komponen StatCard
