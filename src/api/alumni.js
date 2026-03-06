@@ -91,6 +91,31 @@ export const alumniApi = {
       responseType: 'blob',
     });
   },
+
+  // Notifications
+  getNotifications(params = {}) {
+    return api.get('/alumni/notifications', { params });
+  },
+
+  getNotificationUnreadCount() {
+    return api.get('/alumni/notifications/unread-count');
+  },
+
+  markNotificationAsRead(id) {
+    return api.post(`/alumni/notifications/${id}/read`);
+  },
+
+  markAllNotificationsAsRead() {
+    return api.post('/alumni/notifications/read-all');
+  },
+
+  deleteNotification(id) {
+    return api.delete(`/alumni/notifications/${id}`);
+  },
+
+  deleteAllNotifications() {
+    return api.delete('/alumni/notifications');
+  },
 };
 
 // Public endpoints
