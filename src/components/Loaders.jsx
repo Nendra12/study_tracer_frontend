@@ -39,7 +39,7 @@ const StyledWrapper = styled.div`
   .logo-animated {
     width: 100%;
     height: 100%;
-    background-color: #3b82f6; /* Warna utama logo */
+    background-color: #3c5759;
     mask-repeat: no-repeat;
     mask-position: center;
     mask-size: contain;
@@ -70,7 +70,7 @@ const StyledWrapper = styled.div`
   .loading-bar {
     width: 120px;
     height: 3px;
-    background: rgba(59, 130, 246, 0.1);
+    background: #9ca3af;
     position: relative;
     overflow: hidden;
     border-radius: 10px;
@@ -81,7 +81,7 @@ const StyledWrapper = styled.div`
     position: absolute;
     width: 40%;
     height: 100%;
-    background: #3b82f6;
+    background: #3c5759;
     animation: slide 1.5s infinite ease-in-out;
   }
 
