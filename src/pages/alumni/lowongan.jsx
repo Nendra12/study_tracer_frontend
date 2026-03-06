@@ -183,7 +183,7 @@ function LowonganCard({ data, onImageClick, onToggleSave, savingId }) {
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      onClick={() => navigate(`/lowongan/${data.id}`)}
+      onClick={() => navigate(`/alumni/lowongan/${data.id}`)}
       className="bg-white rounded-3xl flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
     >
       <div
