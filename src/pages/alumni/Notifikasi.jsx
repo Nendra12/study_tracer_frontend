@@ -163,7 +163,6 @@ export default function Notifikasi() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20">
-      <Navbar user={navUser} />
 
       {/* --- HEADER SECTION --- */}
       <div className="relative pt-24 pb-8 w-full z-10 shrink-0">
