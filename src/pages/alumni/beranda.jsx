@@ -262,7 +262,7 @@ export default function Beranda() {
                 <section>
                   <div className="flex justify-between items-end mb-8">
                     <div>
-                      <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                      <h2 className="text-2xl font-black text-primary tracking-tight">
                         Jejaring Alumni
                       </h2>
                       <p className="text-slate-500 text-sm font-medium mt-1">
@@ -325,7 +325,7 @@ export default function Beranda() {
                 <section>
                   <div className="flex justify-between items-end mb-8">
                     <div>
-                      <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                      <h2 className="text-2xl font-black text-primary tracking-tight">
                         Peluang Karir
                       </h2>
                       <p className="text-slate-500 text-sm font-medium mt-1">
