@@ -12,6 +12,7 @@
   import { Link, useLocation, useNavigate } from "react-router-dom";
   import { motion, AnimatePresence } from "framer-motion";
   import { STORAGE_BASE_URL } from "../../api/axios";
+  import { alumniApi } from "../../api/alumni";
 
   function getImageUrl(path) {
     if (!path) return null;
@@ -24,6 +25,7 @@
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const dropdownRef = useRef(null);
     const canAccessAll = user?.can_access_all ?? true;
@@ -34,7 +36,8 @@
       { label: "Lowongan", path: "/alumni/lowongan", locked: !canAccessAll },
     ];
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    
     useEffect(() => {
       const handleScroll = () => setIsScrolled(window.scrollY > 20);
       window.addEventListener("scroll", handleScroll);
@@ -50,6 +53,23 @@
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    // Fetch notification unread count
+    useEffect(() => {
+      fetchUnreadCount();
+      // Poll every 30 seconds for new notifications
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }, []);
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await alumniApi.getNotificationUnreadCount();
+        setUnreadCount(response.data.data.unread_count || 0);
+      } catch (err) {
+        console.error('Error fetching unread count:', err);
+      }
+    };
 
     const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
 
@@ -125,15 +145,24 @@
               <div className="p-2 rounded-xl bg-slate-10 border border-slate-100  text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300">
                 <Bell size={20} />
               </div>
-              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
-              </span>
+              {unreadCount > 0 && (
+                <>
+                  <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
+                  </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </>
+              )}
 
               {/* Tooltip Opsional (Muncul saat Hover) */}
               <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                  Notifikasi Baru
+                  {unreadCount > 0 ? `${unreadCount} Notifikasi Baru` : 'Tidak Ada Notifikasi'}
                 </div>
               </div>
             </button>

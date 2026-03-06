@@ -1,335 +1,335 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lexend:wght@100..900&family=Roboto:ital,wdth,wght@0,75..100,100..900;1,75..100,100..900&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lexend:wght@100..900&family=Roboto:ital,wdth,wght@0,75..100,100..900;1,75..100,100..900&display=swap");
+@import "tailwindcss";
 
 @theme {
-  --color-primary: #3C5759;
-  --color-secondary: #526061;
-  --color-third: #9CA3AF;
-  --color-fourth: #F3F4F4;
+    --color-primary: #3c5759;
+    --color-secondary: #526061;
+    --color-third: #9ca3af;
+    --color-fourth: #f3f4f4;
 
-  --font-lexend: "Lexend", sans-serif;
+    --font-lexend: "Lexend", sans-serif;
 }
 
 :root {
-  font-family: "Lexend", sans-serif;
+    font-family: "Lexend", sans-serif;
 }
 
 /* TipTap Editor Styles */
 .ProseMirror {
-  outline: none;
+    outline: none;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
-  color: #adb5bd;
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
 }
 
 .prose {
-  max-width: none;
+    max-width: none;
 }
 
 .prose p {
-  margin: 0.5rem 0;
+    margin: 0.5rem 0;
 }
 
 .prose h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 1rem 0 0.5rem 0;
-  color: var(--color-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem 0;
+    color: var(--color-primary);
 }
 
 .prose h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0.75rem 0 0.5rem 0;
-  color: var(--color-secondary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.5rem 0;
+    color: var(--color-secondary);
 }
 
-.prose ul, .prose ol {
-  padding-left: 1.5rem;
-  margin: 0.5rem 0;
+.prose ul,
+.prose ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
 }
 
 .prose ul li {
-  list-style-type: disc;
-  margin: 0.25rem 0;
+    list-style-type: disc;
+    margin: 0.25rem 0;
 }
 
 .prose ol li {
-  list-style-type: decimal;
-  margin: 0.25rem 0;
+    list-style-type: decimal;
+    margin: 0.25rem 0;
 }
 
 .prose strong {
-  font-weight: 700;
+    font-weight: 700;
 }
 
 .prose em {
-  font-style: italic;
+    font-style: italic;
 }
 
 .prose code {
-  background-color: #f1f5f9;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-size: 0.875em;
+    background-color: #f1f5f9;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
 }
 .prose img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
-  margin: 0.75rem 0;
-  display: block;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 0.75rem 0;
+    display: block;
+    box-shadow:
+        0 1px 3px 0 rgb(0 0 0 / 0.1),
+        0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 .ProseMirror img {
-  cursor: pointer;
-  transition: transform 0.2s;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
 .ProseMirror img:hover {
-  transform: scale(1.02);
+    transform: scale(1.02);
 }
 
 .ProseMirror img.ProseMirror-selectednode {
-  outline: 3px solid #3C5759;
-  outline-offset: 2px;
+    outline: 3px solid #3c5759;
+    outline-offset: 2px;
 }
 
 /* Additional TipTap Styles */
 .prose a {
-  color: #3C5759;
-  text-decoration: underline;
-  cursor: pointer;
+    color: #3c5759;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .prose a:hover {
-  color: #526061;
+    color: #526061;
 }
 
 .prose blockquote {
-  border-left: 4px solid #3C5759;
-  padding-left: 1rem;
-  margin: 1rem 0;
-  font-style: italic;
-  color: #526061;
-  background-color: #f8f9fa;
-  padding: 0.75rem 1rem;
-  border-radius: 0.25rem;
+    border-left: 4px solid #3c5759;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    color: #526061;
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
 }
 
 .prose mark {
-  background-color: #fef08a;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.125rem;
+    background-color: #fef08a;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.125rem;
 }
 
 .prose u {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 .prose s {
-  text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 .prose hr {
-  border: none;
-  border-top: 2px solid #e2e8f0;
-  margin: 1.5rem 0;
+    border: none;
+    border-top: 2px solid #e2e8f0;
+    margin: 1.5rem 0;
 }
 
 .ProseMirror .has-focus {
-  outline: 2px solid #3C5759;
-  outline-offset: 2px;
+    outline: 2px solid #3c5759;
+    outline-offset: 2px;
 }
 
 /* Text Alignment */
-.ProseMirror [style*='text-align: left'] {
-  text-align: left;
+.ProseMirror [style*="text-align: left"] {
+    text-align: left;
 }
 
-.ProseMirror [style*='text-align: center'] {
-  text-align: center;
+.ProseMirror [style*="text-align: center"] {
+    text-align: center;
 }
 
-.ProseMirror [style*='text-align: right'] {
-  text-align: right;
+.ProseMirror [style*="text-align: right"] {
+    text-align: right;
 }
 
-.ProseMirror [style*='text-align: justify'] {
-  text-align: justify;
+.ProseMirror [style*="text-align: justify"] {
+    text-align: justify;
 }
 
 /* Toolbar Animation */
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-slideDown {
-  animation: slideDown 0.3s ease-out;
+    animation: slideDown 0.3s ease-out;
 }
 
 .toolbar-container {
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+        max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Smooth fade in effect */
 .toolbar-container > div {
-  transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
 }
 
 /* React DatePicker Time Picker Custom Styles */
 .react-datepicker__time-container {
-  border-left: 1px solid #e2e8f0;
+    border-left: 1px solid #e2e8f0;
 }
 
 .react-datepicker__time-list-item {
-  padding: 8px 10px;
-  font-size: 12px;
+    padding: 8px 10px;
+    font-size: 12px;
 }
 
 .react-datepicker__time-list-item:hover {
-  background-color: #f1f5f9;
+    background-color: #f1f5f9;
 }
 
 .react-datepicker__time-list-item--selected {
-  background-color: #3C5759 !important;
-  color: white !important;
-  font-weight: 600;
+    background-color: #3c5759 !important;
+    color: white !important;
+    font-weight: 600;
 }
 
 .react-datepicker__header--time {
-  padding: 8px 0;
+    padding: 8px 0;
 }
 
 .react-datepicker-time__header {
-  font-size: 12px;
-  font-weight: 600;
-  color: #526061;
+    font-size: 12px;
+    font-weight: 600;
+    color: #526061;
 }
 
 .react-datepicker__time-list {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
 .react-datepicker__time-list::-webkit-scrollbar {
-  width: 6px;
+    width: 6px;
 }
 
 .react-datepicker__time-list::-webkit-scrollbar-track {
-  background: #f1f5f9;
+    background: #f1f5f9;
 }
 
 .react-datepicker__time-list::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 3px;
+    background-color: #cbd5e1;
+    border-radius: 3px;
 }
 
 /* Custom Time Input Styling */
 input[type="time"] {
-  cursor: pointer;
-  color-scheme: light;
+    cursor: pointer;
+    color-scheme: light;
 }
 
 input[type="time"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  filter: opacity(0.6);
-  transition: filter 0.2s;
+    cursor: pointer;
+    filter: opacity(0.6);
+    transition: filter 0.2s;
 }
 
 input[type="time"]::-webkit-calendar-picker-indicator:hover {
-  filter: opacity(1);
+    filter: opacity(1);
 }
 
 input[type="time"]:focus {
-  outline: none;
-  border-color: #3C5759;
-  ring: 2px;
-  ring-color: #3C5759;
+    outline: none;
+    border-color: #3c5759;
+    ring: 2px;
+    ring-color: #3c5759;
 }
 
 /* Smooth Animation for Time Input */
 @keyframes slideInFromTop {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-in {
-  animation: slideInFromTop 0.3s ease-out forwards;
+    animation: slideInFromTop 0.3s ease-out forwards;
 }
 
 /* HTML Content Display for Preview (dangerouslySetInnerHTML) */
 .prose p:first-child {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .prose p:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .prose a {
-  color: #3C5759;
-  text-decoration: underline;
+    color: #3c5759;
+    text-decoration: underline;
 }
 
 .prose a:hover {
-  color: #526061;
+    color: #526061;
 }
 
 .prose blockquote {
-  border-left: 4px solid #e2e8f0;
-  padding-left: 1rem;
-  font-style: italic;
-  color: #64748b;
-  margin: 1rem 0;
+    border-left: 4px solid #e2e8f0;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #64748b;
+    margin: 1rem 0;
 }
 
 .prose hr {
-  border: none;
-  border-top: 1px solid #e2e8f0;
-  margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 1.5rem 0;
 }
 
 /* Clean up nested paragraphs in rendered HTML */
 .prose > p:only-child {
-  display: inline;
+    display: inline;
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -700px 0;
-  }
-  100% {
-    background-position: 700px 0;
-  }
+    0% {
+        background-position: -700px 0;
+    }
+    100% {
+        background-position: 700px 0;
+    }
 }
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    #f1f5f9 25%,
-    #e2e8f0 37%,
-    #f1f5f9 63%
-  );
-  background-size: 1400px 100%;
-  animation: shimmer 1.4s infinite linear;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+    background-size: 1400px 100%;
+    animation: shimmer 1.4s infinite linear;
 }

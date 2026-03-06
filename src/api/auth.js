@@ -48,4 +48,12 @@ export const authApi = {
   resetPassword(data) {
     return api.post('/reset-password', data);
   },
+
+  /**
+   * POST /validate-email — check if email is available for registration
+   * @param {{ email: string }} data
+   */
+  validateEmail(data) {
+    return api.post('/validate-email', data);
+  },
 };

@@ -16,6 +16,8 @@ import { BerandaSkeleton } from '../../components/alumni/skeleton';
 import AlumniProfileCard from '../../components/alumni/AlumniProfileCard';
 import JobPosterCard from '../../components/alumni/JobPosterCard';
 import TopPerusahaan from '../../components/alumni/TopPerusahaan';
+import Greeting from '../../components/alumni/Greeting';
+import GreetingTime from '../../components/alumni/Greeting';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -95,10 +97,8 @@ export default function Beranda() {
             className="flex items-center gap-5"
           >
             <div>
-              <div className="flex items-center gap-2 text-white/90 text-sm font-semibold mb-1">
-                {greeting.icon} {greeting.text}
-              </div>
-              <h1 className="text-4xl font-black tracking-tight uppercase leading-tight">Halo, {firstName}!</h1>
+              <Greeting />
+              <h1 className="text-4xl mt-5 font-black tracking-tight uppercase leading-tight">Halo, {firstName}!</h1>
               <p className="text-white/80 mt-1 text-sm max-w-md font-medium">Selamat datang kembali. Pantau progres karir dan perkembangan jejaring almamatermu.</p>
             </div>
           </motion.div>
@@ -110,7 +110,7 @@ export default function Beranda() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
 
           {loading ? (
-            <BerandaSkeleton />
+            <BerandaSkeleton canAccsess={canAccessAll} />
           ) : error && !berandaData ? (
             <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-slate-100">
               <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
