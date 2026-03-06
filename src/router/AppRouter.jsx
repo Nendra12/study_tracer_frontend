@@ -1,34 +1,37 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-import Login from "../pages/Login";
-import AdminLayout from "../layouts/AdminLayout";
-import Dashboard from "../pages/admin/Dashboard";
-import { ProtectedRoute } from "../utilitis/ProtectedRoute";
-import UserManagement from "../pages/admin/UserManagement";
-import JobsManagement from "../pages/admin/JobsManagement";
-import JobDetail from "../pages/admin/JobDetail";
-import MasterTable from "../pages/admin/MasterTable";
-import LupaPass from "../pages/LupaPass";
-import Register from "../pages/register/Register";
+import { lazy, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
-import Logout from "../pages/Logout";
-import StatusKarir from "../pages/admin/StatusKarir";
-import NotFound from "../pages/NotFound";
-import Kuesioner from "../pages/admin/Kuesioner";
-import TambahKuisioner from "../pages/admin/TambahKuisoner";
-import PreviewKuesioner from "../pages/admin/PreviewKuesioner";
-import LihatJawaban from "../pages/admin/LihatJawaban";
-import LihatJawabanDetail from "../pages/admin/LihatJawabanDetail";
-import UpdateKuesioner from "../pages/admin/UpdateKuesioner";
-import Beranda from "../pages/alumni/beranda";
-import Alumni from "../pages/alumni/alumni";
-import AlumniDetail from "../pages/alumni/alumniDetail";
-import Lowongan from "../pages/alumni/lowongan";
-import Profil from "../pages/alumni/profil";
-import StatistikKuesioner from "../pages/admin/StatistikKuesioner";
-import KuesionerModal from "../pages/alumni/KuesionerModal";
-import LowonganDetail from "../pages/alumni/lowonganDetail";
-import AlumniLayout from "../layouts/AlumniLayout";
-import Notifikasi from "../pages/alumni/Notifikasi";
+import { ProtectedRoute } from "../utilitis/ProtectedRoute";
+import Loader from "../components/Loaders";
+
+const Login = lazy(() => import("../pages/Login"))
+const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
+const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
+const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
+const JobsManagement = lazy(() => import("../pages/admin/JobsManagement"));
+const JobDetail = lazy(() => import("../pages/admin/JobDetail"));
+const MasterTable = lazy(() => import("../pages/admin/MasterTable"));
+const StatusKarir = lazy(() => import("../pages/admin/StatusKarir"));
+const Kuesioner = lazy(() => import("../pages/admin/Kuesioner"));
+const TambahKuisioner = lazy(() => import("../pages/admin/TambahKuisoner"));
+const PreviewKuesioner = lazy(() => import("../pages/admin/PreviewKuesioner"));
+const LihatJawaban = lazy(() => import("../pages/admin/LihatJawaban"));
+const LihatJawabanDetail = lazy(() => import("../pages/admin/LihatJawabanDetail"));
+const UpdateKuesioner = lazy(() => import("../pages/admin/UpdateKuesioner"));
+const StatistikKuesioner = lazy(() => import("../pages/admin/StatistikKuesioner"));
+const LupaPass = lazy(() => import("../pages/LupaPass"));
+const Register = lazy(() => import("../pages/register/Register"));
+const Logout = lazy(() => import("../pages/Logout"));
+const NotFound = lazy(() => import("../pages/NotFound"));
+const Beranda = lazy(() => import("../pages/alumni/beranda"));
+const Alumni = lazy(() => import("../pages/alumni/alumni"));
+const AlumniDetail = lazy(() => import("../pages/alumni/alumniDetail"));
+const Lowongan = lazy(() => import("../pages/alumni/lowongan"));
+const Profil = lazy(() => import("../pages/alumni/profil"));
+const KuesionerModal = lazy(() => import("../pages/alumni/KuesionerModal"));
+const LowonganDetail = lazy(() => import("../pages/alumni/lowonganDetail"));
+const Notifikasi = lazy(() => import("../pages/alumni/Notifikasi"));
+const AlumniLayout = lazy(() => import("../layouts/AlumniLayout"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -36,7 +39,8 @@ export default function AppRouter() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>*/}
+        <Loader />
       </div>
     );
   }
@@ -46,7 +50,7 @@ export default function AppRouter() {
       <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Login />} />
       <Route path="/reset-password" element={<LupaPass />} />
       <Route path="/logout" element={<Logout />} />
-      <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
+      <Route path="/register" element={isAuthenticated ? <Navigate to="/alumni" /> : <Register />} />
       <Route path="/wb-admin" element={
         <ProtectedRoute isAllowed={isAuthenticated && isAdmin} redirectTo="/login" />
       }>
@@ -77,7 +81,7 @@ export default function AppRouter() {
         </Route>
       </Route>
 
-      <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} /> }>
+      <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} />}>
         <Route element={<AlumniLayout />} >
           <Route index element={<Beranda />} />
           <Route path="daftar-alumni" element={<Alumni />} />

@@ -4,16 +4,19 @@ import Footer from "../components/alumni/Footer";
 import { alumniApi } from "../api/alumni";
 import { useState } from "react";
 import { useEffect } from "react";
+import Loader from "../components/Loaders";
 
 export default function AlumniLayout() {
   const userData = JSON.parse(localStorage.getItem('user'))
   const [berandaData, setBerandaData] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     let cancelled = false;
     async function fetchBeranda() {
       try {
+        setLoading(true)
         const res = await alumniApi.getBeranda();
         if (!cancelled) setBerandaData(res.data.data);
       } catch (err) {
@@ -21,6 +24,8 @@ export default function AlumniLayout() {
           console.error('Failed to fetch beranda:', err);
           setError(err.response?.data?.message || 'Gagal memuat data beranda');
         }
+      } finally {
+        setLoading(false)
       }
     }
     fetchBeranda();
@@ -37,9 +42,16 @@ export default function AlumniLayout() {
       can_access_all: canAccessAll,
   };
 
+  // if (loading) {
+  //   return (
+  //     <Loader />
+  //   )
+  // }
+
   return (
     // Di file Layout utama Anda
     <div className="min-h-screen flex flex-col bg-slate-50">
+
       <Navbar user={user} />
 
       {/* MAIN HARUS FULL WIDTH AGAR HERO BISA MENTOK KE PINGGIR */}

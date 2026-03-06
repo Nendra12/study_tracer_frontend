@@ -27,6 +27,7 @@ import TopPerusahaan from "../../components/alumni/TopPerusahaan";
 import morning from '../../assets/morning.png';
 import afternoon from '../../assets/afternoon.png';
 import night from '../../assets/moon.png';
+import Loader from "../../components/Loaders";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -160,6 +161,7 @@ export default function Beranda() {
           {/* LOGIKA RENDERING YANG BERSIH */}
           {loading ? (
             <BerandaSkeleton canAccsess={canAccessAll} />
+            // <Loader />
           ) : error && !berandaData ? (
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
               <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-slate-100">
