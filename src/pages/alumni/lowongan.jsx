@@ -378,7 +378,7 @@ export default function Lowongan() {
       setLoading(true);
       setError(null);
 
-      const params = { page, per_page: 12 };
+      const params = { page, per_page: 6 };
       if (searchQuery.trim()) params.search = searchQuery.trim();
 
       if (selectedTipe && selectedTipe !== 'Semua Tipe') params.tipe_pekerjaan = selectedTipe;
