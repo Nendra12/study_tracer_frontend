@@ -12,22 +12,53 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor — attach token
+let loadingCallbacks = { show: null, hide: null };
+
+// Setup loading interceptor
+export const setupLoadingInterceptor = (showLoading, hideLoading) => {
+  loadingCallbacks.show = showLoading;
+  loadingCallbacks.hide = hideLoading;
+};
+
+// Request interceptor — attach token & show loading
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Show loading
+    if (loadingCallbacks.show) {
+      loadingCallbacks.show();
+    }
+
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    // Hide loading on error
+    if (loadingCallbacks.hide) {
+      loadingCallbacks.hide();
+    }
+    return Promise.reject(error);
+  }
 );
 
-// Response interceptor — handle 401
+// Response interceptor — handle 401 & hide loading
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Hide loading on success
+    if (loadingCallbacks.hide) {
+      loadingCallbacks.hide();
+    }
+    return response;
+  },
   (error) => {
+    // Hide loading on error
+    if (loadingCallbacks.hide) {
+      loadingCallbacks.hide();
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');

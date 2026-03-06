@@ -86,7 +86,6 @@ export default function LowonganDetail() {
       <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
         <Navbar user={navUser} />
         <LowonganDetailSkeleton />
-        <Footer />
       </div>
     );
   }
@@ -113,13 +112,12 @@ export default function LowonganDetail() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-      <Navbar user={navUser} />
 
       <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
 
         {/* Tombol Kembali */}
         <button
-          onClick={() => navigate('/lowongan')}
+          onClick={() => navigate('/alumni/lowongan')}
           className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold mb-6 transition-colors cursor-pointer w-fit group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
