@@ -21,10 +21,10 @@ export default function LowonganDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user: authUser } = useAuth();
-  
-  const navUser = { 
+
+  const navUser = {
     nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
-    foto: authUser?.alumni?.foto || authUser?.foto 
+    foto: authUser?.alumni?.foto || authUser?.foto
   };
 
   const [job, setJob] = useState(null);
@@ -38,7 +38,7 @@ export default function LowonganDetail() {
       try {
         const res = await api.get(`/lowongan/${id}`);
         const jobData = res.data?.data || res.data;
-        
+
         let isSaved = false;
         try {
            const savedRes = await alumniApi.getSavedLowongan({ per_page: 100 });
@@ -116,24 +116,24 @@ export default function LowonganDetail() {
       <Navbar user={navUser} />
 
       <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-        
+
         {/* Tombol Kembali */}
-        <button 
+        <button
           onClick={() => navigate('/lowongan')}
           className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold mb-6 transition-colors cursor-pointer w-fit group"
         >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Kembali
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
+
           {/* --- KONTEN KIRI (Header & Deskripsi) --- */}
           <div className="lg:col-span-8 space-y-6">
-            
+
             {/* Kartu Header Utama */}
             <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden group relative">
-              
+
               {/* Banner Area - Teks "Lowongan Kerja" DIHAPUS dari sini */}
               <div className="w-full h-70 bg-gradient-to-b from-slate-200 to-slate-400 flex items-center justify-center relative overflow-hidden">
                 <img
@@ -148,7 +148,7 @@ export default function LowonganDetail() {
               {/* Info Pekerjaan Utama */}
               <div className="p-6 md:p-8 relative bg-white -mt-10 rounded-t-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                  
+
                   <div className="space-y-4 flex-1">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
@@ -182,23 +182,23 @@ export default function LowonganDetail() {
 
                   {/* Tombol Aksi (Kanan Atas) - LOADING ICONS DIGANTI DENGAN EFEK PULSE PADA BOOKMARK */}
                   <div className="flex items-center gap-3 md:flex-col lg:flex-row shrink-0 mt-2 md:mt-0">
-                    <button 
+                    <button
                       onClick={handleToggleSave}
                       disabled={savingId === job.id}
                       className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all cursor-pointer ${
-                        job.is_saved 
-                          ? 'bg-primary/10 border-primary/20 text-primary' 
+                        job.is_saved
+                          ? 'bg-primary/10 border-primary/20 text-primary'
                           : 'bg-white border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50'
                       } ${savingId === job.id ? 'opacity-80 cursor-not-allowed' : ''}`}
                     >
                       {/* Loader2 DIHAPUS. Ikon Bookmark akan berdenyut saat loading */}
-                      <Bookmark 
-                        size={20} 
-                        fill={job.is_saved ? 'currentColor' : 'none'} 
+                      <Bookmark
+                        size={20}
+                        fill={job.is_saved ? 'currentColor' : 'none'}
                         className={`transition-all ${savingId === job.id ? 'animate-pulse scale-110 text-primary' : ''}`}
                       />
                     </button>
-                    <button 
+                    <button
                       onClick={handleShare}
                       className="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50 transition-all cursor-pointer"
                       title="Bagikan Lowongan"
@@ -276,7 +276,7 @@ export default function LowonganDetail() {
               {/* TIPS MELAMAR */}
               <div className="bg-primary rounded-4xl p-7 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
                 <div className="relative z-10 space-y-4">
-                  
+
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 text-amber-300 shadow-sm">
                       <Lightbulb size={20} />
@@ -311,8 +311,6 @@ export default function LowonganDetail() {
 
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

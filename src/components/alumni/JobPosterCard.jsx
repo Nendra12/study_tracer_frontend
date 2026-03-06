@@ -20,25 +20,25 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
   const deadline = data.lowongan_selesai ? hitungMundur(data.lowongan_selesai) : null;
   const fotoUrl = getImageUrl(data.foto);
   const perusahaanNama = data.perusahaan?.nama || '-';
-  const lokasi = data.perusahaan?.kota 
+  const lokasi = data.perusahaan?.kota
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
     : (data.lokasi || '-');
-  const waktuBerakhir = data.lowongan_selesai 
+  const waktuBerakhir = data.lowongan_selesai
     ? new Date(data.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', 23:59 WIB'
     : null;
 
   return (
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
-      <motion.div 
-        whileHover={locked ? {} : { y: -8 }} 
+      <motion.div
+        whileHover={locked ? {} : { y: -8 }}
         // 3. TAMBAHKAN ONCLICK PADA KARTU
         onClick={() => {
-          if (!locked && data.id) navigate(`/lowongan/${data.id}`);
+          if (!locked && data.id) navigate(`/alumni/lowongan/${data.id}`);
         }}
         className={`bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full transition-all duration-300 group ${locked ? '' : 'cursor-pointer hover:shadow-xl'}`}
       >
         {/* Kontainer Gambar */}
-        <div 
+        <div
           className={`h-56 overflow-hidden relative ${locked ? '' : 'cursor-pointer'}`}
           onClick={(e) => {
             if (locked || !onImageClick) return;
@@ -46,13 +46,13 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
             onImageClick(fotoUrl || "/Desain Poster Job.jpg");
           }}
         >
-          <img 
-            src={fotoUrl || "/Desain Poster Job.jpg"} 
-            alt="Lowongan" 
+          <img
+            src={fotoUrl || "/Desain Poster Job.jpg"}
+            alt="Lowongan"
             className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-500 group-hover:scale-105'}`}
-            onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Poster+Not+Found"; }} 
+            onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Poster+Not+Found"; }}
           />
-          
+
           {/* EFEK GELOMBANG MENGGUNAKAN SVG */}
           <svg className="absolute -bottom-px left-0 w-full h-8 z-20" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path fill="#ffffff" d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
@@ -69,7 +69,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
               </span>
             )}
           </div>
-          
+
           {waktuBerakhir && (
             <div className="mb-3">
               <span className="text-slate-500 flex items-center gap-1 text-[11px] font-medium">
