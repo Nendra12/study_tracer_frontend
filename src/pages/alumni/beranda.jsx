@@ -161,8 +161,7 @@ export default function Beranda() {
         <div className="relative z-20 -mt-16 pb-24">
           {/* LOGIKA RENDERING YANG BERSIH */}
           {loading ? (
-            // <BerandaSkeleton canAccsess={canAccessAll} />
-            <></>
+            <BerandaSkeleton canAccsess={canAccessAll} />
             // <Loader />
           ) : error && !berandaData ? (
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
