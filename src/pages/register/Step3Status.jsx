@@ -3,7 +3,6 @@ import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
-import LocationSelector from '../../components/LocationSelector';
 import UniversitySelector from '../../components/UniversitasSelector';
 import { masterDataApi } from '../../api/masterData';
 
@@ -22,22 +21,29 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [bidangUsahaMap, setBidangUsahaMap] = useState({});
   const [perusahaanList, setPerusahaanList] = useState([]);
-  const [pekerjaanList, setPekerjaanList] = useState([]);
+  
+  // STATE BARU: Untuk Provinsi dan Kota
+  const [provinsiList, setProvinsiList] = useState([]);
+  const [kotaList, setKotaList] = useState([]);
+  const [loadingProvinsi, setLoadingProvinsi] = useState(false);
+  const [loadingKota, setLoadingKota] = useState(false);
 
   // State Form
-  const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { posisi: '', nama_perusahaan: '', id_kota: '', jalan: '' });
+  // Tambahkan id_provinsi ke dalam inisial state pekerjaan agar dropdown berfungsi
+  const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { posisi: '', nama_perusahaan: '', id_provinsi: '', id_kota: '', jalan: '' });
   const [universitas, setUniversitas] = useState(formData.universitas || { nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '' });
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { id_bidang: '', nama_usaha: '' });
   
   const [tahunMulai, setTahunMulai] = useState(formData.tahun_mulai || '');
   const [tahunSelesai, setTahunSelesai] = useState(formData.tahun_selesai || '');
   
-  // STATE BARU: Untuk mengecek apakah masih berlangsung (Saat ini)
+  // State untuk mengecek apakah masih berlangsung (Saat ini)
   const [isSaatIni, setIsSaatIni] = useState(!formData.tahun_selesai);
 
-  // Fetch data master
+  // 2. Fetch data master (Status, Bidang Usaha, Perusahaan, & Provinsi)
   useEffect(() => {
     masterDataApi.getStatus().then((res) => setStatusList(res.data.data || []));
+    
     masterDataApi.getBidangUsaha().then((res) => {
       const data = res.data.data || [];
       setBidangUsahaList(data.map((b) => b.nama_bidang || b.nama));
@@ -45,22 +51,37 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       data.forEach((b) => { map[b.nama_bidang || b.nama] = b.id; });
       setBidangUsahaMap(map);
     });
-    // Fetch perusahaan names for dropdown
-   masterDataApi.getPerusahaan()
+
+    masterDataApi.getPerusahaan()
       .then((res) => {
-        // 👇 PERBAIKAN DI SINI: tambahkan ?.data?.data untuk format paginasi
         const rawData = res.data?.data?.data || res.data?.data || [];
-        
         const names = Array.isArray(rawData)
           ? rawData.map((p) => p.nama_perusahaan || p.nama || p).filter(Boolean)
           : [];
         setPerusahaanList(names);
       })
-      .catch((err) => {
-        console.error("Gagal mengambil data perusahaan", err);
-        setPerusahaanList([]);
-      });
+      .catch((err) => console.error("Gagal mengambil data perusahaan", err));
+
+    // Fetch Provinsi
+    setLoadingProvinsi(true);
+    masterDataApi.getProvinsi()
+      .then((res) => setProvinsiList(res.data?.data || res.data || []))
+      .catch((err) => console.error("Gagal mengambil provinsi", err))
+      .finally(() => setLoadingProvinsi(false));
   }, []);
+
+  // Fetch Kota berdasarkan Provinsi yang dipilih
+  useEffect(() => {
+    if (!pekerjaan.id_provinsi) {
+      setKotaList([]);
+      return;
+    }
+    setLoadingKota(true);
+    masterDataApi.getKota(pekerjaan.id_provinsi)
+      .then((res) => setKotaList(res.data?.data || res.data || []))
+      .catch((err) => console.error("Gagal mengambil kota", err))
+      .finally(() => setLoadingKota(false));
+  }, [pekerjaan.id_provinsi]);
 
   // 3. FUNGSI PENYIMPANAN OTOMATIS
   useEffect(() => {
@@ -71,7 +92,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     const updates = {
       id_status: matched?.id || formData.id_status,
       tahun_mulai: tahunMulai,
-      // Jika "Saat Ini" dicentang, kita kirimkan string kosong atau null sesuai kebutuhan backend
       tahun_selesai: isSaatIni ? "" : tahunSelesai,
       pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
       universitas: selectedStatus === 'Kuliah' ? universitas : null,
@@ -109,14 +129,13 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         </div>
       )}
       
-      {/* Checkbox "Masih Berlangsung" dengan warna kustom #3C5759 */}
       <label className="flex items-center gap-2 pt-1.5 text-[11px] text-secondary cursor-pointer hover:text-primary transition-colors w-fit">
         <input
           type="checkbox"
           checked={isSaatIni}
           onChange={(e) => {
             setIsSaatIni(e.target.checked);
-            if (e.target.checked) setTahunSelesai(''); // Reset tahun jika dicentang
+            if (e.target.checked) setTahunSelesai(''); 
           }}
           className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
         />
@@ -144,7 +163,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               : 'border-fourth border-dashed hover:border-primary/40'
             }`}
           >
-            {/* CENTANG KARTU DENGAN WARNA #3C5759 */}
             {selectedStatus === option.id && (
               <div className="absolute top-2 right-2 text-primary">
                 <CheckCircle size={16} fill="currentColor" className="text-white fill-primary" />
@@ -167,15 +185,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {selectedStatus === 'Bekerja' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <InputDropdownEdit
-              label="Pekerjaan Sekarang"
+              label="Pekerjaan Sekarang *"
               value={pekerjaan.posisi}
-              options={["UI/UX", "DevOps", "Cloud Engginering", "Karyawan"]}
+              options={["UI/UX", "DevOps", "Cloud Engineering", "Karyawan"]}
               placeholder="Masukkan nama pekerjaan"
               isRequired={true}
               onSelect={(val) => setPekerjaan({ ...pekerjaan, posisi: val })}
             />
             <InputDropdownEdit
-              label="Nama Perusahaan"
+              label="Nama Perusahaan *"
               value={pekerjaan.nama_perusahaan}
               options={perusahaanList}
               placeholder="Ketik atau pilih nama perusahaan"
@@ -189,14 +207,43 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               onSelect={(val) => setTahunMulai(val)}
             />
             
-            {/* Panggil fungsi Helper Tahun Selesai */}
             {renderTahunSelesai("Tahun Selesai")}
 
-            <div className='md:col-span-2 mt-2'>
-              <LocationSelector
-                onCitySelect={(cityId) => setPekerjaan({ ...pekerjaan, id_kota: cityId })}
-              />
+            {/* AREA LOKASI (PROVINSI & KOTA) - Tampilan Baru */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 relative z-50">
+              <div className="w-full">
+                <SmoothDropdown
+                  label="Provinsi *"
+                  isSearchable={true}
+                  placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
+                  options={provinsiList.map(p => p.nama)}
+                  value={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ""}
+                  onSelect={(namaProv) => {
+                    const prov = provinsiList.find(p => p.nama === namaProv);
+                    if (prov) {
+                      setPekerjaan(prev => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="w-full">
+                <SmoothDropdown
+                  label="Kota / Kabupaten *"
+                  isSearchable={true}
+                  placeholder={!pekerjaan.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
+                  options={kotaList.map(k => k.nama)}
+                  value={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ""}
+                  onSelect={(namaKota) => {
+                    const kota = kotaList.find(k => k.nama === namaKota);
+                    if (kota) {
+                      setPekerjaan(prev => ({ ...prev, id_kota: String(kota.id) }));
+                    }
+                  }}
+                />
+              </div>
             </div>
+            
           </div>
         )}
 
@@ -224,8 +271,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               onSelect={(val) => setUniversitas({ ...universitas, jenjang: val })}
             />
             <YearsInput label="Tahun Masuk" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            
-            {/* Panggil fungsi Helper Tahun Selesai */}
             {renderTahunSelesai("Tahun Lulus")}
           </div>
         )}
@@ -250,8 +295,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               onSelect={(val) => setWirausaha({ ...wirausaha, id_bidang: bidangUsahaMap[val] || val })}
             />
             <YearsInput label="Tahun Mulai" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            
-            {/* Panggil fungsi Helper Tahun Selesai */}
             {renderTahunSelesai("Tahun Berakhir")}
           </div>
         )}

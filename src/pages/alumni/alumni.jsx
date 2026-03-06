@@ -104,7 +104,7 @@ export default function Alumni() {
       setLoading(true);
       setError(null);
 
-      const params = { page, per_page: 12 };
+      const params = { page, per_page: 8 };
       if (searchQuery.trim()) params.search = searchQuery.trim();
       if (selectedTahun) params.tahun = selectedTahun;
       if (selectedStatus) params.status = selectedStatus;
