@@ -8,9 +8,11 @@ import {
   Eye, 
   EyeOff 
 } from 'lucide-react';
+import { authApi } from '../../api/auth';
 
 export default function Step1Account({ onNext, formData, updateFormData }) {
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   
   // State untuk mengatur visibilitas password
   const [showPassword, setShowPassword] = useState(false);
@@ -26,14 +28,28 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
     return errs;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-    setErrors({});
-    onNext();
+
+    // Validate email with backend
+    setLoading(true);
+    try {
+      await authApi.validateEmail({ email: formData.email });
+      setErrors({});
+      onNext();
+    } catch (error) {
+      if (error.response?.data?.errors?.email) {
+        setErrors({ email: error.response.data.errors.email[0] });
+      } else {
+        setErrors({ email: 'Terjadi kesalahan saat memvalidasi email' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -119,9 +135,10 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
       <div className="pt-6 flex justify-end">
         <button
           onClick={handleNext}
-          className="flex items-center gap-2 px-4 md:px-8 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer"
+          disabled={loading}
+          className="flex items-center gap-2 px-4 md:px-8 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Selanjutnya <ArrowRight size={16} />
+          {loading ? 'Memvalidasi...' : 'Selanjutnya'} <ArrowRight size={16} />
         </button>
       </div>
     </div>
