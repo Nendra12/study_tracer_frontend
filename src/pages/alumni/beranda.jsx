@@ -24,8 +24,6 @@ import { BerandaSkeleton } from "../../components/alumni/skeleton";
 import AlumniProfileCard from "../../components/alumni/AlumniProfileCard";
 import JobPosterCard from "../../components/alumni/JobPosterCard";
 import TopPerusahaan from "../../components/alumni/TopPerusahaan";
-import Greeting from "../../components/alumni/Greeting";
-import GreetingTime from "../../components/alumni/Greeting";
 import morning from '../../assets/morning.png';
 import afternoon from '../../assets/afternoon.png';
 import night from '../../assets/moon.png';
@@ -240,7 +238,7 @@ export default function Beranda() {
                             onClick={() => {
                               if (kuesionerPending[0]?.id)
                                 navigate(
-                                  `/kuesioner/${kuesionerPending[0].id}`,
+                                  `/alumni/kuesioner/${kuesionerPending[0].id}`,
                                 );
                             }}
                             className="w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-primary/20"

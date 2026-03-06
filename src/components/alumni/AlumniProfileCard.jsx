@@ -21,20 +21,20 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
 
   return (
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
-      <motion.div 
-        whileHover={locked ? {} : { y: -5 }} 
+      <motion.div
+        whileHover={locked ? {} : { y: -5 }}
         // 3. TAMBAHKAN ONCLICK PADA KARTU
         onClick={() => {
-          if (!locked && data.id) navigate(`/alumni/${data.id}`);
+          if (!locked && data.id) navigate(`/alumni/daftar-alumni/${data.id}`);
         }}
         className={`bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full ${locked ? '' : 'cursor-pointer hover:shadow-md transition-shadow'}`}
       >
-        
+
         {/* BAGIAN 1 & 2: Kontainer Atas */}
         <div className="flex gap-4 mb-4 relative">
-          
+
           {/* BAGIAN 1: Gambar Profil */}
-          <div 
+          <div
             className={`w-20 h-24 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200 ${locked ? '' : 'cursor-pointer group'}`}
             onClick={(e) => {
               if (locked || !onImageClick) return;
@@ -42,9 +42,9 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
               onImageClick(imageSrc);
             }}
           >
-            <img 
-              src={imageSrc} 
-              alt={data.name} 
+            <img
+              src={imageSrc}
+              alt={data.name}
               className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-300 group-hover:scale-110'}`}
             />
           </div>
@@ -55,7 +55,7 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
               <h3 className="font-bold text-primary text-sm line-clamp-1">{data.name}</h3>
               <p className="text-slate-400 text-[11px]">Angkatan {data.angkatan}</p>
             </div>
-            
+
             <div className="space-y-1.5">
               <div className="flex items-start gap-1.5 text-slate-600">
                 <GraduationCap size={14} className="text-primary shrink-0 mt-0.5" />
