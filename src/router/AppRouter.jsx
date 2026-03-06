@@ -7,6 +7,7 @@ import Loader from "../components/Loaders";
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
+const Landing = lazy(() => import("../pages/landing"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
 const JobsManagement = lazy(() => import("../pages/admin/JobsManagement"));
 const JobDetail = lazy(() => import("../pages/admin/JobDetail"));
@@ -47,6 +48,7 @@ export default function AppRouter() {
 
   return (
     <Routes>
+      <Route path="/" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Landing />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Login />} />
       <Route path="/reset-password" element={<LupaPass />} />
       <Route path="/logout" element={<Logout />} />
