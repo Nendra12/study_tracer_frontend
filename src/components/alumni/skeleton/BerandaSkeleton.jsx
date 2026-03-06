@@ -1,24 +1,33 @@
 import React from 'react';
 
-export default function BerandaSkeleton() {
+export default function BerandaSkeleton({ canAccsess }) {
+  // console.log(canAccsess)
   return (
-    <div className="max-w-360 mx-auto px-6 lg:px-12 -mt-16 pb-20 w-full animate-in fade-in duration-500">
-      
+    <div className="max-w-360 mx-auto px-6 lg:px-12 mt-16 pb-20 w-full animate-in fade-in duration-500">
+
       {/* 1. Notifikasi Skeleton */}
-      <div className="mb-12 flex flex-col gap-4">
-        <div className="bg-white rounded-3xl p-5 md:p-6 flex items-center gap-5 border border-slate-100 shadow-sm">
-          <div className="w-14 h-14 bg-slate-200/60 rounded-2xl animate-pulse shrink-0" />
-          <div className="space-y-3 flex-1">
-            <div className="h-4 bg-slate-200/60 rounded-full w-48 animate-pulse" />
-            <div className="h-2.5 bg-slate-100 rounded-full w-full max-w-2xl animate-pulse" />
-            <div className="h-2.5 bg-slate-100 rounded-full w-3/4 max-w-xl animate-pulse" />
-          </div>
-          <div className="w-32 h-10 bg-slate-200/50 rounded-xl animate-pulse shrink-0 hidden md:block" />
-        </div>
-      </div>
+      {
+        canAccsess ? (
+          <>
+            <div className="mb-12 flex flex-col gap-4">
+              <div className="bg-white rounded-3xl p-5 md:p-6 flex items-center gap-5 border border-slate-100 shadow-sm">
+                <div className="w-14 h-14 bg-slate-200/60 rounded-2xl animate-pulse shrink-0" />
+                <div className="space-y-3 flex-1">
+                  <div className="h-4 bg-slate-200/60 rounded-full w-48 animate-pulse" />
+                  <div className="h-2.5 bg-slate-100 rounded-full w-full max-w-2xl animate-pulse" />
+                  <div className="h-2.5 bg-slate-100 rounded-full w-3/4 max-w-xl animate-pulse" />
+                </div>
+                <div className="w-32 h-10 bg-slate-200/50 rounded-xl animate-pulse shrink-0 hidden md:block" />
+              </div>
+            </div>
+          </>
+        ): (
+          <></>
+        )
+      }
 
       {/* 2. Jejaring Alumni Terbaru Skeleton */}
-      <div className="mb-16">
+      <div className="mb-25">
         <div className="flex justify-between items-end mb-8">
           <div className="space-y-2">
             <div className="h-8 bg-slate-200/70 rounded-lg w-64 animate-pulse" />
@@ -26,7 +35,7 @@ export default function BerandaSkeleton() {
           </div>
           <div className="h-10 w-28 bg-slate-100 rounded-full animate-pulse" />
         </div>
-        
+
         {/* Grid 4 Kolom: Desain Card Kiri-Kanan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map(i => (
@@ -58,18 +67,18 @@ export default function BerandaSkeleton() {
           </div>
           <div className="h-10 w-28 bg-slate-100 rounded-full animate-pulse" />
         </div>
-        
+
         {/* Grid 4 Kolom: Desain Sesuai Gambar Poster Job */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-115">
-              
+
               {/* Gambar Banner Atas */}
               <div className="h-56 bg-slate-200/50 animate-pulse w-full" />
 
               {/* Konten Bawah */}
               <div className="p-5 pt-4 flex flex-col flex-1">
-                
+
                 {/* Judul & Badge Tanggal Merah */}
                 <div className="flex justify-between items-start mb-2">
                   <div className="h-5 bg-slate-200/70 rounded-full w-3/5 animate-pulse" />
@@ -124,7 +133,7 @@ export default function BerandaSkeleton() {
             </div>
             <div className="w-12 h-12 bg-slate-100 rounded-2xl animate-pulse hidden md:block" />
           </div>
-          
+
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-100">
