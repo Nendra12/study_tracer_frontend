@@ -1,139 +1,247 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, User, LogOut, Lock } from 'lucide-react'; // GraduationCap dihapus
-import { Link, useLocation } from 'react-router-dom';
-import { STORAGE_BASE_URL } from '../../api/axios';
+  import React, { useState, useEffect, useRef } from "react";
+  import {
+    User,
+    LogOut,
+    Lock,
+    ChevronDown,
+    Menu,
+    X,
+  Sparkles,
+  Bell
+  } from "lucide-react";
+  import { Link, useLocation, useNavigate } from "react-router-dom";
+  import { motion, AnimatePresence } from "framer-motion";
+  import { STORAGE_BASE_URL } from "../../api/axios";
 
-function getImageUrl(path) {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  return `${STORAGE_BASE_URL}/${path}`;
-}
+  function getImageUrl(path) {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    return `${STORAGE_BASE_URL}/${path}`;
+  }
 
-export default function Navbar({ user }) {
-  const location = useLocation();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  export default function Navbar({ user }) {
+    const location = useLocation();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
-  const canAccessAll = user?.can_access_all ?? true;
+    const dropdownRef = useRef(null);
+    const canAccessAll = user?.can_access_all ?? true;
 
-  const navItems = [
-    { label: 'Beranda', path: '/', locked: false },
-    { label: 'Alumni', path: '/alumni', locked: !canAccessAll },
-    { label: 'Lowongan Kerja', path: '/lowongan', locked: !canAccessAll }
-  ];
+    const navItems = [
+      { label: "Beranda", path: "/alumni", locked: false },
+      { label: "Alumni", path: "/alumni/daftar-alumni", locked: !canAccessAll },
+      { label: "Lowongan", path: "/alumni/lowongan", locked: !canAccessAll },
+    ];
 
-  // Fungsi untuk menutup dropdown saat klik di luar area
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
+    const navigate = useNavigate()
+    useEffect(() => {
+      const handleScroll = () => setIsScrolled(window.scrollY > 20);
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    useEffect(() => {
+      function handleClickOutside(event) {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setIsDropdownOpen(false);
+        }
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
-  const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
+    const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-16 flex items-center justify-between">
-        
-        {/* Logo Custom */}
-        <div className="flex items-center gap-3">
-          {/* Menggunakan img tag untuk logo. Ukuran w-8 h-8 (32px) agar konsisten dengan ukuran sebelumnya */}
-          <img src="/icon.png" alt="Alumni Tracer Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
-          <span className="font-black text-[#3C5759] tracking-tight text-lg">
-          Alumni Tracer
-          </span>
-        </div>
-        
-        {/* Menu Navigasi Tengah */}
-        <div className="hidden md:flex bg-slate-100 rounded-full p-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+    return (
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${
+          isScrolled
+            ? "py-3 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.05)]"
+            : "py-4 bg-white"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
+          <Link to="/alumni" className="flex items-center gap-2.5 group">
+            <img
+              src="/icon.png"
+              alt="Alumni Tracer Logo"
+              className="w-10 h-10 object-contain drop-shadow-sm"
+            />
+            <span className="font-black text-primary text-lg">Alumni Tracer</span>
+          </Link>
 
-            if (item.locked) {
+          {/* DESKTOP MENU - PILL DESIGN */}
+          <div className="hidden md:flex items-center gap-2">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+
+              if (item.locked) {
+                return (
+                  <div
+                    key={item.label}
+                    className="flex items-center gap-2 px-4 py-2 text-[14px] font-bold text-slate-400 cursor-not-allowed opacity-50"
+                  >
+                    <Lock size={12} /> {item.label}
+                  </div>
+                );
+              }
+
               return (
-                <span
+                <Link
                   key={item.label}
-                  className="px-5 py-1.5 rounded-full text-xs font-bold text-slate-300 cursor-not-allowed flex items-center gap-1"
-                  title="Verifikasi & isi kuesioner untuk mengakses"
+                  to={item.path}
+                  className="group relative px-4 py-2 text-[14px] font-bold transition-colors duration-300"
                 >
-                  <Lock size={10} /> {item.label}
-                </span>
+                  <span
+                    className={`relative z-10 transition-colors duration-300 ${
+                      isActive
+                        ? "text-primary"
+                        : "text-slate-500 group-hover:text-primary"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+
+                  {/* EFEK GARIS BAWAH (UNDERLINE) */}
+                  {isActive ? (
+                    <motion.div
+                      layoutId="underline"
+                      className="absolute bottom-1 left-0 right-0 h-[2px] bg-primary mx-4"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  ) : (
+                    // Garis bawah saat HOVER (Muncul dari tengah)
+                    <div className="absolute bottom-1 left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out mx-4 origin-center" />
+                  )}
+                </Link>
               );
-            }
-
-            return (
-              <Link 
-                key={item.label} 
-                to={item.path}
-                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  isActive 
-                    ? 'bg-white text-[#3C5759] shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Ikon Pencarian & Profil */}
-        <div className="flex items-center gap-4">
-          
-          
-          {/* Wrapper Dropdown Profil */}
-          <div className="relative" ref={dropdownRef}>
-            {/* Tombol Profil */}
-            <button 
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-[#3C5759] border-2 border-white shadow-sm flex items-center justify-center text-white text-xs font-bold hover:scale-105 transition-transform cursor-pointer focus:outline-none overflow-hidden"
-            >
-              {fotoUrl ? (
-                <img src={fotoUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                user?.nama_alumni?.charAt(0) || 'A'
-              )}
-            </button>
-
-            {/* Menu Dropdown */}
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 overflow-hidden">
-                <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                  <p className="text-xs text-slate-400 font-medium">Masuk sebagai</p>
-                  <p className="text-sm font-bold text-slate-800 truncate">
-                    {user?.nama_alumni || 'Alumni'}
-                  </p>
-                </div>
-                
-                <Link 
-                  to="/profil" 
-                  onClick={() => setIsDropdownOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-[#3C5759] hover:bg-slate-50 transition-colors"
-                >
-                  <User size={16} />
-                  Lihat Profil
-                </Link>
-                
-                <Link 
-                  to="/logout" 
-                  onClick={() => setIsDropdownOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut size={16} />
-                  Keluar
-                </Link>
-              </div>
-            )}
+            })}
           </div>
-          
+
+          {/* RIGHT SECTION */}
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate("/alumni/notifikasi")} className="relative group cursor-pointer">
+              <div className="p-2 rounded-xl bg-slate-10 border border-slate-100  text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300">
+                <Bell size={20} />
+              </div>
+              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
+              </span>
+
+              {/* Tooltip Opsional (Muncul saat Hover) */}
+              <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                  Notifikasi Baru
+                </div>
+              </div>
+            </button>
+            <div className="relative" ref={dropdownRef}>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-3 pl-1 pr-3 py-1 rounded-xl border border-slate-100  cursor-pointer transition-all duration-300"
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white overflow-hidden shadow-inner">
+                  {fotoUrl ? (
+                    <img src={fotoUrl} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-primary text-white text-xs font-black">
+                      {user?.nama_alumni?.charAt(0) || "A"}
+                    </div>
+                  )}
+                </div>
+                <ChevronDown
+                  size={14}
+                  className={`text-slate-400 transition-transform duration-500 ${isDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </motion.button>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-4 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden z-50"
+                  >
+                    <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Masuk sebagai :
+                      </p>
+                      <p className="text-sm font-bold text-slate-800 truncate mt-0.5">
+                        {user?.nama_alumni || "Anonymous"}
+                      </p>
+                    </div>
+                    <div className="p-2">
+                      <Link
+                        to="/alumni/profile"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"
+                      >
+                        <User
+                          size={18}
+                          className="text-slate-400 group-hover:text-primary"
+                        />{" "}
+                        Profil Anda
+                      </Link>
+                      <button onClick={() => navigate("/logout")} className="cursor-pointer w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                        <LogOut size={18} /> Keluar Aplikasi
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* MOBILE TOGGLE */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 bg-white cursor-pointer transition-all "
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </motion.button>
+          </div>
         </div>
-      </div>
-    </nav>
-  );
-}
+
+        {/* MOBILE MENU ENHANCED */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`md:hidden bg-transparent overflow-hidden`}
+            >
+              <div className="px-8 py-8 flex flex-col gap-6">
+                {navItems.map((item, idx) => (
+                  <motion.div
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.1 }}
+                    key={item.label}
+                  >
+                    {item.locked ? (
+                      <div className="flex items-center gap-3 text-secondary font-bold text-md cursor-not-allowed">
+                        <Lock size={15} /> {item.label}
+                      </div>
+                    ) : (
+                      <Link
+                        to={item.path}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="text-xl font-black text-slate-800 hover:text-primary transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+    );
+  }

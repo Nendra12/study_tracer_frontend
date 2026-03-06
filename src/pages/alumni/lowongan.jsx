@@ -199,16 +199,16 @@ function LowonganCard({ data, onImageClick, onToggleSave, savingId }) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           onError={(e) => { e.target.src = 'https://placehold.co/600x400?text=Poster+Not+Found'; }}
         />
-        
+
         {/* Efek Gelombang Bawah */}
-        <svg 
-          className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-px" 
-          viewBox="0 0 1440 100" 
-          preserveAspectRatio="none" 
+        <svg
+          className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-px"
+          viewBox="0 0 1440 100"
+          preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path 
-            fill="#ffffff" 
+          <path
+            fill="#ffffff"
             d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"
           ></path>
         </svg>
@@ -334,9 +334,9 @@ function MyLowonganSkeleton() {
 
 export default function Lowongan() {
   const { user: authUser } = useAuth();
-  const user = { 
+  const user = {
     nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
-    foto: authUser?.alumni?.foto || authUser?.foto 
+    foto: authUser?.alumni?.foto || authUser?.foto
   };
 
   const navigate = useNavigate();
@@ -347,7 +347,7 @@ export default function Lowongan() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [savingId, setSavingId] = useState(null);
-  
+
   // State Tabs
   const [activeTab, setActiveTab] = useState('semua');
 
@@ -380,7 +380,7 @@ export default function Lowongan() {
 
       const params = { page, per_page: 12 };
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      
+
       if (selectedTipe && selectedTipe !== 'Semua Tipe') params.tipe_pekerjaan = selectedTipe;
       if (selectedProvinsi && selectedProvinsi !== 'Semua Provinsi') params.provinsi = selectedProvinsi;
       if (selectedKota && selectedKota !== 'Semua Kota') params.kota = selectedKota;
@@ -512,9 +512,9 @@ export default function Lowongan() {
     }
   };
 
-  const navUser = { 
+  const navUser = {
     nama_alumni: user.nama_alumni,
-    foto: user.foto 
+    foto: user.foto
   };
 
   // Render "Lowongan Saya" tab content
@@ -629,7 +629,7 @@ export default function Lowongan() {
 
         {totalPages > 1 && (
           <div className="mt-12 mb-4 bg-white rounded-xl shadow-sm border border-primary/10 overflow-hidden">
-            <Pagination 
+            <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={(page) => {
@@ -645,24 +645,23 @@ export default function Lowongan() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-x-hidden">
-      <Navbar user={navUser} />
 
       {/* --- HEADER SECTION --- */}
       <div className="relative pt-24 pb-8 w-full z-40">
-        
+
         {/* GAMBAR BACKGROUND */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/background3.jpeg" 
-            alt="Background" 
-            className="w-full h-full object-cover" 
+          <img
+            src="/background3.jpeg"
+            alt="Background"
+            className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-white/50 md:bg-gradient-to-r md:from-white/80 md:via-white/60 md:to-white/20"></div>
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#f8f9fa]"></div>
         </div>
 
-        <div className="relative z-10 max-w-360 mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          
+        <div className="relative z-10 mt-5 max-w-7xl mx-auto px-6 lg:px-12">
+
           <div className="mb-6">
             <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight mb-2 uppercase">Bursa Kerja</h1>
             <p className="text-primary/90 text-sm md:text-base max-w-2xl font-semibold drop-shadow-sm">
@@ -701,7 +700,7 @@ export default function Lowongan() {
             </div>
 
             {/* BUTTON TRIGGER MODAL */}
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="bg-white border border-primary/20 text-primary px-5 py-2.5 rounded-2xl text-[13px] font-bold shadow-sm hover:bg-primary hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
@@ -713,11 +712,11 @@ export default function Lowongan() {
           {activeTab === 'saya' ? (
             <form onSubmit={handleMySearch} className="relative group shadow-sm border border-primary/10 rounded-2xl bg-white flex z-70 max-w-xl">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 group-focus-within:text-primary transition-colors" size={20} />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={mySearch}
                 onChange={(e) => setMySearch(e.target.value)}
-                placeholder="Cari lowongan saya..." 
+                placeholder="Cari lowongan saya..."
                 className="w-full pl-12 pr-4 py-3 bg-transparent rounded-l-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all h-52px text-primary placeholder:text-primary/40"
               />
               <button type="submit" className="bg-primary text-white px-6 h-52px rounded-r-2xl text-sm font-bold shadow-md shadow-primary/20 hover:bg-[#2A3E3F] hover:shadow-lg transition-all cursor-pointer">
@@ -726,14 +725,14 @@ export default function Lowongan() {
             </form>
           ) : (
             <div className="flex flex-col xl:flex-row gap-4 relative">
-              
+
               <form onSubmit={handleSearch} className="relative flex-1 group shadow-sm border border-primary/10 rounded-2xl bg-white flex z-70">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 group-focus-within:text-primary transition-colors" size={20} />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari berdasarkan judul pekerjaan..." 
+                  placeholder="Cari berdasarkan judul pekerjaan..."
                   className="w-full pl-12 pr-4 py-3 bg-transparent rounded-l-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all h-52px text-primary placeholder:text-primary/40"
                 />
                 <button type="submit" className="bg-primary text-white px-6 h-52px rounded-r-2xl text-sm font-bold shadow-md shadow-primary/20 hover:bg-[#2A3E3F] hover:shadow-lg transition-all cursor-pointer">
@@ -762,11 +761,9 @@ export default function Lowongan() {
       </div>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-4 relative z-20 flex flex-col pb-12">
+      <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12">
         {activeTab === 'saya' ? renderMyLowongan() : renderLowonganGrid()}
       </main>
-
-      <Footer />
 
       {/* MODAL TAMBAH LOWONGAN */}
       <TambahLowongan

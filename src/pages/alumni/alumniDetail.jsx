@@ -47,7 +47,7 @@ export default function AlumniDetail() {
   const location = useLocation();
   const { user: authUser } = useAuth();
   const fromProfile = location.state?.fromProfile === true;
-  
+
   const [alumni, setAlumni] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,7 +69,7 @@ export default function AlumniDetail() {
       setLoading(false);
     }
   }
-  
+
   const user = {
     nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
     foto: authUser?.alumni?.foto || authUser?.foto,
@@ -98,7 +98,7 @@ export default function AlumniDetail() {
               {error ? 'Terjadi kesalahan saat memuat profil. Silakan coba lagi.' : 'Profil alumni yang Anda cari tidak tersedia.'}
             </p>
             <button
-              onClick={() => navigate('/alumni')}
+              onClick={() => navigate('/alumni/daftar-alumni')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer"
             >
               <ArrowLeft size={16} /> Ke Direktori Alumni
@@ -123,7 +123,7 @@ export default function AlumniDetail() {
 
   if (currentCareer) {
     currentPeriod = `${currentCareer.tahun_mulai || '-'} - ${currentCareer.tahun_selesai || 'Sekarang'}`;
-    
+
     if (currentCareer.pekerjaan) {
       currentRole = currentCareer.pekerjaan.posisi;
       currentCompany = currentCareer.pekerjaan.perusahaan?.nama || '-';
@@ -138,8 +138,6 @@ export default function AlumniDetail() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-      <Navbar user={user} />
-
       {/* --- BACKGROUND HERO --- */}
       <div className="relative h-64 md:h-80 bg-gradient-to-br from-primary via-[#4A6B6D] to-[#2A3E3F] overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -152,7 +150,7 @@ export default function AlumniDetail() {
       </div>
 
       {/* --- MAIN CONTENT AREA --- */}
-      <main className="flex-1 w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-12 relative z-20 -mt-32 pb-20">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 -mt-32 pb-20">
 
         {/* BAR PROFIL PUBLIK (hanya muncul jika dari halaman profil) */}
         {fromProfile && <PublicProfileBar alumniId={id} alumniNama={alumni.nama} />}
@@ -161,7 +159,7 @@ export default function AlumniDetail() {
         {!fromProfile && (
           <motion.button
             whileHover={{ x: -3 }}
-            onClick={() => navigate('/alumni')}
+            onClick={() => navigate('/alumni/daftar-alumni')}
             className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest mb-4 transition-all cursor-pointer"
           >
             <ArrowLeft size={14} /> Kembali ke Direktori
@@ -408,8 +406,6 @@ export default function AlumniDetail() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

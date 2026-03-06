@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/alumni/Navbar';
 import Footer from '../../components/alumni/Footer';
 import ProfileHeader from '../../components/alumni/ProfileHeader';
-import ProfileSidebar from '../../components/alumni/ProfileSidebar'; 
+import ProfileSidebar from '../../components/alumni/ProfileSidebar';
 import { alumniApi } from '../../api/alumni';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,18 +23,18 @@ export default function Profil() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [successMsg, setSuccessMsg] = useState('');
-  
+
   // State Navigasi Tab SPA
-  const [activeTab, setActiveTab] = useState('detail'); 
+  const [activeTab, setActiveTab] = useState('detail');
   const [triggerEdit, setTriggerEdit] = useState(false);
 
   function handlePerbarui() {
     setActiveTab('detail');
-    setTriggerEdit(prev => !prev); 
+    setTriggerEdit(prev => !prev);
   }
 
-  useEffect(() => { 
-    fetchProfile(); 
+  useEffect(() => {
+    fetchProfile();
   }, []);
 
   async function fetchProfile() {
@@ -54,20 +54,19 @@ export default function Profil() {
     setTimeout(() => setSuccessMsg(''), 3000);
   }
 
-  const navUser = { 
-    nama_alumni: profile?.nama || authUser?.alumni?.nama_alumni || 'Alumni', 
-    foto: profile?.foto || authUser?.alumni?.foto, 
-    can_access_all: true 
+  const navUser = {
+    nama_alumni: profile?.nama || authUser?.alumni?.nama_alumni || 'Alumni',
+    foto: profile?.foto || authUser?.alumni?.foto,
+    can_access_all: true
   };
 
   if (loading) return <ProfilSkeleton />;
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-      <Navbar user={navUser} />
 
-      <main className="flex-1 w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
-        
+      <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-16">
+
         {/* Notifikasi Sukses Melayang */}
         {successMsg && (
           <div className="fixed top-20 right-6 z-50 bg-green-500 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2">
@@ -78,17 +77,17 @@ export default function Profil() {
         <ProfileHeader profile={profile} onPerbarui={handlePerbarui} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* --- SIDEBAR KIRI (Dipanggil dari Komponen) --- */}
-          <ProfileSidebar 
-            profile={profile} 
-            onRefresh={fetchProfile} 
-            onShowSuccess={showSuccess} 
+          <ProfileSidebar
+            profile={profile}
+            onRefresh={fetchProfile}
+            onShowSuccess={showSuccess}
           />
 
           {/* --- KONTEN KANAN DENGAN TAB SPA --- */}
           <div className="lg:col-span-8 bg-white rounded-4xl shadow-sm flex flex-col overflow-hidden border border-slate-100">
-            
+
             {/* Header Tabs */}
             <div className="flex border-b border-slate-100 px-2 overflow-x-auto hide-scrollbar">
               <button onClick={() => setActiveTab('detail')} className={`flex items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'detail' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
@@ -111,7 +110,6 @@ export default function Profil() {
         </div>
       </main>
 
-      <Footer />
       <style dangerouslySetInnerHTML={{__html: `.hide-scrollbar::-webkit-scrollbar { display: none; }`}} />
     </div>
   );
