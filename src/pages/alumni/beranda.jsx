@@ -202,7 +202,7 @@ export default function Beranda() {
                     <h2 className="text-2xl font-black text-slate-800 tracking-tight">Peluang Karir</h2>
                     <p className="text-slate-500 text-sm font-medium mt-1">Temukan pekerjaan yang sesuai dengan keahlianmu</p>
                   </div>
-                  <button onClick={() => { if (canAccessAll) navigate('/alumni/lowongan'); }} className={`group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all ${canAccessAll ? 'bg-white text-primary border-slate-200 hover:border-primary cursor-pointer' : 'text-slate-300 border-slate-100 cursor-not-allowed'}`}>
+                  <button onClick={() => { if (canAccessAll) navigate('/alumni/lowongan/'); }} className={`group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all ${canAccessAll ? 'bg-white text-primary border-slate-200 hover:border-primary cursor-pointer' : 'text-slate-300 border-slate-100 cursor-not-allowed'}`}>
                     Cari Lowongan <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
