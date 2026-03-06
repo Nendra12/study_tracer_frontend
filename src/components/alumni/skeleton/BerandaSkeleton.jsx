@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function BerandaSkeleton() {
   return (
-    <div className="max-w-[1440px] mx-auto px-6 lg:px-12 -mt-16 pb-20 w-full animate-in fade-in duration-500">
+    <div className="max-w-360 mx-auto px-6 lg:px-12 -mt-16 pb-20 w-full animate-in fade-in duration-500">
       
       {/* 1. Notifikasi Skeleton */}
       <div className="mb-12 flex flex-col gap-4">
@@ -30,9 +30,9 @@ export default function BerandaSkeleton() {
         {/* Grid 4 Kolom: Desain Card Kiri-Kanan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-sm flex flex-col h-[180px]">
+            <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-45">
               <div className="flex gap-4 mb-5">
-                <div className="w-[88px] h-[88px] rounded-2xl bg-slate-200/60 animate-pulse shrink-0" />
+                <div className="w-22 h-22 rounded-2xl bg-slate-200/60 animate-pulse shrink-0" />
                 <div className="flex-1 flex flex-col justify-start pt-1 space-y-2.5">
                   <div className="h-3.5 bg-slate-200/70 rounded-full w-full animate-pulse" />
                   <div className="h-2 bg-slate-100 rounded-full w-1/2 animate-pulse mb-1.5" />
@@ -62,7 +62,7 @@ export default function BerandaSkeleton() {
         {/* Grid 4 Kolom: Desain Sesuai Gambar Poster Job */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-[460px]">
+            <div key={i} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-115">
               
               {/* Gambar Banner Atas */}
               <div className="h-56 bg-slate-200/50 animate-pulse w-full" />
@@ -116,7 +116,7 @@ export default function BerandaSkeleton() {
 
       {/* 4. Top Perusahaan Skeleton */}
       <div className="mb-10">
-        <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+        <div className="bg-white rounded-4xl border border-slate-100 p-8 shadow-sm">
           <div className="flex items-center justify-between mb-10">
             <div className="space-y-2">
               <div className="h-8 bg-slate-200/70 rounded-lg w-64 animate-pulse" />

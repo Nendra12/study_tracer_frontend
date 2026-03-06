@@ -138,13 +138,13 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       <input type="file" ref={fileInputRef} className="hidden" onChange={handleFotoChange} accept="image/*" />
 
       {/* KOTAK 1: INFO PROFIL */}
-      <div className="bg-white rounded-[2rem] p-8 shadow-sm text-center border border-slate-100">
+      <div className="bg-white rounded-4xl p-8 shadow-sm text-center border border-slate-100">
         <div className="relative w-32 h-32 mx-auto mb-5">
           <div className="w-full h-full rounded-full overflow-hidden border-4 border-slate-50">
             {fotoUrl ? (
               <img src={fotoUrl} alt="Foto Profil" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-[#3C5759]/10 flex items-center justify-center text-3xl font-bold text-[#3C5759]/40">
+              <div className="w-full h-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary/40">
                 {profile?.nama?.charAt(0) || 'A'}
               </div>
             )}
@@ -152,24 +152,24 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
           <button 
             onClick={() => fileInputRef.current?.click()} 
             disabled={savingFoto} 
-            className="absolute bottom-0 right-0 w-8 h-8 bg-[#3C5759] rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-[#2A3E3F] transition-colors border-2 border-white shadow-sm disabled:opacity-50"
+            className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-[#2A3E3F] transition-colors border-2 border-white shadow-sm disabled:opacity-50"
           >
             {savingFoto ? <Loader2 size={14} className="animate-spin"/> : <Edit size={14} />}
           </button>
         </div>
         
-        <h2 className="text-xl font-black text-[#3C5759]">{profile?.nama || '-'}</h2>
-        <p className="text-sm font-semibold text-[#3C5759]/60 mb-6">
+        <h2 className="text-xl font-black text-primary">{profile?.nama || '-'}</h2>
+        <p className="text-sm font-semibold text-primary/60 mb-6">
           Angkatan {profile?.tahun_masuk || '-'}
           {profile?.jurusan?.nama && ` • ${profile.jurusan.nama}`}
         </p>
 
         <div className="space-y-3 pt-6 border-t border-slate-100 text-left">
-          <div className="flex items-center gap-3 text-[#3C5759]/70">
+          <div className="flex items-center gap-3 text-primary/70">
             <Mail size={16} className="shrink-0" />
             <span className="text-sm font-medium truncate">{profile?.email || '-'}</span>
           </div>
-          <div className="flex items-center gap-3 text-[#3C5759]/70">
+          <div className="flex items-center gap-3 text-primary/70">
             <Phone size={16} className="shrink-0" />
             <span className="text-sm font-medium">{profile?.no_hp || '-'}</span>
           </div>
@@ -177,20 +177,20 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       </div>
 
       {/* KOTAK 2: TAUTAN SOSIAL */}
-      <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+      <div className="bg-white rounded-4xl p-8 shadow-sm border border-slate-100">
         <div className="flex justify-between items-center mb-5">
-          <h3 className="font-black text-[#3C5759]">Tautan Sosial</h3>
+          <h3 className="font-black text-primary">Tautan Sosial</h3>
           {editingSocial ? (
             <div className="flex items-center gap-2">
               <button onClick={() => { setEditingSocial(false); setShowAddSocial(false); initSocialForm(profile); }} className="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">
                 Batal
               </button>
-              <button onClick={handleSaveSocial} disabled={savingSocial} className="text-xs font-bold text-[#3C5759] hover:underline cursor-pointer disabled:opacity-50">
+              <button onClick={handleSaveSocial} disabled={savingSocial} className="text-xs font-bold text-primary hover:underline cursor-pointer disabled:opacity-50">
                 {savingSocial ? 'Menyimpan...' : 'Simpan'}
               </button>
             </div>
           ) : (
-            <button onClick={() => { setEditingSocial(true); loadSocialMediaMaster(); }} className="text-xs font-bold text-[#3C5759] hover:underline cursor-pointer flex items-center">
+            <button onClick={() => { setEditingSocial(true); loadSocialMediaMaster(); }} className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center">
               <Edit size={12} className="mr-1" />Edit
             </button>
           )}
@@ -209,7 +209,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
                     value={socialForm[platform.key] || ''} 
                     onChange={(e) => setSocialForm(prev => ({ ...prev, [platform.key]: e.target.value }))} 
                     placeholder={platform.placeholder} 
-                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20 text-[#3C5759]"
+                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-primary"
                   />
                   {hasValue && (
                     <button onClick={() => setSocialForm(prev => ({ ...prev, [platform.key]: '' }))} className="text-slate-300 hover:text-red-500 cursor-pointer">
@@ -220,7 +220,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
               );
             })}
             {!showAddSocial && (
-              <button onClick={() => setShowAddSocial(true)} className="flex items-center gap-2 text-sm font-bold text-[#3C5759]/60 hover:text-[#3C5759] transition-colors cursor-pointer mt-2">
+              <button onClick={() => setShowAddSocial(true)} className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer mt-2">
                 <Plus size={16} /> Tampilkan semua platform
               </button>
             )}
@@ -230,7 +230,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
             <div className="space-y-4 mb-6">
               {socialLinks.length > 0 ? socialLinks.map((link) => (
                 <div key={link.key} className="flex items-center justify-between group">
-                  <div className="flex items-center gap-3 text-[#3C5759]/70 truncate pr-4">
+                  <div className="flex items-center gap-3 text-primary/70 truncate pr-4">
                     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">{link.icon}</div>
                     <span className="text-sm font-medium truncate">{displayUrl(link.url)}</span>
                   </div>
@@ -240,7 +240,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
               )}
             </div>
             {socialLinks.length === 0 && (
-              <button onClick={() => { setEditingSocial(true); setShowAddSocial(true); loadSocialMediaMaster(); }} className="flex items-center gap-2 text-sm font-bold text-[#3C5759]/60 hover:text-[#3C5759] transition-colors cursor-pointer">
+              <button onClick={() => { setEditingSocial(true); setShowAddSocial(true); loadSocialMediaMaster(); }} className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer">
                 <Plus size={16} /> Tambahkan tautan sosial
               </button>
             )}

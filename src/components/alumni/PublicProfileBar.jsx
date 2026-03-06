@@ -48,7 +48,7 @@ export default function PublicProfileBar({ alumniId, alumniNama }) {
 
         {/* Label Profil Publik */}
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-slate-100 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-[14px] bg-slate-100 flex items-center justify-center shrink-0">
             <Eye size={18} strokeWidth={2.5} className="text-primary" />
           </div>
           <span className="text-[14px] sm:text-[15px] font-black text-primary tracking-tight truncate">

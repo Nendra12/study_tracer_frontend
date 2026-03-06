@@ -25,11 +25,11 @@ export default function Login() {
 
     try {
       const user = await login({ email, password });
-      console.log(user.role)
+      // console.log(user.role)
       if (user.role === "admin") {
         navigate("/wb-admin");
       } else {
-        navigate("/");
+        navigate("/alumni");
       }
     } catch (err) {
       const msg =

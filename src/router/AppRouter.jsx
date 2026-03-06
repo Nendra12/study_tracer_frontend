@@ -20,13 +20,15 @@ import LihatJawaban from "../pages/admin/LihatJawaban";
 import LihatJawabanDetail from "../pages/admin/LihatJawabanDetail";
 import UpdateKuesioner from "../pages/admin/UpdateKuesioner";
 import Beranda from "../pages/alumni/beranda";
-import Alumni from "../pages/alumni/alumni"; 
+import Alumni from "../pages/alumni/alumni";
 import AlumniDetail from "../pages/alumni/alumniDetail";
-import Lowongan from "../pages/alumni/lowongan"; 
+import Lowongan from "../pages/alumni/lowongan";
 import Profil from "../pages/alumni/profil";
 import StatistikKuesioner from "../pages/admin/StatistikKuesioner";
 import KuesionerModal from "../pages/alumni/KuesionerModal";
-import LowonganDetail from "../pages/alumni/lowonganDetail"; 
+import LowonganDetail from "../pages/alumni/lowonganDetail";
+import AlumniLayout from "../layouts/AlumniLayout";
+import Notifikasi from "../pages/alumni/Notifikasi";
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -41,7 +43,7 @@ export default function AppRouter() {
 
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/"} /> : <Login />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Login />} />
       <Route path="/reset-password" element={<LupaPass />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
@@ -63,9 +65,9 @@ export default function AppRouter() {
           <Route path="master" element={<MasterTable />} />
           <Route path="kuisoner">
             <Route index element={<Kuesioner />} />
-            <Route path="tambah-kuesioner" element={<TambahKuisioner />} />      
-            <Route path="preview-kuesioner/:id" element={<PreviewKuesioner />} />      
-            <Route path="update-kuesioner/:id" element={<UpdateKuesioner />} />      
+            <Route path="tambah-kuesioner" element={<TambahKuisioner />} />
+            <Route path="preview-kuesioner/:id" element={<PreviewKuesioner />} />
+            <Route path="update-kuesioner/:id" element={<UpdateKuesioner />} />
             <Route path="tinjau-jawaban/:jawabanid" >
               <Route index element={<LihatJawaban />} />
               <Route path="statistik" element={<StatistikKuesioner />} />
@@ -74,34 +76,19 @@ export default function AppRouter() {
           </Route>
         </Route>
       </Route>
-      
-      <Route path="/" element={
-        isAuthenticated && !isAdmin ? <Beranda /> : <Navigate to="/login" replace />
-      } />
-      
-      <Route path="/alumni" element={
-        isAuthenticated && !isAdmin ? <Alumni /> : <Navigate to="/login" replace />
-      } />
 
-      <Route path="/alumni/:id" element={
-        isAuthenticated && !isAdmin ? <AlumniDetail /> : <Navigate to="/login" replace />
-      } />
-      
-      <Route path="/lowongan" element={
-        isAuthenticated && !isAdmin ? <Lowongan /> : <Navigate to="/login" replace />
-      } />
-      
-      <Route path="/lowongan/:id" element={
-        isAuthenticated && !isAdmin ? <LowonganDetail /> : <Navigate to="/login" replace />
-      } />
-
-      <Route path="/kuesioner/:id" element={
-        isAuthenticated && !isAdmin ? <KuesionerModal /> : <Navigate to="/login" replace />
-      } />
-
-      <Route path="/profil" element={
-        isAuthenticated && !isAdmin ? <Profil /> : <Navigate to="/login" replace />
-      } />
+      <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} /> }>
+        <Route element={<AlumniLayout />} >
+          <Route index element={<Beranda />} />
+          <Route path="daftar-alumni" element={<Alumni />} />
+          <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
+          <Route path="lowongan" element={<Lowongan />} />
+          <Route path="lowongan/:id" element={<LowonganDetail />} />
+          <Route path="kuesioner/:id" element={<KuesionerModal />} />
+          <Route path="profile" element={<Profil />} />
+          <Route path="notifikasi" element={<Notifikasi />} />
+        </Route>
+      </Route>
 
       <Route path="*" element={<NotFound />} />
     </Routes>

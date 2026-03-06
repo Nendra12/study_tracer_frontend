@@ -148,7 +148,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
       
       {/* --- HEADER KEAHLIAN --- */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3 text-[#3C5759]">
+        <div className="flex items-center gap-3 text-primary">
           <Award size={22} className="stroke-[2.5]" />
           <h2 className="text-xl font-black tracking-tight">Keahlian Profil</h2>
         </div>
@@ -160,7 +160,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer ${
               showSearch 
                 ? 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' 
-                : 'bg-[#3C5759] text-white hover:bg-[#2A3E3F]'
+                : 'bg-primary text-white hover:bg-[#2A3E3F]'
             }`}
           >
             {showSearch ? <X size={14} /> : <Plus size={14} />} 
@@ -183,14 +183,14 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
 
       {/* --- KONTEN PENCARIAN & LIST --- */}
       <div className="mb-10">
-        <p className="text-sm text-[#3C5759]/60 mb-4 font-medium">
+        <p className="text-sm text-primary/60 mb-4 font-medium">
           Daftar keahlian dan keterampilan teknis yang Anda miliki.
         </p>
         
         {/* Dropdown Pencarian - Muncul hanya jika showSearch === true */}
         {showSearch && (
           <div className="relative mb-6 z-20 animate-in slide-in-from-top-2 duration-200">
-            <div className="w-full bg-slate-50 border border-[#3C5759]/20 rounded-xl shadow-sm ring-4 ring-[#3C5759]/5">
+            <div className="w-full bg-slate-50 border border-primary/20 rounded-xl shadow-sm ring-4 ring-primary/5">
               <SmoothDropdown 
                 options={dropdownOptions} 
                 value={selectedDropdownValue} 
@@ -199,7 +199,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
                 isSearchable={true} 
               />
             </div>
-            <p className="text-[10px] text-[#3C5759]/50 mt-2 font-semibold px-2">
+            <p className="text-[10px] text-primary/50 mt-2 font-semibold px-2">
               * Pilih keahlian dari daftar dropdown, atau tambahkan keahlian baru di bawah. Jangan lupa klik "Simpan Perubahan".
             </p>
 
@@ -211,12 +211,12 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
                 onChange={(e) => setNewSkillName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateSkill(); } }}
                 placeholder="Keahlian tidak ada? Ketik nama keahlian baru..."
-                className="flex-1 px-4 py-2.5 border border-[#3C5759]/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3C5759]/30 bg-white"
+                className="flex-1 px-4 py-2.5 border border-primary/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
               />
               <button
                 onClick={handleCreateSkill}
                 disabled={creatingSkill || !newSkillName.trim()}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-[#3C5759] text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Tambah Baru
@@ -251,7 +251,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
               {!showSearch && (
                 <button 
                   onClick={() => setShowSearch(true)} 
-                  className="text-xs text-[#3C5759] font-bold mt-2 hover:underline cursor-pointer"
+                  className="text-xs text-primary font-bold mt-2 hover:underline cursor-pointer"
                 >
                   Tambahkan sekarang
                 </button>

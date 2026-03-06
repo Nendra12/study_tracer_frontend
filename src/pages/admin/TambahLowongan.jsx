@@ -206,10 +206,10 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-[#3C5759]">{isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}</h2>
+          <h2 className="text-xl font-bold text-primary">{isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 cursor-pointer"><X size={20} /></button>
         </div>
 
@@ -223,7 +223,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
               </div>
               <div className="flex-1 space-y-3">
                 <p className="text-xs text-gray-500 italic text-center sm:text-left">Silakan unggah gambar persegi, ukuran maks 2MB.</p>
-                <label className="px-6 py-2 border-2 border-[#3C5759] text-[#3C5759] font-bold rounded-xl cursor-pointer hover:bg-[#3C5759] hover:text-white transition-all text-sm block sm:inline-block text-center">
+                <label className="px-6 py-2 border-2 border-primary text-primary font-bold rounded-xl cursor-pointer hover:bg-primary hover:text-white transition-all text-sm block sm:inline-block text-center">
                   Pilih File
                   <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </label>
@@ -234,7 +234,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
           <div className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Job Title *</label>
-              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20" />
               {errors.judul_lowongan && <p className="text-red-500 text-xs mt-1">{errors.judul_lowongan[0]}</p>}
             </div>
 
@@ -310,7 +310,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {selectedSkills.map(skill => (
-                  <span key={skill.id} className="flex items-center gap-1 px-2.5 py-1 bg-[#E8F0F0] text-[#3C5759] text-xs font-bold rounded-lg border border-[#3C5759]/20 shadow-sm">
+                  <span key={skill.id} className="flex items-center gap-1 px-2.5 py-1 bg-[#E8F0F0] text-primary text-xs font-bold rounded-lg border border-primary/20 shadow-sm">
                     {skill.nama}
                     <button type="button" onClick={() => removeSkill(skill.id)} className="hover:text-red-500 cursor-pointer ml-1">
                       <X size={12} />
@@ -326,12 +326,12 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                   onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
                   onFocus={() => setShowSkillDropdown(true)}
                   placeholder="Cari dan pilih skill..."
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#3C5759]/20 outline-none"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                 />
                 {showSkillDropdown && (
                   <div className="absolute z-50 top-[105%] w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto py-1">
                     {filteredSkills.length > 0 ? filteredSkills.map(s => (
-                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 hover:text-[#3C5759] flex justify-between items-center">
+                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 hover:text-primary flex justify-between items-center">
                         {s.nama}
                       </div>
                     )) : <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Skill tidak ditemukan</div>}
@@ -342,14 +342,14 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Deskripsi</label>
-              <textarea name="deskripsi" rows={4} value={formData.deskripsi} onChange={handleInputChange} placeholder="Deskripsi peran..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none resize-none min-h-[120px]" />
+              <textarea name="deskripsi" rows={4} value={formData.deskripsi} onChange={handleInputChange} placeholder="Deskripsi peran..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none resize-none min-h-30" />
             </div>
           </div>
         </div>
 
         <div className="p-6 border-t border-gray-100 flex justify-end gap-4 bg-gray-50/50">
           <button onClick={onClose} disabled={submitting} className="cursor-pointer text-sm font-bold text-gray-500 hover:text-gray-700 px-4">Batal</button>
-          <button onClick={handleSubmit} disabled={submitting || !formData.judul || !formData.perusahaan} className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-[#3C5759] text-white font-bold rounded-2xl hover:bg-[#2e4344] transition-all shadow-lg active:scale-95 disabled:opacity-50">
+          <button onClick={handleSubmit} disabled={submitting || !formData.judul || !formData.perusahaan} className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-[#2e4344] transition-all shadow-lg active:scale-95 disabled:opacity-50">
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Perbarui' : 'Kirim'} <Send size={18} /></>}
           </button>
         </div>

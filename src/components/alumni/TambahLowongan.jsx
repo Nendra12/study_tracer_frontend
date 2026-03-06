@@ -225,7 +225,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       {/* Modal Container */}
       <div
         className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative"
@@ -253,7 +253,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
           {/* Upload Foto */}
           <div className="space-y-3">
-            <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest">Gambar / Banner (Opsional)</label>
+            <label className="text-[11px] font-black text-primary uppercase tracking-widest">Gambar / Banner (Opsional)</label>
             <div className="flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
               <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0">
                 {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <ImageIcon size={32} className="text-gray-300" />}
@@ -271,38 +271,38 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
           <div className="space-y-6">
             <div>
-              <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Job Title *</label>
-              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.judul ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20`} />
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Job Title *</label>
+              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.judul ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
               {errors.judul && <p className="text-xs text-red-500 font-medium mt-1">{errors.judul}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Nama Perusahaan</label>
-                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Nama Perusahaan</label>
+                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div>
-                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Tanggal Berakhir</label>
-                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Tanggal Berakhir</label>
+                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
                 {errors.tanggal_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.tanggal_berakhir}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Jam Mulai</label>
-                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Jam Mulai</label>
+                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
                 {errors.jam_mulai && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_mulai}</p>}
               </div>
               <div>
-                <label className="text-[11px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2 block">Jam Berakhir</label>
-                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Jam Berakhir</label>
+                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
                 {errors.jam_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_berakhir}</p>}
               </div>
             </div>
 
-            <div className="relative z-[60]">
-              <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">
+            <div className="relative z-60">
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                 Tipe Pekerjaan
               </label>
               <div className="w-full">
@@ -350,7 +350,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
             {/* Bagian Skills */}
             <div className="relative z-40" ref={skillDropdownRef}>
-              <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                 Skills <span className="normal-case opacity-70">(Opsional)</span>
               </label>
 
@@ -376,7 +376,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                 {showSkillDropdown && (
                   <div className="absolute z-50 top-[105%] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto py-2">
                     {filteredSkills.length > 0 ? filteredSkills.map(s => (
-                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-[#3C5759]">
+                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-primary">
                         {s.nama || s.name}
                       </div>
                     )) : <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Skill tidak ditemukan</div>}
@@ -387,7 +387,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
             </div>
 
             <div>
-              <label className="text-[11px] font-black text-primary/40 uppercase tracking-widest mb-2 block">Deskripsi & Kualifikasi Pekerjaan</label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Deskripsi & Kualifikasi Pekerjaan</label>
               <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
             </div>
 
@@ -399,7 +399,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
           <button onClick={onClose} disabled={submitting} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm cursor-pointer">
             Batal
           </button>
-          <button onClick={handleSubmit} disabled={submitting || !formData.judul} className="flex items-center gap-2 px-8 py-3 bg-[#3C5759] text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
+          <button onClick={handleSubmit} disabled={submitting || !formData.judul} className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Simpan' : 'Kirim'} <Send size={16} /></>}
           </button>
         </div>

@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function LowonganDetailSkeleton() {
   return (
-    <div className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 animate-in fade-in duration-500">
+    <div className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 animate-in fade-in duration-500">
       
       {/* Tombol Kembali Skeleton */}
       <div className="flex items-center gap-2 mb-6">
@@ -16,9 +16,9 @@ export default function LowonganDetailSkeleton() {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Kartu Header Utama Skeleton */}
-          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden relative">
+          <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden relative">
             {/* Banner Area */}
-            <div className="w-full h-[280px] bg-slate-200/50 animate-pulse" />
+            <div className="w-full h-70 bg-slate-200/50 animate-pulse" />
 
             {/* Info Pekerjaan Utama */}
             <div className="p-6 md:p-8 relative bg-white -mt-10 rounded-t-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
@@ -57,7 +57,7 @@ export default function LowonganDetailSkeleton() {
           </div>
 
           {/* Kartu Deskripsi Skeleton */}
-          <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-sm">
+          <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
               <div className="w-10 h-10 bg-slate-100 rounded-xl animate-pulse" />
               <div className="h-6 bg-slate-200/70 rounded-full w-48 animate-pulse" />
@@ -80,7 +80,7 @@ export default function LowonganDetailSkeleton() {
           <div className="lg:sticky lg:top-28 space-y-6">
 
             {/* Card Ringkasan Info Skeleton */}
-            <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
+            <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
               <div className="h-4 bg-slate-200/70 rounded-full w-32 animate-pulse mb-2 border-b border-slate-100 pb-4" />
 
               <div className="space-y-6 pt-2">
@@ -111,23 +111,23 @@ export default function LowonganDetailSkeleton() {
             </div>
 
             {/* TIPS MELAMAR Skeleton */}
-            <div className="bg-[#3C5759]/10 rounded-[2rem] p-7 border border-[#3C5759]/20">
+            <div className="bg-primary/10 rounded-4xl p-7 border border-primary/20">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-[#3C5759]/20 rounded-xl animate-pulse" />
-                <div className="h-6 bg-[#3C5759]/20 rounded-full w-32 animate-pulse" />
+                <div className="w-10 h-10 bg-primary/20 rounded-xl animate-pulse" />
+                <div className="h-6 bg-primary/20 rounded-full w-32 animate-pulse" />
               </div>
               <div className="space-y-4">
                 <div className="flex gap-2.5">
-                  <div className="w-2 h-2 bg-[#3C5759]/30 rounded-full animate-pulse mt-1" />
-                  <div className="h-3 bg-[#3C5759]/20 rounded-full w-full animate-pulse mt-1" />
+                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse mt-1" />
+                  <div className="h-3 bg-primary/20 rounded-full w-full animate-pulse mt-1" />
                 </div>
                 <div className="flex gap-2.5">
-                  <div className="w-2 h-2 bg-[#3C5759]/30 rounded-full animate-pulse mt-1" />
-                  <div className="h-3 bg-[#3C5759]/20 rounded-full w-5/6 animate-pulse mt-1" />
+                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse mt-1" />
+                  <div className="h-3 bg-primary/20 rounded-full w-5/6 animate-pulse mt-1" />
                 </div>
                 <div className="flex gap-2.5">
-                  <div className="w-2 h-2 bg-[#3C5759]/30 rounded-full animate-pulse mt-1" />
-                  <div className="h-3 bg-[#3C5759]/20 rounded-full w-4/6 animate-pulse mt-1" />
+                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse mt-1" />
+                  <div className="h-3 bg-primary/20 rounded-full w-4/6 animate-pulse mt-1" />
                 </div>
               </div>
             </div>

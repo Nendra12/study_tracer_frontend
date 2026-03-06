@@ -54,7 +54,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
           />
           
           {/* EFEK GELOMBANG MENGGUNAKAN SVG */}
-          <svg className="absolute -bottom-[1px] left-0 w-full h-8 z-20" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="absolute -bottom-px left-0 w-full h-8 z-20" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path fill="#ffffff" d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
           </svg>
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent z-10" />
@@ -62,7 +62,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
 
         <div className="p-5 pt-4 flex-1 flex flex-col relative z-20">
           <div className="flex justify-between items-start mb-1">
-            <h3 className="font-black text-[#3C5759] text-lg leading-tight flex-1 line-clamp-2">{data.judul}</h3>
+            <h3 className="font-black text-primary text-lg leading-tight flex-1 line-clamp-2">{data.judul}</h3>
             {deadline && deadline !== '-' && (
               <span className="text-red-500 text-[10px] font-black uppercase bg-red-50 px-2 py-1 rounded-md ml-2 shrink-0">
                 {deadline}
@@ -79,7 +79,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
           )}
 
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[#3C5759]">
+            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-primary">
               <Building2 size={16} />
             </div>
             <span className="font-bold text-sm text-slate-700 line-clamp-1">{perusahaanNama}</span>
@@ -87,7 +87,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
 
           <div className="bg-slate-50 rounded-xl px-3 py-2 self-start mb-4 border border-slate-100">
             <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[11px]">
-              <MapPin size={14} className="text-[#3C5759]" />
+              <MapPin size={14} className="text-primary" />
               <span className="line-clamp-1">{lokasi}</span>
             </div>
           </div>
@@ -105,10 +105,10 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
             {!locked && (
               <div className="flex gap-2">
                 <button className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
-                  <Bookmark size={18} className="text-slate-300 hover:text-[#3C5759]" />
+                  <Bookmark size={18} className="text-slate-300 hover:text-primary" />
                 </button>
-                <button className="p-2 bg-[#3C5759]/5 hover:bg-[#3C5759]/10 rounded-full transition-colors cursor-pointer">
-                  <ArrowRight size={18} className="text-[#3C5759]" />
+                <button className="p-2 bg-primary/5 hover:bg-primary/10 rounded-full transition-colors cursor-pointer">
+                  <ArrowRight size={18} className="text-primary" />
                 </button>
               </div>
             )}

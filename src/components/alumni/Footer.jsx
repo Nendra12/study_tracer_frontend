@@ -10,9 +10,9 @@ export default function Footer() {
           © {currentYear} Alumni Tracer. Hak cipta dilindungi undang-undang
         </p>
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-          <a href="#" className="text-slate-500 hover:text-[#3C5759] text-xs sm:text-sm font-medium transition-colors">Kebijakan Privasi</a>
-          <a href="#" className="text-slate-500 hover:text-[#3C5759] text-xs sm:text-sm font-medium transition-colors">Ketentuan Layanan</a>
-          <a href="#" className="text-slate-500 hover:text-[#3C5759] text-xs sm:text-sm font-medium transition-colors">Kontak Dukungan</a>
+          <a href="#" className="text-slate-500 hover:text-primary text-xs sm:text-sm font-medium transition-colors">Kebijakan Privasi</a>
+          <a href="#" className="text-slate-500 hover:text-primary text-xs sm:text-sm font-medium transition-colors">Ketentuan Layanan</a>
+          <a href="#" className="text-slate-500 hover:text-primary text-xs sm:text-sm font-medium transition-colors">Kontak Dukungan</a>
         </div>
       </div>
     </footer>

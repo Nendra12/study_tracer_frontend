@@ -10,27 +10,27 @@ export default function ProfileHeader({ profile, onPerbarui }) {
       {/* Judul dan Tombol */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-[#3C5759] tracking-tight mb-1">
+          <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight mb-1">
             Profil Saya
           </h1>
-          <p className="text-[#3C5759]/70 text-sm font-medium">
+          <p className="text-primary/70 text-sm font-medium">
             Kelola informasi pribadi dan pencapaian karier Anda
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             // Arahkan ke halaman detail menggunakan ID alumni
             onClick={() => {
               const alumniId = profile?.id || profile?.id_alumni;
               if (alumniId) {
-                navigate(`/alumni/${alumniId}`, { state: { fromProfile: true } });
+                navigate(`/alumni/daftar-alumni/${alumniId}`, { state: { fromProfile: true } });
               }
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#3C5759]/20 text-[#3C5759] rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-primary/20 text-primary rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
           >
             <Eye size={16} /> Lihat Profil Publik
           </button>
-          
+
         </div>
       </div>
 

@@ -129,13 +129,13 @@ function KuesionerModal() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans flex flex-col selection:bg-[#3C5759]/20 pb-20">
+        <div className="min-h-screen bg-slate-50 font-sans flex flex-col selection:bg-primary/20 pb-20">
             <Navbar user={user} />
 
             <div className="max-w-3xl mx-auto w-full px-4 space-y-6">
                 {/* Header Card */}
                 <div className="bg-white rounded-xl mt-25 border border-gray-200 overflow-hidden mb-6 shadow-sm">
-                    <div className="h-2 w-full bg-[#3C5759]"></div>
+                    <div className="h-2 w-full bg-primary"></div>
                     <div className="p-7">
                         <h1 className="text-3xl font-semibold text-gray-900 mb-2">
                             {dataHeader.judul || 'Loading...'}
@@ -176,7 +176,7 @@ function KuesionerModal() {
                                 <label
                                     key={idx}
                                     className={`group flex items-center p-4 rounded-xl border transition-all cursor-pointer ${answers[q.id] === opt.id
-                                            ? 'border-[#3C5759] bg-slate-50'
+                                            ? 'border-primary bg-slate-50'
                                             : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                                         }`}
                                 >
@@ -185,9 +185,9 @@ function KuesionerModal() {
                                         name={`question-${q.id}`}
                                         checked={answers[q.id] === opt.id}
                                         onChange={() => handleSelectOption(q.id, opt.id)}
-                                        className="w-5 h-5 border-slate-300 text-[#3C5759] focus:ring-[#3C5759]"
+                                        className="w-5 h-5 border-slate-300 text-primary focus:ring-primary"
                                     />
-                                    <span className={`ml-4 transition-colors ${answers[q.id] === opt.id ? 'text-[#3C5759] font-semibold' : 'text-slate-600'
+                                    <span className={`ml-4 transition-colors ${answers[q.id] === opt.id ? 'text-primary font-semibold' : 'text-slate-600'
                                         }`}>
                                         {opt.opsi}
                                     </span>
@@ -202,7 +202,7 @@ function KuesionerModal() {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting || questions.length === 0}
-                        className="bg-[#3C5759] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#2a3f41] cursor-pointer transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#2a3f41] cursor-pointer transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'Menyimpan...' : 'Simpan Jawaban'}
                         <ChevronRight size={18} />

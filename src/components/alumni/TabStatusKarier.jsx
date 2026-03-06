@@ -227,7 +227,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   return (
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3 text-[#3C5759]">
+        <div className="flex items-center gap-3 text-primary">
           <Briefcase size={20} />
           <h2 className="text-lg font-black">Status Karier Saat Ini</h2>
         </div>
@@ -237,7 +237,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               onClick={handleOpenForm}
               className={`flex items-center gap-1 text-xs font-bold transition-all ${career && !career.tahun_selesai
                 ? 'text-slate-400 cursor-not-allowed'
-                : 'text-[#3C5759] hover:underline cursor-pointer'
+                : 'text-primary hover:underline cursor-pointer'
                 }`}
               disabled={career && !career.tahun_selesai}
             >
@@ -257,65 +257,65 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
 
       {/* Form Tambah Status - Muncul di atas dengan animasi */}
       {showForm && (
-        <div className="border-2 border-[#3C5759]/30 rounded-[1.5rem] p-6 mb-6 bg-[#3C5759]/5 animate-in slide-in-from-top duration-300">
+        <div className="border-2 border-primary/30 rounded-3xl p-6 mb-6 bg-primary/5 animate-in slide-in-from-top duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-black text-[#3C5759]">Tambahkan Status Baru</h3>
+            <h3 className="text-sm font-black text-primary">Tambahkan Status Baru</h3>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer"><X size={18} /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="sm:col-span-2">
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Status</label>
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Status</label>
               <div className="relative">
-                <select value={form.id_status} onChange={(e) => setForm(prev => ({ ...prev, id_status: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20">
+                <select value={form.id_status} onChange={(e) => setForm(prev => ({ ...prev, id_status: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
                   <option value="">Pilih Status</option>
                   {statusList.map(st => <option key={st.id} value={st.id}>{st.nama || st.nama_status}</option>)}
                 </select>
-                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Tahun Mulai</label>
-              <input type="number" placeholder="2024" value={form.tahun_mulai} onChange={(e) => setForm(prev => ({ ...prev, tahun_mulai: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Tahun Mulai</label>
+              <input type="number" placeholder="2024" value={form.tahun_mulai} onChange={(e) => setForm(prev => ({ ...prev, tahun_mulai: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Tahun Selesai <span className="normal-case font-medium">(opsional)</span></label>
-              <input type="number" placeholder="2025" value={form.tahun_selesai} onChange={(e) => setForm(prev => ({ ...prev, tahun_selesai: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Tahun Selesai <span className="normal-case font-medium">(opsional)</span></label>
+              <input type="number" placeholder="2025" value={form.tahun_selesai} onChange={(e) => setForm(prev => ({ ...prev, tahun_selesai: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
 
             {!statusName.includes('belum') && (statusName.includes('kerja') || statusName.includes('bekerja')) && (
               <>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Posisi / Judul Job</label>
-                  <input type="text" placeholder="Software Engineer" value={form.posisi} onChange={(e) => setForm(prev => ({ ...prev, posisi: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Posisi / Judul Job</label>
+                  <input type="text" placeholder="Software Engineer" value={form.posisi} onChange={(e) => setForm(prev => ({ ...prev, posisi: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Nama Perusahaan</label>
-                  <input type="text" placeholder="PT. Contoh Perusahaan" value={form.nama_perusahaan} onChange={(e) => setForm(prev => ({ ...prev, nama_perusahaan: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Nama Perusahaan</label>
+                  <input type="text" placeholder="PT. Contoh Perusahaan" value={form.nama_perusahaan} onChange={(e) => setForm(prev => ({ ...prev, nama_perusahaan: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Provinsi</label>
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Provinsi</label>
                   <div className="relative">
-                    <select value={form.id_provinsi} onChange={handleProvinsiChange} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20">
+                    <select value={form.id_provinsi} onChange={handleProvinsiChange} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
                       <option value="">Pilih Provinsi</option>
                       {provinsiList.map(p => <option key={p.id} value={p.id}>{p.nama || p.nama_provinsi}</option>)}
                     </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Kota</label>
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Kota</label>
                   <div className="relative">
-                    <select value={form.id_kota} onChange={(e) => setForm(prev => ({ ...prev, id_kota: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" disabled={!form.id_provinsi}>
+                    <select value={form.id_kota} onChange={(e) => setForm(prev => ({ ...prev, id_kota: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20" disabled={!form.id_provinsi}>
                       <option value="">Pilih Kota</option>
                       {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama || k.nama_kota}</option>)}
                     </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Alamat / Jalan <span className="normal-case font-medium">(opsional)</span></label>
-                  <input type="text" placeholder="Jl. Contoh No. 123" value={form.jalan} onChange={(e) => setForm(prev => ({ ...prev, jalan: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Alamat / Jalan <span className="normal-case font-medium">(opsional)</span></label>
+                  <input type="text" placeholder="Jl. Contoh No. 123" value={form.jalan} onChange={(e) => setForm(prev => ({ ...prev, jalan: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
               </>
             )}
@@ -323,37 +323,37 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
             {statusName.includes('kuliah') && (
               <>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Nama Universitas</label>
-                  <input type="text" placeholder="Universitas Contoh" value={form.nama_universitas} onChange={(e) => setForm(prev => ({ ...prev, nama_universitas: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Nama Universitas</label>
+                  <input type="text" placeholder="Universitas Contoh" value={form.nama_universitas} onChange={(e) => setForm(prev => ({ ...prev, nama_universitas: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Jurusan Kuliah</label>
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Jurusan Kuliah</label>
                   <div className="relative">
-                    <select value={form.id_jurusanKuliah} onChange={(e) => setForm(prev => ({ ...prev, id_jurusanKuliah: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20">
+                    <select value={form.id_jurusanKuliah} onChange={(e) => setForm(prev => ({ ...prev, id_jurusanKuliah: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
                       <option value="">Pilih Jurusan</option>
                       {jurusanKuliahList.map(j => <option key={j.id} value={j.id}>{j.nama || j.nama_jurusan}</option>)}
                     </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Jenjang</label>
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Jenjang</label>
                   <div className="relative">
-                    <select value={form.jenjang} onChange={(e) => setForm(prev => ({ ...prev, jenjang: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20">
+                    <select value={form.jenjang} onChange={(e) => setForm(prev => ({ ...prev, jenjang: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
                       <option value="">Pilih Jenjang</option>
                       <option value="D3">D3</option><option value="D4">D4</option><option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option>
                     </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Jalur Masuk</label>
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Jalur Masuk</label>
                   <div className="relative">
-                    <select value={form.jalur_masuk} onChange={(e) => setForm(prev => ({ ...prev, jalur_masuk: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20">
+                    <select value={form.jalur_masuk} onChange={(e) => setForm(prev => ({ ...prev, jalur_masuk: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
                       <option value="">Pilih Jalur</option>
                       <option value="SNBP">SNBP</option><option value="SNBT">SNBT</option><option value="Mandiri">Mandiri</option><option value="Prestasi">Prestasi</option><option value="Lainnya">Lainnya</option>
                     </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
                   </div>
                 </div>
               </>
@@ -362,26 +362,26 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
             {(statusName.includes('wirausaha') || statusName.includes('usaha')) && (
               <>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Nama Usaha</label>
-                  <input type="text" placeholder="Nama Usaha Anda" value={form.nama_usaha} onChange={(e) => setForm(prev => ({ ...prev, nama_usaha: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20" />
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Nama Usaha</label>
+                  <input type="text" placeholder="Nama Usaha Anda" value={form.nama_usaha} onChange={(e) => setForm(prev => ({ ...prev, nama_usaha: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Bidang Usaha</label>
+                  <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Bidang Usaha</label>
                   <div className="relative">
-                    <select value={form.id_bidang} onChange={(e) => setForm(prev => ({ ...prev, id_bidang: e.target.value }))} className="w-full bg-white border border-[#3C5759]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20">
+                    <select value={form.id_bidang} onChange={(e) => setForm(prev => ({ ...prev, id_bidang: e.target.value }))} className="w-full bg-white border border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
                       <option value="">Pilih Bidang</option>
                       {bidangUsahaList.map(b => <option key={b.id} value={b.id}>{b.nama || b.nama_bidang}</option>)}
                     </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3C5759]/50 pointer-events-none" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
                   </div>
                 </div>
               </>
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-[#3C5759]/10">
+          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-primary/10">
             <button onClick={() => setShowForm(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer">Batal</button>
-            <button onClick={handleSave} disabled={saving || !form.id_status || !form.tahun_mulai} className="flex items-center gap-2 px-5 py-2.5 bg-[#3C5759] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50">
+            <button onClick={handleSave} disabled={saving || !form.id_status || !form.tahun_mulai} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50">
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Simpan Status
             </button>
           </div>
@@ -390,33 +390,33 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
 
       {/* Current Career - Dengan animasi slide down ketika form dibuka */}
       {careerInfo && (
-        <div className={`border-2 border-dashed border-slate-200 rounded-[1.5rem] p-6 mb-6 bg-white transition-all duration-300 ${showForm ? 'animate-in slide-in-from-top-4' : ''}`}>
+        <div className={`border-2 border-dashed border-slate-200 rounded-3xl p-6 mb-6 bg-white transition-all duration-300 ${showForm ? 'animate-in slide-in-from-top-4' : ''}`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="sm:col-span-2">
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Status Karier</label>
-              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">{career?.status || '-'}</div>
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Status Karier</label>
+              <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-primary">{career?.status || '-'}</div>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">Periode</label>
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Periode</label>
               {editingEndDate ? (
                 <div className="flex items-center gap-2">
                   <div className="flex-1 flex items-center gap-2">
-                    <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">
+                    <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-primary">
                       {career?.tahun_mulai || '-'}
                     </div>
-                    <span className="text-sm font-bold text-[#3C5759]">-</span>
+                    <span className="text-sm font-bold text-primary">-</span>
                     <input
                       type="text"
                       placeholder="2026"
                       value={endDateValue}
                       onChange={(e) => setEndDateValue(e.target.value)}
-                      className="flex-1 bg-white border-2 border-[#3C5759]/30 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759] focus:outline-none focus:ring-2 focus:ring-[#3C5759]/20"
+                      className="flex-1 bg-white border-2 border-primary/30 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   <button
                     onClick={handleUpdateEndDate}
                     disabled={saving}
-                    className="flex items-center gap-1 px-3 py-3 bg-[#3C5759] text-white rounded-xl text-xs font-bold hover:bg-[#2A3E3F] transition-all disabled:opacity-50"
+                    className="flex items-center gap-1 px-3 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-[#2A3E3F] transition-all disabled:opacity-50"
                   >
                     {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                   </button>
@@ -432,13 +432,13 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">
+                  <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-primary">
                     {career?.tahun_mulai || '-'} - {career?.tahun_selesai || 'Sekarang'}
                   </div>
                   {!career?.tahun_selesai && (
                     <button
                       onClick={() => setEditingEndDate(true)}
-                      className="flex items-center gap-1 px-3 py-3 bg-slate-100 text-[#3C5759] rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
+                      className="flex items-center gap-1 px-3 py-3 bg-slate-100 text-primary rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
                       title="Edit tahun selesai"
                     >
                       <Edit2 size={14} />
@@ -451,10 +451,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
             {/* Tampilkan field sesuai dengan jenis karir */}
             {careerInfo.fields.map((field, index) => (
               <div key={index} className={field.label === 'Alamat' || field.label === 'Program Studi / Jurusan' ? 'sm:col-span-2' : ''}>
-                <label className="block text-[10px] font-black text-[#3C5759]/40 uppercase tracking-widest mb-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
                   {field.label}
                 </label>
-                <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-[#3C5759]">
+                <div className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-primary">
                   {field.value}
                 </div>
               </div>
@@ -464,7 +464,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
       )}
 
       {!careerInfo && !showForm && (
-        <div className="border-2 border-dashed border-slate-200 rounded-[1.5rem] p-8 mb-6 bg-white text-center">
+        <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 mb-6 bg-white text-center">
           <Briefcase size={32} className="text-slate-300 mx-auto mb-3" />
           <p className="text-sm font-medium text-slate-400">Belum ada status karier. Klik "Tambahkan status baru" untuk memulai.</p>
         </div>
@@ -533,7 +533,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               </button>
             </div>
           )}
-          <h3 className="text-sm font-black text-[#3C5759]/60 uppercase tracking-widest mb-4">Riwayat Status</h3>
+          <h3 className="text-sm font-black text-primary/60 uppercase tracking-widest mb-4">Riwayat Status</h3>
           <div className="space-y-4">
             {riwayat.map((item) => {
               let title = item.status?.nama || '-';
@@ -563,20 +563,20 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               const periode = `${item.tahun_mulai || '-'} - ${item.tahun_selesai || 'Sekarang'}`;
 
               return (
-                <div key={item.id} className="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div key={item.id} className="bg-slate-50 border border-slate-100 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex-1">
-                    <h3 className="text-[15px] font-black text-[#3C5759] mb-2">{title}</h3>
+                    <h3 className="text-[15px] font-black text-primary mb-2">{title}</h3>
                     {details.length > 0 && (
                       <div className="space-y-1">
                         {details.map((detail, idx) => (
-                          <p key={idx} className="text-sm font-medium text-[#3C5759]/70">
-                            <span className="font-black text-[#3C5759]/50">{detail.label}:</span> {detail.value}
+                          <p key={idx} className="text-sm font-medium text-primary/70">
+                            <span className="font-black text-primary/50">{detail.label}:</span> {detail.value}
                           </p>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="bg-white border border-slate-200 px-4 py-1.5 rounded-full text-xs font-black text-[#3C5759]/60 shrink-0 shadow-sm self-start sm:self-center">
+                  <div className="bg-white border border-slate-200 px-4 py-1.5 rounded-full text-xs font-black text-primary/60 shrink-0 shadow-sm self-start sm:self-center">
                     {periode}
                   </div>
                 </div>

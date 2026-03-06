@@ -44,7 +44,7 @@ const JobDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-[#3C5759]" />
+        <Loader2 size={32} className="animate-spin text-primary" />
       </div>
     );
   }
@@ -54,7 +54,7 @@ const JobDetail = () => {
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-4">
         <AlertCircle size={48} className="text-gray-400" />
         <p className="text-gray-500 font-medium">{error || 'Lowongan tidak ditemukan'}</p>
-        <button onClick={() => navigate(-1)} className="text-[#3C5759] font-semibold hover:underline">
+        <button onClick={() => navigate(-1)} className="text-primary font-semibold hover:underline">
           Kembali
         </button>
       </div>
@@ -111,7 +111,7 @@ const JobDetail = () => {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
 
               {/* Gambar Full */}
-              <div className="w-full h-56 md:h-[400px] bg-gray-50 flex items-center justify-center relative p-2">
+              <div className="w-full h-56 md:h-100 bg-gray-50 flex items-center justify-center relative p-2">
                 <img
                   src={fotoUrl}
                   alt="Lowongan"
@@ -125,10 +125,10 @@ const JobDetail = () => {
                 <div className="flex flex-col md:flex-row gap-4 justify-between items-start">
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-[#3C5759]/10 rounded-lg flex items-center justify-center">
-                             <Building2 size={16} className="text-[#3C5759]" />
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                             <Building2 size={16} className="text-primary" />
                         </div>
-                        <span className="text-[#3C5759] font-bold text-sm">
+                        <span className="text-primary font-bold text-sm">
                             {job.perusahaan?.nama || '-'}
                         </span>
                     </div>
@@ -159,7 +159,7 @@ const JobDetail = () => {
             {/* Deskripsi */}
             <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
-                <div className="p-1.5 bg-[#E8F0F0] rounded-lg text-[#3C5759]">
+                <div className="p-1.5 bg-[#E8F0F0] rounded-lg text-primary">
                   <FileText size={20} />
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">Deskripsi Pekerjaan</h2>
@@ -176,7 +176,7 @@ const JobDetail = () => {
 
               {/* Card Ringkasan */}
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-5 hover:shadow-md transition-shadow">
-                <h3 className="font-black text-[#3C5759] uppercase tracking-widest text-[11px] border-b border-gray-100 pb-3">
+                <h3 className="font-black text-primary uppercase tracking-widest text-[11px] border-b border-gray-100 pb-3">
                   Detail Ringkasan
                 </h3>
 
@@ -190,7 +190,7 @@ const JobDetail = () => {
                     { icon: Timer, label: "Jam Berakhir", value: job.jam_berakhir || '-' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-3 text-gray-600 group/item">
-                      <div className="p-2 bg-gray-50 rounded-lg text-[#3C5759] group-hover/item:bg-[#3C5759] group-hover/item:text-white transition-colors shrink-0 mt-0.5">
+                      <div className="p-2 bg-gray-50 rounded-lg text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors shrink-0 mt-0.5">
                         <item.icon size={16} />
                       </div>
                       <div>
@@ -205,14 +205,14 @@ const JobDetail = () => {
                 {job.skills && job.skills.length > 0 && (
                   <div className="pt-3 border-t border-gray-100">
                     <div className="flex items-start gap-3 text-gray-600">
-                      <div className="p-2 bg-gray-50 rounded-lg text-[#3C5759] shrink-0 mt-0.5">
+                      <div className="p-2 bg-gray-50 rounded-lg text-primary shrink-0 mt-0.5">
                         <Tag size={16} />
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">Skills</p>
                         <div className="flex flex-wrap gap-1.5">
                           {job.skills.map((skill) => (
-                            <span key={skill.id} className="px-2.5 py-1 bg-[#E8F0F0] text-[#3C5759] text-[11px] font-bold rounded-lg">
+                            <span key={skill.id} className="px-2.5 py-1 bg-[#E8F0F0] text-primary text-[11px] font-bold rounded-lg">
                               {skill.nama}
                             </span>
                           ))}
@@ -224,7 +224,7 @@ const JobDetail = () => {
               </div>
 
               {/* Tips Card */}
-              <div className="bg-[#3C5759] rounded-2xl p-5 text-white shadow-lg shadow-[#3C5759]/20 relative overflow-hidden transition-transform hover:scale-[1.01]">
+              <div className="bg-primary rounded-2xl p-5 text-white shadow-lg shadow-primary/20 relative overflow-hidden transition-transform hover:scale-[1.01]">
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">
                       <AlertCircle size={18} className="text-white/70" />

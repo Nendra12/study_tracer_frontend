@@ -4,7 +4,7 @@ export default function AlumniSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-        <div key={i} className="bg-white rounded-3xl overflow-hidden border border-[#3C5759]/5 shadow-md animate-pulse">
+        <div key={i} className="bg-white rounded-3xl overflow-hidden border border-primary/5 shadow-md animate-pulse">
           <div className="h-56 bg-slate-200" />
           <div className="p-6 pt-4 space-y-4">
             <div className="flex flex-col items-center gap-2">

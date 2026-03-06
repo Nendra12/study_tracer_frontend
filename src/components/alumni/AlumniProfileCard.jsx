@@ -52,13 +52,13 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
           {/* BAGIAN 2: Penjelasan (Teks) */}
           <div className="flex-1 flex flex-col justify-center">
             <div className="mb-2">
-              <h3 className="font-bold text-[#3C5759] text-sm line-clamp-1">{data.name}</h3>
+              <h3 className="font-bold text-primary text-sm line-clamp-1">{data.name}</h3>
               <p className="text-slate-400 text-[11px]">Angkatan {data.angkatan}</p>
             </div>
             
             <div className="space-y-1.5">
               <div className="flex items-start gap-1.5 text-slate-600">
-                <GraduationCap size={14} className="text-[#3C5759] shrink-0 mt-0.5" />
+                <GraduationCap size={14} className="text-primary shrink-0 mt-0.5" />
                 <span className="text-[11px] font-semibold line-clamp-2 leading-tight">{data.role || '-'}</span>
               </div>
               <div className="flex items-start gap-1.5 text-slate-500">
@@ -71,11 +71,11 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
 
         {/* BAGIAN 3: Footer (Tag Satu Warna) */}
         <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between">
-          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-[#3C5759]/10 text-[#3C5759]">
+          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-primary/10 text-primary">
             {data.tags || '-'}
           </span>
           {!locked && (
-            <button className="flex items-center gap-1 text-[12px] font-bold text-[#3C5759] hover:underline transition-all cursor-pointer">
+            <button className="flex items-center gap-1 text-[12px] font-bold text-primary hover:underline transition-all cursor-pointer">
               Lihat Profil <ArrowRight size={14} />
             </button>
           )}

@@ -110,7 +110,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       )}
       
       {/* Checkbox "Masih Berlangsung" dengan warna kustom #3C5759 */}
-      <label className="flex items-center gap-2 pt-1.5 text-[11px] text-secondary cursor-pointer hover:text-[#3C5759] transition-colors w-fit">
+      <label className="flex items-center gap-2 pt-1.5 text-[11px] text-secondary cursor-pointer hover:text-primary transition-colors w-fit">
         <input
           type="checkbox"
           checked={isSaatIni}
@@ -118,7 +118,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             setIsSaatIni(e.target.checked);
             if (e.target.checked) setTahunSelesai(''); // Reset tahun jika dicentang
           }}
-          className="w-4 h-4 rounded border-gray-300 text-[#3C5759] focus:ring-[#3C5759] accent-[#3C5759] cursor-pointer transition-all"
+          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
         />
         <span className="font-bold">Masih berlangsung (Saat ini)</span>
       </label>
@@ -146,8 +146,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           >
             {/* CENTANG KARTU DENGAN WARNA #3C5759 */}
             {selectedStatus === option.id && (
-              <div className="absolute top-2 right-2 text-[#3C5759]">
-                <CheckCircle size={16} fill="currentColor" className="text-white fill-[#3C5759]" />
+              <div className="absolute top-2 right-2 text-primary">
+                <CheckCircle size={16} fill="currentColor" className="text-white fill-primary" />
               </div>
             )}
             

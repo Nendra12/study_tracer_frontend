@@ -12,7 +12,7 @@ export default function AlumniDetailSkeleton() {
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 relative z-20 -mt-32 pb-20">
+      <main className="flex-1 w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-12 relative z-20 -mt-32 pb-20">
         
         {/* Tombol Kembali Skeleton */}
         <div className="flex items-center gap-2 mb-4">
@@ -58,7 +58,7 @@ export default function AlumniDetailSkeleton() {
           <div className="lg:col-span-4 space-y-8">
             
             {/* Status Karier Skeleton */}
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
                 <div className="h-3 w-32 bg-slate-200 rounded-full animate-pulse" />
@@ -74,7 +74,7 @@ export default function AlumniDetailSkeleton() {
             </div>
 
             {/* Info Akademik Skeleton */}
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
                 <div className="h-3 w-36 bg-slate-200 rounded-full animate-pulse" />
@@ -90,7 +90,7 @@ export default function AlumniDetailSkeleton() {
             </div>
             
             {/* Skills Skeleton */}
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
                <div className="flex items-center gap-3 mb-6">
                 <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
                 <div className="h-3 w-24 bg-slate-200 rounded-full animate-pulse" />
@@ -119,7 +119,7 @@ export default function AlumniDetailSkeleton() {
               <div className="relative pl-8 border-l-2 border-slate-100 space-y-12">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="relative">
-                    <div className="absolute -left-[41px] top-0 w-5 h-5 rounded-full bg-slate-200 border-4 border-white animate-pulse" />
+                    <div className="absolute -left-10.25 top-0 w-5 h-5 rounded-full bg-slate-200 border-4 border-white animate-pulse" />
                     <div className="space-y-3">
                       <div className="h-2.5 w-24 bg-slate-200 rounded-full animate-pulse" />
                       <div className="h-5 w-64 bg-slate-300 rounded-full animate-pulse mt-1" />

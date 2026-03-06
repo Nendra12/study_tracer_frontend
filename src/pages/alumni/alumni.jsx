@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Briefcase, 
+import {
+  Search,
+  Briefcase,
   Building2,
   ArrowRight,
   X,
@@ -33,9 +33,9 @@ const getStatusIcon = (status) => {
   switch (status) {
     case 'Kuliah': return <GraduationCap size={16} className="text-primary/50 shrink-0 mt-0.5" />;
     case 'Wirausaha': return <Rocket size={16} className="text-primary/50 shrink-0 mt-0.5" />;
-    case 'Mencari Pekerjaan': 
+    case 'Mencari Pekerjaan':
     case 'Mencari': return <LineChart size={16} className="text-primary/50 shrink-0 mt-0.5" />;
-    case 'Bekerja': 
+    case 'Bekerja':
     default: return <Briefcase size={16} className="text-primary/50 shrink-0 mt-0.5" />;
   }
 };
@@ -155,24 +155,22 @@ export default function Alumni() {
   const univOptions = ['Semua Universitas', ...filterOptions.universitas];
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-      <Navbar user={navUser} />
-
+    <div className='w-full'>
       {/* --- HEADER & FILTER SECTION --- */}
-      <div className="relative pt-24 pb-8 w-full z-40">
-        
+      <section className="relative pt-24 pb-8 w-full z-40">
+
         {/* GAMBAR BACKGROUND */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/background3.jpeg" 
-            alt="Background" 
-            className="w-full h-full object-cover" 
+          <img
+            src="/background3.jpeg"
+            alt="Background"
+            className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-white/50 md:bg-gradient-to-r md:from-white/80 md:via-white/60 md:to-white/20"></div>
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#f8f9fa]"></div>
         </div>
 
-        <div className="relative z-10 max-w-360 mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="relative z-10 mt-5 max-w-7xl mx-auto px-6 lg:px-12">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight mb-2 uppercase">Direktori Alumni</h1>
             <p className="text-primary/90 text-sm md:text-base max-w-2xl font-semibold drop-shadow-sm">
@@ -184,9 +182,9 @@ export default function Alumni() {
             {/* Kolom Pencarian */}
             <div className="relative flex-1 group shadow-sm border border-primary/10 rounded-2xl bg-white">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 group-focus-within:text-primary transition-colors" size={20} />
-              <input 
-                type="text" 
-                placeholder="cari berdasarkan nama, perusahaan, atau peran..." 
+              <input
+                type="text"
+                placeholder="cari berdasarkan nama, perusahaan, atau peran..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 bg-transparent rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all h-[52px] text-primary placeholder:text-primary/40"
@@ -207,11 +205,11 @@ export default function Alumni() {
             </div>
           </form>
         </div>
-      </div>
+      </section>
 
       {/* --- MAIN CONTENT (CARD AREA) --- */}
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-4 relative z-20 flex flex-col pb-12">
-        
+      <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12">
+
         {loading ? (
           <AlumniSkeleton />
         ) : error ? (
@@ -240,14 +238,14 @@ export default function Alumni() {
               {alumniData.map((alumni) => {
                 const imageSrc = alumni.foto ? getImageUrl(alumni.foto) : null;
                 return (
-                  <motion.div 
+                  <motion.div
                     whileHover={{ y: -8 }}
-                    key={alumni.id} 
-                    onClick={() => navigate(`/alumni/${alumni.id}`, { state: { alumni } })}
+                    key={alumni.id}
+                    onClick={() => navigate(`/alumni/daftar-alumni/${alumni.id}`, { state: { alumni } })}
                     className="bg-white rounded-3xl flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
                   >
                     {/* AREA GAMBAR */}
-                    <div 
+                    <div
                       className="h-56 w-full bg-white relative overflow-hidden cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -263,14 +261,14 @@ export default function Alumni() {
                       )}
 
                       {/* Efek Gelombang Bawah */}
-                      <svg 
-                        className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-[1px]" 
-                        viewBox="0 0 1440 100" 
-                        preserveAspectRatio="none" 
+                      <svg
+                        className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-[1px]"
+                        viewBox="0 0 1440 100"
+                        preserveAspectRatio="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path 
-                          fill="#ffffff" 
+                        <path
+                          fill="#ffffff"
                           d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"
                         ></path>
                       </svg>
@@ -301,8 +299,8 @@ export default function Alumni() {
 
                       {/* Tombol Lihat Profil */}
                       <div className="mt-auto pt-4 border-t border-primary/10 flex items-center justify-end">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/${alumni.id}`, { state: { alumni } }); }}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/daftar-alumni/${alumni.id}`, { state: { alumni } }); }}
                           className="flex items-center gap-1.5 text-[13px] font-bold text-primary hover:text-[#2A3E3F] hover:underline transition-all cursor-pointer"
                         >
                           Lihat Profil <ArrowRight size={16} />
@@ -316,7 +314,7 @@ export default function Alumni() {
 
             {/* --- PAGINATION --- */}
             <div className="mt-12 mb-4 bg-white rounded-xl shadow-sm border border-primary/10 overflow-hidden">
-              <Pagination 
+              <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={(page) => {
@@ -328,36 +326,34 @@ export default function Alumni() {
           </>
         )}
       </main>
-      
-      <Footer />
 
       {/* --- MODAL POPUP PREVIEW GAMBAR --- */}
       <AnimatePresence>
         {selectedImage && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setSelectedImage(null)} 
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-pointer" 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImage(null)}
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-pointer"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.95, y: 10 }} 
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="relative w-max max-w-[90vw] md:max-w-[70vw] lg:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             >
               <div className="relative overflow-hidden flex items-center justify-center bg-slate-100">
-                <img 
-                  src={selectedImage} 
-                  alt="Pratinjau Foto Alumni" 
+                <img
+                  src={selectedImage}
+                  alt="Pratinjau Foto Alumni"
                   className="max-w-full max-h-[80vh] object-contain"
                   onError={(e) => { e.target.src = "https://placehold.co/600x600?text=Photo+Not+Found"; }}
                 />
-                <button 
-                  onClick={() => setSelectedImage(null)} 
+                <button
+                  onClick={() => setSelectedImage(null)}
                   className="absolute top-4 right-4 bg-white/90 hover:bg-white text-slate-700 p-2 rounded-full shadow-lg transition-all cursor-pointer backdrop-blur-md"
                 >
                   <X size={20} />
