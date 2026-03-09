@@ -8,6 +8,7 @@ import LandingPage from "../pages/LandingPage";
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
+const Landing = lazy(() => import("../pages/landing"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
 const JobsManagement = lazy(() => import("../pages/admin/JobsManagement"));
 const JobDetail = lazy(() => import("../pages/admin/JobDetail"));
