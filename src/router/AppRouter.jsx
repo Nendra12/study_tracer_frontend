@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ProtectedRoute } from "../utilitis/ProtectedRoute";
 import Loader from "../components/Loaders";
+import LandingPage from "../pages/LandingPage";
 
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
@@ -48,7 +49,7 @@ export default function AppRouter() {
 
   return (
     <Routes>
-      <Route path="/" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Landing />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Login />} />
       <Route path="/reset-password" element={<LupaPass />} />
       <Route path="/logout" element={<Logout />} />

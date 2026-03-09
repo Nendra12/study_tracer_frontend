@@ -29,6 +29,8 @@ import morning from '../../assets/morning.png';
 import afternoon from '../../assets/afternoon.png';
 import night from '../../assets/moon.png';
 
+import { useOutletContext } from "react-router-dom";
+
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12)
@@ -53,6 +55,8 @@ function getGreeting() {
 }
 
 export default function Beranda() {
+  const { selesai, setSelesai } = useOutletContext();
+
   const greeting = getGreeting();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
@@ -77,6 +81,7 @@ export default function Beranda() {
         }
       } finally {
         if (!cancelled) setLoading(false);
+        setSelesai(false)
       }
     }
     fetchBeranda();
