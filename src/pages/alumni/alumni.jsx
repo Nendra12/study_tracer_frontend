@@ -1,47 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Search,
-  Briefcase,
-  Building2,
-  ArrowRight,
-  X,
-  GraduationCap,
-  Rocket,
-  LineChart,
-  AlertCircle,
-  Users
-} from 'lucide-react';
+import { Search, X, AlertCircle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Navbar from '../../components/alumni/Navbar';
-import Footer from '../../components/alumni/Footer';
+
+// Komponen
 import Pagination from '../../components/admin/Pagination';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
-import { alumniApi } from '../../api/alumni';
-import { STORAGE_BASE_URL } from '../../api/axios';
-
-// --- Helper to build image URL ---
-function getImageUrl(path) {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  return `${STORAGE_BASE_URL}/${path}`;
-}
-
-// Helper untuk ikon status
-const getStatusIcon = (status) => {
-  switch (status) {
-    case 'Kuliah': return <GraduationCap size={16} className="text-primary/50 shrink-0 mt-0.5" />;
-    case 'Wirausaha': return <Rocket size={16} className="text-primary/50 shrink-0 mt-0.5" />;
-    case 'Mencari Pekerjaan':
-    case 'Mencari': return <LineChart size={16} className="text-primary/50 shrink-0 mt-0.5" />;
-    case 'Bekerja':
-    default: return <Briefcase size={16} className="text-primary/50 shrink-0 mt-0.5" />;
-  }
-};
-
-// Skeleton import
+import AlumniProfileCard from '../../components/alumni/AlumniProfile';
 import { AlumniSkeleton } from '../../components/alumni/skeleton';
+
+// API
+import { alumniApi } from '../../api/alumni';
 
 export default function Alumni() {
   const navigate = useNavigate();
@@ -72,14 +42,6 @@ export default function Alumni() {
   // Image preview modal
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Navbar user
-  const namaAlumni = authUser?.alumni?.nama_alumni || 'Alumni';
-  const navUser = {
-    nama_alumni: namaAlumni,
-    foto: authUser?.alumni?.foto,
-    can_access_all: true,
-  };
-
   // Fetch filter options on mount
   useEffect(() => {
     async function fetchFilters() {
@@ -106,9 +68,9 @@ export default function Alumni() {
 
       const params = { page, per_page: 8 };
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      if (selectedTahun) params.tahun = selectedTahun;
-      if (selectedStatus) params.status = selectedStatus;
-      if (selectedUniv) params.universitas = selectedUniv;
+      if (selectedTahun && selectedTahun !== 'Semua Tahun') params.tahun = selectedTahun;
+      if (selectedStatus && selectedStatus !== 'Semua Status') params.status = selectedStatus;
+      if (selectedUniv && selectedUniv !== 'Semua Universitas') params.universitas = selectedUniv;
 
       const res = await alumniApi.getAlumniDirectory(params);
       const responseData = res.data.data;
@@ -155,17 +117,11 @@ export default function Alumni() {
   const univOptions = ['Semua Universitas', ...filterOptions.universitas];
 
   return (
-    <div className='w-full'>
+    <div className='w-full min-h-screen bg-[#f8f9fa]'>
       {/* --- HEADER & FILTER SECTION --- */}
       <section className="relative pt-24 pb-8 w-full z-40">
-
-        {/* GAMBAR BACKGROUND */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="/background3.jpeg"
-            alt="Background"
-            className="w-full h-full object-cover"
-          />
+          <img src="/background3.jpeg" alt="Background" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-white/50 md:bg-gradient-to-r md:from-white/80 md:via-white/60 md:to-white/20"></div>
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#f8f9fa]"></div>
         </div>
@@ -193,13 +149,13 @@ export default function Alumni() {
 
             {/* Dropdown Filters */}
             <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-              <div className="w-44  border-primary/10">
+              <div className="w-[calc(50%-6px)] sm:w-40 xl:w-44 border-primary/10 relative z-[60]">
                 <SmoothDropdown options={tahunOptions} value={selectedTahun} onSelect={(val) => setSelectedTahun(val === 'Semua Tahun' ? '' : val)} placeholder="Tahun Kelulusan" />
               </div>
-              <div className="w-48  border-primary/10">
+              <div className="w-[calc(50%-6px)] sm:w-40 xl:w-48 border-primary/10 relative z-50">
                 <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
               </div>
-              <div className="w-52  border-primary/10">
+              <div className="w-full sm:w-48 xl:w-52 border-primary/10 relative z-40">
                 <SmoothDropdown options={univOptions} value={selectedUniv} onSelect={(val) => setSelectedUniv(val === 'Semua Universitas' ? '' : val)} placeholder="Universitas" isSearchable={true} />
               </div>
             </div>
@@ -209,7 +165,6 @@ export default function Alumni() {
 
       {/* --- MAIN CONTENT (CARD AREA) --- */}
       <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12">
-
         {loading ? (
           <AlumniSkeleton />
         ) : error ? (
@@ -218,7 +173,7 @@ export default function Alumni() {
               <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
               <p className="text-slate-500 text-sm mb-4">{error}</p>
-              <button onClick={() => fetchAlumni(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer">
+              <button onClick={() => fetchAlumni(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2A3E3F] transition-colors">
                 Coba Lagi
               </button>
             </div>
@@ -235,94 +190,29 @@ export default function Alumni() {
           <>
             {/* ALUMNI CARDS GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {alumniData.map((alumni) => {
-                const imageSrc = alumni.foto ? getImageUrl(alumni.foto) : null;
-                return (
-                  <motion.div
-                    whileHover={{ y: -8 }}
-                    key={alumni.id}
-                    onClick={() => navigate(`/alumni/daftar-alumni/${alumni.id}`, { state: { alumni } })}
-                    className="bg-white rounded-3xl flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
-                  >
-                    {/* AREA GAMBAR */}
-                    <div
-                      className="h-56 w-full bg-white relative overflow-hidden cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (imageSrc) setSelectedImage(imageSrc);
-                      }}
-                    >
-                      {imageSrc ? (
-                        <img src={imageSrc} alt={alumni.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-primary/20 bg-primary/5">
-                          {alumni.name?.charAt(0) || 'A'}
-                        </div>
-                      )}
-
-                      {/* Efek Gelombang Bawah */}
-                      <svg
-                        className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-[1px]"
-                        viewBox="0 0 1440 100"
-                        preserveAspectRatio="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fill="#ffffff"
-                          d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"
-                        ></path>
-                      </svg>
-                    </div>
-
-                    {/* AREA KONTEN BAWAH */}
-                    <div className="p-6 pt-1 flex-1 flex flex-col relative z-20 bg-white">
-                      <div className="mb-5 text-center">
-                        <h3 className="font-black text-primary text-xl leading-tight line-clamp-1">{alumni.name}</h3>
-                        <p className="text-[11px] font-bold text-primary/40 mt-1 uppercase tracking-widest">Angkatan {alumni.angkatan}</p>
-                      </div>
-
-                      {/* Penjelasan Detail */}
-                      <div className="space-y-3 mb-6 px-1">
-                        <div className="flex items-start gap-3 text-primary/80">
-                          <Briefcase size={16} className="text-primary/50 shrink-0 mt-0.5" />
-                          <p className="text-sm font-semibold line-clamp-2">{alumni.role || '-'}</p>
-                        </div>
-                        <div className="flex items-start gap-3 text-primary/80">
-                          <Building2 size={16} className="text-primary/50 shrink-0 mt-0.5" />
-                          <p className="text-sm font-semibold line-clamp-2">{alumni.company || '-'}</p>
-                        </div>
-                        <div className="flex items-start gap-3 text-primary/80">
-                          {getStatusIcon(alumni.status)}
-                          <p className="text-sm font-semibold line-clamp-2">{alumni.status || '-'}</p>
-                        </div>
-                      </div>
-
-                      {/* Tombol Lihat Profil */}
-                      <div className="mt-auto pt-4 border-t border-primary/10 flex items-center justify-end">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/daftar-alumni/${alumni.id}`, { state: { alumni } }); }}
-                          className="flex items-center gap-1.5 text-[13px] font-bold text-primary hover:text-[#2A3E3F] hover:underline transition-all cursor-pointer"
-                        >
-                          Lihat Profil <ArrowRight size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {alumniData.map((alumni) => (
+                <AlumniProfileCard 
+                  key={alumni.id} 
+                  alumni={alumni} 
+                  onClick={() => navigate(`/alumni/daftar-alumni/${alumni.id}`, { state: { alumni } })}
+                  onImageClick={(src) => setSelectedImage(src)}
+                />
+              ))}
             </div>
 
             {/* --- PAGINATION --- */}
-            <div className="mt-12 mb-4 bg-white rounded-xl shadow-sm border border-primary/10 overflow-hidden">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={(page) => {
-                  setCurrentPage(page);
-                  fetchAlumni(page);
-                }}
-              />
-            </div>
+            {totalPages > 1 && (
+              <div className="mt-12 mb-4 bg-white rounded-xl shadow-sm border border-primary/10 overflow-hidden">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => {
+                    setCurrentPage(page);
+                    fetchAlumni(page);
+                  }}
+                />
+              </div>
+            )}
           </>
         )}
       </main>

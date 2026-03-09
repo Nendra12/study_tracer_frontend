@@ -1,13 +1,13 @@
 import axios from 'axios';
-// const API_BASE_URL = import.meta.env.VITE_API_URL || "https://0e0d-114-5-241-163.ngrok-free.app/api";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://0e0d-114-5-241-163.ngrok-free.app/api";
+// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export const STORAGE_BASE_URL = API_BASE_URL.replace('/api', '') + '/storage';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Accept': 'application/json',
+    'Accept': 'application/json', 
   },
   withCredentials: true,
 });
