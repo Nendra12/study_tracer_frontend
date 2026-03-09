@@ -10,7 +10,9 @@ export default function AlumniLayout() {
   const userData = JSON.parse(localStorage.getItem('user'))
   const [berandaData, setBerandaData] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  const [selesai, setSelesai] = useState(true)
 
   useEffect(() => {
     let cancelled = false;
@@ -42,21 +44,20 @@ export default function AlumniLayout() {
       can_access_all: canAccessAll,
   };
 
-  // if (loading) {
-  //   return (
-  //     <Loader />
-  //   )
-  // }
-
   return (
     // Di file Layout utama Anda
     <div className="min-h-screen flex flex-col bg-slate-50">
+      {/* {selesai && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+          <Loader />
+        </div>
+      )} */}
 
       <Navbar user={user} />
 
       {/* MAIN HARUS FULL WIDTH AGAR HERO BISA MENTOK KE PINGGIR */}
       <main className="flex-grow">
-         <Outlet /> {/* Beranda akan muncul di sini */}
+         <Outlet context={{ selesai, setSelesai }}/> {/* Beranda akan muncul di sini */}
       </main>
 
       <Footer />

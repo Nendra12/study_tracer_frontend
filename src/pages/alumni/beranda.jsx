@@ -29,6 +29,8 @@ import afternoon from '../../assets/afternoon.png';
 import night from '../../assets/moon.png';
 import Loader from "../../components/Loaders";
 
+import { useOutletContext } from "react-router-dom";
+
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12)
@@ -59,6 +61,8 @@ function getImageUrl(path) {
 }
 
 export default function Beranda() {
+  const { selesai, setSelesai } = useOutletContext();
+
   const greeting = getGreeting();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
@@ -83,6 +87,7 @@ export default function Beranda() {
         }
       } finally {
         if (!cancelled) setLoading(false);
+        setSelesai(false)
       }
     }
     fetchBeranda();
@@ -161,8 +166,8 @@ export default function Beranda() {
         <div className="relative z-20 -mt-16 pb-24">
           {/* LOGIKA RENDERING YANG BERSIH */}
           {loading ? (
-            // <BerandaSkeleton canAccsess={canAccessAll} />
-            <></>
+            <BerandaSkeleton canAccsess={canAccessAll} />
+            // <></>
             // <Loader />
           ) : error && !berandaData ? (
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
