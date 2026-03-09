@@ -45,6 +45,8 @@ export default function Register() {
     pekerjaan: null,
     universitas: null,
     wirausaha: null,
+    // CAPTCHA
+    captcha_token: '',
   });
 
   const updateFormData = (fields) => {
@@ -94,6 +96,11 @@ export default function Register() {
       fd.append('email', formData.email);
       fd.append('password', formData.password);
       fd.append('password_confirmation', formData.password_confirmation);
+
+      // CAPTCHA token
+      if (formData.captcha_token) {
+        fd.append('captcha_token', formData.captcha_token);
+      }
 
       // Step 2
       fd.append('nama_alumni', formData.nama_alumni);

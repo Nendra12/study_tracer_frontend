@@ -396,10 +396,14 @@ export default function LihatJawaban() {
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
                                 <img
-                                  src={alumni.alumni.foto ? `${STORAGE_BASE_URL}/${alumni.alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
+                                  src={alumni.alumni.foto ? `${STORAGE_BASE_URL}/${alumni.alumni.foto_thumbnail || alumni.alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
                                   alt={alumni.alumni.nama}
                                   className="w-full h-full object-cover"
-                                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150' }}
+                                  onError={(e) => { 
+                                    const original = alumni.alumni.foto ? `${STORAGE_BASE_URL}/${alumni.alumni.foto}` : null;
+                                    if (original && e.target.src !== original) e.target.src = original;
+                                    else { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }
+                                  }}
                                 />
                               </div>
                               <div>

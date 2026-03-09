@@ -17,7 +17,8 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
   if (!data) return null;
 
   const defaultAvatar = `https://ui-avatars.com/api/?name=${data.name ? data.name.replace(' ', '+') : 'A'}&background=3C5759&color=fff&size=150`;
-  const imageSrc = data.foto ? getImageUrl(data.foto) : defaultAvatar;
+  const originalSrc = data.foto ? getImageUrl(data.foto) : defaultAvatar;
+  const imageSrc = data.foto_thumbnail ? getImageUrl(data.foto_thumbnail) : originalSrc;
 
   return (
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
@@ -39,13 +40,14 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
             onClick={(e) => {
               if (locked || !onImageClick) return;
               e.stopPropagation(); // Mencegah pindah halaman saat gambar diklik
-              onImageClick(imageSrc);
+              onImageClick(originalSrc);
             }}
           >
             <img
               src={imageSrc}
               alt={data.name}
               className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-300 group-hover:scale-110'}`}
+              onError={(e) => { if (e.target.src !== originalSrc) e.target.src = originalSrc; }}
             />
           </div>
 

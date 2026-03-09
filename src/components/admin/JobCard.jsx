@@ -38,9 +38,12 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
     }
   };
 
-  const fotoUrl = job.foto
+  const fotoOriginal = job.foto
     ? (job.foto.startsWith('http') ? job.foto : `${STORAGE_BASE_URL}/${job.foto}`)
     : banner;
+  const fotoUrl = job.foto_thumbnail
+    ? (job.foto_thumbnail.startsWith('http') ? job.foto_thumbnail : `${STORAGE_BASE_URL}/${job.foto_thumbnail}`)
+    : fotoOriginal;
 
   let durasi = ''
   // console.log(job.id, " ; ", job.jam_berakhir)
@@ -76,7 +79,7 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
     >
       <div className="flex flex-col sm:flex-row gap-5 flex-1 min-w-0 w-full">
         <div className="w-full sm:w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 border border-gray-100 relative group-hover/card:shadow-inner transition-all">
-          <img src={fotoUrl} alt={job.judul} className="w-full h-full object-cover opacity-90 group-hover/card:scale-105 transition-transform duration-500" onError={(e) => { e.target.src = banner; }} />
+          <img src={fotoUrl} alt={job.judul} className="w-full h-full object-cover opacity-90 group-hover/card:scale-105 transition-transform duration-500" onError={(e) => { if (e.target.src !== fotoOriginal) e.target.src = fotoOriginal; else e.target.src = banner; }} />
         </div>
 
         <div className="space-y-2 flex-1 min-w-0">

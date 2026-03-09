@@ -41,6 +41,7 @@ export default function AlumniLayout() {
       id_user: userData ? userData.id : '',
       nama_alumni: namaAlumni,
       foto: profile?.foto,
+      foto_thumbnail: profile?.foto_thumbnail,
       can_access_all: canAccessAll,
   };
 

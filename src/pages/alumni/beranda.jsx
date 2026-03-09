@@ -280,6 +280,7 @@ export default function Beranda() {
           {/* LOGIKA RENDERING YANG BERSIH */}
           {loading ? (
             <BerandaSkeleton canAccsess={canAccessAll} />
+            // <Loader />
           ) : error && !berandaData ? (
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
               <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-slate-100">
