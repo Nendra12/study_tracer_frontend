@@ -71,12 +71,17 @@ const AlumniDetailModal = ({
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
               {detailAlumni.foto ? (
                 <img
-                  src={buildFotoUrl(detailAlumni.foto, STORAGE_BASE_URL)}
+                  src={buildFotoUrl(detailAlumni.foto_thumbnail || detailAlumni.foto, STORAGE_BASE_URL)}
                   alt={detailAlumni.nama}
                   className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
                   onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
+                    const originalUrl = buildFotoUrl(detailAlumni.foto, STORAGE_BASE_URL);
+                    if (originalUrl && e.target.src !== originalUrl) {
+                      e.target.src = originalUrl;
+                    } else {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }
                   }}
                 />
               ) : null}

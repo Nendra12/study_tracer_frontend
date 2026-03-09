@@ -40,7 +40,7 @@ export default function DateOfBirthInput({ onChange, isRequired, value }) {
       </div>
 
       {/* Tambahkan sedikit CSS Global untuk merapikan ukuran dropdown jika perlu */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .react-datepicker-wrapper {
           display: block;
           width: 100%;
@@ -50,10 +50,10 @@ export default function DateOfBirthInput({ onChange, isRequired, value }) {
           border-bottom: 1px solid #e2e8f0;
         }
         .react-datepicker__day--selected {
-          background-color: #3b82f6 !important; /* Sesuaikan dengan warna primary kamu */
+          background-color: #3b82f6 !important;
           border-radius: 0.75rem;
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }

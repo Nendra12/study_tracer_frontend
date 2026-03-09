@@ -96,7 +96,8 @@ function TimelineProgress({ timeline }) {
 
 // --- My Lowongan Card ---
 function MyLowonganCard({ data }) {
-  const fotoUrl = getImageUrl(data.foto);
+  const fotoUrl = getImageUrl(data.foto_thumbnail || data.foto);
+  const fotoOriginal = getImageUrl(data.foto);
   const perusahaanNama = data.perusahaan?.nama || '-';
 
   return (
@@ -108,7 +109,7 @@ function MyLowonganCard({ data }) {
             src={fotoUrl || '/Desain Poster Job.jpg'}
             alt="Lowongan"
             className="w-full h-full object-cover"
-            onError={(e) => { e.target.src = 'https://placehold.co/300x200?text=No+Image'; }}
+            onError={(e) => { if (fotoOriginal && e.target.src !== fotoOriginal) e.target.src = fotoOriginal; else e.target.src = '/Desain Poster Job.jpg'; }}
           />
         </div>
 
