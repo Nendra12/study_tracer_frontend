@@ -71,7 +71,9 @@
       }
     };
 
-    const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
+    const fotoThumbUrl = user?.foto_thumbnail ? getImageUrl(user.foto_thumbnail) : null;
+    const fotoOriginalUrl = user?.foto ? getImageUrl(user.foto) : null;
+    const fotoUrl = fotoThumbUrl || fotoOriginalUrl;
 
     return (
       <nav
@@ -170,7 +172,7 @@
               >
                 <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white overflow-hidden shadow-inner">
                   {fotoUrl ? (
-                    <img src={fotoUrl} className="w-full h-full object-cover" />
+                    <img src={fotoUrl} className="w-full h-full object-cover" onError={(e) => { if (fotoOriginalUrl && e.target.src !== fotoOriginalUrl) e.target.src = fotoOriginalUrl; }} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-primary text-white text-xs font-black">
                       {user?.nama_alumni?.charAt(0) || "A"}
