@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -16,10 +16,16 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
     gambar: null
   });
 
-  // Local state — sync dari profile, update lokal setelah mutasi
+  // Local state — inisialisasi dari profile.portofolio
   const [portofolioList, setPortofolioList] = useState(profile?.portofolio || []);
+  const hasMutated = useRef(false);
 
+  // Sync dari profile prop (saat page refresh / navigasi kembali)
   useEffect(() => {
+    if (hasMutated.current) {
+      hasMutated.current = false;
+      return; // Skip — local state sudah benar dari mutasi
+    }
     setPortofolioList(profile?.portofolio || []);
   }, [profile]);
 
@@ -55,8 +61,9 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
         setPortofolioList(prev => [created, ...prev]);
         onShowSuccess('Portofolio berhasil ditambahkan!');
       }
-      onRefresh();
       resetForm();
+      hasMutated.current = true;
+      onRefresh();
     } catch (error) {
       const msg = error.response?.data?.message || 'Gagal menyimpan portofolio';
       alert(msg);
@@ -83,6 +90,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
       await alumniApi.deletePortofolio(id);
       setPortofolioList(prev => prev.filter(p => p.id !== id));
       onShowSuccess('Portofolio berhasil dihapus!');
+      hasMutated.current = true;
       onRefresh();
     } catch (error) {
       const msg = error.response?.data?.message || 'Gagal menghapus portofolio';
