@@ -180,9 +180,6 @@ export default function Alumni() {
                 <div className="w-[calc(50%-6px)] lg:w-44 relative z-50">
                   <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
                 </div>
-                <div className="w-full lg:w-52 relative z-40">
-                  <SmoothDropdown options={univOptions} value={selectedUniv} onSelect={(val) => setSelectedUniv(val === 'Semua Universitas' ? '' : val)} placeholder="Universitas" isSearchable={true} />
-                </div>
               </div>
 
             </div>
