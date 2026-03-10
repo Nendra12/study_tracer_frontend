@@ -85,6 +85,18 @@ export const alumniApi = {
     return api.get(`/alumni/directory/${id}`);
   },
 
+  addDeskripsiKarier(data) {
+    return api.post(`/alumni/deskripsi-karier`, data)
+  },
+
+  updateDeskripsiKarier(id, data) {
+    return api.put(`/alumni/deskripsi-karier/${id}`, data)
+  },
+
+  deleteDeskripsiKarier(id) {
+    return api.delete(`/alumni/deskripsi-karier/${id}`)
+  },
+
   // Download Public Profile as PDF
   downloadPublicProfilePdf(id) {
     return api.get(`/alumni/directory/${id}/pdf`, {
