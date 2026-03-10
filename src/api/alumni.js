@@ -116,6 +116,36 @@ export const alumniApi = {
   deleteAllNotifications() {
     return api.delete('/alumni/notifications');
   },
+
+  // Deskripsi Karier
+  createDeskripsiKarier(data) {
+    return api.post('/alumni/deskripsi-karier', data);
+  },
+
+  updateDeskripsiKarier(id, data) {
+    return api.put(`/alumni/deskripsi-karier/${id}`, data);
+  },
+
+  deleteDeskripsiKarier(id) {
+    return api.delete(`/alumni/deskripsi-karier/${id}`);
+  },
+
+  // Portofolio
+  createPortofolio(data) {
+    return api.post('/alumni/portofolio', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  updatePortofolio(id, data) {
+    return api.post(`/alumni/portofolio/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deletePortofolio(id) {
+    return api.delete(`/alumni/portofolio/${id}`);
+  },
 };
 
 // Public endpoints
