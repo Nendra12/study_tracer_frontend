@@ -556,7 +556,7 @@ export default function Beranda() {
               </div>
             </section>
 
-            {/* TOP PERUSAHAAN (Sesuai Permintaan Ditambahkan di Bawah) */}
+            {/* TOP PERUSAHAAN*/}
             <TopPerusahaan
               data={topPerusahaan.data}
               locked={topPerusahaan.locked}
