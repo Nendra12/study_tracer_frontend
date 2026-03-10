@@ -43,9 +43,6 @@ export default function Profil() {
     try {
       setLoading(true);
       const res = await alumniApi.getProfile();
-      console.log('=== PROFILE RESPONSE ===', JSON.stringify(res.data.data, null, 2));
-      console.log('portofolio:', res.data.data?.portofolio);
-      console.log('deskripsi_karier:', res.data.data?.deskripsi_karier);
       setProfile(res.data.data);
     } catch (err) {
       console.error('Failed to load profile', err);

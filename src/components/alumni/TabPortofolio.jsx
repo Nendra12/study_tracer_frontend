@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -6,7 +6,6 @@ import { STORAGE_BASE_URL } from '../../api/axios';
 export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const hasMutated = useRef(false);
   
   // State untuk form tambah/edit portofolio
   const [formData, setFormData] = useState({
@@ -17,16 +16,11 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
     gambar: null
   });
 
-  // Local state — menjadi source of truth setelah create/update/delete
+  // Local state — sync dari profile, update lokal setelah mutasi
   const [portofolioList, setPortofolioList] = useState(profile?.portofolio || []);
 
   useEffect(() => {
-    // Hanya sync dari profile jika backend memang punya data,
-    // atau jika belum pernah ada mutasi lokal
-    const serverList = profile?.portofolio || [];
-    if (serverList.length > 0 || !hasMutated.current) {
-      setPortofolioList(serverList);
-    }
+    setPortofolioList(profile?.portofolio || []);
   }, [profile]);
 
   const handleInputChange = (e) => {
@@ -53,16 +47,15 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
         fd.append('_method', 'PUT');
         const res = await alumniApi.updatePortofolio(formData.id, fd);
         const updated = res.data.data;
-        hasMutated.current = true;
         setPortofolioList(prev => prev.map(p => p.id === formData.id ? updated : p));
         onShowSuccess('Portofolio berhasil diperbarui!');
       } else {
         const res = await alumniApi.createPortofolio(fd);
         const created = res.data.data;
-        hasMutated.current = true;
         setPortofolioList(prev => [created, ...prev]);
         onShowSuccess('Portofolio berhasil ditambahkan!');
       }
+      onRefresh();
       resetForm();
     } catch (error) {
       const msg = error.response?.data?.message || 'Gagal menyimpan portofolio';
@@ -88,9 +81,9 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
     if (!confirm('Hapus portofolio ini?')) return;
     try {
       await alumniApi.deletePortofolio(id);
-      hasMutated.current = true;
       setPortofolioList(prev => prev.filter(p => p.id !== id));
       onShowSuccess('Portofolio berhasil dihapus!');
+      onRefresh();
     } catch (error) {
       const msg = error.response?.data?.message || 'Gagal menghapus portofolio';
       alert(msg);
