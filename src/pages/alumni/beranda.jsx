@@ -162,7 +162,7 @@ export default function Beranda() {
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-tight">
-                Halo,<br/>
+                Halo,
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f3f4f4] to-[#9ca3af]">
                   {namaAlumni}
                 </span>
