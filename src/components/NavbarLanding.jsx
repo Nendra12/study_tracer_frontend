@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import LoginButton from './alumni/LoginButton';
 import Login from '../pages/Login';
+import { useAuth } from '../context/AuthContext';
 
 export default function NavbarLanding() {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +67,10 @@ export default function NavbarLanding() {
       });
     }
   };
+  const {user} = useAuth()
+  if (user) {
+    console.log("user sudah login")
+  }
 
   const navLinks = [
     { name: 'Beranda', href: '#beranda' },
@@ -97,7 +102,7 @@ export default function NavbarLanding() {
           />
           <div className='flex flex-col transition-all duration-500 ease-in-out'>
             <span className="font-black text-primary text-lg">Alumni Tracer</span>
-            { !scrolled && <span className='text-xs font-semibold'>SMK Negeri 1 Gondang</span> }
+            { !scrolled && <span className='text-xs font-semibold text-[#526061]'>SMK Negeri 1 Gondang</span> }
           </div>
         </Link>
 

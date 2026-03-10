@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { ProtectedRoute } from "../utilitis/ProtectedRoute";
 import Loader from "../components/Loaders";
 import LandingPage from "../pages/LandingPage";
+import AlumniPortal from "../pages/alumni/PortalAlumni";
 
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
