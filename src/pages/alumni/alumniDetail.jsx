@@ -115,8 +115,14 @@ export default function AlumniDetail() {
   const skills = alumni.skills || [];
   const riwayat = alumni.riwayat_status || [];
   
-  // Data Portofolio (Sesuaikan dengan properti array dari API Anda)
+  // Data Portofolio
   const portofolioList = alumni.portofolio || [];
+
+  // Map deskripsi_karier by riwayat id for easy lookup
+  const deskripsiByRiwayat = {};
+  (alumni.deskripsi_karier || []).forEach(d => {
+    deskripsiByRiwayat[d.status_karier_id] = d.deskripsi;
+  });
 
   // Extract current career display info
   let currentStatus = currentCareer?.status || 'Alumni';
@@ -410,10 +416,10 @@ export default function AlumniDetail() {
                             {subtitle && <p className="text-sm font-bold text-primary/50 mb-1">{subtitle}</p>}
                             {location && <p className="text-sm text-primary/60 font-medium">{location}</p>}
                             
-                            {/* Menampilkan deskripsi dari API jika ada */}
-                            {item.deskripsi && (
+                            {/* Menampilkan deskripsi karier dari API */}
+                            {(item.deskripsi || deskripsiByRiwayat[item.id]) && (
                               <p className="text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap">
-                                {item.deskripsi}
+                                {item.deskripsi || deskripsiByRiwayat[item.id]}
                               </p>
                             )}
                           </div>
