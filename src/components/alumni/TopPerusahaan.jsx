@@ -3,6 +3,8 @@ import { Building2, GraduationCap, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion'; // Ditambahkan untuk animasi statistik
 import LockOverlay from './LockOverlay';
 import telkomLogo from '../../assets/telkom.png';
+import ugmLogo from '../../assets/ugm.png';
+import itbLogo from '../../assets/itb.png';
 
 // --- DATA DUMMY UNIVERSITAS ---
 const dummyUniversitas = [
@@ -21,8 +23,8 @@ const runningLogos = [
   { name: "Oracle", domain: "oracle.com" },
   { name: "Telkom Indonesia", domain: "telkom.co.id", customLogo: telkomLogo },
   { name: "Universitas Indonesia", domain: "ui.ac.id" },
-  { name: "Institut Teknologi Bandung", domain: "itb.ac.id" },
-  { name: "Universitas Gadjah Mada", domain: "ugm.ac.id" },
+  { name: "Institut Teknologi Bandung", domain: "itb.ac.id", customLogo: itbLogo },
+  { name: "Universitas Gadjah Mada", domain: "ugm.ac.id", customLogo: ugmLogo },
   { name: "Universitas Brawijaya", domain: "ub.ac.id" },
   { name: "Institut Teknologi Sepuluh Nopember", domain: "its.ac.id" },
 ];

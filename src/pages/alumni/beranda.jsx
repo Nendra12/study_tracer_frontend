@@ -162,9 +162,10 @@ export default function Beranda() {
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-tight">
-                Halo,
+                Halo, 
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f3f4f4] to-[#9ca3af]">
-                  {namaAlumni}
+                  {/* Mengambil kata pertama saja */}
+                  {namaAlumni ? namaAlumni.split(' ')[0] : 'Alumni'}
                 </span>
               </h1>
               <p className="text-lg text-[#cbd5e1] max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed font-medium">
