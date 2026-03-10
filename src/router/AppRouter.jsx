@@ -88,7 +88,7 @@ export default function AppRouter() {
 
       <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} /> }>
         <Route element={<AlumniLayout />} >
-          <Route index element={<AlumniPortal />} />
+          <Route index element={<Beranda />} />
           <Route path="daftar-alumni" element={<Alumni />} />
           <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
           <Route path="lowongan" element={<Lowongan />} />
