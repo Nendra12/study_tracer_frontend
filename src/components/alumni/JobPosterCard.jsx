@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, Bookmark, ArrowRight, Clock } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
-import hitungMundur from '../../utilitis/hitungMundurTanggal';
 import LockOverlay from './LockOverlay';
 
 function getImageUrl(path) {
@@ -14,94 +13,78 @@ function getImageUrl(path) {
 export default function JobPosterCard({ data, onImageClick, locked }) {
   if (!data) return null;
 
-  const deadline = data.lowongan_selesai ? hitungMundur(data.lowongan_selesai) : null;
   const fotoUrl = getImageUrl(data.foto);
-  const perusahaanNama = data.perusahaan?.nama || '—';
+  
+  // Penyesuaian variabel data
+  const judul = data.judul || data.role || '—';
+  const perusahaanNama = data.perusahaan?.nama || data.company || '—';
+  const tipePekerjaan = data.tipe_pekerjaan || data.type || '—';
+  
   const lokasi = data.perusahaan?.kota
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
     : (data.lokasi || '—');
 
   return (
-    <div className={`relative ${locked ? 'grayscale opacity-60' : ''}`}>
+    <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div
-        whileHover={locked ? {} : { y: -6 }}
-        className={`bg-white rounded-[1.6rem] overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group
-          ${locked ? '' : 'hover:shadow-xl hover:border-[#4cb87a]/20'}`}
+        whileHover={locked ? {} : { y: -4 }}
+        className={`bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full transition-all duration-300
+          ${locked ? '' : 'hover:shadow-md hover:border-[#3c5759]/20'}`}
       >
-
-        {/* poster image */}
-        <div
-          className={`relative h-[200px] w-full bg-slate-100 overflow-hidden rounded-t-[1.6rem]
-            ${locked ? '' : 'cursor-pointer'}`}
-          onClick={(e) => {
-            if (locked || !onImageClick) return;
-            e.stopPropagation();
-            onImageClick(fotoUrl || '/Desain Poster Job.jpg', e);
-          }}
-        >
-          <img
-            src={fotoUrl || '/Desain Poster Job.jpg'}
-            alt="Lowongan"
-            className={`w-full h-full object-cover transition-transform duration-700 ease-out ${locked ? '' : 'group-hover:scale-105'}`}
-            onError={(e) => { e.target.src = 'https://placehold.co/600x400?text=Poster+Not+Found'; }}
-          />
-
-          {/* wave mask */}
-          <svg
-            className="absolute -bottom-[2px] left-1/2 -translate-x-1/2 w-[106%] h-[36px] z-10 pointer-events-none"
-            viewBox="0 0 1440 100" preserveAspectRatio="none"
+        {/* BAGIAN ATAS: Foto Poster & Judul (Sejajar) */}
+        <div className="flex items-center gap-3 mb-5 relative">
+          {/* Thumbnail Gambar (Menggantikan Logo Icon) */}
+          <div 
+            className={`w-[60px] h-[60px] shrink-0 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden ${locked ? '' : 'cursor-pointer group'}`}
+            onClick={(e) => {
+              if (locked || !onImageClick) return;
+              e.stopPropagation();
+              onImageClick(fotoUrl || '/Desain Poster Job.jpg', e);
+            }}
           >
-            <path fill="#ffffff" d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L0,100Z" />
-          </svg>
+            <img 
+              src={fotoUrl || '/Desain Poster Job.jpg'} 
+              alt="Thumbnail Poster" 
+              className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-300 group-hover:scale-110'}`}
+              onError={(e) => { e.target.src = 'https://placehold.co/150?text=No+Img'; }}
+            />
+          </div>
 
-          {/* deadline badge */}
-          {deadline && deadline !== '-' && (
-            <div className="absolute top-3 right-3 z-20">
-              <span className="flex items-center gap-1.5 bg-red-500 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-md">
-                <Clock size={11} strokeWidth={3} /> {deadline}
-              </span>
+          {/* Teks Judul & Perusahaan */}
+          <div className="flex-1 flex flex-col justify-center">
+            <h3 className="font-bold text-[#3c5759] text-[16px] leading-tight line-clamp-2 mb-1">
+              {judul}
+            </h3>
+            <p className="text-xs font-semibold text-[#526061] line-clamp-1">
+              {perusahaanNama}
+            </p>
+          </div>
+        </div>
+
+        {/* BAGIAN TENGAH: Tags Lokasi & Tipe Pekerjaan */}
+        <div className="flex flex-col items-start gap-2 mb-5">
+          <div className="flex items-start gap-1.5 text-[11px] font-bold text-[#9ca3af] bg-[#f3f4f4] px-3 py-2 rounded-lg w-full">
+            <MapPin size={13} className="shrink-0 mt-[1px]" /> 
+            <span className="leading-tight text-left">{lokasi}</span>
+          </div>
+          <span className="text-[11px] font-bold text-[#9ca3af] bg-[#f3f4f4] px-3 py-1.5 rounded-lg w-fit">
+            {tipePekerjaan}
+          </span>
+        </div>
+
+        {/* BAGIAN BAWAH: Tombol Action */}
+        <div className="mt-auto pt-1">
+          {!locked ? (
+            <button className="w-full py-2.5 rounded-xl border-2 border-[#3c5759] text-[#3c5759] font-bold text-sm hover:bg-[#3c5759] hover:text-white transition-colors cursor-pointer flex justify-center items-center">
+              Lihat Detail
+            </button>
+          ) : (
+            <div className="w-full py-2.5 rounded-xl border-2 border-slate-200 text-slate-400 font-bold text-sm text-center">
+              Terkunci
             </div>
           )}
         </div>
 
-        {/* content */}
-        <div className="px-5 pt-1 pb-5 flex flex-col flex-1 relative z-10 bg-white">
-          <h3 className="font-black text-slate-800 text-[16px] leading-snug line-clamp-2 mb-3">
-            {data.judul}
-          </h3>
-
-          {/* company */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
-              <Building2 size={17} className="text-slate-400" />
-            </div>
-            <span className="font-bold text-[13px] text-slate-700 line-clamp-1">{perusahaanNama}</span>
-          </div>
-
-          {/* location */}
-          <div className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[11px] text-slate-500 font-semibold w-fit mb-4">
-            <MapPin size={12} className="text-slate-400 shrink-0" />
-            <span className="line-clamp-1">{lokasi}</span>
-          </div>
-
-          {/* footer */}
-          <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-            <span className="text-[11px] text-slate-400 font-bold italic">{data.tipe_pekerjaan || ''}</span>
-            {!locked && (
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  <Bookmark size={16} className="text-slate-300 hover:text-slate-500" />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center bg-[#16372a] rounded-full hover:bg-[#1e5c3e] transition-colors cursor-pointer">
-                  <ArrowRight size={15} className="text-white" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
       </motion.div>
 
       {locked && <LockOverlay message="Verifikasi & isi kuesioner untuk akses" />}

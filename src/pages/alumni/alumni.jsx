@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, AlertCircle, Users } from 'lucide-react';
+import { Search, X, AlertCircle, Users, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -118,44 +118,53 @@ export default function Alumni() {
 
   return (
     <div className='w-full min-h-screen bg-[#f8f9fa]'>
-      {/* --- HEADER & FILTER SECTION --- */}
-      <section className="relative pt-24 pb-8 w-full z-40">
-        <div className="absolute inset-0 z-0">
-          <img src="/background3.jpeg" alt="Background" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-white/50 md:bg-gradient-to-r md:from-white/80 md:via-white/60 md:to-white/20"></div>
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#f8f9fa]"></div>
-        </div>
-
-        <div className="relative z-10 mt-5 max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight mb-2 uppercase">Direktori Alumni</h1>
-            <p className="text-primary/90 text-sm md:text-base max-w-2xl font-semibold drop-shadow-sm">
-              Terhubung dengan para lulusan dan perluas jaringan profesional Anda.
+      {/* --- HEADER SECTION DENGAN BACKGROUND GELAP (KONSISTEN DENGAN BERANDA) --- */}
+      <section className="relative pt-28 pb-24 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          
+          <div className="max-w-2xl">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
+              Direktori Alumni
+            </h1>
+            <p className="text-white/80 text-sm md:text-base font-medium leading-relaxed">
+              Portal ini dirancang untuk memantau progres karir Anda, menemukan peluang eksklusif, 
+              dan menjaga silaturahmi dengan almamater tercinta.
             </p>
           </div>
 
+          {/* Elemen Dekoratif Kanan (Opsional, menyesuaikan Beranda) */}
+          <div className="hidden lg:flex items-center justify-center opacity-80">
+            <Users size={120} className="text-white/10" />
+          </div>
+
+        </div>
+      </section>
+
+      {/* --- FLOATING FILTER & SEARCH SECTION --- */}
+      <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100">
           <form onSubmit={handleSearch} className="flex flex-col xl:flex-row gap-4 relative">
             {/* Kolom Pencarian */}
-            <div className="relative flex-1 group shadow-sm border border-primary/10 rounded-2xl bg-white">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 group-focus-within:text-primary transition-colors" size={20} />
+            <div className="relative flex-1 group shadow-sm border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#425A5C] transition-colors" size={20} />
               <input
                 type="text"
-                placeholder="cari berdasarkan nama, perusahaan, atau peran..."
+                placeholder="Cari berdasarkan nama, perusahaan, atau peran..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-transparent rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-all h-[52px] text-primary placeholder:text-primary/40"
+                className="w-full pl-12 pr-4 py-3 bg-transparent rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#425A5C]/20 focus:border-transparent transition-all h-[52px] text-slate-700 placeholder:text-slate-400"
               />
             </div>
 
             {/* Dropdown Filters */}
             <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-              <div className="w-[calc(50%-6px)] sm:w-40 xl:w-44 border-primary/10 relative z-[60]">
+              <div className="w-[calc(50%-6px)] sm:w-40 xl:w-44 relative z-[60]">
                 <SmoothDropdown options={tahunOptions} value={selectedTahun} onSelect={(val) => setSelectedTahun(val === 'Semua Tahun' ? '' : val)} placeholder="Tahun Kelulusan" />
               </div>
-              <div className="w-[calc(50%-6px)] sm:w-40 xl:w-48 border-primary/10 relative z-50">
+              <div className="w-[calc(50%-6px)] sm:w-40 xl:w-48 relative z-50">
                 <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
               </div>
-              <div className="w-full sm:w-48 xl:w-52 border-primary/10 relative z-40">
+              <div className="w-full sm:w-48 xl:w-52 relative z-40">
                 <SmoothDropdown options={univOptions} value={selectedUniv} onSelect={(val) => setSelectedUniv(val === 'Semua Universitas' ? '' : val)} placeholder="Universitas" isSearchable={true} />
               </div>
             </div>
@@ -164,7 +173,7 @@ export default function Alumni() {
       </section>
 
       {/* --- MAIN CONTENT (CARD AREA) --- */}
-      <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12">
         {loading ? (
           <AlumniSkeleton />
         ) : error ? (
@@ -173,13 +182,13 @@ export default function Alumni() {
               <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
               <p className="text-slate-500 text-sm mb-4">{error}</p>
-              <button onClick={() => fetchAlumni(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2A3E3F] transition-colors">
+              <button onClick={() => fetchAlumni(currentPage)} className="bg-[#425A5C] text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2e4042] transition-colors">
                 Coba Lagi
               </button>
             </div>
           </div>
         ) : alumniData.length === 0 ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-slate-100">
             <div className="text-center">
               <Users size={48} className="text-slate-300 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Tidak Ada Alumni Ditemukan</h2>
@@ -202,7 +211,7 @@ export default function Alumni() {
 
             {/* --- PAGINATION --- */}
             {totalPages > 1 && (
-              <div className="mt-12 mb-4 bg-white rounded-xl shadow-sm border border-primary/10 overflow-hidden">
+              <div className="mt-12 mb-4 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -250,7 +259,7 @@ export default function Alumni() {
                 </button>
               </div>
               <div className="p-4 sm:p-5 text-center bg-white border-t border-slate-100">
-                <h3 className="text-sm sm:text-base font-bold text-primary">Pratinjau Foto Profil</h3>
+                <h3 className="text-sm sm:text-base font-bold text-[#425A5C]">Pratinjau Foto Profil</h3>
               </div>
             </motion.div>
           </div>
