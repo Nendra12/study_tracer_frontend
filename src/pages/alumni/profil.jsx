@@ -51,6 +51,16 @@ export default function Profil() {
     }
   }
 
+  // Refresh profil tanpa skeleton (agar tab tidak unmount dan local state tidak hilang)
+  async function refreshProfile() {
+    try {
+      const res = await alumniApi.getProfile();
+      setProfile(res.data.data);
+    } catch (err) {
+      console.error('Failed to refresh profile', err);
+    }
+  }
+
   function showSuccess(msg) {
     setSuccessMsg(msg);
     setTimeout(() => setSuccessMsg(''), 3000);
@@ -83,7 +93,7 @@ export default function Profil() {
           {/* --- SIDEBAR KIRI (Dipanggil dari Komponen) --- */}
           <ProfileSidebar
             profile={profile}
-            onRefresh={fetchProfile}
+            onRefresh={refreshProfile}
             onShowSuccess={showSuccess}
           />
 
@@ -110,11 +120,11 @@ export default function Profil() {
             </div>
 
             {/* Render Tab Konten Secara Dinamis */}
-            {activeTab === 'detail' && <TabDetailPribadi profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} />}
-            {activeTab === 'karier' && <TabStatusKarier profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'keahlian' && <TabKeahlian profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'portofolio' && <TabPortofolio profile={profile} onRefresh={fetchProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'detail' && <TabDetailPribadi profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} />}
+            {activeTab === 'karier' && <TabStatusKarier profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'keahlian' && <TabKeahlian profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'portofolio' && <TabPortofolio profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
 
           </div>
         </div>

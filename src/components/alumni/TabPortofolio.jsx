@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save } from 'lucide-react';
+import { alumniApi } from '../../api/alumni';
+import { STORAGE_BASE_URL } from '../../api/axios';
 
 export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const hasMutated = useRef(false);
   
   // State untuk form tambah/edit portofolio
   const [formData, setFormData] = useState({
@@ -11,11 +14,20 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
     judul: '',
     deskripsi: '',
     link_project: '',
-    gambar: null // Bisa berupa file atau URL tergantung setup backend Anda
+    gambar: null
   });
 
-  // Data dummy jika profile.portofolio kosong (Hapus atau sesuaikan dengan data asli dari API)
-  const portofolioList = profile?.portofolio || [];
+  // Local state — menjadi source of truth setelah create/update/delete
+  const [portofolioList, setPortofolioList] = useState(profile?.portofolio || []);
+
+  useEffect(() => {
+    // Hanya sync dari profile jika backend memang punya data,
+    // atau jika belum pernah ada mutasi lokal
+    const serverList = profile?.portofolio || [];
+    if (serverList.length > 0 || !hasMutated.current) {
+      setPortofolioList(serverList);
+    }
+  }, [profile]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,20 +43,64 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
     e.preventDefault();
     setLoading(true);
     try {
-      // TODO: Panggil API Anda di sini
-      // Contoh: await alumniApi.addPortofolio(formData); ATAU update jika edit
-      
-      // Simulasi sukses
-      setTimeout(() => {
-        onShowSuccess('Portofolio berhasil disimpan!');
-        onRefresh(); // Refresh data profil
-        resetForm();
-        setLoading(false);
-      }, 1000);
+      const fd = new FormData();
+      fd.append('judul', formData.judul);
+      if (formData.deskripsi) fd.append('deskripsi', formData.deskripsi);
+      if (formData.link_project) fd.append('link_project', formData.link_project);
+      if (formData.gambar instanceof File) fd.append('gambar', formData.gambar);
+
+      if (formData.id) {
+        fd.append('_method', 'PUT');
+        const res = await alumniApi.updatePortofolio(formData.id, fd);
+        const updated = res.data.data;
+        hasMutated.current = true;
+        setPortofolioList(prev => prev.map(p => p.id === formData.id ? updated : p));
+        onShowSuccess('Portofolio berhasil diperbarui!');
+      } else {
+        const res = await alumniApi.createPortofolio(fd);
+        const created = res.data.data;
+        hasMutated.current = true;
+        setPortofolioList(prev => [created, ...prev]);
+        onShowSuccess('Portofolio berhasil ditambahkan!');
+      }
+      resetForm();
     } catch (error) {
-      console.error("Gagal menyimpan portofolio:", error);
+      const msg = error.response?.data?.message || 'Gagal menyimpan portofolio';
+      alert(msg);
+      console.error('Gagal menyimpan portofolio:', error);
+    } finally {
       setLoading(false);
     }
+  };
+
+  const handleEdit = (item) => {
+    setFormData({
+      id: item.id,
+      judul: item.judul || '',
+      deskripsi: item.deskripsi || '',
+      link_project: item.link_project || '',
+      gambar: null,
+    });
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Hapus portofolio ini?')) return;
+    try {
+      await alumniApi.deletePortofolio(id);
+      hasMutated.current = true;
+      setPortofolioList(prev => prev.filter(p => p.id !== id));
+      onShowSuccess('Portofolio berhasil dihapus!');
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Gagal menghapus portofolio';
+      alert(msg);
+    }
+  };
+
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${STORAGE_BASE_URL}/${path}`;
   };
 
   return (
@@ -107,11 +163,11 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
               <label className="block text-sm font-semibold text-slate-700 mb-2">Gambar / Thumbnail Proyek</label>
               <input 
                 type="file" 
-                accept="image/*"
-                // onChange={(e) => setFormData({...formData, gambar: e.target.files[0]})}
+                accept="image/jpeg,image/png,image/jpg,image/webp"
+                onChange={(e) => setFormData({...formData, gambar: e.target.files[0] || null})}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
               />
-              <p className="text-xs text-slate-500 mt-2">Upload gambar dengan format JPG, PNG, atau WEBP.</p>
+              <p className="text-xs text-slate-500 mt-2">Upload gambar dengan format JPG, PNG, atau WEBP. Maksimal 5MB.</p>
             </div>
 
             <div>
@@ -162,7 +218,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
             {/* Thumbnail Area */}
             <div className="h-48 bg-slate-100 overflow-hidden relative">
               {item.gambar ? (
-                <img src={item.gambar} alt={item.judul} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={getImageUrl(item.gambar_thumbnail || item.gambar)} alt={item.judul} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { const orig = getImageUrl(item.gambar); if (e.target.src !== orig) e.target.src = orig; }} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-slate-300">
                   <ImageIcon size={40} />
@@ -172,13 +228,13 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
               {/* Action Buttons (Overlay) */}
               <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button 
-                  onClick={() => {/* Fungsi Edit, set isEditing dan setFormData */}}
+                  onClick={() => handleEdit(item)}
                   className="p-2 bg-white/90 backdrop-blur text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-sm transition-colors"
                 >
                   <Edit2 size={14} />
                 </button>
                 <button 
-                  onClick={() => {/* Fungsi Delete */}}
+                  onClick={() => handleDelete(item.id)}
                   className="p-2 bg-white/90 backdrop-blur text-red-600 hover:bg-red-600 hover:text-white rounded-lg shadow-sm transition-colors"
                 >
                   <Trash2 size={14} />
