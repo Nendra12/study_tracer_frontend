@@ -372,61 +372,51 @@ export default function Lowongan() {
             </button>
           </div>
 
-          {/* SEARCH & FILTER FORMS (GAYA BARU SEJAJAR) */}
-          {activeTab === 'saya' ? (
-            <form onSubmit={handleMySearch} className="flex h-11 w-full max-w-md shadow-sm border border-slate-200 rounded-xl bg-white overflow-hidden transition-colors focus-within:border-slate-300">
+          {/* SEARCH & FILTER FORM */}
+          <div className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
+            
+            {/* FORM PENCARIAN */}
+            <form 
+              onSubmit={activeTab === 'saya' ? handleMySearch : handleSearch} 
+              className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+            >
               <div className="relative flex-1 flex items-center">
-                <Search className="absolute left-3 text-slate-400" size={18} />
+                <Search className="absolute left-3 text-gray-400" size={18} />
                 <input 
                   type="text" 
-                  value={mySearch} 
-                  onChange={(e) => setMySearch(e.target.value)} 
-                  placeholder="Cari lowongan saya..." 
-                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none" 
+                  value={activeTab === 'saya' ? mySearch : searchQuery} 
+                  onChange={(e) => activeTab === 'saya' ? setMySearch(e.target.value) : setSearchQuery(e.target.value)} 
+                  placeholder={activeTab === 'saya' ? "Cari lowongan saya..." : "Cari berdasarkan judul pekerjaan..."} 
+                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none" 
                 />
               </div>
-              <button type="submit" className="bg-[#425A5C] text-white px-6 font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer">
+
+              <button 
+                type="submit" 
+                className="bg-[#425A5C] text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+              >
                 Cari
               </button>
             </form>
-          ) : (
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
-              
-              {/* Form Pencarian (Tombol menyatu & tidak mengambang) */}
-              <form onSubmit={handleSearch} className="flex h-11 w-full lg:flex-1 shadow-sm border border-slate-200 rounded-xl bg-white overflow-hidden transition-colors focus-within:border-slate-300">
-                <div className="relative flex-1 flex items-center">
-                  <Search className="absolute left-3 text-slate-400" size={18} />
-                  <input 
-                    type="text" 
-                    value={searchQuery} 
-                    onChange={(e) => setSearchQuery(e.target.value)} 
-                    placeholder="Cari berdasarkan judul pekerjaan..." 
-                    className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none" 
-                  />
-                </div>
-                <button type="submit" className="bg-[#425A5C] text-white px-6 md:px-8 font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l border-[#425A5C]">
-                  Cari
-                </button>
-              </form>
 
-              {/* Dropdowns Filter */}
+            {/* DROPDOWN FILTERS */}
+            {activeTab !== 'saya' && (
               <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-                <div className="w-[calc(50%-6px)] lg:w-36 h-11 relative z-[60]">
+                <div className="w-[calc(50%-6px)] lg:w-36 relative z-[60]">
                   <SmoothDropdown options={tipeOptions} value={selectedTipe} onSelect={(val) => setSelectedTipe(val === 'Semua Tipe' ? '' : val)} placeholder="Tipe Pekerjaan" />
                 </div>
-                <div className="w-[calc(50%-6px)] lg:w-40 h-11 relative z-50">
+                <div className="w-[calc(50%-6px)] lg:w-40 relative z-50">
                   <SmoothDropdown options={provinsiOptions} value={selectedProvinsi} onSelect={(val) => setSelectedProvinsi(val === 'Semua Provinsi' ? '' : val)} placeholder="Provinsi" isSearchable={true} />
                 </div>
-                <div className="w-[calc(50%-6px)] lg:w-40 h-11 relative z-40">
+                <div className="w-[calc(50%-6px)] lg:w-40 relative z-40">
                   <SmoothDropdown options={kotaOptions} value={selectedKota} onSelect={(val) => setSelectedKota(val === 'Semua Kota' ? '' : val)} placeholder="Kota" isSearchable={true} />
                 </div>
-                <div className="w-[calc(50%-6px)] lg:w-36 h-11 relative z-30">
+                <div className="w-[calc(50%-6px)] lg:w-36 relative z-30">
                   <SmoothDropdown options={waktuOptions} value={selectedWaktu} onSelect={(val) => setSelectedWaktu(val)} placeholder="Terbaru" />
                 </div>
               </div>
-
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
