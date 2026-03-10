@@ -146,34 +146,45 @@ export default function Alumni() {
           
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
             
-            {/* Form Pencarian (Tombol Cari Menyatu & Tidak Mengambang) */}
-            <form onSubmit={handleSearch} className="flex h-11 w-full lg:flex-1 shadow-sm border border-slate-200 rounded-xl bg-white overflow-hidden transition-colors focus-within:border-slate-300">
-              <div className="relative flex-1 flex items-center">
-                <Search className="absolute left-3 text-slate-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Cari berdasarkan nama, perusahaan..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
-                />
-              </div>
-              <button type="submit" className="bg-[#425A5C] text-white px-6 md:px-8 font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l border-[#425A5C]">
-                Cari
-              </button>
-            </form>
+            {/* --- FLOATING FILTER & SEARCH SECTION (PERBAIKAN SEJAJAR) --- */}
+            <div className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
+              
+              {/* Form Pencarian - Menyesuaikan mt-3 dan h-47 agar segaris dengan Dropdown */}
+              <form 
+                onSubmit={handleSearch} 
+                className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+              >
+                <div className="relative flex-1 flex items-center">
+                  <Search className="absolute left-3 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Cari berdasarkan nama, perusahaan..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  className="bg-[#425A5C] text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                >
+                  Cari
+                </button>
+              </form>
 
-            {/* Dropdowns Filter (Sejajar dengan Form Pencarian) */}
-            <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-              <div className="w-[calc(50%-6px)] lg:w-40 h-11 relative z-[60]">
-                <SmoothDropdown options={tahunOptions} value={selectedTahun} onSelect={(val) => setSelectedTahun(val === 'Semua Tahun' ? '' : val)} placeholder="Tahun Lulus" />
+              {/* Dropdowns Filter - Tetap sejajar di samping pencarian */}
+              <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
+                <div className="w-[calc(50%-6px)] lg:w-40 relative z-[60]">
+                  <SmoothDropdown options={tahunOptions} value={selectedTahun} onSelect={(val) => setSelectedTahun(val === 'Semua Tahun' ? '' : val)} placeholder="Tahun Lulus" />
+                </div>
+                <div className="w-[calc(50%-6px)] lg:w-44 relative z-50">
+                  <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
+                </div>
+                <div className="w-full lg:w-52 relative z-40">
+                  <SmoothDropdown options={univOptions} value={selectedUniv} onSelect={(val) => setSelectedUniv(val === 'Semua Universitas' ? '' : val)} placeholder="Universitas" isSearchable={true} />
+                </div>
               </div>
-              <div className="w-[calc(50%-6px)] lg:w-44 h-11 relative z-50">
-                <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
-              </div>
-              <div className="w-full lg:w-52 h-11 relative z-40">
-                <SmoothDropdown options={univOptions} value={selectedUniv} onSelect={(val) => setSelectedUniv(val === 'Semua Universitas' ? '' : val)} placeholder="Universitas" isSearchable={true} />
-              </div>
+
             </div>
 
           </div>
