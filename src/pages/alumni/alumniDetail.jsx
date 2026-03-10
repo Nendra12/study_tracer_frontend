@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, MapPin, GraduationCap, Briefcase, Globe, Award, Loader2, AlertCircle, Building2, Rocket, LineChart
+  ArrowLeft, MapPin, GraduationCap, Briefcase, Globe, Award, Loader2, AlertCircle, Building2, Rocket, LineChart, Layout, ExternalLink, Image as ImageIcon
 } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
@@ -114,6 +114,9 @@ export default function AlumniDetail() {
   const currentCareer = alumni.current_career;
   const skills = alumni.skills || [];
   const riwayat = alumni.riwayat_status || [];
+  
+  // Data Portofolio (Sesuaikan dengan properti array dari API Anda)
+  const portofolioList = alumni.portofolio || [];
 
   // Extract current career display info
   let currentStatus = currentCareer?.status || 'Alumni';
@@ -222,7 +225,7 @@ export default function AlumniDetail() {
             {/* Status Karier Card */}
             {currentCareer && (
               <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
-                <h2 className="text-xs font-black text-primary/30 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   {getStatusIcon(currentStatus)} Status Karier Saat Ini
                 </h2>
                 <div className="space-y-4">
@@ -262,16 +265,28 @@ export default function AlumniDetail() {
 
             {/* Info Akademik */}
             <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
-              <h2 className="text-xs font-black text-primary/30 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+              <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                 <GraduationCap size={14} /> Informasi Akademik
               </h2>
-              <div className="space-y-4">
+              
+              {/* Diubah menggunakan Grid 2 Kolom */}
+              <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                
+                {/* --- BARIS 1 --- */}
                 {alumni.jurusan?.nama && (
                   <div>
                     <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Jurusan</p>
                     <span className="text-sm font-bold text-primary">{alumni.jurusan.nama}</span>
                   </div>
                 )}
+                {alumni.jenis_kelamin && (
+                  <div>
+                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Jenis Kelamin</p>
+                    <span className="text-sm font-bold text-primary">{alumni.jenis_kelamin}</span>
+                  </div>
+                )}
+
+                {/* --- BARIS 2 --- */}
                 {alumni.tahun_masuk && (
                   <div>
                     <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Tahun Masuk</p>
@@ -284,25 +299,22 @@ export default function AlumniDetail() {
                     <span className="text-sm font-bold text-primary">{new Date(alumni.tahun_lulus).getFullYear()}</span>
                   </div>
                 )}
+
+                {/* --- BARIS 3 --- */}
                 {alumni.tempat_lahir && (
-                  <div>
+                  <div className="col-span-2">
                     <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Tempat Lahir</p>
                     <span className="text-sm font-bold text-primary">{alumni.tempat_lahir}</span>
                   </div>
                 )}
-                {alumni.jenis_kelamin && (
-                  <div>
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Jenis Kelamin</p>
-                    <span className="text-sm font-bold text-primary">{alumni.jenis_kelamin}</span>
-                  </div>
-                )}
+                
               </div>
             </div>
 
             {/* Skills */}
             {skills.length > 0 && (
               <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
-                <h2 className="text-xs font-black text-primary/30 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   <Award size={14} /> Keahlian
                 </h2>
                 <div className="flex flex-wrap gap-2">
@@ -318,7 +330,7 @@ export default function AlumniDetail() {
             {/* Social Media */}
             {(alumni.instagram || alumni.linkedin || alumni.github || alumni.facebook || alumni.website) && (
               <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
-                <h2 className="text-xs font-black text-primary/30 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   <Globe size={14} /> Media Sosial
                 </h2>
                 <div className="flex flex-wrap gap-3">
@@ -353,8 +365,9 @@ export default function AlumniDetail() {
           </div>
 
           {/* KONTEN KANAN */}
-          <div className="lg:col-span-8 space-y-10">
-            {/* Riwayat Karier */}
+          <div className="lg:col-span-8 space-y-8">
+            
+            {/* --- SEKSI: RIWAYAT KARIER --- */}
             {riwayat.length > 0 && (
               <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
                 <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-10">
@@ -384,15 +397,85 @@ export default function AlumniDetail() {
                     }
 
                     return (
-                      <div key={item.id || idx} className="relative">
-                        <div className="absolute -left-10.25 top-0 w-5 h-5 rounded-full bg-white border-4 border-primary z-10" />
-                        <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em]">{periode}</span>
-                        <h3 className="text-lg font-black text-primary mt-1">{title}</h3>
-                        {subtitle && <p className="text-sm font-bold text-primary/50 mb-2">{subtitle}</p>}
-                        {location && <p className="text-sm text-primary/60 font-medium">{location}</p>}
+                      <div key={item.id || idx} className="relative w-full">
+                        {/* Dot / Lingkaran Timeline */}
+                        <div className="absolute -left-[2.6rem] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-[#2A3E3F] z-10" />
+                        
+                        {/* Wrapper Flex: Info di Kiri, Tanggal di Kanan */}
+                        <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4 w-full">
+                          
+                          {/* Sisi Kiri: Judul, Subjudul, Lokasi, dan DESKRIPSI */}
+                          <div className="flex-1">
+                            <h3 className="text-lg font-black text-primary">{title}</h3>
+                            {subtitle && <p className="text-sm font-bold text-primary/50 mb-1">{subtitle}</p>}
+                            {location && <p className="text-sm text-primary/60 font-medium">{location}</p>}
+                            
+                            {/* Menampilkan deskripsi dari API jika ada */}
+                            {item.deskripsi && (
+                              <p className="text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap">
+                                {item.deskripsi}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Sisi Kanan: TANGGAL */}
+                          <div className="shrink-0 mt-2 sm:mt-0">
+                            <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.15em] bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                              {periode}
+                            </span>
+                          </div>
+
+                        </div>
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* --- SEKSI: PORTOFOLIO / PENGALAMAN --- */}
+            {portofolioList.length > 0 && (
+              <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
+                <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-8">
+                  <Layout size={22} /> Portofolio & Pengalaman
+                </h2>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {portofolioList.map((porto, idx) => (
+                    <div key={idx} className="group bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
+                      {/* Area Gambar */}
+                      <div className="h-44 bg-slate-50 overflow-hidden relative">
+                        {porto.gambar ? (
+                          <img 
+                            src={getImageUrl(porto.gambar)} 
+                            alt={porto.judul} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <ImageIcon size={40} />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Area Konten */}
+                      <div className="p-5 flex-1 flex flex-col">
+                        <h3 className="font-bold text-lg text-slate-800 line-clamp-1 mb-2">{porto.judul}</h3>
+                        <p className="text-slate-600 text-sm flex-1 line-clamp-3 mb-4">{porto.deskripsi}</p>
+                        
+                        {porto.link_project && (
+                          <a 
+                            href={porto.link_project} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary/80 transition-colors mt-auto w-fit"
+                          >
+                            <ExternalLink size={14} /> Lihat Proyek
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -403,6 +486,7 @@ export default function AlumniDetail() {
                 Informasi sensitif seperti email, nomor telepon, dan alamat tidak ditampilkan untuk menjaga privasi alumni.
               </p>
             </div>
+            
           </div>
         </div>
       </main>

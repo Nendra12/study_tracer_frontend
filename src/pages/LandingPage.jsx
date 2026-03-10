@@ -10,10 +10,11 @@ import AlumniSuccess from "../components/AlumniSuccess";
 import { motion } from "framer-motion";
 import CareerSection from "../components/CareerSection";
 import { Globe, Mail, Phone } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function LandingPage() {
   const navigate = useNavigate();
-
+  const {user} = useAuth()
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -105,7 +106,7 @@ export default function LandingPage() {
               className="flex flex-wrap gap-4 pt-2"
             >
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => user ? navigate("/alumni")  : navigate("/login")}
                 className="bg-primary text-white px-8 py-4 rounded-xl font-bold cursor-pointer hover:bg-secondary hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2"
               >
                 Masuk Portal Alumni <span className="text-xl">→</span>

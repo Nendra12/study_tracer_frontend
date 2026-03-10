@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('auth_token'));
   const [loading, setLoading] = useState(true);
 
+
   // Fetch current user on mount if token exists
   useEffect(() => {
     if (token) {

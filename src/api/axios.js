@@ -62,9 +62,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-      // Redirect to login if not already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Redirect to landing page if not already there and not on logout page
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/logout' && currentPath !== '/') {
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

@@ -55,6 +55,7 @@ export default function AppRouter() {
       <Route path="/reset-password" element={<LupaPass />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/register" element={isAuthenticated ? <Navigate to="/alumni" /> : <Register />} />
+      <Route path="/kocak" element={<AlumniPortal />} />
       <Route path="/wb-admin" element={
         <ProtectedRoute isAllowed={isAuthenticated && isAdmin} redirectTo="/login" />
       }>

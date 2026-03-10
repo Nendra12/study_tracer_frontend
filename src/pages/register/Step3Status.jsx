@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
 import UniversitySelector from '../../components/UniversitasSelector';
 import { masterDataApi } from '../../api/masterData';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 export default function Step3Status({ onBack, formData, updateFormData, onSubmit, loading }) {
+  // State untuk modal CAPTCHA
+  const [showCaptchaModal, setShowCaptchaModal] = useState(false);
+  const recaptchaRef = useRef(null);
   // 1. Sinkronisasi Status Awal dari formData
   const getInitialStatus = () => {
     if (formData.pekerjaan) return 'Bekerja';
@@ -306,23 +310,91 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-4 flex justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-2 px-4 md:px-6 py-2 border border-fourth rounded-xl text-xs md:text-sm font-bold text-secondary hover:bg-fourth transition-all cursor-pointer"
-        >
-          <ArrowLeft size={16} /> Kembali
-        </button>
-        <button
-          type="button"
-          disabled={loading}
-          onClick={onSubmit}
-          className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-60"
-        >
-          {loading ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Selesai</>}
-        </button>
+      <div className="pt-4">
+        <div className="flex justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex items-center gap-2 px-4 md:px-6 py-2 border border-fourth rounded-xl text-xs md:text-sm font-bold text-secondary hover:bg-fourth transition-all cursor-pointer"
+          >
+            <ArrowLeft size={16} /> Kembali
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => setShowCaptchaModal(true)}
+            className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-60"
+          >
+            {loading ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Selesai</>}
+          </button>
+        </div>
       </div>
+
+      {/* Modal CAPTCHA */}
+      {showCaptchaModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowCaptchaModal(false);
+                updateFormData({ captcha_token: '' });
+                if (recaptchaRef.current) {
+                  recaptchaRef.current.reset();
+                }
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Modal Header */}
+            <div className="mb-6 text-center">
+              <h3 className="text-xl font-bold text-primary mb-2">Verifikasi CAPTCHA</h3>
+              <p className="text-sm text-gray-600">Silakan selesaikan verifikasi keamanan sebelum melanjutkan pendaftaran</p>
+            </div>
+
+            {/* reCAPTCHA */}
+            <div className="flex justify-center mb-6">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}
+                onChange={(token) => {
+                  updateFormData({ captcha_token: token });
+                }}
+                onExpired={() => {
+                  updateFormData({ captcha_token: '' });
+                }}
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="button"
+              disabled={!formData.captcha_token || loading}
+              onClick={() => {
+                setShowCaptchaModal(false);
+                onSubmit();
+              }}
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle size={18} /> Lanjutkan Pendaftaran
+                </>
+              )}
+            </button>
+
+            {!formData.captcha_token && (
+              <p className="text-center text-xs text-gray-500 mt-3">
+                Centang kotak "I'm not a robot" terlebih dahulu
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

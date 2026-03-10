@@ -375,10 +375,14 @@ export default function LihatJawabanDetail() {
               <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
                 <div className="w-20 h-20 rounded-full border-[3px] border-white shadow-md overflow-hidden bg-white">
                   <img
-                    src={alumni.foto ? `${STORAGE_BASE_URL}/${alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.id}`}
+                    src={alumni.foto ? `${STORAGE_BASE_URL}/${alumni.foto_thumbnail || alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.id}`}
                     alt={alumni.nama}
                     className="w-full h-full object-cover"
-                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150' }}
+                    onError={(e) => { 
+                      const original = alumni.foto ? `${STORAGE_BASE_URL}/${alumni.foto}` : null;
+                      if (original && e.target.src !== original) e.target.src = original;
+                      else { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }
+                    }}
                   />
                 </div>
               </div>

@@ -86,10 +86,14 @@ const AlumniTable = ({
                           className="group/thumb relative w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 hover:border-primary transition-all shadow-sm cursor-pointer"
                         >
                           <img 
-                            src={`${STORAGE_BASE_URL}/${item.foto}`} 
+                            src={`${STORAGE_BASE_URL}/${item.foto_thumbnail || item.foto}`} 
                             alt="Alumni" 
                             className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300"
-                            onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + (item.nama || item.nama_alumni); }}
+                            onError={(e) => { 
+                              const original = `${STORAGE_BASE_URL}/${item.foto}`;
+                              if (e.target.src !== original) e.target.src = original;
+                              else e.target.src = 'https://ui-avatars.com/api/?name=' + (item.nama || item.nama_alumni); 
+                            }}
                           />
                           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
                             <Search size={12} className="text-white" />

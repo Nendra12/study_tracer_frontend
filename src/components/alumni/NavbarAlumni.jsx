@@ -81,7 +81,7 @@ export default function NavbarAlumni({ user }) {
         }`}>
 
         {/* Logo Section */}
-        <Link to="/alumni" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <img
             src="/icon.png"
             alt="Alumni Tracer Logo"
