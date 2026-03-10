@@ -10,6 +10,8 @@ import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import AlumniProfileCard from '../../components/alumni/AlumniProfile';
 import { AlumniSkeleton } from '../../components/alumni/skeleton';
 
+import AlumniImg from '../../assets/svg/people-who-support-svgrepo-com.svg'
+
 // API
 import { alumniApi } from '../../api/alumni';
 
@@ -119,8 +121,8 @@ export default function Alumni() {
   return (
     <div className='w-full min-h-screen bg-[#f8f9fa]'>
       {/* --- HEADER SECTION DENGAN BACKGROUND GELAP (KONSISTEN DENGAN BERANDA) --- */}
-      <section className="relative pt-28 pb-24 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      <section className=" relative pt-28 pb-15 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+        <div className=" relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center md:items-center gap-8">
           
           <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
@@ -134,7 +136,8 @@ export default function Alumni() {
 
           {/* Elemen Dekoratif Kanan (Opsional, menyesuaikan Beranda) */}
           <div className="hidden lg:flex items-center justify-center opacity-80">
-            <Users size={120} className="text-white/10" />
+            {/* <Users size={120} className="text-white/10" /> */}
+            <img src={AlumniImg} alt="alumni" className='w-70'/>
           </div>
 
         </div>

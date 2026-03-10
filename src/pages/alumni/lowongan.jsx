@@ -19,6 +19,8 @@ import { LowonganSkeleton, MyLowonganSkeleton } from '../../components/alumni/sk
 import { alumniApi } from '../../api/alumni';
 import { useAuth } from '../../context/AuthContext';
 
+import JobsImg from '../../assets/svg/job-search-svgrepo-com.svg'
+
 // --- OPSI DROPDOWN FILTER ---
 const tipeOptions = ['Semua Tipe', 'Full-time', 'Part-time', 'Kontrak', 'Freelance', 'Magang'];
 const provinsiOptions = ['Semua Provinsi', 'Jawa Timur', 'Jawa Tengah', 'Jawa Barat', 'DKI Jakarta', 'Banten', 'DI Yogyakarta'];
@@ -319,7 +321,7 @@ export default function Lowongan() {
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-[#425A5C]/20 overflow-x-hidden">
       
       {/* --- HEADER SECTION (GAYA BARU) --- */}
-      <section className="relative pt-28 pb-24 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+      <section className="relative pt-30 pb-30 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="max-w-2xl">        
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
@@ -331,7 +333,7 @@ export default function Lowongan() {
           </div>
 
           <div className="hidden lg:flex items-center justify-center opacity-80">
-            <Briefcase size={120} className="text-white/10" />
+            <img src={JobsImg} alt="job" className='w-40'/>
           </div>
         </div>
       </section>
