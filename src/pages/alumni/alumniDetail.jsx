@@ -114,9 +114,15 @@ export default function AlumniDetail() {
   const currentCareer = alumni.current_career;
   const skills = alumni.skills || [];
   const riwayat = alumni.riwayat_status || [];
-  
-  // Data Portofolio (Sesuaikan dengan properti array dari API Anda)
+
+  // Data Portofolio
   const portofolioList = alumni.portofolio || [];
+
+  // Map deskripsi_karier by riwayat id for easy lookup
+  const deskripsiByRiwayat = {};
+  (alumni.deskripsi_karier || []).forEach(d => {
+    deskripsiByRiwayat[d.status_karier_id] = d.deskripsi;
+  });
 
   // Extract current career display info
   let currentStatus = currentCareer?.status || 'Alumni';
@@ -268,10 +274,10 @@ export default function AlumniDetail() {
               <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                 <GraduationCap size={14} /> Informasi Akademik
               </h2>
-              
+
               {/* Diubah menggunakan Grid 2 Kolom */}
               <div className="grid grid-cols-2 gap-y-5 gap-x-4">
-                
+
                 {/* --- BARIS 1 --- */}
                 {alumni.jurusan?.nama && (
                   <div>
@@ -307,7 +313,7 @@ export default function AlumniDetail() {
                     <span className="text-sm font-bold text-primary">{alumni.tempat_lahir}</span>
                   </div>
                 )}
-                
+
               </div>
             </div>
 
@@ -366,7 +372,7 @@ export default function AlumniDetail() {
 
           {/* KONTEN KANAN */}
           <div className="lg:col-span-8 space-y-8">
-            
+
             {/* --- SEKSI: RIWAYAT KARIER --- */}
             {riwayat.length > 0 && (
               <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
@@ -400,21 +406,24 @@ export default function AlumniDetail() {
                       <div key={item.id || idx} className="relative w-full">
                         {/* Dot / Lingkaran Timeline */}
                         <div className="absolute -left-[2.6rem] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-[#2A3E3F] z-10" />
-                        
+
                         {/* Wrapper Flex: Info di Kiri, Tanggal di Kanan */}
                         <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4 w-full">
-                          
+
                           {/* Sisi Kiri: Judul, Subjudul, Lokasi, dan DESKRIPSI */}
                           <div className="flex-1">
                             <h3 className="text-lg font-black text-primary">{title}</h3>
                             {subtitle && <p className="text-sm font-bold text-primary/50 mb-1">{subtitle}</p>}
                             {location && <p className="text-sm text-primary/60 font-medium">{location}</p>}
-                            
-                            {/* Menampilkan deskripsi dari API jika ada */}
-                            {item.deskripsi && (
-                              <p className="text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap">
-                                {item.deskripsi}
-                              </p>
+
+                            {/* Menampilkan deskripsi karier dari API */}
+                            {(item.deskripsi || deskripsiByRiwayat[item.id]) && (
+                              <p
+                                className="text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap"
+                                dangerouslySetInnerHTML={{
+                                  __html: item.deskripsi || deskripsiByRiwayat[item.id] || ""
+                                }}
+                              />
                             )}
                           </div>
 
@@ -439,17 +448,17 @@ export default function AlumniDetail() {
                 <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-8">
                   <Layout size={22} /> Portofolio & Pengalaman
                 </h2>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {portofolioList.map((porto, idx) => (
                     <div key={idx} className="group bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
                       {/* Area Gambar */}
                       <div className="h-44 bg-slate-50 overflow-hidden relative">
                         {porto.gambar ? (
-                          <img 
-                            src={getImageUrl(porto.gambar)} 
-                            alt={porto.judul} 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          <img
+                            src={getImageUrl(porto.gambar)}
+                            alt={porto.judul}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-300">
@@ -462,11 +471,11 @@ export default function AlumniDetail() {
                       <div className="p-5 flex-1 flex flex-col">
                         <h3 className="font-bold text-lg text-slate-800 line-clamp-1 mb-2">{porto.judul}</h3>
                         <p className="text-slate-600 text-sm flex-1 line-clamp-3 mb-4">{porto.deskripsi}</p>
-                        
+
                         {porto.link_project && (
-                          <a 
-                            href={porto.link_project} 
-                            target="_blank" 
+                          <a
+                            href={porto.link_project}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary/80 transition-colors mt-auto w-fit"
                           >
@@ -486,7 +495,7 @@ export default function AlumniDetail() {
                 Informasi sensitif seperti email, nomor telepon, dan alamat tidak ditampilkan untuk menjaga privasi alumni.
               </p>
             </div>
-            
+
           </div>
         </div>
       </main>

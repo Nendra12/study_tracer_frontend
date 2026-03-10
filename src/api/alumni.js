@@ -85,16 +85,17 @@ export const alumniApi = {
     return api.get(`/alumni/directory/${id}`);
   },
 
+  // Deskripsi Karier
   addDeskripsiKarier(data) {
-    return api.post(`/alumni/deskripsi-karier`, data)
+    return api.post('/alumni/deskripsi-karier', data);
   },
 
   updateDeskripsiKarier(id, data) {
-    return api.put(`/alumni/deskripsi-karier/${id}`, data)
+    return api.put(`/alumni/deskripsi-karier/${id}`, data);
   },
 
   deleteDeskripsiKarier(id) {
-    return api.delete(`/alumni/deskripsi-karier/${id}`)
+    return api.delete(`/alumni/deskripsi-karier/${id}`);
   },
 
   // Download Public Profile as PDF
@@ -127,19 +128,6 @@ export const alumniApi = {
 
   deleteAllNotifications() {
     return api.delete('/alumni/notifications');
-  },
-
-  // Deskripsi Karier
-  createDeskripsiKarier(data) {
-    return api.post('/alumni/deskripsi-karier', data);
-  },
-
-  updateDeskripsiKarier(id, data) {
-    return api.put(`/alumni/deskripsi-karier/${id}`, data);
-  },
-
-  deleteDeskripsiKarier(id) {
-    return api.delete(`/alumni/deskripsi-karier/${id}`);
   },
 
   // Portofolio
