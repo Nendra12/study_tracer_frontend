@@ -143,7 +143,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
     .filter(s => !mySkills.find(ms => ms.id === s.id))
     .map(s => s.nama_skill || s.nama || s.name);
 
-  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'keahlian' && u.status === 'pending');
+  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'skills' && u.status === 'pending');
 
   return (
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">

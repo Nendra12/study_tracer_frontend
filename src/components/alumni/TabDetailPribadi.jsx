@@ -54,7 +54,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
     }
   }
 
-  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'detail_pribadi' && u.status === 'pending');
+  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'personal_info' && u.status === 'pending');
 
   const inputClass = (isEdit) => isEdit
     ? "w-full bg-white border border-primary/30 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
