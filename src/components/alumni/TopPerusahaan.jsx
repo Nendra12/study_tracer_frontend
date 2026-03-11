@@ -1,21 +1,19 @@
 import React from 'react';
-import { Building2, GraduationCap, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion'; // Ditambahkan untuk animasi statistik
+import { motion } from 'framer-motion';
 import LockOverlay from './LockOverlay';
 import telkomLogo from '../../assets/telkom.png';
 import ugmLogo from '../../assets/ugm.png';
 import itbLogo from '../../assets/itb.png';
 
-// --- DATA DUMMY UNIVERSITAS ---
+// --- DATA DUMMY ---
 const dummyUniversitas = [
-  { id: 1, name: "Universitas Indonesia", location: "Depok", alumniCount: 120 },
-  { id: 2, name: "Institut Teknologi Bandung", location: "Bandung", alumniCount: 95 },
-  { id: 3, name: "Universitas Brawijaya", location: "Malang", alumniCount: 84 },
-  { id: 4, name: "Universitas Diponegoro", location: "Semarang", alumniCount: 62 },
-  { id: 5, name: "Universitas Airlangga", location: "Surabaya", alumniCount: 45 },
+  { id: 1, name: "Universitas Indonesia", location: "Depok", alumniCount: 120, color: "#EAB308" },
+  { id: 2, name: "Institut Teknologi Bandung", location: "Bandung", alumniCount: 95, color: "#0EA5E9" },
+  { id: 3, name: "Universitas Brawijaya", location: "Malang", alumniCount: 84, color: "#6366F1" },
+  { id: 4, name: "Universitas Diponegoro", location: "Semarang", alumniCount: 62, color: "#F43F5E" },
+  { id: 5, name: "Universitas Airlangga", location: "Surabaya", alumniCount: 45, color: "#10B981" },
 ];
 
-// --- DATA LOGO BERJALAN ---
 const runningLogos = [
   { name: "Google", domain: "google.com" },
   { name: "Microsoft", domain: "microsoft.com" },
@@ -27,38 +25,35 @@ const runningLogos = [
   { name: "Universitas Gadjah Mada", domain: "ugm.ac.id", customLogo: ugmLogo },
   { name: "Universitas Brawijaya", domain: "ub.ac.id" },
   { name: "Institut Teknologi Sepuluh Nopember", domain: "its.ac.id" },
+
 ];
 
-export default function TopPerusahaan({ 
-  data, 
-  dataUniversitas, 
-  locked, 
-  totalPerusahaan = 45, 
-  totalAlumni = 320 
+export default function TopPerusahaan({
+  data,
+  dataUniversitas,
+  locked
 }) {
-
   const univList = dataUniversitas?.length > 0 ? dataUniversitas : dummyUniversitas;
   const topCompanies = data?.length > 0 ? data.slice(0, 5) : [];
   const topUnivs = univList.slice(0, 5);
 
-  // Mencari nilai tertinggi untuk menghitung persentase bar statistik
-  const maxCompAlumni = topCompanies.length > 0 ? Math.max(...topCompanies.map(c => c.alumniCount || 0)) : 1;
-  const maxUnivAlumni = topUnivs.length > 0 ? Math.max(...topUnivs.map(u => u.alumniCount || 0)) : 1;
+  const maxCompAlumni = Math.max(...(topCompanies.map(c => c.alumniCount) || [1]));
+  const maxUnivAlumni = Math.max(...topUnivs.map(u => u.alumniCount));
 
   return (
-    <section className="mb-12 relative space-y-6">
-      
+    <section className="py-12 bg-[#FAFAFB] min-h-screen font-sans">
       {/* Inject Custom CSS untuk Animasi Marquee */}
       <style>
         {`
-          @keyframes scroll-x {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+          @keyframes scroll-left {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
           }
-          .animate-marquee {
-            display: flex;
-            width: max-content;
-            animation: scroll-x 35s linear infinite;
+          .animate-scroll {
+            animation: scroll-left 40s linear infinite;
+          }
+          .animate-scroll:hover {
+            animation-play-state: paused;
           }
         `}
       </style>
@@ -68,154 +63,121 @@ export default function TopPerusahaan({
         <p className="text-2xl font-black text-[#3c5759] tracking-tight text-center mb-6">
           Mitra Industri Teknologi & Perguruan Tinggi Terkemuka
         </p>
-        <div className="flex overflow-hidden relative w-full py-4">
-          <div className="absolute left-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-r from-[#f8f9fa] to-transparent pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l from-[#f8f9fa] to-transparent pointer-events-none"></div>
-          
-          {/* gap-6 diubah jadi gap-10 agar jarak antar logo pas setelah kotak putih dihapus */}
-          <div className="animate-marquee gap-10 pl-10 items-center">
-            {[...runningLogos, ...runningLogos].map((item, idx) => (
-              <div 
-                key={idx} 
-                // bg-white, border, shadow, dan p-3 dihapus
-                // w dan h disesuaikan agar ukurannya tetap proporsional
-                className="w-14 h-14 md:w-16 md:h-16 shrink-0 flex items-center justify-center hover:-translate-y-1 hover:scale-105 transition-all duration-300"
-                title={item.name}
-              >
-                <img 
-                  src={item.customLogo || `https://s2.googleusercontent.com/s2/favicons?domain=${item.domain}&sz=256`}
-                  alt={`${item.name} logo`}
-                  className="w-full h-full object-contain drop-shadow-sm" // Tambahan drop-shadow tipis agar logo lebih menonjol
-                  onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${item.name}&background=transparent&color=64748b&rounded=true&bold=true`; }}
-                />
-              </div>
-            ))}
+        <div className="relative w-full overflow-hidden py-4">
+          {/* Gradient overlays */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-[#FAFAFB] via-[#FAFAFB]/50 to-transparent pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-[#FAFAFB] via-[#FAFAFB]/50 to-transparent pointer-events-none"></div>
+
+          {/* Scrolling content - dibuat 2 set identik untuk seamless loop */}
+          <div className="flex">
+            <div className="flex gap-12 items-center animate-scroll">
+              {[...runningLogos, ...runningLogos].map((item, idx) => (
+                <div
+                  key={`set1-${idx}`}
+                  className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center hover:scale-110 transition-transform duration-300"
+                  title={item.name}
+                >
+                  <img
+                    src={item.customLogo || `https://s2.googleusercontent.com/s2/favicons?domain=${item.domain}&sz=256`}
+                    alt={`${item.name} logo`}
+                    className="w-full h-full object-contain drop-shadow-md filter hover:drop-shadow-lg"
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=3c5759&color=fff&rounded=true&bold=true&size=128`;
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ================= SECTION 2: STATISTIK GRID ================= */}
-      <div className={`grid grid-cols-1 xl:grid-cols-2 gap-6 relative transition-all duration-500 ${locked ? 'grayscale opacity-60' : ''}`}>
-        
-        {/* --- KOLOM KIRI: STATISTIK TOP PERUSAHAAN --- */}
-        <div className="bg-white rounded-[2rem] border border-slate-100 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-2xl font-black text-[#3c5759] tracking-tight">Statistik Perusahaan</h2>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Serapan Alumni Terbanyak</p>
-            </div>
-            <div className="hidden sm:flex w-12 h-12 bg-[#3c5759]/10 rounded-2xl items-center justify-center text-[#3c5759] shrink-0">
-              <Building2 size={24} strokeWidth={2.5} />
-            </div>
-          </div>
+      {/* --- MAIN CONTENT --- */}
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative">
 
-          {/* Bar List */}
-          <div className="flex flex-col gap-5 flex-1">
-            {topCompanies.length > 0 ? (
-              topCompanies.map((comp, idx) => (
-                <div key={comp.id || idx} className="group flex flex-col gap-2 relative">
-                  <div className="flex items-end justify-between">
-                    <div className="flex items-center gap-3 min-w-0 pr-4">
-                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-[#3c5759] border border-slate-100 shrink-0">
-                        <Building2 size={16} />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-sm font-bold text-slate-800 truncate">{comp.name}</h3>
-                        <p className="text-slate-400 text-[10px] font-semibold mt-0.5 flex items-center gap-1 truncate">
-                          <MapPin size={10} /> <span className="truncate">{comp.location}</span>
-                        </p>
-                      </div>
+          {/* STATS: COMPANIES */}
+          <div className={`space-y-8 ${locked ? 'blur-sm select-none' : ''}`}>
+            <div className="space-y-1">
+              <span className="text-[#3c5759] font-bold text-4xl">01</span>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Top 5 Perusahaan</h3>
+              <p className="text-slate-500 text-sm">Top Perusahaan yang banyak menyerap alumni.</p>
+            </div>
+
+            <div className="space-y-12">
+              {topCompanies.map((comp, idx) => (
+                <div key={idx} className="group relative">
+                  <div className="flex justify-between items-end mb-2">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-400 mb-1">Rank #{idx + 1}</span>
+                      <span className="text-lg font-bold text-slate-800 group-hover:text-[#3c5759] transition-colors">
+                        {comp.name}
+                      </span>
                     </div>
-                    <div className="text-right shrink-0 pb-1">
-                      <span className="text-lg font-black text-[#3c5759] leading-none">{comp.alumniCount}</span>
-                      <span className="text-[10px] font-bold text-slate-400 ml-1">Alumni</span>
+                    <div className="text-right flex flex-col gap-1">
+                      <span className="text-2xl font-black text-slate-900">{comp.alumniCount}</span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Alumni</span>
                     </div>
                   </div>
-                  {/* Progress Bar */}
-                  <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-[6px] w-full bg-slate-200/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${(comp.alumniCount / maxCompAlumni) * 100}%` }}
-                      viewport={{ once: true, amount: 0.8 }}
-                      transition={{ duration: 1.2, ease: "easeOut", delay: idx * 0.1 }}
-                      className="h-full bg-gradient-to-r from-[#526061] to-[#3c5759] rounded-full relative"
-                    >
-                      <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
-                    </motion.div>
+                      transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-[#3c5759]"
+                    />
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full py-10 px-4 rounded-2xl border-2 border-dashed border-slate-100">
-                <Building2 size={32} className="text-slate-300 mb-3" />
-                <p className="text-slate-500 font-bold text-sm">Belum ada data statistik</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* --- KOLOM KANAN: STATISTIK TOP UNIVERSITAS --- */}
-        <div className="bg-white rounded-[2rem] border border-slate-100 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-2xl font-black text-[#3c5759] tracking-tight">Statistik Universitas</h2>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Pilihan Studi Lanjutan</p>
-            </div>
-            <div className="hidden sm:flex w-12 h-12 bg-amber-50 rounded-2xl items-center justify-center text-amber-500 shrink-0">
-              <GraduationCap size={24} strokeWidth={2.5} />
+              ))}
             </div>
           </div>
 
-          {/* Bar List */}
-          <div className="flex flex-col gap-5 flex-1">
-            {topUnivs.map((univ, idx) => (
-              <div key={univ.id || idx} className="group flex flex-col gap-2 relative">
-                <div className="flex items-end justify-between">
-                  <div className="flex items-center gap-3 min-w-0 pr-4">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-amber-500 border border-slate-100 shrink-0">
-                      <GraduationCap size={16} />
+          {/* STATS: UNIVERSITIES */}
+          <div className={`space-y-8 ${locked ? 'blur-sm select-none' : ''}`}>
+            <div className="space-y-1">
+              <span className="text-amber-500 font-bold text-4xl">02</span>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Top 5 Universitas</h3>
+              <p className="text-slate-500 text-sm">Universitas yang digemari para alumni.</p>
+            </div>
+
+            <div className="space-y-2">
+              {topUnivs.map((univ, idx) => (
+                <div key={idx} className="p-6 bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-50 hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                      {/* Inisial sebagai pengganti Logo/Ikon */}
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-slate-300 text-xl border border-slate-100">
+                        {univ.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800 leading-tight">{univ.name}</h4>
+                        <p className="text-xs text-slate-400 font-medium">{univ.location}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold text-slate-800 truncate">{univ.name}</h3>
-                      <p className="text-slate-400 text-[10px] font-semibold mt-0.5 flex items-center gap-1 truncate">
-                        <MapPin size={10} /> <span className="truncate">{univ.location}</span>
-                      </p>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-xl font-black text-slate-900 leading-none">{univ.alumniCount}</span>
+                      {/* <div className="h-1 w-8 bg-amber-400 rounded-full mt-2" /> */}
+                      <span className="block text-[10px] font-bold text-amber-400 uppercase">Alumni</span>
                     </div>
                   </div>
-                  <div className="text-right shrink-0 pb-1">
-                    <span className="text-lg font-black text-[#3c5759] leading-none">{univ.alumniCount}</span>
-                    <span className="text-[10px] font-bold text-slate-400 ml-1">Alumni</span>
-                  </div>
                 </div>
-                {/* Progress Bar */}
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${(univ.alumniCount / maxUnivAlumni) * 100}%` }}
-                    viewport={{ once: true, amount: 0.8 }}
-                    transition={{ duration: 1.2, ease: "easeOut", delay: idx * 0.1 }}
-                    className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full relative"
-                  >
-                    <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
-                  </motion.div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          {/* OVERLAY */}
+          {locked && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center">
+              <div className="bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] shadow-2xl border border-white text-center max-w-sm mx-4">
+                <p className="text-slate-900 font-black text-xl mb-2">Content Locked</p>
+                <p className="text-slate-500 text-sm mb-6">Verify your account and complete the survey to unlock full insights.</p>
+                <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95">
+                  Unlock Statistics
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Locked State Overlay */}
-        {locked && (
-          <LockOverlay 
-            message="Verifikasi akun & isi kuesioner untuk membuka statistik ini" 
-            roundedClass="rounded-[2rem]"
-            iconSize={32}
-            textClass="text-sm"
-          />
-        )}
-
       </div>
     </section>
   );

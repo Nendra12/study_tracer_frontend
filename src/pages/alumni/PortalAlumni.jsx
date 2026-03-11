@@ -49,62 +49,12 @@ const mockAnnouncements = [
   },
 ];
 
-const mockJobs = [
-  {
-    id: 1,
-    role: "Frontend Developer",
-    company: "Kreasi Digital",
-    location: "Jakarta Selatan",
-    type: "Full-time",
-  },
-  {
-    id: 2,
-    role: "UI/UX Designer",
-    company: "Studio Kreatif",
-    location: "Remote",
-    type: "Contract",
-  },
-  {
-    id: 3,
-    role: "System Analyst",
-    company: "Bank Rakyat",
-    location: "Bandung",
-    type: "Full-time",
-  },
-];
 
 const mockStats = [
   { label: "Bekerja", percentage: 65, color: "bg-emerald-500" },
   { label: "Melanjutkan Studi", percentage: 20, color: "bg-blue-500" },
   { label: "Wirausaha", percentage: 10, color: "bg-amber-500" },
   { label: "Mencari Kerja", percentage: 5, color: "bg-[#9ca3af]" },
-];
-
-const mockLatestAlumni = [
-  {
-    id: 1,
-    name: "Sarah Nabila",
-    major: "Multimedia",
-    year: "2023",
-    job: "Graphic Designer",
-    avatar: "https://i.pravatar.cc/150?img=47",
-  },
-  {
-    id: 2,
-    name: "Bima Arya",
-    major: "Teknik Komputer Jaringan",
-    year: "2022",
-    job: "Network Engineer",
-    avatar: "https://i.pravatar.cc/150?img=11",
-  },
-  {
-    id: 3,
-    name: "Alya Maharani",
-    major: "Rekayasa Perangkat Lunak",
-    year: "2024",
-    job: "Mahasiswa",
-    avatar: "https://i.pravatar.cc/150?img=5",
-  },
 ];
 
 // Mock data status pengajuan
@@ -202,8 +152,8 @@ export default function AlumniPortal() {
     };
   }, []);
 
-  console.log(berandaData)
-
+  // console.log(berandaData)
+  // console.log("kocakk")
   return (
     <div>
       {/* ================= HERO SECTION ================= */}

@@ -22,7 +22,6 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
   return (
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div
-        whileHover={locked ? {} : { y: -5 }}
         onClick={() => {
           if (!locked && data.id) navigate(`/alumni/daftar-alumni/${data.id}`);
         }}

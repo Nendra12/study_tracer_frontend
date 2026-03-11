@@ -62,7 +62,6 @@ export default function Alumni() {
     fetchFilters();
   }, []);
 
-  // Fetch alumni directory
   const fetchAlumni = useCallback(async (page = 1) => {
     try {
       setLoading(true);
@@ -145,12 +144,12 @@ export default function Alumni() {
 
       {/* --- FLOATING FILTER & SEARCH SECTION (DIPERBARUI MENJADI SEJAJAR) --- */}
       <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100">
+        <div className="bg-white p-4 md:px-4 md:pt-4 md:pb-7 rounded-2xl shadow-xl border border-slate-100">
           
-          <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
+          <div className="flex  flex-col lg:flex-row lg:items-center gap-3 w-full">
             
             {/* --- FLOATING FILTER & SEARCH SECTION (PERBAIKAN SEJAJAR) --- */}
-            <div className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
               
               {/* Form Pencarian - Menyesuaikan mt-3 dan h-47 agar segaris dengan Dropdown */}
               <form 

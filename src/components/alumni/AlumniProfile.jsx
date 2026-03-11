@@ -25,9 +25,9 @@ const getStatusIcon = (status) => {
 export default function AlumniProfileCard({ alumni, onClick, onImageClick }) {
   const imageSrc = alumni.foto ? getImageUrl(alumni.foto) : null;
 
+  // console.log(alumni)
   return (
     <motion.div
-      whileHover={{ y: -8 }}
       onClick={onClick}
       className="bg-white rounded-3xl flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
     >
@@ -43,7 +43,7 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick }) {
           <img 
             src={imageSrc} 
             alt={alumni.name} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+            className="w-full h-full object-cover transition-transform duration-700" 
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-primary/20 bg-primary/5">
