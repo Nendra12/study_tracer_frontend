@@ -72,6 +72,20 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await authApi.me();
+      const userData = res.data.data;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+      throw err;
+    }
+  }, [token]);
+
   const value = {
     user,
     token,
@@ -82,6 +96,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    refreshUser,
   };
 
   return (

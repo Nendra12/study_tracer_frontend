@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Bell, 
-  Briefcase, 
-  ShieldCheck, 
-  Info, 
+import {
+  Bell,
+  Briefcase,
+  ShieldCheck,
+  Info,
   CheckCircle2,
   Check,
   Trash2,
@@ -56,10 +56,10 @@ const formatRelativeTime = (timestamp) => {
 
 export default function Notifikasi() {
   const { user: authUser } = useAuth();
-  
+
   const navUser = {
-    nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
-    foto: authUser?.alumni?.foto || authUser?.foto
+    nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
+    foto: authUser?.profile?.foto || authUser?.foto
   };
 
   const [notifications, setNotifications] = useState([]);
@@ -86,15 +86,15 @@ export default function Notifikasi() {
     setLoading(true);
     setError('');
     try {
-      const params = { 
+      const params = {
         page: currentPage,
         per_page: 15
       };
-      
+
       if (activeFilter === 'belum_dibaca') {
         params.unread_only = 'true';
       }
-      
+
       const response = await alumniApi.getNotifications(params);
       setNotifications(response.data.data.data || []);
       setTotalPages(response.data.data.last_page || 1);
@@ -138,7 +138,7 @@ export default function Notifikasi() {
 
   const clearAllNotifications = async () => {
     if (!window.confirm('Yakin ingin menghapus semua notifikasi?')) return;
-    
+
     try {
       await alumniApi.deleteAllNotifications();
       fetchNotifications();
@@ -151,7 +151,7 @@ export default function Notifikasi() {
 
   const deleteNotification = async (id, e) => {
     e.stopPropagation(); // Prevent marking as read when deleting
-    
+
     try {
       await alumniApi.deleteNotification(id);
       fetchNotifications();
@@ -168,7 +168,7 @@ export default function Notifikasi() {
       <section className="relative pt-28 pb-24 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
         {/* max-w-5xl digunakan untuk notifikasi agar nyaman dibaca, tapi padding disejajarkan dengan class w-full */}
         <div className="relative z-10 w-full max-w-5xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          
+
           <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
               Notifikasi
@@ -187,36 +187,33 @@ export default function Notifikasi() {
 
       {/* --- MAIN CONTENT (FLOATING CARD AREA) --- */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12 flex flex-col">
-        
+
         <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-[500px]">
-          
+
           {/* TOOLBAR FILTER & AKSI */}
           <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white shrink-0">
             {/* Tabs (Gaya Baru) */}
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setActiveFilter('semua')}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${
-                  activeFilter === 'semua' 
-                    ? 'bg-[#425A5C] text-white shadow-md' 
+                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeFilter === 'semua'
+                    ? 'bg-[#425A5C] text-white shadow-md'
                     : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'
-                }`}
+                  }`}
               >
                 Semua
               </button>
               <button
                 onClick={() => setActiveFilter('belum_dibaca')}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  activeFilter === 'belum_dibaca' 
-                    ? 'bg-[#425A5C] text-white shadow-md' 
+                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-2 ${activeFilter === 'belum_dibaca'
+                    ? 'bg-[#425A5C] text-white shadow-md'
                     : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'
-                }`}
+                  }`}
               >
                 Belum Dibaca
                 {unreadCount > 0 && (
-                  <span className={`${
-                    activeFilter === 'belum_dibaca' ? 'bg-white text-[#425A5C]' : 'bg-red-500 text-white'
-                  } text-[10px] px-1.5 py-0.5 rounded-full min-w-5 text-center leading-none shadow-sm`}>
+                  <span className={`${activeFilter === 'belum_dibaca' ? 'bg-white text-[#425A5C]' : 'bg-red-500 text-white'
+                    } text-[10px] px-1.5 py-0.5 rounded-full min-w-5 text-center leading-none shadow-sm`}>
                     {unreadCount}
                   </span>
                 )}
@@ -226,7 +223,7 @@ export default function Notifikasi() {
             {/* Aksi Kanan */}
             {notifications.length > 0 && (
               <div className="flex items-center gap-2 sm:gap-3">
-                <button 
+                <button
                   onClick={markAllAsRead}
                   disabled={unreadCount === 0 || loading}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-500 hover:text-[#425A5C] hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -234,7 +231,7 @@ export default function Notifikasi() {
                   <Check size={14} strokeWidth={3} /> <span className="hidden sm:inline">Tandai semua dibaca</span>
                 </button>
                 <div className="w-px h-6 bg-slate-200 hidden sm:block"></div>
-                <button 
+                <button
                   onClick={clearAllNotifications}
                   disabled={loading}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -277,11 +274,10 @@ export default function Notifikasi() {
                           transition={{ duration: 0.2 }}
                           key={notif.id_notification}
                           onClick={() => !notif.is_read && markAsRead(notif.id_notification)}
-                          className={`group relative flex items-start gap-4 p-4 md:p-5 rounded-2xl cursor-pointer transition-all duration-300 border ${
-                            !notif.is_read
-                              ? 'bg-blue-50/40 border-blue-100 hover:bg-blue-50/70 shadow-sm' 
+                          className={`group relative flex items-start gap-4 p-4 md:p-5 rounded-2xl cursor-pointer transition-all duration-300 border ${!notif.is_read
+                              ? 'bg-blue-50/40 border-blue-100 hover:bg-blue-50/70 shadow-sm'
                               : 'bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 shadow-sm'
-                          }`}
+                            }`}
                         >
                           {/* Dot Unread Indicator */}
                           {!notif.is_read && (
@@ -323,9 +319,9 @@ export default function Notifikasi() {
                   </div>
                 ) : (
                   /* EMPTY STATE */
-                  <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }} 
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     className="flex flex-col items-center justify-center h-full min-h-[300px] text-center py-10"
                   >
                     <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-5">
@@ -333,8 +329,8 @@ export default function Notifikasi() {
                     </div>
                     <h3 className="text-lg font-black text-[#425A5C] mb-2">Tidak Ada Notifikasi</h3>
                     <p className="text-slate-500 text-sm max-w-sm mx-auto">
-                      {activeFilter === 'belum_dibaca' 
-                        ? 'Hebat! Anda telah membaca semua notifikasi terbaru. Tidak ada hal mendesak saat ini.' 
+                      {activeFilter === 'belum_dibaca'
+                        ? 'Hebat! Anda telah membaca semua notifikasi terbaru. Tidak ada hal mendesak saat ini.'
                         : 'Belum ada aktivitas atau pemberitahuan baru untuk akun Anda saat ini.'}
                     </p>
                   </motion.div>
@@ -353,11 +349,11 @@ export default function Notifikasi() {
               >
                 <ChevronLeft size={16} /> Sebelumnya
               </button>
-              
+
               <span className="text-sm font-bold text-slate-500">
                 Halaman {currentPage} dari {totalPages}
               </span>
-              
+
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}

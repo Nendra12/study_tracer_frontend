@@ -30,8 +30,8 @@ const waktuOptions = ['Terbaru', 'Terlama', 'Mendekati Deadline'];
 export default function Lowongan() {
   const { user: authUser } = useAuth();
   const user = {
-    nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
-    foto: authUser?.alumni?.foto || authUser?.foto
+    nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
+    foto: authUser?.profile?.foto || authUser?.foto
   };
 
   const navigate = useNavigate();
@@ -322,7 +322,7 @@ export default function Lowongan() {
       {/* --- HEADER SECTION (GAYA BARU) --- */}
       <section className="relative pt-30 pb-30 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="max-w-2xl">        
+          <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
               Bursa Kerja
             </h1>
@@ -332,7 +332,7 @@ export default function Lowongan() {
           </div>
 
           <div className="hidden lg:flex items-center justify-center opacity-80">
-            <img src={JobsImg} alt="job" className='w-40'/>
+            <img src={JobsImg} alt="job" className='w-40' />
           </div>
         </div>
       </section>
@@ -340,32 +340,32 @@ export default function Lowongan() {
       {/* --- FLOATING CARD (TABS & FILTER) --- */}
       <section className="relative z-40 w-full max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100">
-          
+
           {/* TABS & ACTION BUTTON */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
             <div className="flex gap-2 flex-wrap">
-              <button 
-                onClick={() => { setActiveTab('semua'); setCurrentPage(1); }} 
+              <button
+                onClick={() => { setActiveTab('semua'); setCurrentPage(1); }}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-[#425A5C] text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'}`}
               >
                 Semua Lowongan
               </button>
-              <button 
-                onClick={() => { setActiveTab('disimpan'); setCurrentPage(1); }} 
+              <button
+                onClick={() => { setActiveTab('disimpan'); setCurrentPage(1); }}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'disimpan' ? 'bg-[#425A5C] text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'}`}
               >
                 <Bookmark size={14} fill={activeTab === 'disimpan' ? 'currentColor' : 'none'} /> Disimpan
               </button>
-              <button 
-                onClick={() => { setActiveTab('saya'); setMyPage(1); }} 
+              <button
+                onClick={() => { setActiveTab('saya'); setMyPage(1); }}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'saya' ? 'bg-[#425A5C] text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'}`}
               >
                 <FileText size={14} /> Lowongan Saya
               </button>
             </div>
 
-            <button 
-              onClick={() => setIsModalOpen(true)} 
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="bg-white border-2 border-[#425A5C]/20 text-[#425A5C] px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-sm hover:bg-[#425A5C] hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Plus size={16} /> Tambah Lowongan
@@ -374,25 +374,25 @@ export default function Lowongan() {
 
           {/* SEARCH & FILTER FORM */}
           <div className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
-            
+
             {/* FORM PENCARIAN */}
-            <form 
-              onSubmit={activeTab === 'saya' ? handleMySearch : handleSearch} 
+            <form
+              onSubmit={activeTab === 'saya' ? handleMySearch : handleSearch}
               className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
             >
               <div className="relative flex-1 flex items-center">
                 <Search className="absolute left-3 text-gray-400" size={18} />
-                <input 
-                  type="text" 
-                  value={activeTab === 'saya' ? mySearch : searchQuery} 
-                  onChange={(e) => activeTab === 'saya' ? setMySearch(e.target.value) : setSearchQuery(e.target.value)} 
-                  placeholder={activeTab === 'saya' ? "Cari lowongan saya..." : "Cari berdasarkan judul pekerjaan..."} 
-                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none" 
+                <input
+                  type="text"
+                  value={activeTab === 'saya' ? mySearch : searchQuery}
+                  onChange={(e) => activeTab === 'saya' ? setMySearch(e.target.value) : setSearchQuery(e.target.value)}
+                  placeholder={activeTab === 'saya' ? "Cari lowongan saya..." : "Cari berdasarkan judul pekerjaan..."}
+                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
                 />
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="bg-[#425A5C] text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
               >
                 Cari

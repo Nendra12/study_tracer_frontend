@@ -23,15 +23,15 @@ export default function LowonganDetail() {
   const { user: authUser } = useAuth();
 
   const navUser = {
-    nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
-    foto: authUser?.alumni?.foto || authUser?.foto
+    nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
+    foto: authUser?.profile?.foto || authUser?.foto
   };
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [savingId, setSavingId] = useState(null);
-  
+
   // State untuk Pratinjau Gambar
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
@@ -44,9 +44,9 @@ export default function LowonganDetail() {
 
         let isSaved = false;
         try {
-           const savedRes = await alumniApi.getSavedLowongan({ per_page: 100 });
-           const savedList = savedRes.data?.data?.data || savedRes.data?.data || [];
-           isSaved = savedList.some(item => String(item.id_lowongan || item.lowongan?.id) === String(id));
+          const savedRes = await alumniApi.getSavedLowongan({ per_page: 100 });
+          const savedList = savedRes.data?.data?.data || savedRes.data?.data || [];
+          isSaved = savedList.some(item => String(item.id_lowongan || item.lowongan?.id) === String(id));
         } catch (e) { /* Abaikan jika error fetch saved */ }
 
         setJob({ ...jobData, is_saved: isSaved });
@@ -102,7 +102,7 @@ export default function LowonganDetail() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-[#3c5759]/20">
-      
+
       {/* Navbar diabaikan (sudah diatur secara global jika ada) */}
 
       <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
@@ -123,9 +123,9 @@ export default function LowonganDetail() {
 
             {/* AREA HEADER BARU */}
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
-              
+
               {/* --- BAGIAN POSTER HEADER (Bisa Diklik Untuk Pratinjau) --- */}
-              <div 
+              <div
                 onClick={() => setShowPreviewModal(true)}
                 className="w-full h-[220px] md:h-[280px] bg-slate-50 flex items-center justify-center border-b border-slate-100 relative overflow-hidden cursor-pointer"
                 title="Klik untuk lihat poster penuh"
@@ -144,7 +144,7 @@ export default function LowonganDetail() {
               {/* Box Info Utama */}
               <div className="p-6 md:p-8 relative bg-white">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 mb-5">
-                  
+
                   {/* Perusahaan & Lokasi */}
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-[#3c5759]/5 rounded-2xl flex items-center justify-center border border-[#3c5759]/10 shrink-0">
@@ -165,11 +165,10 @@ export default function LowonganDetail() {
                     <button
                       onClick={handleToggleSave}
                       disabled={savingId === job.id}
-                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all shrink-0 cursor-pointer ${
-                        job.is_saved
+                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all shrink-0 cursor-pointer ${job.is_saved
                           ? 'bg-[#3c5759]/10 border-[#3c5759]/20 text-[#3c5759]'
                           : 'bg-white border-slate-200 text-slate-400 hover:text-[#3c5759] hover:border-[#3c5759]/30 hover:bg-slate-50'
-                      } ${savingId === job.id ? 'opacity-80 cursor-not-allowed' : ''}`}
+                        } ${savingId === job.id ? 'opacity-80 cursor-not-allowed' : ''}`}
                       title={job.is_saved ? "Hapus dari Tersimpan" : "Simpan Lowongan"}
                     >
                       <Bookmark
@@ -238,7 +237,7 @@ export default function LowonganDetail() {
                     { icon: MapPin, label: "Lokasi", value: job.lokasi || job.perusahaan?.kota?.nama },
                     { icon: Briefcase, label: "Tipe", value: job.tipe_pekerjaan },
                     { icon: Calendar, label: "Batas Melamar", value: job.lowongan_selesai ? new Date(job.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' },
-                    { icon: Timer, label: "Jam Kerja", value: (job.jam_mulai && job.jam_berakhir) ? `${job.jam_mulai.substring(0,5)} - ${job.jam_berakhir.substring(0,5)} WIB` : '-' },
+                    { icon: Timer, label: "Jam Kerja", value: (job.jam_mulai && job.jam_berakhir) ? `${job.jam_mulai.substring(0, 5)} - ${job.jam_berakhir.substring(0, 5)} WIB` : '-' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4 text-slate-600 group">
                       <div className="p-2 bg-slate-50 rounded-xl text-slate-400 group-hover:bg-[#3c5759]/10 group-hover:text-[#3c5759] transition-colors border border-slate-100 shrink-0">

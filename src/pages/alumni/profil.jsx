@@ -67,8 +67,8 @@ export default function Profil() {
   }
 
   const navUser = {
-    nama_alumni: profile?.nama || authUser?.alumni?.nama_alumni || 'Alumni',
-    foto: profile?.foto || authUser?.alumni?.foto,
+    nama_alumni: profile?.nama || authUser?.profile?.nama || 'Alumni',
+    foto: profile?.foto || authUser?.profile?.foto,
     can_access_all: true
   };
 
@@ -130,7 +130,7 @@ export default function Profil() {
         </div>
       </main>
 
-      <style dangerouslySetInnerHTML={{__html: `.hide-scrollbar::-webkit-scrollbar { display: none; }`}} />
+      <style dangerouslySetInnerHTML={{ __html: `.hide-scrollbar::-webkit-scrollbar { display: none; }` }} />
     </div>
   );
 }

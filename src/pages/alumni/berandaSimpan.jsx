@@ -39,21 +39,21 @@ function getGreeting() {
   if (h < 12)
     return {
       text: "Selamat Pagi",
-      icon: <img src={morning} alt={"Selamat Pagi"} className='w-10 sm:w-12 drop-shadow-md'/>,
+      icon: <img src={morning} alt={"Selamat Pagi"} className='w-10 sm:w-12 drop-shadow-md' />,
     };
   if (h < 15)
     return {
       text: "Selamat Siang",
-      icon: <img src={afternoon} alt={"Selamat Siang"} className='w-10 sm:w-12 drop-shadow-md'/>,
+      icon: <img src={afternoon} alt={"Selamat Siang"} className='w-10 sm:w-12 drop-shadow-md' />,
     };
   if (h < 18)
     return {
       text: "Selamat Sore",
-      icon: <img src={afternoon} alt={"Selamat Sore"} className='w-10 sm:w-12 drop-shadow-md'/>,
+      icon: <img src={afternoon} alt={"Selamat Sore"} className='w-10 sm:w-12 drop-shadow-md' />,
     };
   return {
     text: "Selamat Malam",
-    icon: <img src={night} alt={"Selamat Malam"} className='w-10 sm:w-12 drop-shadow-md'/>,
+    icon: <img src={night} alt={"Selamat Malam"} className='w-10 sm:w-12 drop-shadow-md' />,
   };
 }
 
@@ -108,7 +108,7 @@ export default function Beranda() {
   const lowonganTerbaru = berandaData?.lowongan_terbaru || { locked: true, data: [] };
   const topPerusahaan = berandaData?.top_perusahaan || { locked: true, data: [] };
 
-  const namaAlumni = profile?.nama || authUser?.alumni?.nama_alumni || "Alumni";
+  const namaAlumni = profile?.nama || authUser?.profile?.nama || "Alumni";
   const firstName = namaAlumni.split(" ")[0];
   return (
     <>
@@ -220,7 +220,7 @@ export default function Beranda() {
                   className="absolute -top-6 -right-2 z-30 bg-white text-slate-800 p-3.5 pr-6 rounded-2xl shadow-2xl border border-slate-100 flex items-center gap-3"
                 >
                   <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600">
-                    <Briefcase size={20} strokeWidth={2.5}/>
+                    <Briefcase size={20} strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Sudah Bekerja</span>
@@ -241,7 +241,7 @@ export default function Beranda() {
                 >
                   <div className="relative">
                     <div className="w-10 h-10 rounded-xl bg-third/10 flex items-center justify-center text-third">
-                       <BellRing size={20} strokeWidth={2.5} />
+                      <BellRing size={20} strokeWidth={2.5} />
                     </div>
                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
                   </div>
@@ -343,7 +343,7 @@ export default function Beranda() {
                           <div className="bg-white rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center gap-6 border border-blue-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
                             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
                             <div className="bg-blue-50 p-4 rounded-2xl text-blue-500 shrink-0">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><line x1="10" y1="9" x2="8" y2="9" /></svg>
                             </div>
                             <div className="flex-1">
                               <h3 className="text-lg font-bold text-slate-800 mb-1">

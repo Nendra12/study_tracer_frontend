@@ -91,12 +91,10 @@ export default function TopPerusahaan({
           </div>
         </div>
       </div>
-
-      {/* --- MAIN CONTENT --- */}
+      
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative">
 
-          {/* STATS: COMPANIES */}
           <div className={`space-y-8 ${locked ? 'blur-sm select-none' : ''}`}>
             <div className="space-y-1">
               <span className="text-[#3c5759] font-bold text-4xl">01</span>
