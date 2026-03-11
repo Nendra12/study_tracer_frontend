@@ -11,6 +11,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   // State untuk modal CAPTCHA
   const [showCaptchaModal, setShowCaptchaModal] = useState(false);
   const recaptchaRef = useRef(null);
+
   // 1. Sinkronisasi Status Awal dari formData
   const getInitialStatus = () => {
     if (formData.pekerjaan) return 'Bekerja';
@@ -33,7 +34,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [loadingKota, setLoadingKota] = useState(false);
 
   // State Form
-  // Tambahkan id_provinsi ke dalam inisial state pekerjaan agar dropdown berfungsi
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { posisi: '', nama_perusahaan: '', id_provinsi: '', id_kota: '', jalan: '' });
   const [universitas, setUniversitas] = useState(formData.universitas || { nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '' });
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { id_bidang: '', nama_usaha: '' });
@@ -188,34 +188,46 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {/* FORM BEKERJA */}
         {selectedStatus === 'Bekerja' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            <InputDropdownEdit
-              label="Pekerjaan Sekarang *"
-              value={pekerjaan.posisi}
-              options={["UI/UX", "DevOps", "Cloud Engineering", "Karyawan"]}
-              placeholder="Masukkan nama pekerjaan"
-              isRequired={true}
-              onSelect={(val) => setPekerjaan({ ...pekerjaan, posisi: val })}
-            />
-            <InputDropdownEdit
-              label="Nama Perusahaan *"
-              value={pekerjaan.nama_perusahaan}
-              options={perusahaanList}
-              placeholder="Ketik atau pilih nama perusahaan"
-              isRequired={true}
-              onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
-            />
-            <YearsInput
-              label="Tahun Masuk"
-              isRequired={true}
-              value={tahunMulai}
-              onSelect={(val) => setTahunMulai(val)}
-            />
             
-            {renderTahunSelesai("Tahun Selesai")}
+            {/* PERBAIKAN Z-INDEX: Berurutan mengecil dari atas ke bawah */}
+            <div className="relative z-[80]">
+              <InputDropdownEdit
+                label="Pekerjaan Sekarang *"
+                value={pekerjaan.posisi}
+                options={["UI/UX", "DevOps", "Cloud Engineering", "Karyawan"]}
+                placeholder="Masukkan nama pekerjaan"
+                isRequired={true}
+                onSelect={(val) => setPekerjaan({ ...pekerjaan, posisi: val })}
+              />
+            </div>
+            
+            <div className="relative z-[70]">
+              <InputDropdownEdit
+                label="Nama Perusahaan *"
+                value={pekerjaan.nama_perusahaan}
+                options={perusahaanList}
+                placeholder="Ketik atau pilih nama perusahaan"
+                isRequired={true}
+                onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
+              />
+            </div>
+            
+            <div className="relative z-[60]">
+              <YearsInput
+                label="Tahun Masuk"
+                isRequired={true}
+                value={tahunMulai}
+                onSelect={(val) => setTahunMulai(val)}
+              />
+            </div>
+            
+            <div className="relative z-[50]">
+              {renderTahunSelesai("Tahun Selesai")}
+            </div>
 
-            {/* AREA LOKASI (PROVINSI & KOTA) - Tampilan Baru */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 relative z-50">
-              <div className="w-full">
+            {/* AREA LOKASI (PROVINSI & KOTA) - Z-index diturunkan jadi 40 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 relative z-[40]">
+              <div className="w-full relative z-[45]">
                 <SmoothDropdown
                   label="Provinsi *"
                   isSearchable={true}
@@ -231,7 +243,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 />
               </div>
 
-              <div className="w-full">
+              <div className="w-full relative z-[40]">
                 <SmoothDropdown
                   label="Kota / Kabupaten *"
                   isSearchable={true}
@@ -254,35 +266,43 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {/* FORM KULIAH */}
         {selectedStatus === 'Kuliah' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 relative z-[80]">
               <UniversitySelector
                 onUnivSelect={(val) => setUniversitas(prev => ({ ...prev, nama_universitas: val }))}
                 onJurusanSelect={(val) => setUniversitas(prev => ({ ...prev, id_jurusan_kuliah: val }))}
               />
             </div>
-            <SmoothDropdown
-              label="Jalur Masuk Kuliah"
-              value={universitas.jalur_masuk}
-              options={["SNBP", "SNBT", "Mandiri", "Beasiswa"]}
-              isRequired={true}
-              onSelect={(val) => setUniversitas({ ...universitas, jalur_masuk: val })}
-            />
-            <SmoothDropdown
-              label="Jenjang Kuliah"
-              value={universitas.jenjang}
-              options={["D3", "D4", "S1", "S2", "S3"]}
-              isRequired={true}
-              onSelect={(val) => setUniversitas({ ...universitas, jenjang: val })}
-            />
-            <YearsInput label="Tahun Masuk" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            {renderTahunSelesai("Tahun Lulus")}
+            <div className="relative z-[70]">
+              <SmoothDropdown
+                label="Jalur Masuk Kuliah"
+                value={universitas.jalur_masuk}
+                options={["SNBP", "SNBT", "Mandiri", "Beasiswa"]}
+                isRequired={true}
+                onSelect={(val) => setUniversitas({ ...universitas, jalur_masuk: val })}
+              />
+            </div>
+            <div className="relative z-[60]">
+              <SmoothDropdown
+                label="Jenjang Kuliah"
+                value={universitas.jenjang}
+                options={["D3", "D4", "S1", "S2", "S3"]}
+                isRequired={true}
+                onSelect={(val) => setUniversitas({ ...universitas, jenjang: val })}
+              />
+            </div>
+            <div className="relative z-[50]">
+              <YearsInput label="Tahun Masuk" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
+            </div>
+            <div className="relative z-[40]">
+              {renderTahunSelesai("Tahun Lulus")}
+            </div>
           </div>
         )}
 
         {/* FORM WIRAUSAHA */}
         {selectedStatus === 'Wirausaha' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1">
+            <div className="space-y-1 relative z-[70]">
               <label className="text-[11px] font-bold text-secondary uppercase">Nama Usaha *</label>
               <input
                 type="text"
@@ -291,15 +311,21 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 className="mt-2 w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <SmoothDropdown
-              label="Bidang Usaha"
-              value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
-              options={bidangUsahaList}
-              isRequired={true}
-              onSelect={(val) => setWirausaha({ ...wirausaha, id_bidang: bidangUsahaMap[val] || val })}
-            />
-            <YearsInput label="Tahun Mulai" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            {renderTahunSelesai("Tahun Berakhir")}
+            <div className="relative z-[60]">
+              <SmoothDropdown
+                label="Bidang Usaha"
+                value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
+                options={bidangUsahaList}
+                isRequired={true}
+                onSelect={(val) => setWirausaha({ ...wirausaha, id_bidang: bidangUsahaMap[val] || val })}
+              />
+            </div>
+            <div className="relative z-[50]">
+              <YearsInput label="Tahun Mulai" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
+            </div>
+            <div className="relative z-[40]">
+              {renderTahunSelesai("Tahun Berakhir")}
+            </div>
           </div>
         )}
 
@@ -310,7 +336,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-4">
+      <div className="pt-4 relative z-10">
         <div className="flex justify-between">
           <button
             type="button"
@@ -355,17 +381,19 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             </div>
 
             {/* reCAPTCHA */}
-            <div className="flex justify-center mb-6">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}
-                onChange={(token) => {
-                  updateFormData({ captcha_token: token });
-                }}
-                onExpired={() => {
-                  updateFormData({ captcha_token: '' });
-                }}
-              />
+            <div className="flex justify-center mb-6 min-h-[100px] w-full overflow-hidden items-center rounded-lg">
+              <div className="scale-95 md:scale-100 origin-center"> {/* Sedikit di-scale agar muat di HP */}
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}
+                  onChange={(token) => {
+                    updateFormData({ captcha_token: token });
+                  }}
+                  onExpired={() => {
+                    updateFormData({ captcha_token: '' });
+                  }}
+                />
+              </div>
             </div>
 
             {/* Submit Button */}

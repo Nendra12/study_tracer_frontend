@@ -3,8 +3,6 @@ import React from 'react';
 export default function ProfilSkeleton() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-      {/* Navbar placeholder */}
-      <div className="h-16 bg-white shadow-sm animate-pulse" />
 
       <main className="flex-1 w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
         {/* Profile Header skeleton */}
