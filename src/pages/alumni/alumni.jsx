@@ -50,8 +50,13 @@ export default function Alumni() {
       try {
         const res = await alumniApi.getAlumniDirectoryFilters();
         const data = res.data.data;
+        
+        const formattedTahun = (data.tahun || [])
+          .map(String)
+          .sort((a, b) => b - a);
+
         setFilterOptions({
-          tahun: data.tahun || [],
+          tahun: formattedTahun,
           status: data.status || [],
           universitas: data.universitas || [],
         });
@@ -67,9 +72,12 @@ export default function Alumni() {
       setLoading(true);
       setError(null);
 
-      const params = { page, per_page: 8 };
+      const hasAngkatanFilter = selectedTahun && selectedTahun !== 'Semua Angkatan';
+
+      const params = { page, per_page: hasAngkatanFilter ? 100 : 8 };
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      if (selectedTahun && selectedTahun !== 'Semua Tahun') params.tahun = selectedTahun;
+      
+      // Tidak mengirim param tahun ke backend karena backend tidak support filter angkatan
       if (selectedStatus && selectedStatus !== 'Semua Status') params.status = selectedStatus;
       if (selectedUniv && selectedUniv !== 'Semua Universitas') params.universitas = selectedUniv;
 
@@ -77,11 +85,22 @@ export default function Alumni() {
       const responseData = res.data.data;
 
       if (responseData?.data) {
-        setAlumniData(responseData.data);
-        setTotalPages(responseData.last_page || 1);
-        setCurrentPage(responseData.current_page || 1);
+        let items = responseData.data;
+
+        // Client-side filter by angkatan (sebagai fallback jika backend tidak mendukung)
+        if (hasAngkatanFilter) {
+          items = items.filter(a => String(a.angkatan) === String(selectedTahun));
+        }
+
+        setAlumniData(items);
+        setTotalPages(hasAngkatanFilter ? 1 : (responseData.last_page || 1));
+        setCurrentPage(hasAngkatanFilter ? 1 : (responseData.current_page || 1));
       } else if (Array.isArray(responseData)) {
-        setAlumniData(responseData);
+        let items = responseData;
+        if (hasAngkatanFilter) {
+          items = items.filter(a => String(a.angkatan) === String(selectedTahun));
+        }
+        setAlumniData(items);
         setTotalPages(1);
       } else {
         setAlumniData([]);
@@ -112,8 +131,8 @@ export default function Alumni() {
     fetchAlumni(1);
   };
 
-  // Build dropdown options with "Semua" prefix
-  const tahunOptions = ['Semua Tahun', ...filterOptions.tahun];
+  // PERUBAHAN: Opsi default diubah jadi 'Semua Angkatan'
+  const tahunOptions = ['Semua Angkatan', ...filterOptions.tahun];
   const statusOptions = ['Semua Status', ...filterOptions.status];
   const univOptions = ['Semua Universitas', ...filterOptions.universitas];
 
@@ -135,23 +154,20 @@ export default function Alumni() {
 
           {/* Elemen Dekoratif Kanan */}
           <div className="hidden lg:flex items-center justify-center opacity-80">
-            {/* <Users size={120} className="text-white/10" /> */}
             <img src={AlumniImg} alt="alumni" className='w-70'/>
           </div>
 
         </div>
       </section>
 
-      {/* --- FLOATING FILTER & SEARCH SECTION (DIPERBARUI MENJADI SEJAJAR) --- */}
+      {/* --- FLOATING FILTER & SEARCH SECTION --- */}
       <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
         <div className="bg-white p-4 md:px-4 md:pt-4 md:pb-7 rounded-2xl shadow-xl border border-slate-100">
           
-          <div className="flex  flex-col lg:flex-row lg:items-center gap-3 w-full">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
             
-            {/* --- FLOATING FILTER & SEARCH SECTION (PERBAIKAN SEJAJAR) --- */}
             <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
               
-              {/* Form Pencarian - Menyesuaikan mt-3 dan h-47 agar segaris dengan Dropdown */}
               <form 
                 onSubmit={handleSearch} 
                 className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
@@ -174,10 +190,15 @@ export default function Alumni() {
                 </button>
               </form>
 
-              {/* Dropdowns Filter - Tetap sejajar di samping pencarian */}
               <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
                 <div className="w-[calc(50%-6px)] lg:w-40 relative z-[60]">
-                  <SmoothDropdown options={tahunOptions} value={selectedTahun} onSelect={(val) => setSelectedTahun(val === 'Semua Tahun' ? '' : val)} placeholder="Tahun Lulus" />
+                  {/* PERUBAHAN: Placeholder dan handler disesuaikan dengan 'Semua Angkatan' */}
+                  <SmoothDropdown 
+                    options={tahunOptions} 
+                    value={selectedTahun} 
+                    onSelect={(val) => setSelectedTahun(val === 'Semua Angkatan' ? '' : val)} 
+                    placeholder="Tahun Angkatan" 
+                  />
                 </div>
                 <div className="w-[calc(50%-6px)] lg:w-44 relative z-50">
                   <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
