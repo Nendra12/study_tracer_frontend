@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Plus, X, Save, Loader2 } from 'lucide-react';
+import { Award, Plus, X, Save, Loader2, Clock } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
 
@@ -128,8 +128,8 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
       await alumniApi.updateProfile(formData);
       setHasChanges(false);
       setShowSearch(false);
-      onShowSuccess('Keahlian berhasil diperbarui');
-      onRefresh(); // Refresh data utama setelah benar-benar sukses disimpan
+      onShowSuccess('Perubahan keahlian telah dikirim, menunggu persetujuan admin');
+      onRefresh();
     } catch (err) {
       console.error('Failed to save skills:', err);
       alert('Gagal menyimpan keahlian: ' + (err.response?.data?.message || err.message));
@@ -143,8 +143,23 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
     .filter(s => !mySkills.find(ms => ms.id === s.id))
     .map(s => s.nama_skill || s.nama || s.name);
 
+  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'skills' && u.status === 'pending');
+
   return (
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
+
+      {/* Pending Update Alert */}
+      {pendingUpdates.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Anda memiliki perubahan keahlian yang sedang ditinjau oleh admin. Perubahan baru akan menggantikan pengajuan sebelumnya.
+            </p>
+          </div>
+        </div>
+      )}
       
       {/* --- HEADER KEAHLIAN --- */}
       <div className="flex items-center justify-between mb-8">

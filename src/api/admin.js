@@ -71,6 +71,19 @@ export const adminApi = {
     return api.post(`/admin/career-updates/${id}/reject`);
   },
 
+  // ── Pending Profile Updates (All Sections) ────
+  getPendingProfileUpdates() {
+    return api.get('/admin/pending-profile-updates');
+  },
+
+  approveProfileUpdate(id) {
+    return api.post(`/admin/profile-updates/${id}/approve`);
+  },
+
+  rejectProfileUpdate(id, reason = '') {
+    return api.post(`/admin/profile-updates/${id}/reject`, { reason });
+  },
+
   // ── Lowongan Management ────────────────────────
   getLowongan(filters = {}, perPage = 15) {
     return api.get('/admin/lowongan', { params: { ...filters, per_page: perPage } });

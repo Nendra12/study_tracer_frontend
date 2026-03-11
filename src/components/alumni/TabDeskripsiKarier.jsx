@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2 } from 'lucide-react';
+import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock } from 'lucide-react';
 import SmoothDropdown from '../admin/SmoothDropdown';
 import { alumniApi } from '../../api/alumni';
 import DeskripsiKerierInput from '../admin/DeskripsiKerierInput';
@@ -17,6 +17,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
 
   const riwayatKarier = profile?.riwayat_status || [];
   const deskripsiList = profile?.deskripsi_karier || [];
+  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'deskripsi_karier' && u.status === 'pending');
 
   const handleInputChange = (data) => {
     setFormData(prev => ({ ...prev, deskripsi: data }));
@@ -45,7 +46,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
       try {
         setLoading(true);
         await alumniApi.deleteDeskripsiKarier(id);
-        onShowSuccess('Deskripsi karier berhasil dihapus!');
+        onShowSuccess('Penghapusan deskripsi karier telah dikirim, menunggu persetujuan admin');
         onRefresh();
       } catch (error) {
         const message = error.response?.data?.message || 'Gagal menghapus deskripsi';
@@ -72,14 +73,14 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
           id_riwayat: formData.id_riwayat,
           deskripsi: formData.deskripsi
         });
-        onShowSuccess('Deskripsi karier berhasil diperbarui!');
+        onShowSuccess('Perubahan deskripsi karier telah dikirim, menunggu persetujuan admin');
       } else {
         // Add new
         await alumniApi.addDeskripsiKarier({
           id_riwayat: formData.id_riwayat,
           deskripsi: formData.deskripsi
         });
-        onShowSuccess('Deskripsi karier berhasil disimpan!');
+        onShowSuccess('Deskripsi karier telah dikirim, menunggu persetujuan admin');
       }
 
       onRefresh();
@@ -125,6 +126,19 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
 
   return (
     <div className="p-6 lg:p-10 animate-fade-in">
+      {/* Pending Update Alert */}
+      {pendingUpdates.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Anda memiliki perubahan deskripsi karier yang sedang ditinjau oleh admin. Perubahan baru akan menggantikan pengajuan sebelumnya.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold text-primary">Deskripsi Karier</h2>
