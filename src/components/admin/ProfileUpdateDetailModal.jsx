@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Check, Loader2 } from 'lucide-react';
 
 const SECTION_LABELS = {
-  detail_pribadi: 'Detail Pribadi',
-  keahlian: 'Keahlian',
+  personal_info: 'Detail Pribadi',
+  skills: 'Keahlian',
+  social_media: 'Media Sosial',
   portofolio: 'Portofolio',
   deskripsi_karier: 'Deskripsi Karier',
 };
@@ -29,12 +30,12 @@ export default function ProfileUpdateDetailModal({
 
   if (!isOpen || !detail) return null;
 
-  const sectionLabel = SECTION_LABELS[detail.section] || detail.section;
+  const sectionLabel = SECTION_LABELS[detail.section] || detail.field || detail.section;
   const loadingKey = `profile-${detail.id}`;
   const isActionLoading = actionLoading === loadingKey;
 
-  // Build comparison rows from old_data / new_data
-  const changes = buildChanges(detail);
+  // Backend already provides pre-built changes array
+  const changes = detail.changes || [];
 
   return createPortal(
     <AnimatePresence>
@@ -54,7 +55,7 @@ export default function ProfileUpdateDetailModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-5xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
           <div className="p-6 md:px-8 md:pt-8 md:pb-6 flex items-start justify-between bg-white relative z-10">
@@ -63,15 +64,7 @@ export default function ProfileUpdateDetailModal({
                 Detail Pembaruan {sectionLabel}
               </h2>
               <p className="text-sm font-bold text-slate-400 mt-1 flex items-center gap-2">
-                <span className="text-slate-700">{detail.alumni?.nama || 'Alumni'}</span>
-                {detail.created_at && (
-                  <>
-                    {' • '}
-                    {new Date(detail.created_at).toLocaleDateString('id-ID', {
-                      day: 'numeric', month: 'long', year: 'numeric',
-                    })}
-                  </>
-                )}
+                <span className="text-slate-700">{detail.name}</span> • {detail.time}
               </p>
             </div>
             <button
@@ -96,19 +89,20 @@ export default function ProfileUpdateDetailModal({
             </div>
 
             {/* Table header */}
-            <div className="grid grid-cols-11 gap-4 pb-4 border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-widest">
-              <div className="col-span-3">Field</div>
+            <div className="grid grid-cols-12 gap-4 pb-4 border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+              <div className="col-span-3">Jenis Perubahan</div>
               <div className="col-span-4">Data Sebelumnya</div>
-              <div className="col-span-4">Data Baru</div>
+              <div className="col-span-1 text-center"></div>
+              <div className="col-span-4">Hasil Perubahan</div>
             </div>
 
             {/* Rows */}
-            <div className="flex flex-col gap-3 mt-4">
+            <div className="flex flex-col gap-4 mt-4">
               {changes.length === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-8">Tidak ada detail perubahan yang tersedia.</p>
               ) : (
                 changes.map((change, idx) => (
-                  <div key={idx} className="grid grid-cols-11 gap-4 items-center">
+                  <div key={idx} className="grid grid-cols-12 gap-4 items-center p-2 -mx-2 rounded-2xl hover:bg-slate-50/50 transition-colors">
                     <div className="col-span-3">
                       <div className="px-4 py-3 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold flex items-center h-full">
                         {change.label}
@@ -118,6 +112,9 @@ export default function ProfileUpdateDetailModal({
                       <div className="px-4 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-xs font-medium h-full flex items-center break-all">
                         {renderValue(change.old)}
                       </div>
+                    </div>
+                    <div className="col-span-1 flex justify-center text-slate-300">
+                      <ArrowRight size={16} strokeWidth={2.5} />
                     </div>
                     <div className="col-span-4">
                       <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-bold h-full flex items-center break-all shadow-sm shadow-emerald-100/50">
@@ -131,27 +128,29 @@ export default function ProfileUpdateDetailModal({
           </div>
 
           {/* Footer */}
-          <div className="p-6 md:px-8 md:py-6 bg-white flex items-center justify-end gap-4 relative z-10 border-t border-slate-50">
+          <div className="p-6 md:px-8 md:py-6 bg-white flex items-center justify-between sm:justify-end gap-4 relative z-10 border-t border-slate-50">
             <button
               onClick={onClose}
-              className="font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer text-sm mr-2"
+              className="font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer text-sm hidden sm:block mr-2"
             >
               Tutup
             </button>
-            <button
-              onClick={() => onReject(detail.id)}
-              disabled={isActionLoading}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer text-sm disabled:opacity-50"
-            >
-              {isActionLoading ? <Loader2 size={16} className="animate-spin" /> : <X size={16} strokeWidth={3} />} Tolak
-            </button>
-            <button
-              onClick={() => onApprove(detail.id)}
-              disabled={isActionLoading}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md hover:bg-[#2e4042] transition-colors cursor-pointer text-sm disabled:opacity-50"
-            >
-              {isActionLoading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} strokeWidth={3} />} Terima
-            </button>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => onReject(detail.id)}
+                disabled={isActionLoading}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer text-sm disabled:opacity-50"
+              >
+                {isActionLoading ? <Loader2 size={16} className="animate-spin" /> : <X size={16} strokeWidth={3} />} Tolak
+              </button>
+              <button
+                onClick={() => onApprove(detail.id)}
+                disabled={isActionLoading}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md hover:bg-[#2e4042] transition-colors cursor-pointer text-sm disabled:opacity-50"
+              >
+                {isActionLoading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} strokeWidth={3} />} Terima
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -160,24 +159,8 @@ export default function ProfileUpdateDetailModal({
   );
 }
 
-// ── Helpers ──
-
-function buildChanges(detail) {
-  const oldData = detail.old_data || {};
-  const newData = detail.new_data || {};
-
-  // Collect all keys from both old and new
-  const keys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
-
-  return keys.map((key) => ({
-    label: key.replace(/_/g, ' '),
-    old: oldData[key] ?? '-',
-    new: newData[key] ?? '-',
-  }));
-}
-
 function renderValue(val) {
-  if (val === null || val === undefined) return '-';
+  if (val === null || val === undefined || val === '-') return '-';
   if (typeof val === 'object') {
     if (Array.isArray(val)) return val.join(', ') || '-';
     return JSON.stringify(val);

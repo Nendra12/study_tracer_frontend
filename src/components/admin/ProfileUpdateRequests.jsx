@@ -252,7 +252,7 @@ export default function ProfileUpdateRequests() {
           <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Pembaruan Profil Lainnya</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {profileRequests.map((req) => {
-              const meta = SECTION_META[req.section] || { label: req.section, icon: FileEdit, color: 'slate' };
+              const meta = SECTION_META[req.section] || { label: req.field || req.section, icon: FileEdit };
               const SectionIcon = meta.icon;
               const loadingKey = `profile-${req.id}`;
 
@@ -263,25 +263,23 @@ export default function ProfileUpdateRequests() {
                 >
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#425A5C]/40 to-[#425A5C] opacity-50 group-hover:opacity-100 transition-opacity"></div>
                   
-                  {/* Alumni info */}
+                  {/* Alumni info — same flat format as career cards */}
                   <div className="flex justify-between items-start mb-6 mt-2">
                     <div className="flex items-center gap-3">
-                      {req.alumni?.foto ? (
-                        <img src={req.alumni.foto} alt={req.alumni.nama} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50" />
+                      {req.image ? (
+                        <img src={req.image} alt={req.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50" />
                       ) : (
                         <div className="w-12 h-12 rounded-full bg-[#425A5C]/10 text-[#425A5C] flex items-center justify-center font-black text-lg border-2 border-slate-50">
-                          {(req.alumni?.nama || 'A').substring(0, 2).toUpperCase()}
+                          {req.initials || (req.name || 'A').substring(0, 2).toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <h3 className="font-black text-slate-800 text-[15px] leading-tight mb-0.5">{req.alumni?.nama || 'Alumni'}</h3>
-                        <p className="text-[11px] text-slate-400 font-bold">
-                          {req.alumni?.angkatan ? `Angkatan ${req.alumni.angkatan}` : ''} {req.alumni?.nis ? `• ${req.alumni.nis}` : ''}
-                        </p>
+                        <h3 className="font-black text-slate-800 text-[15px] leading-tight mb-0.5">{req.name}</h3>
+                        <p className="text-[11px] text-slate-400 font-bold">Angkatan {req.angkatan} • {req.userId}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shrink-0">
-                      <Clock size={12} /> {req.created_at ? new Date(req.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                      <Clock size={12} /> {req.time}
                     </div>
                   </div>
 
@@ -300,21 +298,14 @@ export default function ProfileUpdateRequests() {
                       </span>
                     </div>
 
-                    {/* Quick glance of changes */}
-                    {req.new_data && typeof req.new_data === 'object' && (
-                      <div className="flex flex-wrap gap-2">
-                        {Object.keys(req.new_data).slice(0, 4).map((key) => (
-                          <span key={key} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
-                            {key.replace(/_/g, ' ')}
-                          </span>
-                        ))}
-                        {Object.keys(req.new_data).length > 4 && (
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-[11px] font-bold">
-                            +{Object.keys(req.new_data).length - 4} lainnya
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {/* Quick glance of changes — uses pre-built changes array */}
+                    <div className="flex flex-wrap gap-2">
+                      {(req.changes || []).map((change, idx) => (
+                        <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
+                          {change.label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Action buttons */}
