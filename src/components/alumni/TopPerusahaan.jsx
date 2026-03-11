@@ -25,7 +25,6 @@ const runningLogos = [
   { name: "Universitas Gadjah Mada", domain: "ugm.ac.id", customLogo: ugmLogo },
   { name: "Universitas Brawijaya", domain: "ub.ac.id" },
   { name: "Institut Teknologi Sepuluh Nopember", domain: "its.ac.id" },
-
 ];
 
 export default function TopPerusahaan({
@@ -38,7 +37,7 @@ export default function TopPerusahaan({
   const topUnivs = univList.slice(0, 5);
 
   const maxCompAlumni = Math.max(...(topCompanies.map(c => c.alumniCount) || [1]));
-  const maxUnivAlumni = Math.max(...topUnivs.map(u => u.alumniCount));
+  const maxUnivAlumni = Math.max(...(topUnivs.map(u => u.alumniCount) || [1]));
 
   return (
     <section className="py-12 bg-[#FAFAFB] min-h-screen font-sans">
@@ -92,9 +91,10 @@ export default function TopPerusahaan({
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative">
+      <div className="max-w-7xl mx-auto px-6 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative">
 
+          {/* STATS: COMPANIES */}
           <div className={`space-y-8 ${locked ? 'blur-sm select-none' : ''}`}>
             <div className="space-y-1">
               <span className="text-[#3c5759] font-bold text-4xl">01</span>
@@ -102,19 +102,19 @@ export default function TopPerusahaan({
               <p className="text-slate-500 text-sm">Top Perusahaan yang banyak menyerap alumni.</p>
             </div>
 
-            <div className="space-y-12">
+            <div className="space-y-10">
               {topCompanies.map((comp, idx) => (
                 <div key={idx} className="group relative">
                   <div className="flex justify-between items-end mb-2">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-400 mb-1">Rank #{idx + 1}</span>
-                      <span className="text-lg font-bold text-slate-800 group-hover:text-[#3c5759] transition-colors">
+                    <div className="flex flex-col pb-1">
+                      {/* Rank dihapus */}
+                      <span className="text-lg font-bold text-slate-800 group-hover:text-[#3c5759] transition-colors leading-none">
                         {comp.name}
                       </span>
                     </div>
                     <div className="text-right flex flex-col gap-1">
-                      <span className="text-2xl font-black text-slate-900">{comp.alumniCount}</span>
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Alumni</span>
+                      <span className="text-2xl font-black text-slate-900 leading-none">{comp.alumniCount}</span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase leading-none">Alumni</span>
                     </div>
                   </div>
                   <div className="h-[6px] w-full bg-slate-200/50 rounded-full overflow-hidden">
@@ -138,25 +138,27 @@ export default function TopPerusahaan({
               <p className="text-slate-500 text-sm">Universitas yang digemari para alumni.</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-10">
               {topUnivs.map((univ, idx) => (
-                <div key={idx} className="p-6 bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-50 hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                      {/* Inisial sebagai pengganti Logo/Ikon */}
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-slate-300 text-xl border border-slate-100">
-                        {univ.name.charAt(0)}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-800 leading-tight">{univ.name}</h4>
-                        <p className="text-xs text-slate-400 font-medium">{univ.location}</p>
-                      </div>
+                <div key={idx} className="group relative">
+                  <div className="flex justify-between items-end mb-2">
+                    <div className="flex flex-col pb-1">
+                      <span className="text-lg font-bold text-slate-800 group-hover:text-amber-500 transition-colors leading-none">
+                        {univ.name}
+                      </span>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-xl font-black text-slate-900 leading-none">{univ.alumniCount}</span>
-                      {/* <div className="h-1 w-8 bg-amber-400 rounded-full mt-2" /> */}
-                      <span className="block text-[10px] font-bold text-amber-400 uppercase">Alumni</span>
+                    <div className="text-right flex flex-col gap-1">
+                      <span className="text-2xl font-black text-slate-900 leading-none">{univ.alumniCount}</span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase leading-none">Alumni</span>
                     </div>
+                  </div>
+                  <div className="h-[6px] w-full bg-slate-200/50 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${(univ.alumniCount / maxUnivAlumni) * 100}%` }}
+                      transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-amber-500"
+                    />
                   </div>
                 </div>
               ))}
