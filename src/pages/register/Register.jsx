@@ -191,7 +191,7 @@ export default function Register() {
             };
           }
 
-          await alumniApi.updateCareerStatus(careerPayload);
+          // await alumniApi.updateCareerStatus(careerPayload);
         } catch (careerErr) {
           console.error('Career status save failed:', careerErr);
           // Don't block registration for career status failure

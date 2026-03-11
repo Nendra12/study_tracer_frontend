@@ -80,7 +80,7 @@ function getGreeting() {
 
 export default function Beranda() {
   const greeting = getGreeting();
-  const { user: authUser } = useAuth();
+  const { user: authUser, refreshUser } = useAuth();
   const navigate = useNavigate();
   // State
   const [berandaData, setBerandaData] = useState(null);
@@ -131,7 +131,7 @@ export default function Beranda() {
   const lowonganTerbaru = berandaData?.lowongan_terbaru || { locked: true, data: [] };
   const topPerusahaan = berandaData?.top_perusahaan || { locked: true, data: [] };
 
-  const namaAlumni = profile?.nama || authUser?.alumni?.nama_alumni || "Alumni";
+  const namaAlumni = profile?.nama || authUser?.profile?.nama || "Alumni";
   const firstName = namaAlumni.split(" ")[0];
   // console.log(profile)
 
@@ -143,6 +143,24 @@ export default function Beranda() {
     profile?.current_status?.perusahaan ??
     profile?.current_status?.universitas ??
     null;
+
+  // Refresh data ketika kuesioner selesai diisi
+  useEffect(() => {
+    if (hasCompletedKuesioner && !loading) {
+      const refreshData = async () => {
+        try {
+          // Refresh user data di context (untuk update navbar)
+          await refreshUser();
+          // Refresh beranda data (untuk update konten halaman)
+          const res = await alumniApi.getBeranda();
+          setBerandaData(res.data.data);
+        } catch (err) {
+          console.error('Error refreshing data:', err);
+        }
+      };
+      refreshData();
+    }
+  }, [hasCompletedKuesioner, loading, refreshUser]);
 
   return (
     <div className="w-full bg-[#f8f9fa] min-h-screen selection:bg-[#3c5759]/20 overflow-x-hidden">
@@ -403,9 +421,12 @@ export default function Beranda() {
                       </div>
                       <button
                         onClick={() => {
-                          if (kuesionerPending[0]?.id) navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
+                          if (isVerified && kuesionerPending[0]?.id) {
+                            navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
+                          }
                         }}
-                        className="w-full md:w-auto bg-[#3c5759] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#3c5759]/20"
+                        className={`w-full md:w-auto bg-[#3c5759] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-[#3c5759]/20 
+                        ${isVerified ? "cursor-pointer" : "cursor-n opacity-50 cursor-not-allowed"}`}
                       >
                         ISI SEKARANG
                       </button>
@@ -576,7 +597,6 @@ export default function Beranda() {
         )}
       </main>
 
-      {/* ================= MODALS ================= */}
       <AnimatePresence>
         <StatusPengajuanModal
           isOpen={isStatusOpen}

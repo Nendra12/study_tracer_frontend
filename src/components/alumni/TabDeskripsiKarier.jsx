@@ -278,7 +278,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
                   </div>
                 </div>
                 <p
-                  className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
+                  className="prose  text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: item.deskripsi }}
                 ></p>
               </div>
