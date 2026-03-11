@@ -71,8 +71,8 @@ export default function AlumniDetail() {
   }
 
   const user = {
-    nama_alumni: authUser?.alumni?.nama_alumni || authUser?.nama || 'Alumni',
-    foto: authUser?.alumni?.foto || authUser?.foto,
+    nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
+    foto: authUser?.profile?.foto || authUser?.foto,
     can_access_all: true,
   };
 
@@ -419,7 +419,7 @@ export default function AlumniDetail() {
                             {/* Menampilkan deskripsi karier dari API */}
                             {(item.deskripsi || deskripsiByRiwayat[item.id]) && (
                               <p
-                                className="text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap"
+                                className="prose text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap"
                                 dangerouslySetInnerHTML={{
                                   __html: item.deskripsi || deskripsiByRiwayat[item.id] || ""
                                 }}
