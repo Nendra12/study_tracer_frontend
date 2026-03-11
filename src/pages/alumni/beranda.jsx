@@ -89,6 +89,10 @@ export default function Beranda() {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Data dinamis untuk statistik & universitas
+  const [statsData, setStatsData] = useState([]);
+  const [topUniversitas, setTopUniversitas] = useState([]);
+
   // Fetch API Logic
   useEffect(() => {
     let cancelled = false;
@@ -110,6 +114,58 @@ export default function Beranda() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Fetch alumni directory untuk compute statistik & top universitas
+  useEffect(() => {
+    async function fetchDirectoryStats() {
+      try {
+        const res = await alumniApi.getAlumniDirectory({ per_page: 1000 });
+        const responseData = res.data.data;
+        const allAlumni = responseData?.data || (Array.isArray(responseData) ? responseData : []);
+
+        if (allAlumni.length > 0) {
+          // Hitung distribusi status
+          const statusCount = {};
+          allAlumni.forEach(a => {
+            const s = a.status || 'Lainnya';
+            statusCount[s] = (statusCount[s] || 0) + 1;
+          });
+          const total = allAlumni.length;
+          const colorMap = {
+            'Bekerja': 'bg-emerald-500',
+            'Kuliah': 'bg-blue-500',
+            'Wirausaha': 'bg-amber-500',
+            'Mencari Pekerjaan': 'bg-[#9ca3af]',
+            'Belum Bekerja': 'bg-red-400',
+          };
+          const computed = Object.entries(statusCount)
+            .map(([label, count]) => ({
+              label,
+              percentage: Math.round((count / total) * 100),
+              color: colorMap[label] || 'bg-slate-400',
+            }))
+            .sort((a, b) => b.percentage - a.percentage);
+          setStatsData(computed);
+
+          // Hitung top universitas dari field 'company' alumni berstatus 'Kuliah'
+          const univCount = {};
+          allAlumni.forEach(a => {
+            if (a.status === 'Kuliah' && a.company) {
+              univCount[a.company] = (univCount[a.company] || 0) + 1;
+            }
+          });
+          const topUnivs = Object.entries(univCount)
+            .map(([name, alumniCount]) => ({ name, alumniCount, location: '' }))
+            .sort((a, b) => b.alumniCount - a.alumniCount)
+            .slice(0, 5);
+          setTopUniversitas(topUnivs);
+        }
+      } catch (err) {
+        console.error('Failed to compute directory stats:', err);
+      }
+    }
+    fetchDirectoryStats();
   }, []);
 
   // Modal Scroll Lock
@@ -136,8 +192,10 @@ export default function Beranda() {
   // console.log(profile)
 
   const tahunLulus = profile?.tahun_lulus?.split("-")[0] ?? null;
-  // console.log(tahunLulus)
   const jurusan = profile?.jurusan ?? null;
+
+  // Gunakan data dinamis jika ada, fallback ke mockStats
+  const finalStats = statsData.length > 0 ? statsData : mockStats;
   const statusNew = profile?.current_status?.status ?? null;
   const place =
     profile?.current_status?.perusahaan ??
@@ -513,10 +571,10 @@ export default function Beranda() {
               <section className="bg-[#3c5759] text-white rounded-[2rem] p-6 sm:p-8 shadow-lg relative overflow-hidden flex flex-col justify-center">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <h2 className="text-xl font-black relative z-10">Statistik Lulusan</h2>
-                <p className="text-xs text-white/60 mb-8 font-medium relative z-10">Distribusi status alumni tahun 2023.</p>
+                <p className="text-xs text-white/60 mb-8 font-medium relative z-10">Distribusi status alumni saat ini.</p>
 
                 <div className="space-y-5 relative z-10">
-                  {mockStats.map((stat, idx) => (
+                  {finalStats.map((stat, idx) => (
                     <div key={idx}>
                       <div className="flex justify-between text-sm font-bold mb-2">
                         <span className="text-white/90">{stat.label}</span>
@@ -584,6 +642,7 @@ export default function Beranda() {
             {/* TOP PERUSAHAAN*/}
             <TopPerusahaan
               data={topPerusahaan.data}
+              dataUniversitas={topUniversitas}
               locked={topPerusahaan.locked}
             />
 
