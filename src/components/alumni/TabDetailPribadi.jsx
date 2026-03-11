@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Save, X, ChevronDown, Loader2 } from 'lucide-react';
+import { Edit, Save, X, ChevronDown, Loader2, Clock } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 
 export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, triggerEdit }) {
@@ -44,7 +44,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       });
       await alumniApi.updateProfile(formData);
       setIsEditing(false);
-      onShowSuccess('Profil berhasil diperbarui');
+      onShowSuccess('Perubahan profil telah dikirim, menunggu persetujuan admin');
       onRefresh(); 
     } catch (err) {
       console.error('Failed to update profile:', err);
@@ -53,6 +53,8 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       setSaving(false);
     }
   }
+
+  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'personal_info' && u.status === 'pending');
 
   const inputClass = (isEdit) => isEdit
     ? "w-full bg-white border border-primary/30 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -80,6 +82,19 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
           </button>
         )}
       </div>
+
+      {/* Pending Update Alert */}
+      {pendingUpdates.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Anda memiliki perubahan detail pribadi yang sedang ditinjau oleh admin. Perubahan baru akan menggantikan pengajuan sebelumnya.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         <div>

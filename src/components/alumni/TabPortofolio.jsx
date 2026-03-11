@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save } from 'lucide-react';
+import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save, Clock } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
 
@@ -54,12 +54,12 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
         const res = await alumniApi.updatePortofolio(formData.id, fd);
         const updated = res.data.data;
         setPortofolioList(prev => prev.map(p => p.id === formData.id ? updated : p));
-        onShowSuccess('Portofolio berhasil diperbarui!');
+        onShowSuccess('Perubahan portofolio telah dikirim, menunggu persetujuan admin');
       } else {
         const res = await alumniApi.createPortofolio(fd);
         const created = res.data.data;
         setPortofolioList(prev => [created, ...prev]);
-        onShowSuccess('Portofolio berhasil ditambahkan!');
+        onShowSuccess('Portofolio telah dikirim, menunggu persetujuan admin');
       }
       resetForm();
       hasMutated.current = true;
@@ -89,7 +89,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
     try {
       await alumniApi.deletePortofolio(id);
       setPortofolioList(prev => prev.filter(p => p.id !== id));
-      onShowSuccess('Portofolio berhasil dihapus!');
+      onShowSuccess('Penghapusan portofolio telah dikirim, menunggu persetujuan admin');
       hasMutated.current = true;
       onRefresh();
     } catch (error) {
@@ -97,6 +97,8 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
       alert(msg);
     }
   };
+
+  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'portofolio' && u.status === 'pending');
 
   const getImageUrl = (path) => {
     if (!path) return null;
@@ -106,6 +108,19 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
 
   return (
     <div className="p-6 lg:p-10 animate-fade-in">
+      {/* Pending Update Alert */}
+      {pendingUpdates.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Anda memiliki perubahan portofolio yang sedang ditinjau oleh admin. Perubahan baru akan menggantikan pengajuan sebelumnya.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold text-primary">Portofolio & Proyek</h2>
