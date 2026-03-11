@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import NavbarLanding from "../components/NavbarLanding";
 import Alumni from "../assets/svg/share.svg";
 import Work from "../assets/svg/work.svg";
@@ -11,10 +11,56 @@ import { motion } from "framer-motion";
 import CareerSection from "../components/CareerSection";
 import { Globe, Mail, Phone } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { publicApi } from "../api/alumni";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const {user} = useAuth()
+
+  // State untuk data dinamis
+  const [stats, setStats] = useState(null);
+  const [alumniList, setAlumniList] = useState([]);
+  const [jobList, setJobList] = useState([]);
+
+  // Fetch data landing page
+  useEffect(() => {
+    // Fetch landing stats (public endpoint, tanpa auth)
+    publicApi.getLandingStats()
+      .then(res => {
+        const d = res.data.data || res.data;
+        if (d) {
+          // Stats
+          const total = d.total_alumni || 0;
+          const statusDist = d.status_distribution || [];
+          const getPercent = (name) => {
+            const item = statusDist.find(s => s.status === name);
+            return item && total > 0 ? Math.round((item.total / total) * 100) : 0;
+          };
+          setStats({
+            totalAlumni: total >= 1000 ? (total / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : String(total),
+            bekerja: getPercent('Bekerja'),
+            kuliah: getPercent('Kuliah'),
+            wirausaha: getPercent('Wirausaha'),
+          });
+
+          // Alumni terbaru
+          if (d.alumni_terbaru && d.alumni_terbaru.length > 0) {
+            setAlumniList(d.alumni_terbaru.slice(0, 4));
+          }
+        }
+      })
+      .catch(() => {}); // Fallback data akan tampil
+
+    // Fetch lowongan published (public, tanpa auth)
+    publicApi.getPublishedLowongan({ per_page: 4 })
+      .then(res => {
+        const lowData = res?.data?.data;
+        const items = lowData?.data || (Array.isArray(lowData) ? lowData : []);
+        if (items.length > 0) setJobList(items);
+      })
+      .catch(() => {});
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -52,9 +98,9 @@ export default function LandingPage() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="relative min-h-screen font-sans text-[#526061] overflow-hidden selection:bg-primary selection:text-white">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[25%] bg-[#3c5759]/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-[#526061]/10 rounded-full blur-[100px] pointer-events-none"></div>
+    <div className="relative min-h-screen font-sans text-secondary overflow-hidden selection:bg-primary selection:text-white">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[25%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-secondary/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* Floating Modern Navbar */}
       <NavbarLanding />
@@ -95,7 +141,7 @@ export default function LandingPage() {
 
             <motion.p
               variants={itemVariants}
-              className="text-lg text-[#526061] leading-relaxed max-w-md font-medium"
+              className="text-lg text-secondary leading-relaxed max-w-md font-medium"
             >
               Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni,
               temukan info lowongan kerja, dan bangun jaringan yang lebih luas
@@ -133,7 +179,8 @@ export default function LandingPage() {
           <div className="relative h-[600px] w-full hidden lg:block">
             {/* Main Image Card */}
             <motion.div
-              className="absolute top-10 right-0 w-[80%] h-[80%] bg-white rounded-[2rem] p-2 shadow-2xl shadow-[#9ca3af]/20 transform rotate-2 hover:-rotate-3 transition-transform duration-500 z-10"
+              className="absolute top-10 right-0 w-[80%] h-[80%] bg-white rounded-[2rem] p-2 shadow-2xl shadow-third
+              /20 transform rotate-2 hover:-rotate-3 transition-transform duration-500 z-10"
               initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
               animate={{ opacity: 1, scale: 1, rotate: 2 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -192,13 +239,13 @@ export default function LandingPage() {
       <GuideSection />
 
       {/* Fitur & Statistik - Bento Grid Style */}
-      <AlumniStats />
+      <AlumniStats stats={stats} />
 
       {/* Top Alumni Section (4 Cards Dribbble Style) */}
-      <AlumniSuccess />
+      <AlumniSuccess alumniList={alumniList} />
 
       {/* Karir & Lowongan - Sleek List */}
-      <CareerSection />
+      <CareerSection jobList={jobList} />
 
       <footer className="bg-[#f3f4f4] pt-20 pb-10 px-4 sm:px-6 lg:px-8 border-t border-[#f3f4f4]">
         <div className="max-w-7xl mx-auto">
@@ -217,7 +264,7 @@ export default function LandingPage() {
                   <span className='text-xs font-semibold'>SMK Negeri 1 Gondang</span>
                 </div>
               </Link>
-              <p className="text-[#526061] text-sm leading-relaxed font-medium">
+              <p className="text-secondary text-sm leading-relaxed font-medium">
                 Platform pelacakan dan jaringan alumni resmi. Menghubungkan
                 lulusan, membina pertumbuhan, dan membangun komunitas yang lebih
                 kuat bersama-sama.
@@ -226,7 +273,7 @@ export default function LandingPage() {
                 {[<Globe />, <Mail />, <Phone />].map((icon, i) => (
                   <button
                     key={i}
-                    className="w-10 h-10 rounded-full bg-[#f3f4f4] flex items-center justify-center hover:bg-[#3c5759] hover:text-white transition-all cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-[#f3f4f4] flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer"
                   >
                     {icon}
                   </button>
@@ -236,7 +283,7 @@ export default function LandingPage() {
 
             {/* Kolom 2: Tautan Cepat */}
             <div>
-              <h3 className="text-[#3c5759] font-black mb-6">Tautan Cepat</h3>
+              <h3 className="text-primary font-black mb-6">Tautan Cepat</h3>
               <ul className="space-y-4">
                 {[
                   "Beranda",
@@ -248,7 +295,7 @@ export default function LandingPage() {
                   <li key={item}>
                     <a
                       href="#"
-                      className="text-[#526061] text-sm font-bold hover:text-[#3c5759] transition-colors"
+                      className="text-secondary text-sm font-bold hover:text-primary transition-colors"
                     >
                       {item}
                     </a>
@@ -259,7 +306,7 @@ export default function LandingPage() {
 
             {/* Kolom 3: Untuk Alumni */}
             <div>
-              <h3 className="text-[#3c5759] font-black mb-6">Untuk Alumni</h3>
+              <h3 className="text-primary font-black mb-6">Untuk Alumni</h3>
               <ul className="space-y-4">
                 {[
                   "Masuk",
@@ -271,7 +318,7 @@ export default function LandingPage() {
                   <li key={item}>
                     <a
                       href="#"
-                      className="text-[#526061] text-sm font-bold hover:text-[#3c5759] transition-colors"
+                      className="text-secondary text-sm font-bold hover:text-primary transition-colors"
                     >
                       {item}
                     </a>
@@ -282,10 +329,10 @@ export default function LandingPage() {
 
             {/* Kolom 4: Newsletter */}
             <div className="space-y-6">
-              <h3 className="text-[#3c5759] font-black">
+              <h3 className="text-primary font-black">
                 Berlangganan Newsletter
               </h3>
-              <p className="text-[#526061] text-sm font-medium">
+              <p className="text-secondary text-sm font-medium">
                 Berlangganan untuk menerima pembaruan tentang pekerjaan dan
                 acara.
               </p>
@@ -293,9 +340,10 @@ export default function LandingPage() {
                 <input
                   type="email"
                   placeholder="Alamat email Anda"
-                  className="w-full px-5 py-4 rounded-xl bg-[#f3f4f4] border-transparent focus:bg-white focus:border-[#3c5759]/20 focus:ring-0 text-sm font-medium transition-all outline-none"
+                  className="w-full px-5 py-4 rounded-xl bg-[#f3f4f4] border-transparent focus:bg-white focus:border-primary/20 focus:ring-0 text-sm font-medium transition-all outline-none"
                 />
-                <button className="cursor-pointer w-full py-4 bg-[#9ca3af] hover:bg-[#3c5759] text-white rounded-xl font-black text-sm shadow-sm transition-all active:scale-95">
+                <button className="cursor-pointer w-full py-4 bg-third
+                 hover:bg-primary text-white rounded-xl font-black text-sm shadow-sm transition-all active:scale-95">
                   Berlangganan
                 </button>
               </div>
@@ -304,19 +352,22 @@ export default function LandingPage() {
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-[#f3f4f4] flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-[#9ca3af] text-xs font-bold">
+            <p className="text-third
+             text-xs font-bold">
               © {currentYear} Alumni Tracer. Hak cipta dilindungi undang-undang.
             </p>
             <div className="flex gap-8">
               <a
                 href="#"
-                className="text-[#9ca3af] text-xs font-bold hover:text-[#3c5759]"
+                className="text-third
+                 text-xs font-bold hover:text-primary"
               >
                 Kebijakan Privasi
               </a>
               <a
                 href="#"
-                className="text-[#9ca3af] text-xs font-bold hover:text-[#3c5759]"
+                className="text-third
+                 text-xs font-bold hover:text-primary"
               >
                 Syarat Layanan
               </a>

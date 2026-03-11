@@ -21,7 +21,11 @@ const StatNumber = ({ value, suffix = "" }) => {
   );
 };
 
-export default function AlumniStats() {
+export default function AlumniStats({ stats }) {
+  const totalAlumni = stats?.totalAlumni ?? '2.5K';
+  const bekerja = stats?.bekerja ?? 85;
+  const kuliah = stats?.kuliah ?? 15;
+  const wirausaha = stats?.wirausaha ?? 10;
   return (
     <section
       id="fitur"
@@ -66,25 +70,25 @@ export default function AlumniStats() {
 
             <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex flex-col">
-                <StatNumber value="2.5" suffix="K" />
+                <StatNumber value={totalAlumni} suffix="" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Total Alumni Aktif
                 </span>
               </div>
               <div className="flex flex-col">
-                <StatNumber value="85" suffix="%" />
+                <StatNumber value={bekerja} suffix="%" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Bekerja
                 </span>
               </div>
               <div className="flex flex-col">
-                <StatNumber value="15" suffix="%" />
+                <StatNumber value={kuliah} suffix="%" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Kuliah
                 </span>
               </div>
               <div className="flex flex-col">
-                <StatNumber value="10" suffix="%" />
+                <StatNumber value={wirausaha} suffix="%" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Wirausaha
                 </span>

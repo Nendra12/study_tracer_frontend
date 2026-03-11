@@ -161,4 +161,9 @@ export const publicApi = {
   getPublishedKuesioner() {
     return api.get('/kuesioner/published');
   },
+
+  // Landing page stats (public, tanpa auth)
+  getLandingStats() {
+    return api.get('/public/landing-stats');
+  },
 };
