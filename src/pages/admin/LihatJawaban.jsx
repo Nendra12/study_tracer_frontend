@@ -302,7 +302,7 @@ export default function LihatJawaban() {
                   <ChartNoAxesCombined size={18} />
                   <span className="hidden sm:inline">Statistik</span>
                 </button>
-                
+
               </div>
             </div>
 
@@ -334,12 +334,12 @@ export default function LihatJawaban() {
 
             {/* --- Filters Section --- */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
-              <div className="relative flex-1 h-12">
+              <div className="mt-3 relative flex-1 h-12">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="text"
                   placeholder={`Cari nama alumni..`}
-                  className="w-full pl-12 pr-4 py-4 md:py-0 h-full bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-400"
+                  className=" w-full pl-12 pr-4 py-4 md:py-0 h-full bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-400"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -399,7 +399,7 @@ export default function LihatJawaban() {
                                   src={alumni.alumni.foto ? `${STORAGE_BASE_URL}/${alumni.alumni.foto_thumbnail || alumni.alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.alumni.id}`}
                                   alt={alumni.alumni.nama}
                                   className="w-full h-full object-cover"
-                                  onError={(e) => { 
+                                  onError={(e) => {
                                     const original = alumni.alumni.foto ? `${STORAGE_BASE_URL}/${alumni.alumni.foto}` : null;
                                     if (original && e.target.src !== original) e.target.src = original;
                                     else { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }

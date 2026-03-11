@@ -44,10 +44,8 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor — handle 401 & hide loading
 api.interceptors.response.use(
   (response) => {
-    // Hide loading on success
     if (loadingCallbacks.hide) {
       loadingCallbacks.hide();
     }

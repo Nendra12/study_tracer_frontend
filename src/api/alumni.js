@@ -146,6 +146,17 @@ export const alumniApi = {
   deletePortofolio(id) {
     return api.delete(`/alumni/portofolio/${id}`);
   },
+
+  // Pending portofolio operations
+  updatePendingPortofolio(pendingId, data) {
+    return api.post(`/alumni/portofolio/pending/${pendingId}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  cancelPendingPortofolio(pendingId) {
+    return api.delete(`/alumni/portofolio/pending/${pendingId}`);
+  },
 };
 
 // Public endpoints
