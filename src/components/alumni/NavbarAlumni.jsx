@@ -71,7 +71,7 @@ export default function NavbarAlumni({ user }) {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-999 transition-all duration-300 ease-in-out"
+      className="fixed top-0 left-0 right-0 z-70 transition-all duration-300 ease-in-out"
     >
       <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${
         scrolled ? 'px-8 sm:px-12 lg:px-25' : 'px-4 sm:px-6 lg:px-8'

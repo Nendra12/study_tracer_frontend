@@ -202,16 +202,10 @@ export default function Beranda() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full">
                 <button
-                  onClick={() => {
-                    if (kuesionerPending.length > 0 && kuesionerPending[0]?.id) {
-                      navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
-                    } else if (!hasCompletedKuesioner) {
-                      navigate('/alumni/kuesioner');
-                    }
-                  }}
-                  className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#3c5759] rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                  onClick={() => navigate("/alumni/lowongan")}
+                  className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-[#3c5759] rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
                 >
-                  <ClipboardCheck size={18} /> Isi Kuesioner Sekarang
+                  <ArrowRight size={18} /> Lihat Lowongan 
                 </button>
                 <button
                   onClick={() => navigate('/alumni/profile')}
