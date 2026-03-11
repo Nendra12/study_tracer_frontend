@@ -60,21 +60,21 @@ function getGreeting() {
   if (h < 12)
     return {
       text: "Selamat Pagi",
-      icon: <img src={morning} alt={"Selamat Pagi"} className='w-10 sm:w-12 drop-shadow-md'/>,
+      icon: <img src={morning} alt={"Selamat Pagi"} className='w-10 sm:w-12 drop-shadow-md' />,
     };
   if (h < 15)
     return {
       text: "Selamat Siang",
-      icon: <img src={afternoon} alt={"Selamat Siang"} className='w-10 sm:w-12 drop-shadow-md'/>,
+      icon: <img src={afternoon} alt={"Selamat Siang"} className='w-10 sm:w-12 drop-shadow-md' />,
     };
   if (h < 18)
     return {
       text: "Selamat Sore",
-      icon: <img src={afternoon} alt={"Selamat Sore"} className='w-10 sm:w-12 drop-shadow-md'/>,
+      icon: <img src={afternoon} alt={"Selamat Sore"} className='w-10 sm:w-12 drop-shadow-md' />,
     };
   return {
     text: "Selamat Malam",
-    icon: <img src={night} alt={"Selamat Malam"} className='w-10 sm:w-12 drop-shadow-md'/>,
+    icon: <img src={night} alt={"Selamat Malam"} className='w-10 sm:w-12 drop-shadow-md' />,
   };
 }
 
@@ -82,7 +82,6 @@ export default function Beranda() {
   const greeting = getGreeting();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
-
   // State
   const [berandaData, setBerandaData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -134,10 +133,20 @@ export default function Beranda() {
 
   const namaAlumni = profile?.nama || authUser?.alumni?.nama_alumni || "Alumni";
   const firstName = namaAlumni.split(" ")[0];
+  // console.log(profile)
+
+  const tahunLulus = profile?.tahun_lulus?.split("-")[0] ?? null;
+  // console.log(tahunLulus)
+  const jurusan = profile?.jurusan ?? null;
+  const statusNew = profile?.current_status?.status ?? null;
+  const place =
+    profile?.current_status?.perusahaan ??
+    profile?.current_status?.universitas ??
+    null;
 
   return (
     <div className="w-full bg-[#f8f9fa] min-h-screen selection:bg-[#3c5759]/20 overflow-x-hidden">
-      
+
       {/* ================= HERO SECTION (DESAIN BARU) ================= */}
       <div className="relative bg-[#3c5759] pt-28 pb-32 overflow-hidden rounded-b-[3rem] shadow-xl">
         {/* Abstract Background Elements */}
@@ -147,7 +156,7 @@ export default function Beranda() {
         {/* Header Section */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-white mt-4">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
-            
+
             {/* Left: Greeting & CTA */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -162,7 +171,7 @@ export default function Beranda() {
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-tight">
-                Halo, 
+                Halo,
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f3f4f4] to-[#9ca3af]">
                   {/* Mengambil kata pertama saja */}
                   {namaAlumni ? namaAlumni.split(' ')[0] : 'Alumni'}
@@ -174,7 +183,7 @@ export default function Beranda() {
                 almamater tercinta.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full">
-                <button 
+                <button
                   onClick={() => {
                     if (kuesionerPending.length > 0 && kuesionerPending[0]?.id) {
                       navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
@@ -186,7 +195,7 @@ export default function Beranda() {
                 >
                   <ClipboardCheck size={18} /> Isi Kuesioner Sekarang
                 </button>
-                <button 
+                <button
                   onClick={() => navigate('/alumni/profile')}
                   className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-full text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
@@ -219,7 +228,7 @@ export default function Beranda() {
                         Data Tracer
                       </h4>
                       <p className="text-slate-500 text-xs font-medium">
-                        Tahun Lulus: {profile?.tahun_lulus || "-"}
+                        Tahun Lulus: {tahunLulus}
                       </p>
                     </div>
                   </div>
@@ -301,7 +310,7 @@ export default function Beranda() {
 
       {/* ================= MAIN CONTENT AREA ================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-30 pb-20">
-        
+
         {loading ? (
           <BerandaSkeleton canAccsess={canAccessAll} />
         ) : error && !berandaData ? (
@@ -317,15 +326,15 @@ export default function Beranda() {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-8">
-            
+          <div className="flex flex-col gap-4">
+
             {/* Quick Summary Cards (Statistik Profil Personal) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
               {[
-                { label: "Tahun Lulus", value: profile?.tahun_lulus || "-", icon: <Calendar size={20} /> },
-                { label: "Jurusan", value: profile?.program_studi || "-", icon: <GraduationCap size={20} /> },
-                { label: "Status Saat Ini", value: profile?.status_pekerjaan || "-", icon: <User size={20} /> },
-                { label: "Instansi/Perusahaan", value: profile?.nama_perusahaan || "-", icon: <Building2 size={20} /> },
+                { label: "Tahun Lulus", value: tahunLulus || "-", icon: <Calendar size={20} /> },
+                { label: "Jurusan", value: jurusan || "-", icon: <GraduationCap size={20} /> },
+                { label: "Status Saat Ini", value: statusNew || "-", icon: <User size={20} /> },
+                { label: `${statusNew === "Bekerja" ? 'Instansi/Perusahaan' : 'Universitas'}`, value: place || "-", icon: <Building2 size={20} /> },
               ].map((item, idx) => (
                 <div key={idx} className="bg-white p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="w-10 h-10 rounded-full bg-[#f3f4f4] text-[#3c5759] flex items-center justify-center mb-3">
@@ -562,7 +571,7 @@ export default function Beranda() {
               data={topPerusahaan.data}
               locked={topPerusahaan.locked}
             />
-            
+
           </div>
         )}
       </main>

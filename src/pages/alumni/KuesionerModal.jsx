@@ -111,7 +111,7 @@ function KuesionerModal() {
 
             alertSuccess("Jawaban berhasil disimpan dengan status: " + (isAllAnswered ? "Selesai" : "Proses"));
 
-            navigate("/")
+            navigate("/alumni")
         } catch (error) {
             alert("Gagal menyimpan jawaban.");
             console.error(error);
@@ -129,8 +129,7 @@ function KuesionerModal() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans flex flex-col selection:bg-primary/20 pb-20">
-            <Navbar user={user} />
+        <div className='py-10'>
 
             <div className="max-w-3xl mx-auto w-full px-4 space-y-6">
                 {/* Header Card */}

@@ -97,7 +97,7 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-third hover:text-primary transition-colors cursor-pointer"
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
             </div>
             <p className="text-[10px] text-third italic">minimal 8 karakter</p>
@@ -124,7 +124,7 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-third hover:text-primary transition-colors cursor-pointer"
               >
-                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
             </div>
             {errors.password_confirmation && <p className="text-xs text-red-500">{errors.password_confirmation}</p>}
