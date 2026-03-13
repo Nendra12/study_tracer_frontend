@@ -1,35 +1,125 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Eye, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { alumniApi } from '../../api/alumni';
+import { toPng } from 'html-to-image';
+import jsPDF from 'jspdf';
+async function generateCvPdf(alumni) {
+  const captureRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
+  if (!captureRoot) {
+    throw new Error('Area profil tidak ditemukan');
+  }
 
-export default function PublicProfileBar({ alumniId, alumniNama }) {
+  const barEl = document.querySelector('[data-public-profile-bar]');
+  const prevDisplay = barEl ? barEl.style.display : null;
+
+  // Hide action bar so PDF contains only profile content
+  if (barEl) {
+    barEl.style.display = 'none';
+  }
+
+  // Convert backend storage URLs to same-origin proxied URLs for export capture.
+  // This avoids CORS errors when html-to-image fetches image assets.
+  const rewrittenImgs = [];
+  const imgElements = captureRoot.querySelectorAll('img');
+  const storagePrefix = 'http://localhost:8000/storage/';
+  imgElements.forEach((img) => {
+    const src = img.getAttribute('src') || '';
+    if (src.startsWith(storagePrefix)) {
+      const path = src.replace(storagePrefix, '');
+      const proxied = `${window.location.origin}/storage/${path}`;
+      rewrittenImgs.push({ img, src });
+      img.setAttribute('src', proxied);
+    }
+  });
+
+  // Give browser one frame to reflow before capture
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  let dataUrl;
+  try {
+    const imagePromises = rewrittenImgs.map(({ img }) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        const done = () => resolve();
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+      });
+    });
+    await Promise.all(imagePromises);
+
+    dataUrl = await toPng(captureRoot, {
+      cacheBust: true,
+      pixelRatio: 2,
+      backgroundColor: '#f8f9fa',
+      skipAutoScale: false,
+      style: {
+        margin: '0',
+      },
+    });
+  } finally {
+    rewrittenImgs.forEach(({ img, src }) => {
+      img.setAttribute('src', src);
+    });
+
+    if (barEl) {
+      barEl.style.display = prevDisplay;
+    }
+  }
+
+  const doc = new jsPDF('p', 'mm', 'a2');
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+
+  const margin = 14;
+  const availableW = pw - margin * 2;
+  const availableH = ph - margin * 2;
+
+  const imgData = dataUrl;
+  const img = new Image();
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = imgData;
+  });
+
+  const imgW = availableW;
+  const imgH = (img.height * imgW) / img.width;
+
+  // Multi-page split if content exceeds one A2 page
+  let heightLeft = imgH;
+  let position = margin;
+
+  doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
+  heightLeft -= availableH;
+
+  while (heightLeft > 0) {
+    doc.addPage();
+    position = margin - (imgH - heightLeft);
+    doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
+    heightLeft -= availableH;
+  }
+
+  doc.save(`CV_${(alumni?.nama || 'Alumni').replace(/\s+/g, '_')}.pdf`);
+}
+
+export default function PublicProfileBar({ alumniData }) {
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState(false);
 
   async function handleDownloadPdf() {
     try {
       setDownloading(true);
-      const res = await alumniApi.downloadPublicProfilePdf(alumniId);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Profil_${alumniNama || 'Alumni'}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      await generateCvPdf(alumniData);
     } catch (err) {
-      console.error('Failed to download PDF:', err);
-      alert('Gagal mengunduh PDF. Silakan coba lagi.');
+      console.error('Failed to generate PDF:', err);
+      alert('Gagal membuat PDF. Silakan coba lagi.');
     } finally {
       setDownloading(false);
     }
   }
 
   return (
-    <div className="bg-white rounded-[1.25rem] shadow-sm border border-slate-100 p-3 pr-3 sm:pr-4 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 z-30 relative">
+    <div data-public-profile-bar className="bg-white rounded-[1.25rem] shadow-sm border border-slate-100 p-3 pr-3 sm:pr-4 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 z-30 relative">
       
       {/* BAGIAN KIRI — Tombol Kembali & Label Profil Publik */}
       <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto pl-1">

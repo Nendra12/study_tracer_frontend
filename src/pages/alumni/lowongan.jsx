@@ -21,6 +21,71 @@ import { useAuth } from '../../context/AuthContext';
 
 import JobsImg from '../../assets/svg/job-search-svgrepo-com.svg'
 
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function extractUserSkills(authUser) {
+  const rawSkills = authUser?.profile?.skills || authUser?.skills || [];
+  if (!Array.isArray(rawSkills)) return [];
+  return rawSkills
+    .map((s) => normalizeText(s?.nama || s?.name || s?.skill || s))
+    .filter(Boolean);
+}
+
+function extractJobSkills(job) {
+  const buckets = [job?.skills, job?.keahlian, job?.required_skills, job?.skill_requirements];
+  const firstArray = buckets.find((arr) => Array.isArray(arr)) || [];
+  return firstArray
+    .map((s) => normalizeText(s?.nama || s?.name || s?.skill || s))
+    .filter(Boolean);
+}
+
+function getServerMatchCount(job) {
+  const candidates = [
+    job?.skill_match_count,
+    job?.matched_skills_count,
+    job?.skills_match_count,
+    job?.match_count,
+  ];
+  const fromCount = candidates.find((v) => typeof v === 'number');
+  if (typeof fromCount === 'number') return fromCount;
+
+  if (job?.is_skill_match === true || job?.has_skill_match === true || job?.skill_match === true) {
+    return 1;
+  }
+  return 0;
+}
+
+function prioritizeBySkillMatch(items, authUser) {
+  const userSkills = extractUserSkills(authUser);
+  if (!Array.isArray(items) || items.length === 0) return [];
+
+  return items
+    .map((job, index) => {
+      const serverCount = getServerMatchCount(job);
+      let localCount = 0;
+
+      if (serverCount === 0 && userSkills.length > 0) {
+        const jobSkills = extractJobSkills(job);
+        if (jobSkills.length > 0) {
+          const userSet = new Set(userSkills);
+          localCount = jobSkills.filter((skill) => userSet.has(skill)).length;
+        }
+      }
+
+      const matchCount = Math.max(serverCount, localCount);
+      return { ...job, __matchCount: matchCount, __idx: index };
+    })
+    .sort((a, b) => {
+      if ((b.__matchCount || 0) !== (a.__matchCount || 0)) {
+        return (b.__matchCount || 0) - (a.__matchCount || 0);
+      }
+      return a.__idx - b.__idx;
+    })
+    .map(({ __idx, ...job }) => job);
+}
+
 // --- OPSI DROPDOWN FILTER ---
 const tipeOptions = ['Semua Tipe', 'Full-time', 'Part-time', 'Kontrak', 'Freelance', 'Magang'];
 const provinsiOptions = ['Semua Provinsi', 'Jawa Timur', 'Jawa Tengah', 'Jawa Barat', 'DKI Jakarta', 'Banten', 'DI Yogyakarta'];
@@ -108,7 +173,7 @@ export default function Lowongan() {
             ...job,
             is_saved: savedIds.includes(job.id),
           }));
-          setLowongan(items);
+          setLowongan(prioritizeBySkillMatch(items, authUser));
           setTotalPages(responseData.last_page || 1);
           setCurrentPage(responseData.current_page || 1);
         } else {
