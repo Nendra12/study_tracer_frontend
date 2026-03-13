@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import LoginImage from "../assets/login_image.webp";
 import Logo from "../assets/icon.png";
-import { Mail, MoveRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -43,7 +43,7 @@ export default function Login() {
 
   return (
     <div className="flex h-screen w-full bg-fourtd items-center justify-center p-4 overflow-hidden">
-      <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden h-[75vh] lg:h-[85vh]">
+      <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden h-[75vh] lg:h-[85vh] lg:min-h-[85vh]">
         {/* Bagian Kiri: Banner Gambar */}
         <div className="hidden lg:block lg:w-1/2 h-full relative">
           <img
@@ -52,6 +52,13 @@ export default function Login() {
             className="w-full h-full object-cover"
           />
           <div className="bg-black/30 absolute top-0 w-full h-full"></div>
+          <Link
+            to="/"
+            className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary transition-colors hover:text-third bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 shadow-sm hover:shadow-md"
+          >
+            <ArrowLeft size={18} />
+            Kembali Ke Landing Page
+          </Link>
           <div className="absolute bottom-0 z-10 p-5">
             <div className="flex items-center gap-3">
               <img src={Logo} alt="" className="w-15" />
@@ -67,7 +74,7 @@ export default function Login() {
         </div>
 
         {/* Bagian Kanan: Form Login */}
-        <div className="w-full lg:w-1/2 py-3 px-8 md:p-12 flex flex-col justify-center bg-white">
+        <div className="w-full lg:w-1/2 py-3 px-8 md:p-12 flex flex-col justify-center bg-white max-h-dvh">
           <div className="max-w-md mx-auto w-full">
             <div className="flex items-center gap-3 mb-6 lg:hidden">
               <img src={Logo} alt="logo" className="w-15" />

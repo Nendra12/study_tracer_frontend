@@ -159,7 +159,7 @@ export default function AlumniDetail() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 -mt-32 pb-20">
 
         {/* BAR PROFIL PUBLIK (hanya muncul jika dari halaman profil) */}
-        {fromProfile && <PublicProfileBar alumniId={id} alumniNama={alumni.nama} />}
+        {fromProfile && <PublicProfileBar alumniData={alumni} />}
 
         {/* Tombol Kembali (hanya muncul jika dari direktori alumni) */}
         {!fromProfile && (

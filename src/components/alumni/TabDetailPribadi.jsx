@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Edit, Save, X, ChevronDown, Loader2, Clock } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 
+const FIELD_KEYS = {
+  nama_alumni: ['nama_alumni', 'nama'],
+  nis: ['nis'],
+  nisn: ['nisn'],
+  tempat_lahir: ['tempat_lahir'],
+  tanggal_lahir: ['tanggal_lahir'],
+  jenis_kelamin: ['jenis_kelamin'],
+  alamat: ['alamat'],
+  no_hp: ['no_hp'],
+  tahun_masuk: ['tahun_masuk'],
+};
+
 export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, triggerEdit }) {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -38,12 +50,6 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
   async function handleSaveProfile() {
     try {
       setSaving(true);
-      const formData = new FormData();
-      Object.entries(editForm).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) formData.append(key, value);
-      });
-
-      console.log(editForm)
       await alumniApi.updateProfile(editForm);
       setIsEditing(false);
       onShowSuccess('Perubahan profil telah dikirim, menunggu persetujuan admin');
@@ -57,6 +63,40 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
   }
 
   const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'personal_info' && u.status === 'pending');
+  const latestPendingFields = profile?.latest_personal_info_status === 'pending'
+    ? (profile?.latest_pending_fields || [])
+    : [];
+
+  const hasNonPhotoPendingFromUpdates = pendingUpdates.some((u) => {
+    const oldData = u?.old_data || {};
+    const newData = u?.new_data || {};
+    const keys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
+    if (keys.length === 0) return true;
+    return keys.some((field) => !['foto', 'foto_path', 'gambar_path'].includes(field));
+  });
+
+  const hasNonPhotoPending = latestPendingFields.length > 0
+    ? latestPendingFields.some((field) => !['foto', 'foto_path', 'gambar_path'].includes(field))
+    : hasNonPhotoPendingFromUpdates;
+
+  function isFieldPending(fieldName) {
+    const aliases = FIELD_KEYS[fieldName] || [fieldName];
+    return aliases.some(alias => latestPendingFields.includes(alias));
+  }
+
+  function renderLabel(label, fieldName) {
+    const pending = isFieldPending(fieldName);
+    return (
+      <span className="flex items-center gap-2">
+        <span>{label}</span>
+        {pending && (
+          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-black tracking-wide uppercase">
+            Pending
+          </span>
+        )}
+      </span>
+    );
+  }
 
   const inputClass = (isEdit) => isEdit
     ? "w-full bg-white border border-primary/30 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -86,7 +126,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       </div>
 
       {/* Pending Update Alert */}
-      {pendingUpdates.length > 0 && (
+      {hasNonPhotoPending && (
         <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
           <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
           <div>
@@ -100,31 +140,31 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
 
       <div className="space-y-6">
         <div>
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Nama Lengkap</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Nama Lengkap', 'nama_alumni')}</label>
           <input type="text" readOnly={!isEditing} value={editForm.nama_alumni} onChange={(e) => setEditForm(prev => ({ ...prev, nama_alumni: e.target.value }))} className={inputClass(isEditing)} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">NIS</label>
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('NIS', 'nis')}</label>
             <input type="text" readOnly={!isEditing} value={editForm.nis} onChange={(e) => setEditForm(prev => ({ ...prev, nis: e.target.value }))} className={inputClass(isEditing)} />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">NISN</label>
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('NISN', 'nisn')}</label>
             <input type="text" readOnly={!isEditing} value={editForm.nisn} onChange={(e) => setEditForm(prev => ({ ...prev, nisn: e.target.value }))} className={inputClass(isEditing)} />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Tempat Lahir</label>
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Tempat Lahir', 'tempat_lahir')}</label>
             <input type="text" readOnly={!isEditing} value={editForm.tempat_lahir} onChange={(e) => setEditForm(prev => ({ ...prev, tempat_lahir: e.target.value }))} className={inputClass(isEditing)} />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Tanggal Lahir</label>
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Tanggal Lahir', 'tanggal_lahir')}</label>
             <input type={isEditing ? 'date' : 'text'} readOnly={!isEditing} value={editForm.tanggal_lahir} onChange={(e) => setEditForm(prev => ({ ...prev, tanggal_lahir: e.target.value }))} className={inputClass(isEditing)} />
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Jenis Kelamin</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Jenis Kelamin', 'jenis_kelamin')}</label>
           <div className="relative">
             <select disabled={!isEditing} className={`${inputClass(isEditing)} appearance-none`} value={editForm.jenis_kelamin} onChange={(e) => setEditForm(prev => ({ ...prev, jenis_kelamin: e.target.value }))}>
               <option value="">-</option>
@@ -136,16 +176,16 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">No. HP</label>
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('No. HP', 'no_hp')}</label>
             <input type="text" readOnly={!isEditing} value={editForm.no_hp} onChange={(e) => setEditForm(prev => ({ ...prev, no_hp: e.target.value }))} className={inputClass(isEditing)} />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Tahun Masuk</label>
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Tahun Masuk', 'tahun_masuk')}</label>
             <input type="text" readOnly={!isEditing} value={editForm.tahun_masuk} onChange={(e) => setEditForm(prev => ({ ...prev, tahun_masuk: e.target.value }))} className={inputClass(isEditing)} />
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Alamat</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Alamat', 'alamat')}</label>
           <textarea readOnly={!isEditing} rows="3" value={editForm.alamat} onChange={(e) => setEditForm(prev => ({ ...prev, alamat: e.target.value }))} className={`${inputClass(isEditing)} resize-none`} />
         </div>
       </div>
