@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit, Mail, Phone, Plus, X, Loader2 } from 'lucide-react';
+import { Edit, Mail, Phone, Plus, X, Loader2, Check, Clock } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaInstagram, FaFacebook, FaGlobe } from 'react-icons/fa';
+import Cropper from 'react-easy-crop';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -18,6 +19,48 @@ function displayUrl(url) {
   return url.replace(/^https?:\/\//, '');
 }
 
+function createImage(url) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = url;
+  });
+}
+
+async function getCroppedFile(imageSrc, pixelCrop) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        resolve(null);
+        return;
+      }
+      const file = new File([blob], `profile-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      resolve(file);
+    }, 'image/jpeg', 0.92);
+  });
+}
+
 // Konfigurasi Platform Sosial Media
 const SOCIAL_PLATFORMS = [
   { key: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin size={16} />, placeholder: 'https://linkedin.com/in/username' },
@@ -33,6 +76,12 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
   // States
   const [savingFoto, setSavingFoto] = useState(false);
   const [savingSocial, setSavingSocial] = useState(false);
+
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [rawPreviewUrl, setRawPreviewUrl] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   
   const [editingSocial, setEditingSocial] = useState(false);
   const [socialForm, setSocialForm] = useState({});
@@ -43,6 +92,17 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
   useEffect(() => {
     initSocialForm(profile);
   }, [profile]);
+
+  useEffect(() => {
+    if (showCropModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showCropModal]);
 
   function initSocialForm(data) {
     setSocialForm({
@@ -55,24 +115,58 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
   }
 
   // --- LOGIKA UPLOAD FOTO ---
-  async function handleFotoChange(e) {
+  function handleFotoSelect(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const preview = URL.createObjectURL(file);
+    setRawPreviewUrl(preview);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    setShowCropModal(true);
+  }
+
+  async function uploadFoto(file) {
     try {
       setSavingFoto(true);
       const formData = new FormData();
       formData.append('foto', file);
       formData.append('nama_alumni', profile?.nama || '');
-      // console.log(ffile)consolelog
-      console.log(formData)
       await alumniApi.updateProfile(formData);
-      onShowSuccess('Foto berhasil diperbarui');
+      onShowSuccess('Perubahan foto dikirim dan menunggu persetujuan admin');
       onRefresh(); // Refresh data di parent
     } catch (err) { 
       alert('Gagal mengunggah foto'); 
     } finally { 
       setSavingFoto(false); 
       if(fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  async function handleApplyCrop() {
+    if (!rawPreviewUrl || !croppedAreaPixels) {
+      return;
+    }
+
+    const croppedFile = await getCroppedFile(rawPreviewUrl, croppedAreaPixels);
+    if (!croppedFile) {
+      alert('Gagal memproses crop gambar');
+      return;
+    }
+
+    await uploadFoto(croppedFile);
+    handleCloseCropModal();
+  }
+
+  function handleCloseCropModal() {
+    setShowCropModal(false);
+    setCroppedAreaPixels(null);
+    setZoom(1);
+    setCrop({ x: 0, y: 0 });
+    if (rawPreviewUrl) {
+      URL.revokeObjectURL(rawPreviewUrl);
+      setRawPreviewUrl(null);
     }
   }
 
@@ -125,6 +219,16 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
 
   // Persiapan render
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
+  const latestPendingFields = profile?.latest_pending_fields || [];
+  const hasPersonalPending = profile?.latest_personal_info_status === 'pending';
+  const isFotoPending = hasPersonalPending && (
+    latestPendingFields.includes('foto') ||
+    latestPendingFields.includes('foto_path') ||
+    latestPendingFields.includes('gambar_path')
+  );
+  const hasNonPhotoPersonalPending = hasPersonalPending && latestPendingFields.some(
+    (field) => !['foto', 'foto_path', 'gambar_path'].includes(field)
+  );
   const socialLinks = [];
   if (profile?.linkedin) socialLinks.push({ key: 'linkedin', url: profile.linkedin, icon: <FaLinkedin size={16} /> });
   if (profile?.github) socialLinks.push({ key: 'github', url: profile.github, icon: <FaGithub size={16} /> });
@@ -137,7 +241,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
     <div className="lg:col-span-4 space-y-6">
       
       {/* Input File Tersembunyi */}
-      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFotoChange} accept="image/*" />
+      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFotoSelect} accept="image/*" />
 
       {/* KOTAK 1: INFO PROFIL */}
       <div className="bg-white rounded-4xl p-8 shadow-sm text-center border border-slate-100">
@@ -151,6 +255,11 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
               </div>
             )}
           </div>
+          {isFotoPending && (
+            <span className="absolute -top-1 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black border border-amber-200">
+              PENDING
+            </span>
+          )}
           <button 
             onClick={() => fileInputRef.current?.click()} 
             disabled={savingFoto} 
@@ -165,6 +274,11 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
           Angkatan {profile?.tahun_masuk || '-'}
           {profile?.jurusan?.nama && ` • ${profile.jurusan.nama}`}
         </p>
+        {hasNonPhotoPersonalPending && (
+          <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[11px] font-bold text-amber-700">
+            <Clock size={13} /> Perubahan profil terbaru menunggu persetujuan admin
+          </div>
+        )}
 
         <div className="space-y-3 pt-6 border-t border-slate-100 text-left">
           <div className="flex items-center gap-3 text-primary/70">
@@ -249,6 +363,71 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
           </>
         )}
       </div>
+
+      {showCropModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={handleCloseCropModal} />
+          <div className="relative w-full max-w-2xl rounded-3xl bg-white border border-slate-100 shadow-2xl overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-primary">Atur Crop Foto Profil</h3>
+                <p className="text-xs text-primary/60 font-medium">Sesuaikan area foto sebelum dikirim ke admin.</p>
+              </div>
+              <button onClick={handleCloseCropModal} className="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 flex items-center justify-center cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="relative w-full h-[360px] bg-slate-900 rounded-2xl overflow-hidden">
+                {rawPreviewUrl && (
+                  <Cropper
+                    image={rawPreviewUrl}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    cropShape="round"
+                    showGrid={false}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+                  />
+                )}
+              </div>
+
+              <div className="mt-5">
+                <label className="block text-[11px] font-bold text-slate-500 mb-2">Zoom</label>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.05}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full accent-[#425A5C]"
+                />
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  onClick={handleCloseCropModal}
+                  className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleApplyCrop}
+                  disabled={savingFoto}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-[#2A3E3F] cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                >
+                  {savingFoto ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  Gunakan Foto Ini
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

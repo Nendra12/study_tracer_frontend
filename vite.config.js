@@ -14,5 +14,15 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: ["laevo-frequently-pinkie.ngrok-free.dev"],
+    proxy: {
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+      },
+      "/storage": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+      },
+    },
   },
 });
