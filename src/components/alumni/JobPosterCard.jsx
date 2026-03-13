@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { MapPin, MoveUpRight } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import LockOverlay from './LockOverlay';
 
@@ -13,80 +13,82 @@ function getImageUrl(path) {
 export default function JobPosterCard({ data, onImageClick, locked }) {
   if (!data) return null;
 
-  const fotoUrl = getImageUrl(data.foto);
+  const fotoUrl = getImageUrl(data.foto || data.foto_lowongan || data.banner) || 'https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg'; // Menggunakan fallback default CareerSection
   
   // Penyesuaian variabel data
-  const judul = data.judul || data.role || '—';
-  const perusahaanNama = data.perusahaan?.nama || data.company || '—';
-  const tipePekerjaan = data.tipe_pekerjaan || data.type || '—';
+  const judul = data.judul || data.role || data.judul_lowongan || '—';
+  const perusahaanNama = data.perusahaan?.nama || data.perusahaan?.nama_perusahaan || data.company || '—';
+  const tipePekerjaan = data.tipe_pekerjaan || data.type || 'Full-time';
+  const deskripsi = data.deskripsi || data.description || 'Tidak ada deskripsi tersedia.';
   
   const lokasi = data.perusahaan?.kota
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
-    : (data.lokasi || '—');
+    : (data.lokasi || data.location || '—');
 
   return (
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div
         whileHover={locked ? {} : { y: -4 }}
-        className={`bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full transition-all duration-300
-          ${locked ? '' : 'hover:shadow-md hover:border-[#3c5759]/20'}`}
+        className={`bg-white rounded-[2rem] overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col h-full transition-all duration-500
+          ${locked ? '' : 'hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] group cursor-pointer'}`}
       >
-        {/* BAGIAN ATAS: Foto Poster & Judul (Sejajar) */}
-        <div className="flex items-center gap-3 mb-5 relative">
-          {/* Thumbnail Gambar (Menggantikan Logo Icon) */}
-          <div 
-            className={`w-[60px] h-[60px] shrink-0 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden ${locked ? '' : 'cursor-pointer group'}`}
-            onClick={(e) => {
-              if (locked || !onImageClick) return;
-              e.stopPropagation();
-              onImageClick(fotoUrl || '/Desain Poster Job.jpg', e);
-            }}
-          >
-            <img 
-              src={fotoUrl || '/Desain Poster Job.jpg'} 
-              alt="Thumbnail Poster" 
-              className={`w-full h-full object-cover ${locked ? '' : 'transition-transform duration-300 group-hover:scale-110'}`}
-              onError={(e) => { e.target.src = 'https://placehold.co/150?text=No+Img'; }}
-            />
+        
+        {/* BAGIAN ATAS: Job Banner (Bisa diklik untuk preview) */}
+        <div 
+          className="h-60 w-full overflow-hidden relative"
+          onClick={(e) => {
+            if (locked || !onImageClick) return;
+            e.stopPropagation(); // Mencegah klik menyebar ke Link Detail jika dibungkus
+            onImageClick(fotoUrl, e);
+          }}
+        >
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none"></div>
+          <img
+            src={fotoUrl}
+            alt={judul}
+            className={`w-full h-full object-cover ${locked ? '' : 'transform group-hover:scale-105 transition-transform duration-700'}`}
+            onError={(e) => { e.target.src = 'https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg'; }}
+          />
+          <div className="absolute top-4 left-4 z-20 pointer-events-none">
+            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black text-[#3c5759] uppercase">
+              {tipePekerjaan}
+            </span>
           </div>
+        </div>
 
-          {/* Teks Judul & Perusahaan */}
-          <div className="flex-1 flex flex-col justify-center">
-            <h3 className="font-bold text-[#3c5759] text-[16px] leading-tight line-clamp-2 mb-1">
+        {/* BAGIAN TENGAH: Job Content */}
+        <div className="p-6 flex flex-col flex-grow">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-[#3c5759] leading-tight mb-1 group-hover:text-amber-600 transition-colors">
               {judul}
             </h3>
-            <p className="text-xs font-semibold text-[#526061] line-clamp-1">
+            <p className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider">
               {perusahaanNama}
             </p>
           </div>
-        </div>
 
-        {/* BAGIAN TENGAH: Tags Lokasi & Tipe Pekerjaan */}
-        <div className="flex flex-col items-start gap-2 mb-5">
-          <div className="flex items-start gap-1.5 text-[11px] font-bold text-[#9ca3af] bg-[#f3f4f4] px-3 py-2 rounded-lg w-full">
-            <MapPin size={13} className="shrink-0 mt-[1px]" /> 
-            <span className="leading-tight text-left">{lokasi}</span>
-          </div>
-          <span className="text-[11px] font-bold text-[#9ca3af] bg-[#f3f4f4] px-3 py-1.5 rounded-lg w-fit">
-            {tipePekerjaan}
-          </span>
-        </div>
+          <p className="text-sm text-[#526061] leading-relaxed mb-6 line-clamp-2">
+            {deskripsi}
+          </p>
 
-        {/* BAGIAN BAWAH: Tombol Action */}
-        <div className="mt-auto pt-1">
-          {!locked ? (
-            <button className="w-full py-2.5 rounded-xl border-2 border-[#3c5759] text-[#3c5759] font-bold text-sm hover:bg-[#3c5759] hover:text-white transition-colors cursor-pointer flex justify-center items-center">
-              Lihat Detail
-            </button>
-          ) : (
-            <div className="w-full py-2.5 rounded-xl border-2 border-slate-200 text-slate-400 font-bold text-sm text-center">
-              Terkunci
+          {/* BAGIAN BAWAH: Footer Card (Lokasi & Tombol Panah) */}
+          <div className="mt-auto pt-4 border-t border-[#f3f4f4] flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-[#9ca3af]">
+              <MapPin size={16} />
+              <span className="text-xs font-bold line-clamp-1 max-w-[150px]">{lokasi}</span>
             </div>
-          )}
+            
+            <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all 
+              ${locked ? 'bg-slate-100 text-slate-400' : 'bg-[#f3f4f4] text-[#3c5759] group-hover:bg-[#3c5759] group-hover:text-white'}`}
+            >
+              <MoveUpRight size={15} />
+            </button>
+          </div>
         </div>
 
       </motion.div>
 
+      {/* OVERLAY KUNCI */}
       {locked && <LockOverlay message="Verifikasi & isi kuesioner untuk akses" />}
     </div>
   );
