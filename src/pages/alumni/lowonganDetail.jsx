@@ -74,7 +74,6 @@ export default function LowonganDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
-        <Navbar user={navUser} />
         <LowonganDetailSkeleton />
       </div>
     );
@@ -83,7 +82,6 @@ export default function LowonganDetail() {
   if (error || !job) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
-        <Navbar user={navUser} />
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <AlertCircle size={56} className="text-[#3c5759]/30" />
           <h2 className="text-xl font-black text-[#3c5759]">Lowongan Tidak Tersedia</h2>
@@ -102,8 +100,6 @@ export default function LowonganDetail() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-[#3c5759]/20">
-
-      {/* Navbar diabaikan (sudah diatur secara global jika ada) */}
 
       <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
 

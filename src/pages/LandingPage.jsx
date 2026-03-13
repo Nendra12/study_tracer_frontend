@@ -13,6 +13,7 @@ import { Globe, Mail, Phone } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { publicApi } from "../api/alumni";
 import Loader from "../components/Loaders";
+import { STORAGE_BASE_URL } from "../api/axios";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -102,6 +103,13 @@ export default function LandingPage() {
   });
   const currentYear = new Date().getFullYear();
 
+  function getImageUrl(path) {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${STORAGE_BASE_URL}/${path}`;
+  }
+
+  // console.log(alumniList)
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -117,7 +125,7 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-secondary/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* Floating Modern Navbar */}
-      <NavbarLanding setActiveSection={setActiveSection} activeSection={activeSection}/>
+      <NavbarLanding setActiveSection={setActiveSection} activeSection={activeSection} />
 
       {/* Hero Section */}
       <section
@@ -173,12 +181,12 @@ export default function LandingPage() {
               </button>
               <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
                 <div className="flex -space-x-3">
-                  {[1, 2, 3].map((i) => (
+                  {alumniList.map((i, index) => (
                     <img
-                      key={i}
-                      src={`https://i.pravatar.cc/100?img=${i + 10}`}
+                      key={index}
+                      src={`${getImageUrl(i.foto)}`}
                       alt="user"
-                      className="w-10 h-10 rounded-full border-2 border-[#f3f4f4]"
+                      className="w-10 h-10 object-cover rounded-full border-2 border-[#f3f4f4]"
                     />
                   ))}
                 </div>
@@ -301,24 +309,24 @@ export default function LandingPage() {
               <ul className="space-y-4">
                 {[
                   {
-                    "label" : "Beranda",
-                    "href" : "#beranda"
+                    "label": "Beranda",
+                    "href": "#beranda"
                   },
                   {
-                    "label" : "Petunjuk",
-                    "href" : "#petunjuk"
+                    "label": "Petunjuk",
+                    "href": "#petunjuk"
                   },
                   {
-                    "label" : "Statistik Publik",
-                    "href" : "#fitur"
+                    "label": "Statistik Publik",
+                    "href": "#fitur"
                   },
                   {
-                    "label" : "Alumni",
-                    "href" : "#alumni"
+                    "label": "Alumni",
+                    "href": "#alumni"
                   },
                   {
-                    "label" : "Bursa Kerja",
-                    "href" : "#karir"
+                    "label": "Bursa Kerja",
+                    "href": "#karir"
                   }
                 ].map((item) => (
                   <li key={item.label}>
@@ -326,7 +334,7 @@ export default function LandingPage() {
                       href={item.href}
                       onClick={(e) => {
                         handleSmoothScroll(e, item.href);
-              
+
                       }}
                       className="text-secondary text-sm font-bold hover:text-primary transition-colors"
                     >

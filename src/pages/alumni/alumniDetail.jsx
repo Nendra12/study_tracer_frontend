@@ -79,9 +79,7 @@ export default function AlumniDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-        <Navbar user={user} />
         <AlumniDetailSkeleton />
-        <Footer />
       </div>
     );
   }
@@ -89,7 +87,6 @@ export default function AlumniDetail() {
   if (error || !alumni) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-        <Navbar user={user} />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center px-6">
             <AlertCircle size={56} className="text-red-400 mx-auto mb-4" />
