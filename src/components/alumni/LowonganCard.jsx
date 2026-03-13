@@ -4,9 +4,6 @@ import { Building2, MapPin, Bookmark, ArrowRight, Clock, Sparkles } from 'lucide
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
-
-// Pastikan komponen LockOverlay ini tersedia. 
-// Jika lokasinya berbeda, sesuaikan path import-nya.
 import LockOverlay from './LockOverlay';
 
 function getImageUrl(path) {
@@ -27,19 +24,22 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
   const lokasi = data.perusahaan?.kota
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
     : (data.lokasi || '—');
+    
+  // Ekstraksi data skills
+  const skills = data.skills || [];
 
   return (
-    <div className={`relative ${locked ? 'grayscale opacity-60' : ''}`}>
+    <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div
         whileHover={locked ? {} : { y: -6 }}
         onClick={() => !locked && navigate(`/alumni/lowongan/${data.id}`)}
-        className={`bg-white rounded-[1.6rem] overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer
-          ${locked ? '' : 'hover:shadow-xl hover:border-[#4cb87a]/20'}`}
+        className={`bg-white rounded-[1.6rem] overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer h-full
+          ${locked ? '' : 'hover:shadow-xl hover:border-[#16372a]/20'}`}
       >
 
         {/* poster image */}
         <div
-          className={`relative h-[200px] w-full bg-slate-100 overflow-hidden rounded-t-[1.6rem]
+          className={`relative h-[200px] shrink-0 w-full bg-slate-100 overflow-hidden rounded-t-[1.6rem]
             ${locked ? '' : 'cursor-pointer'}`}
           onClick={(e) => {
             if (locked || !onImageClick) return;
@@ -95,13 +95,37 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
           </div>
 
           {/* location */}
-          <div className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[11px] text-slate-500 font-semibold w-fit mb-4">
+          <div className={`inline-flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[11px] text-slate-500 font-semibold w-fit ${skills.length > 0 ? 'mb-3' : 'mb-4'}`}>
             <MapPin size={12} className="text-slate-400 shrink-0" />
             <span className="line-clamp-1">{lokasi}</span>
           </div>
 
+          {/* SKILLS TAGS */}
+          {skills.length > 0 && (
+            <div className="mt-auto mb-4">
+              {/* Tambahan Teks Pelabelan Skill */}
+              <p className="text-[10px] text-slate-400 font-bold mb-2">Skill yang dibutuhkan:</p>
+              
+              <div className="flex flex-wrap gap-1.5">
+                {skills.slice(0, 3).map((skill, index) => (
+                  <span 
+                    key={index} 
+                    className="px-2.5 py-1 bg-[#f3f4f4] border border-slate-100 text-slate-600 text-[10px] font-bold rounded-lg shadow-sm line-clamp-1 max-w-[120px]"
+                  >
+                    {skill.nama || skill.name || skill}
+                  </span>
+                ))}
+                {skills.length > 3 && (
+                  <span className="px-2.5 py-1 bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-bold rounded-lg">
+                    +{skills.length - 3}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* footer */}
-          <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+          <div className={`pt-4 border-t border-slate-50 flex items-center justify-between ${skills.length === 0 ? 'mt-auto' : ''}`}>
             <span className="text-[11px] text-slate-400 font-bold italic">{data.tipe_pekerjaan || ''}</span>
             {!locked && (
               <div className="flex gap-2">

@@ -60,7 +60,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   }
 
   function handleOpenForm() {
-    if (career && !career.tahun_selesai) {
+    if (career && !career.tahun_selesai && career.status != 'Belum Bekerja') {
       alert('Anda harus mengisi tanggal berakhir pada karir saat ini terlebih dahulu sebelum menambahkan status karir baru.');
       return;
     }
@@ -221,15 +221,15 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
           <div className="relative group">
             <button
               onClick={handleOpenForm}
-              className={`flex items-center gap-1 text-xs font-bold transition-all ${career && !career.tahun_selesai
+              className={`flex items-center gap-1 text-xs font-bold transition-all ${career && !career.tahun_selesai && career.status != 'Belum Bekerja'
                 ? 'text-slate-400 cursor-not-allowed'
                 : 'text-primary hover:underline cursor-pointer'
                 }`}
-              disabled={career && !career.tahun_selesai}
+              disabled={career && !career.tahun_selesai && career.status != 'Belum Bekerja'}
             >
               <Plus size={14} /> Tambahkan status baru
             </button>
-            {career && !career.tahun_selesai && (
+            {career && !career.tahun_selesai && career.status != 'Belum Bekerja' && (
               <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10">
                 <div className="flex items-start gap-2">
                   <AlertCircle size={14} className="shrink-0 mt-0.5" />
