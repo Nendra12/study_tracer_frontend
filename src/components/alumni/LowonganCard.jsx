@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, Bookmark, ArrowRight, Clock } from 'lucide-react';
+import { Building2, MapPin, Bookmark, ArrowRight, Clock, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
@@ -20,6 +20,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
   const deadline = data.lowongan_selesai ? hitungMundur(data.lowongan_selesai) : null;
   const fotoUrl = getImageUrl(data.foto);
   const perusahaanNama = data.perusahaan?.nama || '—';
+  const skillMatchCount = data.__matchCount || data.skill_match_count || data.matched_skills_count || 0;
   const lokasi = data.perusahaan?.kota
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
     : (data.lokasi || '—');
@@ -66,6 +67,14 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
             <div className="absolute top-3 right-3 z-20">
               <span className="flex items-center gap-1.5 bg-red-500 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-md">
                 <Clock size={11} strokeWidth={3} /> {deadline}
+              </span>
+            </div>
+          )}
+
+          {skillMatchCount > 0 && (
+            <div className="absolute top-3 left-3 z-20">
+              <span className="flex items-center gap-1.5 bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-md">
+                <Sparkles size={11} strokeWidth={3} /> Sesuai Skill
               </span>
             </div>
           )}

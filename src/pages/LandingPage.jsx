@@ -22,6 +22,7 @@ export default function LandingPage() {
   const [stats, setStats] = useState(null);
   const [alumniList, setAlumniList] = useState([]);
   const [jobList, setJobList] = useState([]);
+  const [activeSection, setActiveSection] = useState("beranda");
   const [loading, setLoading] = useState(false)
 
   // Fetch data landing page dari API
@@ -45,6 +46,26 @@ export default function LandingPage() {
     }
     fetchLandingData();
   }, []);
+
+  const handleSmoothScroll = (e, targetId) => {
+    e.preventDefault();
+
+    // Set active section immediately untuk instant feedback
+    setActiveSection(targetId.replace("#", ""));
+
+    const element = document.getElementById(targetId.replace("#", ""));
+    if (element) {
+      const navbarHeight = 100; // Tinggi navbar + offset tambahan
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -96,7 +117,7 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-secondary/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* Floating Modern Navbar */}
-      <NavbarLanding />
+      <NavbarLanding setActiveSection={setActiveSection} activeSection={activeSection}/>
 
       {/* Hero Section */}
       <section
@@ -279,18 +300,37 @@ export default function LandingPage() {
               <h3 className="text-primary font-black mb-6">Tautan Cepat</h3>
               <ul className="space-y-4">
                 {[
-                  "Beranda",
-                  "Tentang Kami",
-                  "Statistik Publik",
-                  "Bursa Kerja",
-                  "Hubungi Bantuan",
+                  {
+                    "label" : "Beranda",
+                    "href" : "#beranda"
+                  },
+                  {
+                    "label" : "Petunjuk",
+                    "href" : "#petunjuk"
+                  },
+                  {
+                    "label" : "Statistik Publik",
+                    "href" : "#fitur"
+                  },
+                  {
+                    "label" : "Alumni",
+                    "href" : "#alumni"
+                  },
+                  {
+                    "label" : "Bursa Kerja",
+                    "href" : "#karir"
+                  }
                 ].map((item) => (
-                  <li key={item}>
+                  <li key={item.label}>
                     <a
-                      href="#"
+                      href={item.href}
+                      onClick={(e) => {
+                        handleSmoothScroll(e, item.href);
+              
+                      }}
                       className="text-secondary text-sm font-bold hover:text-primary transition-colors"
                     >
-                      {item}
+                      {item.label}
                     </a>
                   </li>
                 ))}

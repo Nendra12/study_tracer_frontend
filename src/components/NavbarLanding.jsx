@@ -7,10 +7,10 @@ import { useAuth } from "../context/AuthContext";
 import { ChevronDown, Home, LogOut, User } from "lucide-react";
 import { STORAGE_BASE_URL } from "../api/axios";
 
-export default function NavbarLanding() {
+export default function NavbarLanding({ setActiveSection, activeSection }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("beranda");
+  // const [activeSection, setActiveSection] = useState("beranda");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);

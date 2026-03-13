@@ -17,6 +17,33 @@ import TabKeahlian from '../../components/alumni/TabKeahlian';
 import { ProfilSkeleton } from '../../components/alumni/skeleton';
 import TabPortofolio from '../../components/alumni/TabPortofolio';
 
+function buildDisplayProfile(profile) {
+  if (!profile) return profile;
+  const latest = profile.latest_personal_info;
+  if (!latest || typeof latest !== 'object') return profile;
+
+  const next = { ...profile };
+
+  // Map latest personal info payload to existing frontend keys.
+  if (latest.nama_alumni ?? latest.nama) next.nama = latest.nama_alumni ?? latest.nama;
+  if (latest.nis !== undefined) next.nis = latest.nis;
+  if (latest.nisn !== undefined) next.nisn = latest.nisn;
+  if (latest.tempat_lahir !== undefined) next.tempat_lahir = latest.tempat_lahir;
+  if (latest.tanggal_lahir !== undefined) next.tanggal_lahir = latest.tanggal_lahir;
+  if (latest.jenis_kelamin !== undefined) next.jenis_kelamin = latest.jenis_kelamin;
+  if (latest.alamat !== undefined) next.alamat = latest.alamat;
+  if (latest.no_hp !== undefined) next.no_hp = latest.no_hp;
+  if (latest.tahun_masuk !== undefined) next.tahun_masuk = latest.tahun_masuk;
+  if (latest.foto !== undefined) next.foto = latest.foto;
+  if (latest.foto_path !== undefined) next.foto = latest.foto_path;
+
+  next.latest_pending_fields = Array.isArray(latest.pending_fields) ? latest.pending_fields : [];
+  next.latest_personal_info_status = latest.status || null;
+  next.latest_personal_info_pending_id = latest.pending_id || null;
+
+  return next;
+}
+
 export default function Profil() {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
@@ -66,9 +93,11 @@ export default function Profil() {
     setTimeout(() => setSuccessMsg(''), 3000);
   }
 
+  const displayProfile = buildDisplayProfile(profile);
+
   const navUser = {
-    nama_alumni: profile?.nama || authUser?.profile?.nama || 'Alumni',
-    foto: profile?.foto || authUser?.profile?.foto,
+    nama_alumni: displayProfile?.nama || authUser?.profile?.nama || 'Alumni',
+    foto: displayProfile?.foto || authUser?.profile?.foto,
     can_access_all: true
   };
 
@@ -86,13 +115,13 @@ export default function Profil() {
           </div>
         )}
 
-        <ProfileHeader profile={profile} onPerbarui={handlePerbarui} />
+        <ProfileHeader profile={displayProfile} onPerbarui={handlePerbarui} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
           {/* --- SIDEBAR KIRI (Dipanggil dari Komponen) --- */}
           <ProfileSidebar
-            profile={profile}
+            profile={displayProfile}
             onRefresh={refreshProfile}
             onShowSuccess={showSuccess}
           />
@@ -120,11 +149,11 @@ export default function Profil() {
             </div>
 
             {/* Render Tab Konten Secara Dinamis */}
-            {activeTab === 'detail' && <TabDetailPribadi profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} />}
-            {activeTab === 'karier' && <TabStatusKarier profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'keahlian' && <TabKeahlian profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'portofolio' && <TabPortofolio profile={profile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'detail' && <TabDetailPribadi profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} />}
+            {activeTab === 'karier' && <TabStatusKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'keahlian' && <TabKeahlian profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'portofolio' && <TabPortofolio profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
 
           </div>
         </div>
