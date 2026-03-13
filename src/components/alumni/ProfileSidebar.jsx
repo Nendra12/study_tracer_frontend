@@ -234,10 +234,6 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
     const oldData = u?.old_data || {};
     const newData = u?.new_data || {};
     const keys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
-
-    // If backend doesn't send field-level keys, treat personal pending as possibly photo pending.
-    if (keys.length === 0) return true;
-
     return keys.some((field) => ['foto', 'foto_path', 'gambar_path'].includes(field));
   });
 
