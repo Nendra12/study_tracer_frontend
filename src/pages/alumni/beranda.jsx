@@ -543,7 +543,7 @@ export default function Beranda() {
               <section className="bg-white rounded-[2rem] lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <h2 className="text-2xl font-black text-[#3c5759]">Pengumuman Kampus</h2>
+                    <h2 className="text-2xl font-black text-[#3c5759]">Pengumuman Sekolah</h2>
                     <p className="text-sm text-[#9ca3af] mt-1 font-medium">Informasi terbaru seputar kegiatan dan agenda.</p>
                   </div>
                   <button onClick={() => navigate('/alumni/berita')} className="text-sm font-bold text-[#3c5759] hover:text-[#526061] flex items-center gap-1 cursor-pointer">
