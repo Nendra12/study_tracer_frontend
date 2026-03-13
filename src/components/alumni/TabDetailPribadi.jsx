@@ -67,6 +67,18 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
     ? (profile?.latest_pending_fields || [])
     : [];
 
+  const hasNonPhotoPendingFromUpdates = pendingUpdates.some((u) => {
+    const oldData = u?.old_data || {};
+    const newData = u?.new_data || {};
+    const keys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
+    if (keys.length === 0) return true;
+    return keys.some((field) => !['foto', 'foto_path', 'gambar_path'].includes(field));
+  });
+
+  const hasNonPhotoPending = latestPendingFields.length > 0
+    ? latestPendingFields.some((field) => !['foto', 'foto_path', 'gambar_path'].includes(field))
+    : hasNonPhotoPendingFromUpdates;
+
   function isFieldPending(fieldName) {
     const aliases = FIELD_KEYS[fieldName] || [fieldName];
     return aliases.some(alias => latestPendingFields.includes(alias));
@@ -114,7 +126,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       </div>
 
       {/* Pending Update Alert */}
-      {pendingUpdates.length > 0 && (
+      {hasNonPhotoPending && (
         <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
           <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
           <div>

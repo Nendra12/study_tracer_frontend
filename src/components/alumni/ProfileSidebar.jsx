@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit, Mail, Phone, Plus, X, Loader2, Check, Clock } from 'lucide-react';
+import { Edit, Mail, Phone, Plus, X, Loader2, Check } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaInstagram, FaFacebook, FaGlobe } from 'react-icons/fa';
 import Cropper from 'react-easy-crop';
 import { alumniApi } from '../../api/alumni';
@@ -219,16 +219,29 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
 
   // Persiapan render
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
+  const pendingUpdates = (profile?.pending_updates || []).filter(
+    (u) => u.section === 'personal_info' && u.status === 'pending'
+  );
   const latestPendingFields = profile?.latest_pending_fields || [];
   const hasPersonalPending = profile?.latest_personal_info_status === 'pending';
-  const isFotoPending = hasPersonalPending && (
+  const isFotoPendingFromLatest = hasPersonalPending && (
     latestPendingFields.includes('foto') ||
     latestPendingFields.includes('foto_path') ||
     latestPendingFields.includes('gambar_path')
   );
-  const hasNonPhotoPersonalPending = hasPersonalPending && latestPendingFields.some(
-    (field) => !['foto', 'foto_path', 'gambar_path'].includes(field)
-  );
+
+  const isFotoPendingFromUpdates = pendingUpdates.some((u) => {
+    const oldData = u?.old_data || {};
+    const newData = u?.new_data || {};
+    const keys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
+
+    // If backend doesn't send field-level keys, treat personal pending as possibly photo pending.
+    if (keys.length === 0) return true;
+
+    return keys.some((field) => ['foto', 'foto_path', 'gambar_path'].includes(field));
+  });
+
+  const isFotoPending = isFotoPendingFromLatest || isFotoPendingFromUpdates;
   const socialLinks = [];
   if (profile?.linkedin) socialLinks.push({ key: 'linkedin', url: profile.linkedin, icon: <FaLinkedin size={16} /> });
   if (profile?.github) socialLinks.push({ key: 'github', url: profile.github, icon: <FaGithub size={16} /> });
@@ -274,12 +287,6 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
           Angkatan {profile?.tahun_masuk || '-'}
           {profile?.jurusan?.nama && ` • ${profile.jurusan.nama}`}
         </p>
-        {hasNonPhotoPersonalPending && (
-          <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-[11px] font-bold text-amber-700">
-            <Clock size={13} /> Perubahan profil terbaru menunggu persetujuan admin
-          </div>
-        )}
-
         <div className="space-y-3 pt-6 border-t border-slate-100 text-left">
           <div className="flex items-center gap-3 text-primary/70">
             <Mail size={16} className="shrink-0" />
