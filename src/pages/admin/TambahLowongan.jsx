@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, ChevronDown, Check, Search } from 'lucide-react';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
-import SmoothDropdown from '../../components/admin/SmoothDropdown'; // Sesuaikan path ini
+import SmoothDropdown from '../../components/admin/SmoothDropdown';
 
 const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const { isAdmin } = useAuth();
@@ -43,6 +43,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const [creatingSkill, setCreatingSkill] = useState(false);
   const skillDropdownRef = useRef(null);
 
   useEffect(() => {
@@ -62,7 +63,6 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   // --- 1. SINKRONISASI DATA SAAT EDIT ---
   useEffect(() => {
     if (editJob && isOpen) {
-      // Extract provinsi & kota IDs from nested perusahaan.kota.provinsi structure
       const cityId = editJob.id_kota
         ? String(editJob.id_kota)
         : editJob.perusahaan?.kota?.id
@@ -104,6 +104,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       setSelectedSkills([]);
       setPreviewUrl(null);
       setErrors({});
+      setSkillSearch('');
     }
   }, [editJob, isOpen]);
 
@@ -164,6 +165,41 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     setSelectedSkills(prev => prev.filter(s => s.id !== skillId));
   };
 
+  const handleCreateSkill = async () => {
+    if (!skillSearch.trim()) return;
+
+    // Cek apakah skill sebenarnya sudah ada di daftar
+    const exists = skillsList.find(s =>
+      s.nama.toLowerCase() === skillSearch.trim().toLowerCase()
+    );
+
+    if (exists) {
+      addSkill(exists);
+      return;
+    }
+
+    try {
+      setCreatingSkill(true);
+      const res = await masterDataApi.createSkill({ name_skills: skillSearch.trim() });
+      const created = res.data?.data || res.data;
+
+      if (created) {
+        const newSkill = {
+          id: created.id || created.id_skills,
+          nama: created.nama_skill || created.nama || created.name || skillSearch.trim(),
+        };
+
+        setSkillsList(prev => [...prev, newSkill]);
+        addSkill(newSkill);
+      }
+    } catch (err) {
+      console.error('Gagal membuat skill baru:', err);
+      alert('Gagal membuat skill baru: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setCreatingSkill(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -215,7 +251,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-bold text-primary">{isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}</h2>
@@ -312,7 +348,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
               />
             </div>
 
-            {/* --- BAGIAN SKILLS (SEARCHABLE) --- */}
+            {/* --- BAGIAN SKILLS (SEARCHABLE & ADD NEW) --- */}
             <div className="space-y-1.5" ref={skillDropdownRef}>
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Skills <span className="text-gray-400 font-normal text-[10px]">(opsional)</span>
@@ -327,24 +363,61 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                   </span>
                 ))}
               </div>
-              <div className="relative flex items-center">
-                <Search size={16} className="absolute left-3 text-gray-400" />
-                <input
-                  type="text"
-                  value={skillSearch}
-                  onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
-                  onFocus={() => setShowSkillDropdown(true)}
-                  placeholder="Cari dan pilih skill..."
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                />
-                {showSkillDropdown && (
-                  <div className="absolute z-50 top-[105%] w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto py-1">
-                    {filteredSkills.length > 0 ? filteredSkills.map(s => (
-                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 hover:text-primary flex justify-between items-center">
-                        {s.nama}
-                      </div>
-                    )) : <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Skill tidak ditemukan</div>}
-                  </div>
+              
+              <div className="relative flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={skillSearch}
+                    onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
+                    onFocus={() => setShowSkillDropdown(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (skillSearch && filteredSkills.length === 0) {
+                          handleCreateSkill();
+                        }
+                      }
+                    }}
+                    placeholder="Cari atau ketik skill baru..."
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    disabled={creatingSkill}
+                  />
+                  {showSkillDropdown && (
+                    <div className="absolute z-50 top-[105%] w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto py-1">
+                      {filteredSkills.length > 0 ? (
+                        filteredSkills.map(s => (
+                          <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 hover:text-primary flex justify-between items-center">
+                            {s.nama}
+                          </div>
+                        ))
+                      ) : skillSearch.trim() ? (
+                        <div 
+                          onClick={handleCreateSkill} 
+                          className="px-4 py-3 text-sm text-primary font-bold cursor-pointer hover:bg-primary/5 flex items-center gap-2"
+                        >
+                          {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                          Tambahkan "{skillSearch}" sebagai skill baru
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Ketik untuk mencari atau menambah skill</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Tombol Tambah Muncul Jika Skill Tidak Ditemukan */}
+                {skillSearch && filteredSkills.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={handleCreateSkill}
+                    disabled={creatingSkill}
+                    className="flex items-center gap-1.5 px-4 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {creatingSkill ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                    <span className="hidden sm:inline">Tambah</span>
+                  </button>
                 )}
               </div>
             </div>
