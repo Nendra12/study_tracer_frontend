@@ -411,7 +411,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
 
       {/* Current Career */}
       {careerInfo && (
-        <div className={`relative z-10 border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 mb-6 bg-white transition-all duration-300 ${showForm ? 'animate-in slide-in-from-top-4' : ''}`}>
+        <div className={`relative border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 mb-6 bg-white transition-all duration-300 ${showForm ? 'animate-in slide-in-from-top-4' : ''}`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="sm:col-span-2">
               <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Status Karier</label>
@@ -437,7 +437,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                   <button
                     onClick={handleUpdateEndDate}
                     disabled={saving}
-                    className="flex items-center gap-1 px-3 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-[#2A3E3F] transition-all disabled:opacity-50"
+                    className="cursor-pointer flex items-center gap-1 px-3 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-[#2A3E3F] transition-all disabled:opacity-50"
                   >
                     {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                   </button>
@@ -446,7 +446,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                       setEditingEndDate(false);
                       setEndDateValue('');
                     }}
-                    className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all"
+                    className="cursor-pointer p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all"
                   >
                     <X size={14} />
                   </button>
@@ -459,7 +459,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                   {!career?.tahun_selesai && (
                     <button
                       onClick={() => setEditingEndDate(true)}
-                      className="flex items-center gap-1 px-3 py-3 bg-slate-100 text-primary rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
+                      className="cursor-pointer flex items-center gap-1 px-3 py-3 bg-slate-100 text-primary rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
                       title="Edit tahun selesai"
                     >
                       <Edit2 size={14} />

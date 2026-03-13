@@ -42,7 +42,9 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       Object.entries(editForm).forEach(([key, value]) => {
         if (value !== null && value !== undefined) formData.append(key, value);
       });
-      await alumniApi.updateProfile(formData);
+
+      console.log(editForm)
+      await alumniApi.updateProfile(editForm);
       setIsEditing(false);
       onShowSuccess('Perubahan profil telah dikirim, menunggu persetujuan admin');
       onRefresh(); 

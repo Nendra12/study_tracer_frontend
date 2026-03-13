@@ -1,38 +1,63 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { STORAGE_BASE_URL } from "../api/axios";
 
-export default function AlumniSuccess() {
-  const alumniData = [
-    {
-      name: "Danendra M.",
-      year: "2022",
-      role: "Full-stack Dev",
-      company: "Tech Startup",
-      img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      name: "Siti Aminah",
-      year: "2019",
-      role: "Data Analyst",
-      company: "Bank Mandiri",
-      img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      name: "Rizky Pratama",
-      year: "2021",
-      role: "UI/UX Designer",
-      company: "Gojek",
-      img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      name: "Alya Rahma",
-      year: "2022",
-      role: "Digital Marketing",
-      company: "Tokopedia",
-      img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&auto=format&fit=crop",
-    },
-  ];
+function getImageUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${STORAGE_BASE_URL}/${path}`;
+}
+
+const fallbackAlumni = [
+  {
+    name: "Danendra M.",
+    year: "2022",
+    role: "Full-stack Dev",
+    company: "Tech Startup",
+    img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop",
+  },
+  {
+    name: "Siti Aminah",
+    year: "2019",
+    role: "Data Analyst",
+    company: "Bank Mandiri",
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop",
+  },
+  {
+    name: "Rizky Pratama",
+    year: "2021",
+    role: "UI/UX Designer",
+    company: "Gojek",
+    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
+  },
+  {
+    name: "Alya Rahma",
+    year: "2022",
+    role: "Digital Marketing",
+    company: "Tokopedia",
+    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&auto=format&fit=crop",
+  },
+];
+
+export default function AlumniSuccess({ alumniList }) {
+  const alumniData = (alumniList && alumniList.length > 0)
+    ? alumniList.slice(0, 4).map(a => {
+      const latestStatus = a.riwayat_status?.[0];
+      const statusName = latestStatus?.status?.nama_status || a.status || '-';
+      const companyName = latestStatus?.pekerjaan?.perusahaan?.nama_perusahaan
+        || latestStatus?.kuliah?.universitas?.nama_universitas
+        || latestStatus?.wirausaha?.nama_usaha
+        || a.company || '-';
+      return {
+        name: a.nama_alumni || a.name || '-',
+        year: a.tahun_lulus ? new Date(a.tahun_lulus).getFullYear() : (a.angkatan || '-'),
+        role: statusName,
+        company: companyName,
+        img: a.foto ? getImageUrl(a.foto) : `https://ui-avatars.com/api/?name=${encodeURIComponent(a.nama_alumni || a.name || 'A')}&background=3C5759&color=fff&size=400`,
+      };
+    })
+    : fallbackAlumni;
 
   return (
     /* Menggunakan bg-[#f9fafb] (Off-White sedikit hangat) agar beda dengan section sebelumnya */

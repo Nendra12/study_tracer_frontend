@@ -21,7 +21,11 @@ const StatNumber = ({ value, suffix = "" }) => {
   );
 };
 
-export default function AlumniStats() {
+export default function AlumniStats({ stats }) {
+  const bekerja = stats?.career_distribution?.bekerja?.percentage ?? 0;
+  const kuliah = stats?.career_distribution?.kuliah?.percentage ?? 0;
+  const wirausaha = stats?.career_distribution?.wirausaha?.percentage ?? 0;
+  const sumAlumni = stats?.total_alumni ?? 0;
   return (
     <section
       id="fitur"
@@ -66,25 +70,25 @@ export default function AlumniStats() {
 
             <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex flex-col">
-                <StatNumber value="2.5" suffix="K" />
+                <StatNumber value={sumAlumni} suffix="" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Total Alumni Aktif
                 </span>
               </div>
               <div className="flex flex-col">
-                <StatNumber value="85" suffix="%" />
+                <StatNumber value={bekerja} suffix="%" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Bekerja
                 </span>
               </div>
               <div className="flex flex-col">
-                <StatNumber value="15" suffix="%" />
+                <StatNumber value={kuliah} suffix="%" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Kuliah
                 </span>
               </div>
               <div className="flex flex-col">
-                <StatNumber value="10" suffix="%" />
+                <StatNumber value={wirausaha} suffix="%" />
                 <span className="text-[10px] font-bold text-[#9ca3af] mt-2 uppercase tracking-widest">
                   Wirausaha
                 </span>
@@ -104,7 +108,7 @@ export default function AlumniStats() {
               <img src={Education} alt="education" className="w-40" />
             </div>
             <div className="p-2 w-15 h-15 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-xl relative z-10">
-              <img src={EducationStats} alt="stats" className=""/>
+              <img src={EducationStats} alt="stats" className="" />
             </div>
             <div className="relative z-10">
               <h3 className="text-xl font-bold mb-2 tracking-tight">
@@ -126,7 +130,7 @@ export default function AlumniStats() {
             className="md:col-span-2 lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-white shadow-sm flex flex-col justify-between"
           >
             <div className="w-15 h-15 p-2 bg-[#f3f4f4] rounded-2xl flex items-center justify-center text-xl text-[#3c5759]">
-              <img src={Relation} alt="stats" className=""/>
+              <img src={Relation} alt="stats" className="" />
             </div>
             <div>
               <h3 className="text-xl font-black text-[#3c5759] mb-2 tracking-tight">
@@ -157,7 +161,7 @@ export default function AlumniStats() {
               </p>
             </div>
             <div className="order-1 lg:order-2 p-3 w-15 h-15 lg:p-5 lg:w-20 lg:h-20 bg-white/10 backdrop-blur-md rounded-2xl flex text-xl relative z-10">
-              <img src={Job} alt="stats" className=""/>
+              <img src={Job} alt="stats" className="" />
             </div>
           </motion.div>
         </div>

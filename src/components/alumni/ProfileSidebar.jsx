@@ -63,7 +63,8 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       const formData = new FormData();
       formData.append('foto', file);
       formData.append('nama_alumni', profile?.nama || '');
-      
+      // console.log(ffile)consolelog
+      console.log(formData)
       await alumniApi.updateProfile(formData);
       onShowSuccess('Foto berhasil diperbarui');
       onRefresh(); // Refresh data di parent
@@ -131,6 +132,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
   if (profile?.facebook) socialLinks.push({ key: 'facebook', url: profile.facebook, icon: <FaFacebook size={16} /> });
   if (profile?.website) socialLinks.push({ key: 'website', url: profile.website, icon: <FaGlobe size={16} /> });
 
+  // console.log(fotoUrl)
   return (
     <div className="lg:col-span-4 space-y-6">
       

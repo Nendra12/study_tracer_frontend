@@ -16,9 +16,13 @@ export const alumniApi = {
   },
 
   updateProfile(data) {
-    return api.put('/alumni/profile', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return api.post('/alumni/profile', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.put('/alumni/profile', data);
   },
 
   updateCareerStatus(data) {
@@ -27,6 +31,19 @@ export const alumniApi = {
 
   updateExistingCareerStatus(id, data) {
     return api.put(`/alumni/career-status/${id}`, data);
+  },
+
+  // Skills management (with pending approval)
+  updateSkills(skillIds) {
+    return api.put('/alumni/profile/skills', { skills: skillIds });
+  },
+
+  updatePendingSkills(pendingId, skillIds) {
+    return api.put(`/alumni/profile/pending-skills/${pendingId}`, { skills: skillIds });
+  },
+
+  cancelPendingSkills(pendingId) {
+    return api.delete(`/alumni/profile/pending-skills/${pendingId}`);
   },
 
   // Lowongan (restricted - needs verified + kuesioner)
@@ -171,5 +188,18 @@ export const publicApi = {
 
   getPublishedKuesioner() {
     return api.get('/kuesioner/published');
+  },
+
+  // Landing page (public, tanpa auth)
+  getLandingStats() {
+    return api.get('/landing/stats');
+  },
+
+  getFeaturedAlumni() {
+    return api.get('/landing/featured-alumni');
+  },
+
+  getFeaturedJobs() {
+    return api.get('/landing/featured-jobs');
   },
 };

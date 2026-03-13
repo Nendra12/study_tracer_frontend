@@ -62,8 +62,17 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   // --- 1. SINKRONISASI DATA SAAT EDIT ---
   useEffect(() => {
     if (editJob && isOpen) {
-      const provinceId = editJob.id_provinsi ? String(editJob.id_provinsi) : '';
-      const cityId = editJob.id_kota ? String(editJob.id_kota) : '';
+      // Extract provinsi & kota IDs from nested perusahaan.kota.provinsi structure
+      const cityId = editJob.id_kota
+        ? String(editJob.id_kota)
+        : editJob.perusahaan?.kota?.id
+          ? String(editJob.perusahaan.kota.id)
+          : '';
+      const provinceId = editJob.id_provinsi
+        ? String(editJob.id_provinsi)
+        : editJob.perusahaan?.kota?.provinsi?.id
+          ? String(editJob.perusahaan.kota.provinsi.id)
+          : '';
 
       setFormData({
         judul: editJob.judul || '',
@@ -140,8 +149,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   }, [formData.id_provinsi]);
 
   // --- SKILL HELPERS ---
-  const filteredSkills = skillsList.filter(s => 
-    s.nama.toLowerCase().includes(skillSearch.toLowerCase()) && 
+  const filteredSkills = skillsList.filter(s =>
+    s.nama.toLowerCase().includes(skillSearch.toLowerCase()) &&
     !selectedSkills.some(sel => sel.id === s.id)
   );
 

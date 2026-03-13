@@ -1,42 +1,60 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapIcon, MapPin, MoveUpRight } from 'lucide-react';
+import { STORAGE_BASE_URL } from '../api/axios';
 
-export default function CareerSection() {
-  const jobs = [
-    {
-      role: "Frontend Developer (React)",
-      type: "Full-time",
-      loc: "Jakarta Selatan",
-      comp: "TechAsia Inc.",
-      desc: "Membangun antarmuka modern untuk platform edukasi digital.",
-      banner: "https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg"
-    },
-    {
-      role: "Network Administrator",
-      type: "Contract",
-      loc: "Surabaya",
-      comp: "Telkomsel",
-      desc: "Maintenance infrastruktur jaringan dan keamanan server.",
-      banner: "https://i.pinimg.com/736x/51/a4/86/51a4862d1dbfb9f45315d381c1526f21.jpg"
-    },
-    {
-      role: "Graphic Designer",
-      type: "Remote",
-      loc: "Global",
-      comp: "Kreativ Studio",
-      desc: "Menciptakan aset visual kreatif untuk brand internasional.",
-      banner: "https://i.pinimg.com/736x/ee/e8/ca/eee8cae4c277e4868e8c7d617b6ac545.jpg"
-    },
-    {
-      role: "Finance Staff",
-      type: "Full-time",
-      loc: "Semarang",
-      comp: "Indofood",
-      desc: "Mengelola laporan keuangan dan administrasi pajak.",
-      banner: "https://i.pinimg.com/736x/a1/d5/ab/a1d5aba26b169b4d13b621a2c9a01d3a.jpg"
-    }
-  ];
+function getImageUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${STORAGE_BASE_URL}/${path}`;
+}
+
+const fallbackJobs = [
+  {
+    role: "Frontend Developer (React)",
+    type: "Full-time",
+    loc: "Jakarta Selatan",
+    comp: "TechAsia Inc.",
+    desc: "Membangun antarmuka modern untuk platform edukasi digital.",
+    banner: "https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg"
+  },
+  {
+    role: "Network Administrator",
+    type: "Contract",
+    loc: "Surabaya",
+    comp: "Telkomsel",
+    desc: "Maintenance infrastruktur jaringan dan keamanan server.",
+    banner: "https://i.pinimg.com/736x/51/a4/86/51a4862d1dbfb9f45315d381c1526f21.jpg"
+  },
+  {
+    role: "Graphic Designer",
+    type: "Remote",
+    loc: "Global",
+    comp: "Kreativ Studio",
+    desc: "Menciptakan aset visual kreatif untuk brand internasional.",
+    banner: "https://i.pinimg.com/736x/ee/e8/ca/eee8cae4c277e4868e8c7d617b6ac545.jpg"
+  },
+  {
+    role: "Finance Staff",
+    type: "Full-time",
+    loc: "Semarang",
+    comp: "Indofood",
+    desc: "Mengelola laporan keuangan dan administrasi pajak.",
+    banner: "https://i.pinimg.com/736x/a1/d5/ab/a1d5aba26b169b4d13b621a2c9a01d3a.jpg"
+  }
+];
+
+export default function CareerSection({ jobList }) {
+  const jobs = (jobList && jobList.length > 0)
+    ? jobList.slice(0, 4).map(j => ({
+      role: j.judul_lowongan || j.judul || j.title || '-',
+      type: j.tipe_pekerjaan || j.type || 'Full-time',
+      loc: j.perusahaan?.kota?.nama_kota || j.lokasi || j.location || '-',
+      comp: j.perusahaan?.nama_perusahaan || j.company || '-',
+      desc: j.deskripsi || j.description || '-',
+      banner: (j.foto_lowongan || j.foto || j.banner) ? getImageUrl(j.foto_lowongan || j.foto || j.banner) : 'https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg',
+    }))
+    : fallbackJobs;
 
   return (
     <section id="karir" className="py-15 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -105,7 +123,7 @@ export default function CareerSection() {
                     <span className="text-xs font-bold">{job.loc}</span>
                   </div>
                   <button className="w-8 h-8 rounded-full bg-[#f3f4f4] text-[#3c5759] flex items-center justify-center group-hover:bg-[#3c5759] group-hover:text-white transition-all">
-                    <MoveUpRight size={15}/>
+                    <MoveUpRight size={15} />
                   </button>
                 </div>
               </div>

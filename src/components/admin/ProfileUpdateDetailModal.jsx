@@ -79,11 +79,10 @@ export default function ProfileUpdateDetailModal({
           <div className="px-6 md:px-8 pb-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
             {/* Action badge */}
             <div className="mb-4">
-              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                detail.action === 'create' ? 'bg-emerald-50 text-emerald-600' :
-                detail.action === 'delete' ? 'bg-red-50 text-red-600' :
-                'bg-blue-50 text-blue-600'
-              }`}>
+              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${detail.action === 'create' ? 'bg-emerald-50 text-emerald-600' :
+                  detail.action === 'delete' ? 'bg-red-50 text-red-600' :
+                    'bg-blue-50 text-blue-600'
+                }`}>
                 {detail.action === 'create' ? 'Tambah Baru' : detail.action === 'delete' ? 'Hapus Data' : 'Perubahan Data'}
               </span>
             </div>
@@ -109,17 +108,37 @@ export default function ProfileUpdateDetailModal({
                       </div>
                     </div>
                     <div className="col-span-4">
-                      <div className="px-4 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-xs font-medium h-full flex items-center break-all">
-                        {renderValue(change.old)}
-                      </div>
+                      {change.type === 'image' ? (
+                        <div className="px-4 py-3 bg-white border border-slate-100 rounded-xl flex items-center justify-center h-full">
+                          {change.old && change.old !== '-' ? (
+                            <img src={change.old} alt="Sebelumnya" className="w-20 h-20 rounded-xl object-cover border border-slate-200" onError={(e) => { e.target.style.display = 'none'; }} />
+                          ) : (
+                            <span className="text-xs text-slate-400">Tidak ada foto</span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-xs font-medium h-full flex items-center break-all">
+                          {renderValue(change.old)}
+                        </div>
+                      )}
                     </div>
                     <div className="col-span-1 flex justify-center text-slate-300">
                       <ArrowRight size={16} strokeWidth={2.5} />
                     </div>
                     <div className="col-span-4">
-                      <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-bold h-full flex items-center break-all shadow-sm shadow-emerald-100/50">
-                        {renderValue(change.new)}
-                      </div>
+                      {change.type === 'image' ? (
+                        <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center justify-center h-full shadow-sm shadow-emerald-100/50">
+                          {change.new && change.new !== '-' ? (
+                            <img src={change.new} alt="Baru" className="w-20 h-20 rounded-xl object-cover border-2 border-emerald-200" onError={(e) => { e.target.style.display = 'none'; }} />
+                          ) : (
+                            <span className="text-xs text-emerald-600">-</span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-bold h-full flex items-center break-all shadow-sm shadow-emerald-100/50">
+                          {renderValue(change.new)}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))

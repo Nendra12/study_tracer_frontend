@@ -203,7 +203,7 @@ export default function NavbarAlumni({ user }) {
                       </Link>
                       <button
                         onClick={() => navigate('/logout')}
-                        className="w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                        className="cursor-pointer w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all"
                       >
                         <LogOut size={18} />
                         Keluar Aplikasi
