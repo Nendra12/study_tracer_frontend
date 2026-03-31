@@ -174,6 +174,15 @@ export const alumniApi = {
   cancelPendingPortofolio(pendingId) {
     return api.delete(`/alumni/portofolio/pending/${pendingId}`);
   },
+
+  // Pengumuman (published, aktif only)
+  getPengumuman(params = {}) {
+    return api.get('/alumni/pengumuman', { params });
+  },
+
+  getPengumumanDetail(id) {
+    return api.get(`/alumni/pengumuman/${id}`);
+  },
 };
 
 // Public endpoints
@@ -203,3 +212,4 @@ export const publicApi = {
     return api.get('/landing/featured-jobs');
   },
 };
+
