@@ -300,53 +300,67 @@ export default function UserManagement() {
 
         {/* 2. User Management Table Section */}
         <div className="space-y-6">
-          <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
-            <UserManagementTabs
-              tabs={tabs}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              pendingCount={stats?.pending}
-            />
+          
+          {/* --- TOOLBAR UTAMA (Responsif & Rapi Sebaris) --- */}
+          <div className="bg-white p-2 md:p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 md:gap-4 transition-all overflow-hidden">
+            
+            {/* TABS (Kiri) */}
+            <div className="w-full lg:w-max overflow-x-auto no-scrollbar shrink-0">
+              <UserManagementTabs
+                tabs={tabs}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                pendingCount={stats?.pending}
+              />
+            </div>
 
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <div className="relative group flex-1 md:w-64 min-w-50">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+            {/* SEARCH, FILTER, & EXPORT (Kanan) */}
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full lg:w-auto flex-1 lg:justify-end">
+              
+              {/* Search Bar - Akan shrink otomatis jika ruang sempit */}
+              <div className="relative group w-full sm:w-auto flex-1 min-w-[150px] max-w-full lg:max-w-[280px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3C5759] transition-colors" size={16} />
                 <input
                   type="text"
                   placeholder="Cari nama, NIS, NISN..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 focus:border-primary rounded-xl text-sm outline-none transition-all"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 focus:border-[#3C5759] focus:ring-1 focus:ring-[#3C5759]/20 rounded-xl text-sm outline-none transition-all"
                 />
               </div>
 
-              <FilterJurusan
-                isFilterOpen={isFilterOpen}
-                setIsFilterOpen={setIsFilterOpen}
-                selectedJurusan={selectedJurusan}
-                setSelectedJurusan={setSelectedJurusan}
-                jurusanList={jurusanList}
-              />
+              {/* Grouping Filter & Button agar selalu sejajar */}
+              <div className="flex items-center gap-2.5 w-full sm:w-auto overflow-x-auto no-scrollbar shrink-0">
+                <FilterJurusan
+                  isFilterOpen={isFilterOpen}
+                  setIsFilterOpen={setIsFilterOpen}
+                  selectedJurusan={selectedJurusan}
+                  setSelectedJurusan={setSelectedJurusan}
+                  jurusanList={jurusanList}
+                />
 
-              <FilterTahunLulus
-                isTahunFilterOpen={isTahunFilterOpen}
-                setIsTahunFilterOpen={setIsTahunFilterOpen}
-                selectedTahunLulus={selectedTahunLulus}
-                setSelectedTahunLulus={setSelectedTahunLulus}
-                tahunLulusList={tahunLulusList}
-              />
+                <FilterTahunLulus
+                  isTahunFilterOpen={isTahunFilterOpen}
+                  setIsTahunFilterOpen={setIsTahunFilterOpen}
+                  selectedTahunLulus={selectedTahunLulus}
+                  setSelectedTahunLulus={setSelectedTahunLulus}
+                  tahunLulusList={tahunLulusList}
+                />
 
-              <button
-                onClick={handleExport}
-                disabled={exportLoading}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-              >
-                {exportLoading ? <Loader2 size={16} className="animate-pulse" /> : <Download size={16} />}
-                <span className="hidden sm:inline">Eksport CSV</span>
-              </button>
+                <button
+                  onClick={handleExport}
+                  disabled={exportLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#3C5759] text-white font-bold rounded-xl hover:bg-[#2A3E3F] active:scale-95 transition-all text-sm shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  <span className="inline">Eksport CSV</span>
+                </button>
+              </div>
+
             </div>
           </div>
 
+          {/* TABEL DATA ALUMNI */}
           <AlumniTable
             alumni={alumni}
             alumniLoading={alumniLoading}
@@ -364,7 +378,7 @@ export default function UserManagement() {
           />
         </div>
 
-        {/* 3. KOMPONEN UPDATE REQUEST (Dipindah ke bawah Tabel) */}
+        {/* 3. KOMPONEN UPDATE REQUEST */}
         <ProfileUpdateRequests />
 
         {/* Modals */}
@@ -381,7 +395,7 @@ export default function UserManagement() {
         {/* Modal Pop-up Foto Bulat */}
         {showPhotoPreview && createPortal(
           <div
-            className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"
             onClick={() => setShowPhotoPreview(false)}
           >
             <div className="relative max-w-lg w-full bg-white p-2 rounded-3xl shadow-2xl" onClick={e => e.stopPropagation()}>

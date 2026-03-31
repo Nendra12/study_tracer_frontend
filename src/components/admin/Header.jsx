@@ -8,7 +8,7 @@ export default function Header({ toggleSidebar, user }) {
     {
       path: "/wb-admin",
       title: "Beranda Admin",
-      text: `Selamat datang kembali, admin ${user}`,
+      text: `Selamat datang kembali, Admin`,
     },
     {
       path: "/wb-admin/manage-user",

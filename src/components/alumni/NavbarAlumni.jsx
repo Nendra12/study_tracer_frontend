@@ -61,8 +61,10 @@ export default function NavbarAlumni({ user }) {
 
   const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
 
+  // 👇 PENAMBAHAN MENU PENGUMUMAN DI SINI 👇
   const navLinks = [
     { name: 'Beranda', path: '/alumni', locked: false },
+    { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false }, // <-- Rute Baru
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
   ];
@@ -94,7 +96,8 @@ export default function NavbarAlumni({ user }) {
           {/* Desktop Menu */}
           <div className="hidden xl:flex bg-[#f3f4f4]/80 p-1 rounded-2xl border border-white/60">
             {navLinks.map((item, i) => {
-              const isActive = location.pathname === item.path;
+              // Cek isActive: Khusus pengumuman, kita buat aktif juga jika sedang di halaman detailnya
+              const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
 
               if (item.locked) {
                 return (
@@ -249,7 +252,7 @@ export default function NavbarAlumni({ user }) {
               >
                 {/* Navigation Links */}
                 {navLinks.map((item, i) => {
-                  const isActive = location.pathname === item.path;
+                  const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
 
                   if (item.locked) {
                     return (
@@ -287,7 +290,6 @@ export default function NavbarAlumni({ user }) {
 
                 {/* Mobile Profile Actions */}
                 <div className="flex flex-col gap-2">
-                  {/* Notification Button Mobile */}
                   <button
                     onClick={() => {
                       navigate('/alumni/notifikasi');
@@ -304,7 +306,6 @@ export default function NavbarAlumni({ user }) {
                     )}
                   </button>
 
-                  {/* Profile Button Mobile */}
                   <button
                     onClick={() => {
                       navigate('/alumni/profile');
@@ -316,7 +317,6 @@ export default function NavbarAlumni({ user }) {
                     Profil Anda
                   </button>
 
-                  {/* Logout Button Mobile */}
                   <button
                     onClick={() => navigate('/logout')}
                     className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all"
