@@ -29,6 +29,8 @@ const Register = lazy(() => import("../pages/register/Register"));
 const Logout = lazy(() => import("../pages/Logout"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Beranda = lazy(() => import("../pages/alumni/beranda"));
+const PengumumanAlumni = lazy(() => import("../pages/alumni/pengumuman")); 
+const PengumumanDetailAlumni = lazy(() => import("../pages/alumni/pengumumanDetail"));
 const Alumni = lazy(() => import("../pages/alumni/alumni"));
 const AlumniDetail = lazy(() => import("../pages/alumni/alumniDetail"));
 const Lowongan = lazy(() => import("../pages/alumni/lowongan"));
@@ -94,6 +96,8 @@ export default function AppRouter() {
       <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} /> }>
         <Route element={<AlumniLayout />} >
           <Route index element={<Beranda />} />
+          <Route path="pengumuman" element={<PengumumanAlumni />} />
+          <Route path="pengumuman/:id" element={<PengumumanDetailAlumni />} />
           <Route path="daftar-alumni" element={<Alumni />} />
           <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
           <Route path="lowongan" element={<Lowongan />} />
