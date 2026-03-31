@@ -272,7 +272,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
                     className="w-full h-48 object-cover rounded-xl border border-slate-200"
                   />
                   <span className="absolute top-2 left-2 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
-                    {formData.previewUrl ? '🖼️ Preview Gambar Baru' : '📷 Gambar Saat Ini'}
+                    {formData.previewUrl ? 'Preview Gambar Baru' : 'Gambar Saat Ini'}
                   </span>
                   {formData.previewUrl && (
                     <button
@@ -281,7 +281,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
                         URL.revokeObjectURL(formData.previewUrl);
                         setFormData({ ...formData, gambar: null, previewUrl: null });
                       }}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
+                      className="cursor-pointer absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
                       title="Hapus gambar baru"
                     >
                       <X size={14} />
@@ -294,7 +294,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
                 type="file"
                 accept="image/jpeg,image/png,image/jpg,image/webp"
                 onChange={handleFileChange}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                className="cursor-pointer w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
               />
               <p className="text-xs text-slate-500 mt-2">
                 {formData.currentGambar ? 'Upload gambar baru untuk menggantinya. ' : ''}

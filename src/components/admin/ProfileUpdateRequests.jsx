@@ -13,6 +13,56 @@ const SECTION_META = {
   deskripsi_karier: { label: 'Deskripsi Karier', icon: FileText },
 };
 
+function toSkillName(value, skillMap) {
+  if (value === null || value === undefined || value === '' || value === '-') return value;
+
+  // Keep non-collection values intact when they are clearly plain text.
+  const resolveOne = (item) => {
+    if (item === null || item === undefined || item === '') return item;
+
+    if (typeof item === 'object') {
+      if (item.name_skills) return item.name_skills;
+      if (item.nama) return item.nama;
+      if (item.name) return item.name;
+      const idCandidate = item.id ?? item.id_skills;
+      if (idCandidate !== undefined && idCandidate !== null) {
+        return skillMap.get(String(idCandidate)) || String(idCandidate);
+      }
+      return item;
+    }
+
+    const raw = String(item).trim();
+    if (!raw) return raw;
+    return skillMap.get(raw) || item;
+  };
+
+  if (Array.isArray(value)) {
+    return value.map(resolveOne);
+  }
+
+  if (typeof value === 'string' && value.includes(',')) {
+    return value.split(',').map((part) => resolveOne(part.trim()));
+  }
+
+  return resolveOne(value);
+}
+
+function normalizeSkillChanges(request, skillMap) {
+  if (request?.section !== 'skills') return request;
+
+  const normalizedChanges = (request.changes || []).map((change) => ({
+    ...change,
+    label: 'Skills',
+    old: toSkillName(change.old, skillMap),
+    new: toSkillName(change.new, skillMap),
+  }));
+
+  return {
+    ...request,
+    changes: normalizedChanges,
+  };
+}
+
 export default function ProfileUpdateRequests() {
   // Career updates (existing flow)
   const [careerRequests, setCareerRequests] = useState([]);
@@ -23,7 +73,7 @@ export default function ProfileUpdateRequests() {
   const [profileLoading, setProfileLoading] = useState(true);
 
   const [actionLoading, setActionLoading] = useState(null);
-  
+
   // Modal states
   const [selectedCareerDetail, setSelectedCareerDetail] = useState(null);
   const [selectedProfileDetail, setSelectedProfileDetail] = useState(null);
@@ -45,8 +95,22 @@ export default function ProfileUpdateRequests() {
   const fetchProfileUpdates = useCallback(async () => {
     try {
       setProfileLoading(true);
-      const res = await adminApi.getPendingProfileUpdates();
-      setProfileRequests(res.data?.data || []);
+      const [pendingRes, skillsRes] = await Promise.all([
+        adminApi.getPendingProfileUpdates(),
+        adminApi.getSkills(),
+      ]);
+
+      const pendingRequests = pendingRes.data?.data || [];
+      const skills = skillsRes.data?.data || [];
+
+      const skillMap = new Map(
+        skills.map((skill) => [
+          String(skill.id ?? skill.id_skills),
+          skill.nama ?? skill.name_skills ?? skill.name ?? String(skill.id ?? skill.id_skills),
+        ])
+      );
+
+      setProfileRequests(pendingRequests.map((req) => normalizeSkillChanges(req, skillMap)));
     } catch (err) {
       console.error('Failed to load pending profile updates:', err);
     } finally {
@@ -64,7 +128,6 @@ export default function ProfileUpdateRequests() {
     fetchProfileUpdates();
   }
 
-  // ── Career Approve / Reject ──
   async function handleCareerApprove(id) {
     try {
       setActionLoading(id);
@@ -93,7 +156,6 @@ export default function ProfileUpdateRequests() {
     }
   }
 
-  // ── Profile Approve / Reject ──
   async function handleProfileApprove(id) {
     try {
       setActionLoading(`profile-${id}`);
@@ -138,6 +200,8 @@ export default function ProfileUpdateRequests() {
     );
   }
 
+  // console.log(selectedProfileDetail)
+
   if (totalPending === 0) {
     return (
       <div className="mt-12 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -178,12 +242,12 @@ export default function ProfileUpdateRequests() {
           <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Status Karier</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {careerRequests.map((req) => (
-              <div 
+              <div
                 key={`career-${req.id}`}
                 className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(60,87,89,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden group"
               >
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#425A5C]/40 to-[#425A5C] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                
+
                 <div className="flex justify-between items-start mb-6 mt-2">
                   <div className="flex items-center gap-3">
                     {req.image ? (
@@ -209,30 +273,34 @@ export default function ProfileUpdateRequests() {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {(req.changes || []).map((change, idx) => (
-                      <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
-                        {change.label}
-                      </span>
+                      <>
+                        {change.new !== "-" && (
+                          <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
+                            {change.label}
+                          </span>
+                        )}
+                      </>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-slate-50">
-                  <button 
-                    onClick={() => setSelectedCareerDetail(req)} 
+                  <button
+                    onClick={() => setSelectedCareerDetail(req)}
                     className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl font-bold text-[#425A5C] bg-[#425A5C]/5 hover:bg-[#425A5C]/10 transition-colors cursor-pointer text-xs"
                   >
                     <Eye size={14} strokeWidth={2.5} /> Lihat Detail
                   </button>
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => handleCareerReject(req.id)} 
+                    <button
+                      onClick={() => handleCareerReject(req.id)}
                       disabled={actionLoading === req.id}
                       className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
                     >
                       {actionLoading === req.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak
                     </button>
-                    <button 
-                      onClick={() => handleCareerApprove(req.id)} 
+                    <button
+                      onClick={() => handleCareerApprove(req.id)}
                       disabled={actionLoading === req.id}
                       className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
                     >
@@ -246,7 +314,6 @@ export default function ProfileUpdateRequests() {
         </div>
       )}
 
-      {/* ── Profile Section Update Cards ── */}
       {profileRequests.length > 0 && (
         <div className="mb-8">
           <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Pembaruan Profil Lainnya</h3>
@@ -257,12 +324,12 @@ export default function ProfileUpdateRequests() {
               const loadingKey = `profile-${req.id}`;
 
               return (
-                <div 
+                <div
                   key={`profile-${req.id}`}
                   className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(60,87,89,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden group"
                 >
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#425A5C]/40 to-[#425A5C] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  
+
                   {/* Alumni info — same flat format as career cards */}
                   <div className="flex justify-between items-start mb-6 mt-2">
                     <div className="flex items-center gap-3">
@@ -289,11 +356,10 @@ export default function ProfileUpdateRequests() {
                       <span className="flex items-center gap-1.5 px-3 py-1.5 bg-[#425A5C]/5 border border-[#425A5C]/10 rounded-lg text-[11px] font-bold text-[#425A5C]">
                         <SectionIcon size={12} /> {meta.label}
                       </span>
-                      <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${
-                        req.action === 'create' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                      <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${req.action === 'create' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
                         req.action === 'delete' ? 'bg-red-50 text-red-600 border border-red-100' :
-                        'bg-blue-50 text-blue-600 border border-blue-100'
-                      }`}>
+                          'bg-blue-50 text-blue-600 border border-blue-100'
+                        }`}>
                         {req.action === 'create' ? 'Tambah Baru' : req.action === 'delete' ? 'Hapus' : 'Perubahan'}
                       </span>
                     </div>
@@ -301,31 +367,35 @@ export default function ProfileUpdateRequests() {
                     {/* Quick glance of changes — uses pre-built changes array */}
                     <div className="flex flex-wrap gap-2">
                       {(req.changes || []).map((change, idx) => (
-                        <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
-                          {change.label}
-                        </span>
+                        <>
+                          {change.new !== "-" && (
+                            <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
+                              {change.label}
+                            </span>
+                          )}
+                        </>
                       ))}
                     </div>
                   </div>
 
                   {/* Action buttons */}
                   <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-slate-50">
-                    <button 
-                      onClick={() => setSelectedProfileDetail(req)} 
+                    <button
+                      onClick={() => setSelectedProfileDetail(req)}
                       className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl font-bold text-[#425A5C] bg-[#425A5C]/5 hover:bg-[#425A5C]/10 transition-colors cursor-pointer text-xs"
                     >
                       <Eye size={14} strokeWidth={2.5} /> Lihat Detail
                     </button>
                     <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => handleProfileReject(req.id)} 
+                      <button
+                        onClick={() => handleProfileReject(req.id)}
                         disabled={actionLoading === loadingKey}
                         className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
                       >
                         {actionLoading === loadingKey ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak
                       </button>
-                      <button 
-                        onClick={() => handleProfileApprove(req.id)} 
+                      <button
+                        onClick={() => handleProfileApprove(req.id)}
                         disabled={actionLoading === loadingKey}
                         className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
                       >
@@ -341,7 +411,7 @@ export default function ProfileUpdateRequests() {
       )}
 
       {/* Career Detail Modal (existing) */}
-      <CareerUpdateDetailModal 
+      <CareerUpdateDetailModal
         isOpen={!!selectedCareerDetail}
         detail={selectedCareerDetail}
         onClose={() => setSelectedCareerDetail(null)}

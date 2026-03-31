@@ -78,7 +78,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
               <span className="text-xs font-bold line-clamp-1 max-w-[150px]">{lokasi}</span>
             </div>
             
-            <button className={`w-8 h-8 rounded-full flex items-center justify-center transition-all 
+            <button className={`cursor-pointer w-8 h-8 rounded-full flex items-center justify-center transition-all 
               ${locked ? 'bg-slate-100 text-slate-400' : 'bg-[#f3f4f4] text-[#3c5759] group-hover:bg-[#3c5759] group-hover:text-white'}`}
             >
               <MoveUpRight size={15} />

@@ -13,9 +13,6 @@ export default function ProfileHeader({ profile, onPerbarui }) {
           <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight mb-1">
             Profil Saya
           </h1>
-          <p className="text-primary/70 text-sm font-medium">
-            Kelola informasi pribadi dan pencapaian karier Anda
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
