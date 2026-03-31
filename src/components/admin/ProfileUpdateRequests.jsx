@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Check, X, Loader2, RefreshCw, Eye, FileEdit, User, Award, Layout, FileText, Globe } from 'lucide-react';
 import { adminApi } from '../../api/admin';
+import { alertSuccess, alertError } from '../../utilitis/alert';
 import CareerUpdateDetailModal from './CareerUpdateDetailModal';
 import ProfileUpdateDetailModal from './ProfileUpdateDetailModal';
 
@@ -131,12 +132,13 @@ export default function ProfileUpdateRequests() {
   async function handleCareerApprove(id) {
     try {
       setActionLoading(id);
-      await adminApi.approveCareerUpdate(id);
+      const res = await adminApi.approveCareerUpdate(id);
       setCareerRequests(prev => prev.filter(r => r.id !== id));
       if (selectedCareerDetail?.id === id) setSelectedCareerDetail(null);
+      alertSuccess(res.data?.message || 'Update status karier berhasil disetujui.');
     } catch (err) {
       console.error('Failed to approve career update:', err);
-      alert('Gagal menyetujui: ' + (err.response?.data?.message || err.message));
+      alertError('Gagal menyetujui: ' + (err.response?.data?.message || err.message));
     } finally {
       setActionLoading(null);
     }
@@ -145,12 +147,13 @@ export default function ProfileUpdateRequests() {
   async function handleCareerReject(id) {
     try {
       setActionLoading(id);
-      await adminApi.rejectCareerUpdate(id);
+      const res = await adminApi.rejectCareerUpdate(id);
       setCareerRequests(prev => prev.filter(r => r.id !== id));
       if (selectedCareerDetail?.id === id) setSelectedCareerDetail(null);
+      alertSuccess(res.data?.message || 'Update status karier berhasil ditolak.');
     } catch (err) {
       console.error('Failed to reject career update:', err);
-      alert('Gagal menolak: ' + (err.response?.data?.message || err.message));
+      alertError('Gagal menolak: ' + (err.response?.data?.message || err.message));
     } finally {
       setActionLoading(null);
     }
@@ -159,12 +162,13 @@ export default function ProfileUpdateRequests() {
   async function handleProfileApprove(id) {
     try {
       setActionLoading(`profile-${id}`);
-      await adminApi.approveProfileUpdate(id);
+      const res = await adminApi.approveProfileUpdate(id);
       setProfileRequests(prev => prev.filter(r => r.id !== id));
       if (selectedProfileDetail?.id === id) setSelectedProfileDetail(null);
+      alertSuccess(res.data?.message || 'Pembaruan profil berhasil disetujui.');
     } catch (err) {
       console.error('Failed to approve profile update:', err);
-      alert('Gagal menyetujui: ' + (err.response?.data?.message || err.message));
+      alertError('Gagal menyetujui: ' + (err.response?.data?.message || err.message));
     } finally {
       setActionLoading(null);
     }
@@ -173,12 +177,13 @@ export default function ProfileUpdateRequests() {
   async function handleProfileReject(id) {
     try {
       setActionLoading(`profile-${id}`);
-      await adminApi.rejectProfileUpdate(id);
+      const res = await adminApi.rejectProfileUpdate(id);
       setProfileRequests(prev => prev.filter(r => r.id !== id));
       if (selectedProfileDetail?.id === id) setSelectedProfileDetail(null);
+      alertSuccess(res.data?.message || 'Pembaruan profil berhasil ditolak.');
     } catch (err) {
       console.error('Failed to reject profile update:', err);
-      alert('Gagal menolak: ' + (err.response?.data?.message || err.message));
+      alertError('Gagal menolak: ' + (err.response?.data?.message || err.message));
     } finally {
       setActionLoading(null);
     }
