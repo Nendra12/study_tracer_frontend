@@ -285,4 +285,46 @@ export const adminApi = {
 
   // Tipe Pekerjaan
   getTipePekerjaan() { return api.get('/admin/master/tipe-pekerjaan'); },
+
+  // ── Pengumuman Management ─────────────────────
+  getPengumumanStats() {
+    return api.get('/admin/pengumuman/stats');
+  },
+
+  getPengumuman(filters = {}, perPage = 15) {
+    return api.get('/admin/pengumuman', { params: { ...filters, per_page: perPage } });
+  },
+
+  getPengumumanDetail(id) {
+    return api.get(`/admin/pengumuman/${id}`);
+  },
+
+  createPengumuman(data) {
+    return api.post('/admin/pengumuman', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  updatePengumuman(id, data) {
+    return api.post(`/admin/pengumuman/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deletePengumuman(id) {
+    return api.delete(`/admin/pengumuman/${id}`);
+  },
+
+  togglePinPengumuman(id) {
+    return api.patch(`/admin/pengumuman/${id}/pin`);
+  },
+
+  updatePengumumanStatus(id, status) {
+    const fd = new FormData();
+    fd.append('_method', 'PUT');
+    fd.append('status', status);
+    return api.post(`/admin/pengumuman/${id}`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };

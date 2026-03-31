@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
   
-
 const SECTION_LABELS = {
   personal_info: 'Detail Pribadi',
   skills: 'Keahlian',
