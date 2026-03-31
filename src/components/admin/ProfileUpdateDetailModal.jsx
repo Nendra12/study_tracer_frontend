@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { STORAGE_BASE_URL } from '../../api/axios';
+  
 
 const SECTION_LABELS = {
   personal_info: 'Detail Pribadi',
@@ -37,6 +39,12 @@ export default function ProfileUpdateDetailModal({
   // Backend already provides pre-built changes array
   const changes = detail.changes || [];
 
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${STORAGE_BASE_URL}/${path}`;
+  };
+  // console.log(detail)
   return createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
@@ -80,8 +88,8 @@ export default function ProfileUpdateDetailModal({
             {/* Action badge */}
             <div className="mb-4">
               <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${detail.action === 'create' ? 'bg-emerald-50 text-emerald-600' :
-                  detail.action === 'delete' ? 'bg-red-50 text-red-600' :
-                    'bg-blue-50 text-blue-600'
+                detail.action === 'delete' ? 'bg-red-50 text-red-600' :
+                  'bg-blue-50 text-blue-600'
                 }`}>
                 {detail.action === 'create' ? 'Tambah Baru' : detail.action === 'delete' ? 'Hapus Data' : 'Perubahan Data'}
               </span>
@@ -101,46 +109,54 @@ export default function ProfileUpdateDetailModal({
                 <p className="text-sm text-slate-400 text-center py-8">Tidak ada detail perubahan yang tersedia.</p>
               ) : (
                 changes.map((change, idx) => (
-                  <div key={idx} className="grid grid-cols-12 gap-4 items-center p-2 -mx-2 rounded-2xl hover:bg-slate-50/50 transition-colors">
-                    <div className="col-span-3">
-                      <div className="px-4 py-3 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold flex items-center h-full">
-                        {change.label}
+                  <>
+                    {change.new !== '-' && (
+                      <div key={idx} className="grid grid-cols-12 gap-4 items-center p-2 -mx-2 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                        <div className="col-span-3">
+                          <div className="px-4 py-3 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold flex items-center h-full">
+                            {change.label}
+                          </div>
+                        </div>
+                        <div className="col-span-4">
+                          {change.type === 'image' || change.label == 'gambar' ? (
+                            <div >
+                              {change.old && change.old !== '-' ? (
+                                <div className="px-4 py-3 bg-white border border-slate-100 rounded-xl flex items-center justify-center h-full">
+                                  <img src={getImageUrl(change.old)} alt="Sebelumnya" className="w-50 h-50 rounded-xl object-cover border border-slate-200" onError={(e) => { e.target.style.display = 'none'; }} />
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-400">{change.old !== '-' ? 'Tidak ada foto' : change.old}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <div
+                              className="px-4 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-xs font-medium h-full flex items-center break-all"
+                              dangerouslySetInnerHTML={{ __html: renderValue(change.old) }}
+                            />
+                          )}
+                        </div>
+                        <div className="col-span-1 flex justify-center text-slate-300">
+                          <ArrowRight size={16} strokeWidth={2.5} />
+                        </div>
+                        <div className="col-span-4">
+                          {change.type === 'image' || change.label == 'gambar' ? (
+                            <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center justify-center h-full shadow-sm shadow-emerald-100/50">
+                              {change.new && change.new !== '-' ? (
+                                <img src={getImageUrl(change.new)} alt="Baru" className="w-50 h-50 rounded-xl object-cover border-2 border-emerald-200" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : (
+                                <span className="text-xs text-emerald-600">-</span>
+                              )}
+                            </div>
+                          ) : (
+                            <div
+                              className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-bold h-full flex items-center break-all shadow-sm shadow-emerald-100/50"
+                              dangerouslySetInnerHTML={{ __html: renderValue(change.new) }}
+                            />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="col-span-4">
-                      {change.type === 'image' ? (
-                        <div className="px-4 py-3 bg-white border border-slate-100 rounded-xl flex items-center justify-center h-full">
-                          {change.old && change.old !== '-' ? (
-                            <img src={change.old} alt="Sebelumnya" className="w-20 h-20 rounded-xl object-cover border border-slate-200" onError={(e) => { e.target.style.display = 'none'; }} />
-                          ) : (
-                            <span className="text-xs text-slate-400">Tidak ada foto</span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="px-4 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-xs font-medium h-full flex items-center break-all">
-                          {renderValue(change.old)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="col-span-1 flex justify-center text-slate-300">
-                      <ArrowRight size={16} strokeWidth={2.5} />
-                    </div>
-                    <div className="col-span-4">
-                      {change.type === 'image' ? (
-                        <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center justify-center h-full shadow-sm shadow-emerald-100/50">
-                          {change.new && change.new !== '-' ? (
-                            <img src={change.new} alt="Baru" className="w-20 h-20 rounded-xl object-cover border-2 border-emerald-200" onError={(e) => { e.target.style.display = 'none'; }} />
-                          ) : (
-                            <span className="text-xs text-emerald-600">-</span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-bold h-full flex items-center break-all shadow-sm shadow-emerald-100/50">
-                          {renderValue(change.new)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                    )}
+                  </>
                 ))
               )}
             </div>

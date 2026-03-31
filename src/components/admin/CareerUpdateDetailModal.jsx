@@ -50,6 +50,7 @@ export default function CareerUpdateDetailModal({
     }
   };
 
+  // console.log(detail)
   return createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">

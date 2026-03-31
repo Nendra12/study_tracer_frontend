@@ -54,10 +54,10 @@ export default function Login() {
           <div className="bg-black/30 absolute top-0 w-full h-full"></div>
           <Link
             to="/"
-            className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary transition-colors hover:text-third bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 shadow-sm hover:shadow-md"
+            className="group absolute top-6 left-6 flex items-center gap-2.5 px-5 py-2.5 text-sm font-bold text-primary transition-all duration-300 bg-white/90 backdrop-blur-md rounded-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/20 hover:bg-primary hover:text-white"
           >
-            <ArrowLeft size={18} />
-            Kembali Ke Landing Page
+            <ArrowLeft size={18} className="transition-transform duration-300 group-hover:-translate-x-1" />
+            <span>Kembali Ke Landing Page</span>
           </Link>
           <div className="absolute bottom-0 z-10 p-5">
             <div className="flex items-center gap-3">
