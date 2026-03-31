@@ -115,6 +115,14 @@ export const alumniApi = {
     return api.delete(`/alumni/deskripsi-karier/${id}`);
   },
 
+  updatePendingDeskripsiKarier(pendingId, data) {
+    return api.put(`/alumni/deskripsi-karier/pending/${pendingId}`, data);
+  },
+
+  cancelPendingDeskripsiKarier(pendingId) {
+    return api.delete(`/alumni/deskripsi-karier/pending/${pendingId}`);
+  },
+
   // Download Public Profile as PDF
   downloadPublicProfilePdf(id) {
     return api.get(`/alumni/directory/${id}/pdf`, {
