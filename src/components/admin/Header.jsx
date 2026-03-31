@@ -50,6 +50,11 @@ export default function Header({ toggleSidebar, user }) {
       title: "Manajemen Kuesioner",
       text: "Kelola dan atur kuesioner untuk Studi Penelusuran Lulusan",
     },
+    {
+      path: "/wb-admin/pengumuman",
+      title: "Pengumuman",
+      text: "Kelola dan publikasikan informasi penting untuk alumni",
+    },
   ];
 
   const getTitle = () => {

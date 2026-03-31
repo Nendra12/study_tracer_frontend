@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X,
-  IdCardLanyard
+  IdCardLanyard, Megaphone // <-- Tambahkan Megaphone disini
 } from 'lucide-react';
 import Logo from '../../assets/icon.png';
-import { Link, matchPath, useLocation, useNavigate  } from 'react-router-dom';
+import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { alertConfirm } from '../../utilitis/alert';
-import { useEffect } from 'react';
 
 export default function SideBar({ active, setActive }) {
   const [activeMenu, setActiveMenu] = useState('Beranda');
@@ -17,6 +16,7 @@ export default function SideBar({ active, setActive }) {
   const navigate = useNavigate();
   const location = useLocation()
 
+  // <-- Tambahkan menu Pengumuman di sini
   const menuItems = [
     { name: 'Beranda', icon: <LayoutDashboard size={20} />, path: '/wb-admin' },
     { name: 'Manajemen Pengguna', icon: <Users size={20} />, path: '/wb-admin/manage-user' },
@@ -24,13 +24,14 @@ export default function SideBar({ active, setActive }) {
     { name: 'Status Karier', icon: <IdCardLanyard size={20} />, path: '/wb-admin/status-karir' },
     { name: 'Data Master', icon: <Database size={20} />, path: '/wb-admin/master' },
     { name: 'Kuesioner', icon: <FileText size={20} />, path: '/wb-admin/kuisoner' },
+    { name: 'Pengumuman', icon: <Megaphone size={20} />, path: '/wb-admin/pengumuman' }, 
   ];
 
   const handleLogout = async () => {
     const confirm = await alertConfirm("Apakah Anda yakin ingin keluar?");
     if (!confirm.isConfirmed) return;
 
-    setIsLoggingOut(true); // Mulai loading
+    setIsLoggingOut(true);
 
     try {
       await logout();
@@ -40,6 +41,7 @@ export default function SideBar({ active, setActive }) {
     }
   };
 
+  // <-- Tambahkan route Pengumuman di sini untuk deteksi active menu
   const routes = [
     { path: "/wb-admin", title: "Beranda" },
     { path: "/wb-admin/manage-user", title: "Manajemen Pengguna" },
@@ -54,8 +56,8 @@ export default function SideBar({ active, setActive }) {
     { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid/statistik", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid/detail/:detailid", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/update-kuesioner/:id", title: "Kuesioner" },
+    { path: "/wb-admin/pengumuman", title: "Pengumuman" },
   ];
-
 
   const getTitle = () => {
     const current = routes.find((route) =>
@@ -64,6 +66,7 @@ export default function SideBar({ active, setActive }) {
 
     return current?.title || "Dashboard";
   };
+
   useEffect(() => {
     setActiveMenu(getTitle());
   }, [location.pathname]);
@@ -98,7 +101,6 @@ export default function SideBar({ active, setActive }) {
             </div>
           </div>
 
-          {/* Tombol Close (Hanya muncul di Mobile) */}
           <button
             onClick={() => setActive(false)}
             className="lg:hidden p-2 text-third hover:bg-fourth rounded-xl transition-colors"
@@ -135,7 +137,7 @@ export default function SideBar({ active, setActive }) {
           })}
         </nav>
 
-        {/* Logout Section (Tetap di paling bawah) */}
+        {/* Logout Section */}
         <div className="p-4 border-t border-fourth bg-white">
           <button
             onClick={ handleLogout }
@@ -144,15 +146,13 @@ export default function SideBar({ active, setActive }) {
             <LogOut size={18} />
             <span className="text-sm font-semibold">Keluar Aplikasi</span>
           </button>
-
-          {/* Padding tambahan untuk HP dengan 'Home Indicator' (iPhone/Android terbaru) */}
           <div className="h-2 lg:hidden"></div>
         </div>
       </div>
+
       {isLoggingOut && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            {/* Spinner sederhana dengan Tailwind */}
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-700 font-medium">Menghapus sesi...</p>
           </div>
