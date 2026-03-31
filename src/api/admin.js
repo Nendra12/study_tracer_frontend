@@ -318,4 +318,13 @@ export const adminApi = {
   togglePinPengumuman(id) {
     return api.patch(`/admin/pengumuman/${id}/pin`);
   },
+
+  updatePengumumanStatus(id, status) {
+    const fd = new FormData();
+    fd.append('_method', 'PUT');
+    fd.append('status', status);
+    return api.post(`/admin/pengumuman/${id}`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };

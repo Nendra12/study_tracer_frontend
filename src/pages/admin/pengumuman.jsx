@@ -125,7 +125,7 @@ export default function Pengumuman() {
       fetchStats();
     } catch (err) {
       console.error("Failed to delete:", err);
-      alertError?.("Gagal menghapus pengumuman") || alert("Gagal menghapus pengumuman");
+      alertError("Gagal menghapus pengumuman");
     }
   };
 
@@ -137,7 +137,29 @@ export default function Pengumuman() {
       fetchPengumuman();
     } catch (err) {
       console.error("Failed to toggle pin:", err);
-      alertError?.("Gagal mengubah status pin") || alert("Gagal mengubah status pin");
+      alertError("Gagal mengubah status pin");
+    }
+  };
+
+  // --- HANDLER UBAH STATUS (Publish / Draft / Arsip) ---
+  const handleChangeStatus = async (id, targetStatus, judul) => {
+    const statusLabels = {
+      aktif: 'Publikasikan',
+      draft: 'Jadikan Draft',
+      berakhir: 'Arsipkan',
+    };
+    const confirmMsg = `${statusLabels[targetStatus] || 'Ubah status'} pengumuman "${judul}"?`;
+    const result = await alertConfirm(confirmMsg);
+    if (!result.isConfirmed) return;
+
+    try {
+      await adminApi.updatePengumumanStatus(id, targetStatus);
+      alertSuccess(`Pengumuman berhasil di-${targetStatus === 'aktif' ? 'publikasikan' : targetStatus === 'draft' ? 'jadikan draft' : 'arsipkan'}`);
+      fetchPengumuman();
+      fetchStats();
+    } catch (err) {
+      console.error("Failed to change status:", err);
+      alertError("Gagal mengubah status pengumuman");
     }
   };
 
@@ -202,6 +224,7 @@ export default function Pengumuman() {
                         onEdit={handleOpenEdit} 
                         onDelete={handleDelete}
                         onViewImage={setSelectedImage}
+                        onChangeStatus={handleChangeStatus}
                       />
                     ))}
                     
