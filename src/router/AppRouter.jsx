@@ -10,7 +10,8 @@ const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
 // const Landing = lazy(() => import("../pages/landing"));
-const Pengumuman = lazy(() => import("../pages/admin/pengumuman"));
+const Pengumuman = lazy(() => import("../pages/admin/Pengumuman"));
+const PengumumanDetail = lazy(() => import("../pages/admin/PengumumanDetail"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
 const JobsManagement = lazy(() => import("../pages/admin/JobsManagement"));
 const JobDetail = lazy(() => import("../pages/admin/JobDetail"));
@@ -73,7 +74,10 @@ export default function AppRouter() {
             <Route index element={<StatusKarir />} />
           </Route>
           <Route path="master" element={<MasterTable />} />
-          <Route path="pengumuman" element={<Pengumuman />} />
+          <Route path="pengumuman">
+            <Route index element={<Pengumuman />} />
+            <Route path="detail/:id" element={<PengumumanDetail />} />
+          </Route>
           <Route path="kuisoner">
             <Route index element={<Kuesioner />} />
             <Route path="tambah-kuesioner" element={<TambahKuisioner />} />

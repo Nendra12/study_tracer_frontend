@@ -55,6 +55,11 @@ export default function Header({ toggleSidebar, user }) {
       title: "Pengumuman",
       text: "Kelola dan publikasikan informasi penting untuk alumni",
     },
+    {
+      path: "/wb-admin/pengumuman/detail/:id",
+      title: "Detail Pengumuman",
+      text: "Melihat konten pengumuman secara penuh",
+    },
   ];
 
   const getTitle = () => {
@@ -79,10 +84,10 @@ export default function Header({ toggleSidebar, user }) {
     >
       <div className="min-w-0">
         <h2 className="text-lg md:text-xl font-bold text-primary">
-          {contentTitle.title}
+          {contentTitle?.title || "Halaman Admin"}
         </h2>
         <p className="text-[10px] md:text-xs text-third truncate">
-          {contentTitle.text}
+          {contentTitle?.text || ""}
         </p>
       </div>
 
