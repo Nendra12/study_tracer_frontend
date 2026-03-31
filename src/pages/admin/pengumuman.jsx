@@ -7,6 +7,7 @@ import Pagination from "../../components/admin/Pagination";
 import TambahPengumuman from "./TambahPengumuman";
 import PengumumanCard from "../../components/admin/PengumumanCard";
 import PengumumanSidebar from "../../components/admin/PengumumanSidebar";
+import {PengumumanCardSkeleton, PengumumanSidebarSkeleton} from "../../components/admin/skeleton/PengumumanSkeleton";
 
 // Import API
 import { adminApi } from "../../api/admin";
@@ -181,36 +182,55 @@ export default function Pengumuman() {
             
             {/* Filter Tab & Search Bar */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto no-scrollbar">
-                {["Semua", "Aktif", "Draft", "Berakhir"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`cursor-pointer px-4 py-2 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
-                      activeTab === tab ? "bg-primary text-white shadow-md scale-105" : "text-gray-500 hover:bg-gray-200"
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+              
+              {/* 1. TABS SKELETON / REAL */}
+              {loading ? (
+                <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-hidden animate-pulse">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="w-16 h-8 bg-gray-300 rounded-md"></div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto no-scrollbar">
+                  {["Semua", "Aktif", "Draft", "Berakhir"].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`cursor-pointer px-4 py-2 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+                        activeTab === tab ? "bg-primary text-white shadow-md scale-105" : "text-gray-500 hover:bg-gray-200"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-              <div className="relative flex-1 group w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={16} />
-                <input
-                  type="text"
-                  placeholder="Cari pengumuman..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+              {/* 2. SEARCH BAR SKELETON / REAL */}
+              {loading ? (
+                <div className="flex-1 w-full h-[42px] bg-gray-200 rounded-xl animate-pulse"></div>
+              ) : (
+                <div className="relative flex-1 group w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Cari pengumuman..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              )}
+              
             </div>
 
             {/* List Pengumuman Card (Format Grid) */}
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 size={32} className="animate-spin text-primary" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tampilkan 4 buah Card Skeleton */}
+                {[1, 2, 3, 4].map((i) => (
+                  <PengumumanCardSkeleton key={i} />
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -247,7 +267,14 @@ export default function Pengumuman() {
 
           {/* --- KOLOM KANAN (SIDEBAR STATISTIK & TOMBOL BUAT) --- */}
           <div className="lg:col-span-4">
-            <PengumumanSidebar stats={stats} onOpenCreate={handleOpenCreate} />
+            {/* --- KOLOM KANAN (SIDEBAR STATISTIK & TOMBOL BUAT) --- */}
+          <div className="lg:col-span-4">
+            {loading ? (
+              <PengumumanSidebarSkeleton />
+            ) : (
+              <PengumumanSidebar stats={stats} onOpenCreate={handleOpenCreate} />
+            )}
+          </div>
           </div>
 
         </div>
