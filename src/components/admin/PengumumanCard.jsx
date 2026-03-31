@@ -1,14 +1,38 @@
 import React from 'react';
-import { Calendar, Pencil, Trash2, Pin, Megaphone } from 'lucide-react';
+import { Calendar, Pencil, Trash2, Pin, Megaphone, ImageOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { STORAGE_BASE_URL } from '../../api/axios';
+
+// Fallback gambar
+import imgPengumuman from '../../assets/pengumuman.jpg';
+
+// Helper: buat URL gambar lengkap dari path backend
+const getImageUrl = (foto) => {
+  if (!foto) return null;
+  if (foto.startsWith('http')) return foto;
+  return `${STORAGE_BASE_URL}/${foto}`;
+};
 
 export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, onViewImage }) {
   const navigate = useNavigate();
-  const imageUrl = item.foto;
+  
+  // Gunakan foto_thumbnail kalau ada, fallback ke foto, lalu fallback ke gambar default
+  const imageUrl = getImageUrl(item.foto_thumbnail) || getImageUrl(item.foto) || imgPengumuman;
+
+  // Format tanggal
+  const displayDate = item.created_at 
+    ? new Date(item.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+    : item.tanggal_dibuat || '-';
 
   // Fungsi untuk ke halaman detail (saat teks diklik)
   const handleTextClick = () => {
     navigate(`/wb-admin/pengumuman/detail/${item.id}`);
+  };
+
+  // Untuk lightbox, kirim URL gambar full (bukan thumbnail)
+  const handleViewImage = () => {
+    const fullImageUrl = getImageUrl(item.foto) || imgPengumuman;
+    onViewImage({ ...item, foto: fullImageUrl });
   };
 
   return (
@@ -16,13 +40,14 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
       
       {/* 1. AREA GAMBAR - Klik untuk pop-up gambar saja */}
       <div 
-        onClick={() => onViewImage(item)} 
+        onClick={handleViewImage} 
         className="w-full h-32 sm:h-40 overflow-hidden relative bg-gray-100 flex-shrink-0 cursor-pointer"
       >
         <img 
           src={imageUrl} 
           alt={item.judul} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => { e.target.src = imgPengumuman; }}
         />
         <div className="absolute top-3 right-3">
           <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
@@ -49,7 +74,7 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
               <h3 className="font-bold text-primary text-base line-clamp-1">{item.judul}</h3>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-gray-500 font-medium">
-              <span className="flex items-center gap-1"><Calendar size={12} /> {item.tanggal_dibuat}</span>
+              <span className="flex items-center gap-1"><Calendar size={12} /> {displayDate}</span>
             </div>
           </div>
         </div>

@@ -1,76 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Megaphone, Pin, X } from 'lucide-react'; // Tambahkan icon X
+import { ArrowLeft, Calendar, Megaphone, Pin, X, Loader2, AlertCircle } from 'lucide-react';
+import { adminApi } from '../../api/admin';
+import { STORAGE_BASE_URL } from '../../api/axios';
 
-// 1. IMPORT GAMBAR LOKAL
+// Fallback gambar lokal
 import imgPengumuman from '../../assets/pengumuman.jpg';
 
-// --- DATA DUMMY SEMENTARA ---
-const DUMMY_PENGUMUMAN = [
-  {
-    id: 1,
-    judul: "Pembaruan Sistem Tracer Study 2024",
-    konten: "Diberitahukan kepada seluruh alumni bahwa sistem Tracer Study akan mengalami pemeliharaan rutin pada tanggal 15 Agustus 2024.\n\nSelama proses ini, portal tidak dapat diakses selama 2 jam. Pemeliharaan ini bertujuan untuk meningkatkan keamanan data dan mempercepat proses pembuatan laporan.\n\nMohon maaf atas ketidaknyamanan yang ditimbulkan. Terima kasih atas pengertiannya.",
-    tanggal_dibuat: "2024-08-10",
-    status: "aktif",
-    is_pinned: true,
-    foto: imgPengumuman // Menggunakan gambar lokal
-  },
-  {
-    id: 2,
-    judul: "Undangan Job Fair Kampus 2024",
-    konten: "Kampus akan mengadakan Job Fair tahunan yang dihadiri oleh lebih dari 50 perusahaan nasional dan multinasional.\n\nAcara akan diselenggarakan di Gedung Serbaguna Utama pada tanggal 20-22 Agustus 2024. Jangan lupa untuk membawa CV terbaik Anda dan berpakaian rapi.",
-    tanggal_dibuat: "2024-08-05",
-    status: "aktif",
-    is_pinned: false,
-    foto: imgPengumuman // Menggunakan gambar lokal
-  }
-];
+// Helper untuk URL gambar
+const getImageUrl = (foto) => {
+  if (!foto) return null;
+  if (foto.startsWith('http')) return foto;
+  return `${STORAGE_BASE_URL}/${foto}`;
+};
 
 export default function PengumumanDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // State untuk pop-up gambar
   const [showImageModal, setShowImageModal] = useState(false);
 
-  // Jadikan gambar lokal sebagai fallback jika foto kosong
   const defaultImage = imgPengumuman;
 
   useEffect(() => {
-    // Simulasi Fetch Data API berdasarkan ID
-    setLoading(true);
-    setTimeout(() => {
-      const found = DUMMY_PENGUMUMAN.find(p => p.id.toString() === id);
-      
-      if (found) {
-        setData(found);
-      } else {
-        setData({
-          id: id,
-          judul: "Pengumuman Baru (Simulasi Data)",
-          konten: "Ini adalah simulasi detail untuk pengumuman yang baru saja ditambahkan secara lokal. Saat API sudah dihubungkan, data aslinya akan muncul di sini.",
-          tanggal_dibuat: new Date().toISOString().split('T')[0],
-          status: "aktif",
-          is_pinned: false,
-          foto: null
-        });
+    let cancelled = false;
+    
+    async function fetchDetail() {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await adminApi.getPengumumanDetail(id);
+        if (!cancelled) {
+          setData(response.data?.data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to fetch pengumuman detail:", err);
+          setError(err.response?.data?.message || "Gagal memuat detail pengumuman");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
-    }, 500);
+    }
+
+    fetchDetail();
+    return () => { cancelled = true; };
   }, [id]);
 
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
+        <Loader2 size={40} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle size={48} className="mx-auto text-red-400 mb-4" />
+          <h2 className="text-xl font-bold text-slate-800 mb-2">Gagal Memuat Data</h2>
+          <p className="text-slate-500 mb-6">{error}</p>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-opacity-90 transition-all cursor-pointer"
+          >
+            Kembali
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!data) return <div className="text-center py-20 text-gray-500 font-bold">Pengumuman tidak ditemukan.</div>;
+
+  const imageUrl = getImageUrl(data.foto) || defaultImage;
+  const displayDate = data.created_at 
+    ? new Date(data.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) 
+    : '-';
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-12">
@@ -94,7 +106,7 @@ export default function PengumumanDetail() {
             onClick={() => setShowImageModal(true)}
           >
             <img 
-              src={data.foto || defaultImage} 
+              src={imageUrl} 
               alt={data.judul} 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -125,20 +137,24 @@ export default function PengumumanDetail() {
                 <Megaphone size={24} />
               </div>
               <div className="pt-1">
-                {/* Ukuran Teks Judul Diperkecil */}
                 <h1 className="text-xl md:text-2xl font-black text-slate-800 leading-tight mb-3">
                   {data.judul}
                 </h1>
                 <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
                   <Calendar size={14} /> 
-                  <span>Dipublikasikan pada {data.tanggal_dibuat}</span>
+                  <span>Dipublikasikan pada {displayDate}</span>
                 </div>
+                {data.posted_by && (
+                  <div className="flex items-center gap-2 text-[12px] text-slate-400 font-medium mt-1">
+                    <span>Oleh: {data.posted_by.email}</span>
+                  </div>
+                )}
               </div>
             </div>
 
             <hr className="border-slate-100 mb-6" />
 
-            {/* Teks Konten (Ukuran diperkecil ke standar teks paragraf) */}
+            {/* Teks Konten */}
             <div className="prose max-w-none">
               <p className="text-slate-600 leading-relaxed whitespace-pre-line text-sm md:text-[15px]">
                 {data.konten}
@@ -153,11 +169,11 @@ export default function PengumumanDetail() {
       {showImageModal && (
         <div 
           className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in zoom-in-95 duration-200"
-          onClick={() => setShowImageModal(false)} // Klik area gelap (background) untuk menutup
+          onClick={() => setShowImageModal(false)}
         >
           <div 
             className="relative flex justify-center items-center max-w-4xl max-h-[90vh]"
-            onClick={(e) => e.stopPropagation()} // Hindari tertutup kalau gambarnya sendiri yang diklik
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Tombol Close Mengambang di atas gambar */}
             <button 
@@ -169,7 +185,7 @@ export default function PengumumanDetail() {
             
             {/* Tampilan Gambar Full */}
             <img 
-              src={data.foto || defaultImage} 
+              src={imageUrl} 
               alt={data.judul} 
               className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
             />

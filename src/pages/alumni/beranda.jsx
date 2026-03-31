@@ -14,13 +14,16 @@ import {
   ClipboardCheck,
   ShieldCheck,
   Clock,
-  BellRing
+  BellRing,
+  Megaphone,
+  Pin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Import Komponen & API Eksternal
 import StatusPengajuanModal from "../../components/alumni/StatusPengajuanModal";
 import { alumniApi } from "../../api/alumni";
+import { STORAGE_BASE_URL } from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import { BerandaSkeleton } from "../../components/alumni/skeleton";
 import AlumniProfileCard from "../../components/alumni/AlumniProfileCard";
@@ -32,21 +35,12 @@ import morning from '../../assets/morning.png';
 import afternoon from '../../assets/afternoon.png';
 import night from '../../assets/moon.png';
 
-// --- MOCK DATA STATIC (Hanya untuk UI yang belum ada di API) ---
-const mockAnnouncements = [
-  {
-    id: 1,
-    title: "Job Fair Nasional 2026",
-    date: "15 Mar 2026",
-    desc: "Ikuti bursa kerja tahunan dengan lebih dari 50 perusahaan teknologi terkemuka.",
-  },
-  {
-    id: 2,
-    title: "Batas Akhir Pengisian Tracer Study",
-    date: "30 Mar 2026",
-    desc: "Mohon segera lengkapi kuesioner tracer study Anda untuk keperluan akreditasi sekolah.",
-  },
-];
+// Helper untuk URL gambar pengumuman
+const getPengumumanImageUrl = (foto) => {
+  if (!foto) return null;
+  if (foto.startsWith('http')) return foto;
+  return `${STORAGE_BASE_URL}/${foto}`;
+};
 
 const mockStats = [
   { label: "Bekerja", percentage: 65, color: "bg-emerald-500" },
@@ -89,6 +83,10 @@ export default function Beranda() {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // State untuk pengumuman dari API
+  const [announcements, setAnnouncements] = useState([]);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
+
   // Data dinamis untuk statistik & universitas
   const [statsData, setStatsData] = useState([]);
   const [topUniversitas, setTopUniversitas] = useState([]);
@@ -111,6 +109,26 @@ export default function Beranda() {
       }
     }
     fetchBeranda();
+
+    // Fetch pengumuman published
+    async function fetchPengumuman() {
+      try {
+        setLoadingAnnouncements(true);
+        const res = await alumniApi.getPengumuman({ per_page: 5, status: 'aktif' });
+        const responseData = res.data?.data;
+        if (responseData?.data) {
+          setAnnouncements(responseData.data);
+        } else if (Array.isArray(responseData)) {
+          setAnnouncements(responseData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch pengumuman:', err);
+      } finally {
+        setLoadingAnnouncements(false);
+      }
+    }
+    fetchPengumuman();
+
     return () => {
       cancelled = true;
     };
@@ -539,31 +557,57 @@ export default function Beranda() {
 
             {/* GRID: PENGUMUMAN & STATISTIK */}
             <div className="grid lg:grid-cols-3 gap-6">
-              {/* Announcements (Static Mocks) */}
+              {/* Announcements (dari API) */}
               <section className="bg-white rounded-[2rem] lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
                 <div className="flex justify-between items-end mb-6">
                   <div>
                     <h2 className="text-2xl font-black text-[#3c5759]">Pengumuman Sekolah</h2>
                     <p className="text-sm text-[#9ca3af] mt-1 font-medium">Informasi terbaru seputar kegiatan dan agenda.</p>
                   </div>
-                  <button onClick={() => navigate('/alumni/berita')} className="text-sm font-bold text-[#3c5759] hover:text-[#526061] flex items-center gap-1 cursor-pointer">
-                    Lihat Semua <ArrowRight size={16} />
-                  </button>
                 </div>
                 <div className="space-y-4">
-                  {mockAnnouncements.map((ann) => (
-                    <div key={ann.id} className="group p-5 rounded-2xl border border-gray-100 hover:border-[#3c5759]/30 hover:bg-[#f3f4f4]/50 transition-all cursor-pointer">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-[#3c5759] group-hover:text-[#526061]">{ann.title}</h3>
-                          <p className="text-sm text-[#526061] mt-2 line-clamp-2">{ann.desc}</p>
-                        </div>
-                        <span className="shrink-0 px-3 py-1 bg-[#f3f4f4] text-[#526061] text-xs font-bold rounded-lg border border-gray-200">
-                          {ann.date}
-                        </span>
-                      </div>
+                  {loadingAnnouncements ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
                     </div>
-                  ))}
+                  ) : announcements.length > 0 ? (
+                    announcements.map((ann) => {
+                      const annDate = ann.created_at 
+                        ? new Date(ann.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+                        : '-';
+                      const annImage = getPengumumanImageUrl(ann.foto_thumbnail || ann.foto);
+                      return (
+                        <div key={ann.id} className="group p-5 rounded-2xl border border-gray-100 hover:border-[#3c5759]/30 hover:bg-[#f3f4f4]/50 transition-all cursor-pointer">
+                          <div className="flex items-start gap-4">
+                            {annImage && (
+                              <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                                <img src={annImage} alt={ann.judul} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {ann.is_pinned && <Pin size={12} className="text-[#3c5759] fill-[#3c5759] flex-shrink-0" />}
+                                    <h3 className="text-base font-bold text-[#3c5759] group-hover:text-[#526061] line-clamp-1">{ann.judul}</h3>
+                                  </div>
+                                  <p className="text-sm text-[#526061] mt-1 line-clamp-2">{ann.konten}</p>
+                                </div>
+                                <span className="shrink-0 px-3 py-1 bg-[#f3f4f4] text-[#526061] text-xs font-bold rounded-lg border border-gray-200">
+                                  {annDate}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <Megaphone size={32} className="mx-auto mb-2 text-slate-300" />
+                      <p className="text-slate-400 text-sm">Belum ada pengumuman saat ini</p>
+                    </div>
+                  )}
                 </div>
               </section>
 

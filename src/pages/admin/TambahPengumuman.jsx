@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Image as ImageIcon, Loader2 } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
+import { adminApi } from '../../api/admin';
+import { STORAGE_BASE_URL } from '../../api/axios';
+import { alertError } from '../../utilitis/alert';
 
 const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
   const isEditMode = !!editData;
@@ -48,6 +51,15 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
         konten: editData.konten || '',
         foto: null,
       });
+      // Set preview gambar dari data yang ada
+      if (editData.foto) {
+        const fotoUrl = editData.foto.startsWith('http') 
+          ? editData.foto 
+          : `${STORAGE_BASE_URL}/${editData.foto}`;
+        setPreviewUrl(fotoUrl);
+      } else {
+        setPreviewUrl(null);
+      }
       setErrors({});
     } else if (!editData && isOpen) {
       setFormData({
@@ -81,16 +93,48 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
     }
   };
 
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, foto: null, remove_foto: true }));
+    setPreviewUrl(null);
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
+    setErrors({});
+    
     try {
-      // Simulasi loading 1 detik (Hapus ini jika API sudah dipasang)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Buat FormData untuk multipart upload
+      const fd = new FormData();
+      fd.append('judul', formData.judul);
+      fd.append('konten', formData.konten);
+      fd.append('status', formData.status);
       
-      onSuccess(formData); // Kirim data kembali ke halaman utama
+      if (formData.foto instanceof File) {
+        fd.append('foto', formData.foto);
+      }
+
+      if (isEditMode) {
+        // Untuk update, tambahkan _method PUT
+        fd.append('_method', 'PUT');
+        
+        // Handle penghapusan foto secara eksplisit
+        if (formData.remove_foto && !formData.foto) {
+          fd.append('remove_foto', '1');
+        }
+        
+        await adminApi.updatePengumuman(editData.id, fd);
+      } else {
+        await adminApi.createPengumuman(fd);
+      }
+      
+      onSuccess(); // Trigger refetch di parent
     } catch (err) {
-      if (err.response?.data?.errors) setErrors(err.response.data.errors);
-      else alert('Gagal menyimpan pengumuman');
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      } else {
+        const msg = err.response?.data?.message || 'Gagal menyimpan pengumuman';
+        alertError?.(msg) || alert(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -117,9 +161,17 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
           <div className="space-y-3">
             <span className="text-sm font-bold text-slate-700">Gambar / Banner <span className="text-gray-400 font-normal">(opsional)</span></span>
             <div className="flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/30">
-              <div className="w-32 h-32 sm:w-24 sm:h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0">
+              <div className="w-32 h-32 sm:w-24 sm:h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0 relative group">
                 {previewUrl ? (
-                  <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                  <>
+                    <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                    <button 
+                      onClick={handleRemoveImage}
+                      className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    >
+                      <X size={20} className="text-white" />
+                    </button>
+                  </>
                 ) : (
                   <ImageIcon size={32} className="text-gray-300" />
                 )}
@@ -160,7 +212,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
                     status: getStatusValue(selectedLabel) 
                   }));
                 }}
-                isSearchable={false} // Atur true jika ingin ada search bar
+                isSearchable={false}
               />
             </div>
 
