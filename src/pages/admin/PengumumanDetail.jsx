@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Megaphone, Pin, X, Loader2, AlertCircle } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
+import PengumumanDetailSkeleton from '../../components/admin/skeleton/PengumumanDetailSkeleton';
 
 // Fallback gambar lokal
 import imgPengumuman from '../../assets/pengumuman.jpg';
@@ -52,11 +53,7 @@ export default function PengumumanDetail() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <Loader2 size={40} className="animate-spin text-primary" />
-      </div>
-    );
+    return <PengumumanDetailSkeleton />;
   }
 
   if (error) {
