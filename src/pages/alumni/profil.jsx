@@ -130,20 +130,27 @@ export default function Profil() {
           <div className="lg:col-span-8 bg-white rounded-4xl shadow-sm flex flex-col overflow-hidden border border-slate-100">
 
             {/* Header Tabs */}
-            <div className="flex border-b border-slate-100 px-2 overflow-x-auto hide-scrollbar">
-              <button onClick={() => setActiveTab('detail')} className={`flex items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'detail' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
+            <div className="flex border-b border-slate-100 px-2 overflow-x-auto md:overflow-x-hidden whitespace-nowrap scrollbar-hide">
+              <button
+                onClick={() => setActiveTab('detail')}
+                className={`flex shrink-0 items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'detail' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}
+              >
                 <User size={16} /> Detail Pribadi
               </button>
-              <button onClick={() => setActiveTab('karier')} className={`flex items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'karier' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
+
+              <button
+                onClick={() => setActiveTab('karier')}
+                className={`flex shrink-0 items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'karier' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}
+              >
                 <Briefcase size={16} /> Status Karier
               </button>
-              <button onClick={() => setActiveTab('deskripsi_karier')} className={`flex items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'deskripsi_karier' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
+              <button onClick={() => setActiveTab('deskripsi_karier')} className={`flex shrink-0  items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'deskripsi_karier' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
                 <FileText size={16} /> Deskripsi Karier
               </button>
-              <button onClick={() => setActiveTab('keahlian')} className={`flex items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'keahlian' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
+              <button onClick={() => setActiveTab('keahlian')} className={`flex shrink-0  items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'keahlian' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
                 <Award size={16} /> Keahlian
               </button>
-              <button onClick={() => setActiveTab('portofolio')} className={`flex items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'portofolio' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
+              <button onClick={() => setActiveTab('portofolio')} className={`flex shrink-0  items-center gap-2 px-6 py-5 text-sm font-bold border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'portofolio' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
                 <Layout size={16} /> Portofolio
               </button>
             </div>
