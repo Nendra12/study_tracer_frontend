@@ -5,7 +5,7 @@ import { alertSuccess, alertConfirm, alertError } from '../../utilitis/alert';
 // Import Hook dari ThemeContext
 import { useThemeSettings } from '../../context/ThemeContext';
 // Import Komponen Preview
-import TampilanPreview from '../../components/admin/TampilanPreview';
+import TampilanPreview from '../../components/admin/TampilanPreview'; // Pastikan path ini benar!
 // Import Admin API
 import { adminApi } from '../../api/admin';
 
@@ -17,18 +17,22 @@ export default function PengaturanTampilan() {
   const [secondaryColor, setSecondaryColor] = useState(theme?.secondaryColor || '#F3F4F4');
   const [thirdColor, setThirdColor] = useState(theme?.thirdColor || '#9CA3AF');
   
+  // State Preview Gambar dipisah
   const [logoPreview, setLogoPreview] = useState(theme?.logo || null);
   const [loginBgPreview, setLoginBgPreview] = useState(theme?.loginBg || null);
+  const [landingBgPreview, setLandingBgPreview] = useState(theme?.landingBg || null);
   
   // Menyimpan file asli untuk dikirim ke backend
   const [logoFile, setLogoFile] = useState(null);
   const [loginBgFile, setLoginBgFile] = useState(null);
+  const [landingBgFile, setLandingBgFile] = useState(null);
   
   const [isSaving, setIsSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   const logoInputRef = useRef(null);
   const loginBgInputRef = useRef(null);
+  const landingBgInputRef = useRef(null);
 
   const primaryPickerRef = useRef(null);
   const secondaryPickerRef = useRef(null);
@@ -42,6 +46,7 @@ export default function PengaturanTampilan() {
       setThirdColor(theme.thirdColor);
       if (theme.logo) setLogoPreview(theme.logo);
       if (theme.loginBg) setLoginBgPreview(theme.loginBg);
+      if (theme.landingBg) setLandingBgPreview(theme.landingBg);
     }
   }, [theme]);
 
@@ -79,12 +84,9 @@ export default function PengaturanTampilan() {
       formData.append('third_color', thirdColor);
       
       // Kirim file gambar hanya jika ada file baru yang dipilih
-      if (logoFile) {
-        formData.append('logo', logoFile);
-      }
-      if (loginBgFile) {
-        formData.append('login_bg', loginBgFile);
-      }
+      if (logoFile) formData.append('logo', logoFile);
+      if (loginBgFile) formData.append('login_bg', loginBgFile);
+      if (landingBgFile) formData.append('landing_bg', landingBgFile);
 
       await adminApi.updatePengaturanTampilan(formData);
 
@@ -94,6 +96,7 @@ export default function PengaturanTampilan() {
       // Reset file state setelah berhasil
       setLogoFile(null);
       setLoginBgFile(null);
+      setLandingBgFile(null);
 
       alertSuccess("Tampilan aplikasi berhasil diperbarui secara global.");
     } catch (error) {
@@ -112,8 +115,10 @@ export default function PengaturanTampilan() {
     setThirdColor(theme?.thirdColor || '#9CA3AF');
     setLogoPreview(theme?.logo || null);
     setLoginBgPreview(theme?.loginBg || null);
+    setLandingBgPreview(theme?.landingBg || null);
     setLogoFile(null);
     setLoginBgFile(null);
+    setLandingBgFile(null);
   };
 
   return (
@@ -132,56 +137,85 @@ export default function PengaturanTampilan() {
                 onClick={() => setShowPreviewModal(true)}
                 className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
               >
-                <Eye size={14} className='text-primary' /> Preview Warna
+                <Eye size={14} className='text-primary' /> Preview Tampilan
               </button>
             </div>
             
             <div className="space-y-8">
-              <div className="space-y-3 max-w-xl">
-                <label className="block text-sm font-bold text-gray-700">Nama Sekolah / Organisasi</label>
-                <input 
-                  type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
-                  placeholder="Contoh: SMK Negeri 1 Gondang"
-                />
-                <p className="text-[11px] text-gray-400 font-medium">Teks ini akan muncul di Header, Sidebar, dan Landing Page.</p>
-              </div>
-
+              
+              {/* === GRID UTAMA: 2 KOLOM === */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Upload Logo */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {logoPreview ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
+                
+                {/* --- KOLOM KIRI --- */}
+                <div className="space-y-8">
+                  {/* 1. Input Nama Sekolah */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-gray-700">Nama Sekolah / Organisasi</label>
+                    <input 
+                      type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
+                      placeholder="Contoh: SMK Negeri 1 Gondang"
+                    />
+                    <p className="text-[11px] text-gray-400 font-medium">Teks ini akan muncul di Header, Sidebar, dan Landing Page.</p>
+                  </div>
+
+                  {/* 2. Upload BG Landing Page */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-gray-700">Gambar Background Landing Page</label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <div className="w-32 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {landingBgPreview ? <img src={landingBgPreview} alt="Landing BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
+                      </div>
+                      <div className="space-y-2 flex-1">
+                        <input type="file" accept="image/*" className="hidden" ref={landingBgInputRef} onChange={(e) => handleImageChange(e, setLandingBgPreview, setLandingBgFile)} />
+                        <button onClick={() => landingBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
+                          <Upload size={14} /> Ganti Gambar
+                        </button>
+                        <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: JPG/PNG (Max 5MB). Resolusi ideal landscape.</p>
+                      </div>
                     </div>
-                    <div className="space-y-2 flex-1">
-                      <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
-                      <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
-                        <Upload size={14} /> Ganti Logo
-                      </button>
-                      <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: PNG transparan (Max 2MB).</p>
+                  </div>
+                </div>
+                
+                {/* --- KOLOM KANAN --- */}
+                <div className="space-y-8">
+                  {/* 3. Upload Logo Aplikasi */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {logoPreview ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
+                      </div>
+                      <div className="space-y-2 flex-1">
+                        <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
+                        <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
+                          <Upload size={14} /> Ganti Logo
+                        </button>
+                        <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: PNG transparan (Max 2MB).</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Upload BG Login */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-gray-700">Gambar Background Halaman Login</label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <div className="w-32 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {loginBgPreview ? <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
+                      </div>
+                      <div className="space-y-2 flex-1">
+                        <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
+                        <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
+                          <Upload size={14} /> Ganti Gambar
+                        </button>
+                        <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: JPG/PNG (Max 5MB). Resolusi ideal potrait/landscape.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Upload BG Login */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-gray-700">Gambar Background Halaman Login</label>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="w-32 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {loginBgPreview ? <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
-                    </div>
-                    <div className="space-y-2 flex-1">
-                      <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
-                      <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
-                        <Upload size={14} /> Ganti Gambar
-                      </button>
-                      <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: JPG/PNG (Max 5MB). Resolusi ideal potrait/landscape.</p>
-                    </div>
-                  </div>
-                </div>
               </div>
+
             </div>
           </section>
 
@@ -262,6 +296,7 @@ export default function PengaturanTampilan() {
         thirdColor={thirdColor}
         logo={logoPreview}
         loginBg={loginBgPreview}
+        landingBg={landingBgPreview}
         namaSekolah={namaSekolah}
       />
 
