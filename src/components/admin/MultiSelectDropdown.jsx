@@ -71,7 +71,7 @@ export default function MultiSelectDropdown({
   return (
     <div className="space-y-1 relative" ref={ref}>
       {/* Label */}
-      {label && <label className="text-[11px] font-bold text-secondary uppercase">{label}</label>}
+      {label && <label className="text-[11px] font-bold text-primary uppercase">{label}</label>}
       
       {/* Container Input & Badge */}
       <div 
@@ -84,7 +84,7 @@ export default function MultiSelectDropdown({
         
         {/* Render item yang dipilih (Badge) */}
         {selected.map((item, idx) => (
-          <span key={idx} className="bg-fourth text-secondary px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 border border-slate-200">
+          <span key={idx} className="bg-fourth text-primary px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 border border-slate-200">
             {getLabel(item)} 
             <X size={10} className="cursor-pointer hover:text-red-500 transition-colors" onClick={(e) => removeOption(e, item)} />
           </span>

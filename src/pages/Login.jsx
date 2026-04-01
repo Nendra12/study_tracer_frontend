@@ -87,13 +87,13 @@ export default function Login() {
                 </p>
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-secondary mb-3 ">
+            <h2 className="text-3xl font-bold text-primary mb-3"> {/* Ubah text-secondary jadi text-primary */}
               Selamat Datang
             </h2>
 
             {/* Social Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <p className="text-secondary text-sm">
+              <p className="text-gray-500 text-sm"> {/* Ubah text-secondary jadi text-gray-500 atau text-third */}
                 Masukan email dan password untuk mengakses akun anda
               </p>
             </div>
@@ -174,8 +174,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-secondary text-white font-bold py-3 rounded-lg transition-colors mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
+                className="flex items-center justify-center gap-2 w-full bg-primary hover:opacity-90 active:scale-[0.98] text-white font-bold py-3 rounded-lg transition-all mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"              >
                 {loading ? (
                   <>
                     <Loader2 size={20} className="animate-spin" />

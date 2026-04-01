@@ -124,7 +124,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         />
       ) : (
         <div className="space-y-1">
-          <label className="text-[11px] font-bold text-secondary uppercase">
+          <label className="text-[11px] font-bold text-primary uppercase">
             {label} <span className="text-gray-400 normal-case font-normal">(opsional)</span>
           </label>
           <div className="w-full px-3 py-2.5 bg-gray-100 border border-fourth rounded-xl text-sm text-gray-500 font-medium cursor-not-allowed">
@@ -133,7 +133,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         </div>
       )}
       
-      <label className="flex items-center gap-2 pt-1.5 text-[11px] text-secondary cursor-pointer hover:text-primary transition-colors w-fit">
+      <label className="flex items-center gap-2 pt-1.5 text-[11px] text-primary cursor-pointer hover:text-primary transition-colors w-fit">
         <input
           type="checkbox"
           checked={isSaatIni}
@@ -175,7 +175,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             
             <option.icon size={28} className={selectedStatus === option.id ? 'text-primary' : 'text-third'} />
             <div className="text-center">
-              <p className={`text-sm font-bold ${selectedStatus === option.id ? 'text-primary' : 'text-secondary'}`}>{option.label}</p>
+              <p className={`text-sm font-bold ${selectedStatus === option.id ? 'text-primary' : 'text-primary'}`}>{option.label}</p>
               <p className="text-[10px] text-third">{option.sub}</p>
             </div>
           </button>
@@ -303,7 +303,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {selectedStatus === 'Wirausaha' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1 relative z-[70]">
-              <label className="text-[11px] font-bold text-secondary uppercase">Nama Usaha *</label>
+              <label className="text-[11px] font-bold text-primary uppercase">Nama Usaha *</label>
               <input
                 type="text"
                 value={wirausaha.nama_usaha}
@@ -341,7 +341,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-2 px-4 md:px-6 py-2 border border-fourth rounded-xl text-xs md:text-sm font-bold text-secondary hover:bg-fourth transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 md:px-6 py-2 border border-fourth rounded-xl text-xs md:text-sm font-bold text-primary hover:bg-fourth transition-all cursor-pointer"
           >
             <ArrowLeft size={16} /> Kembali
           </button>

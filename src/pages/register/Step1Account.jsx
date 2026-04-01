@@ -62,7 +62,7 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
       <div className="space-y-4">
         {/* Input Email */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-secondary">Email</label>
+          <label className="text-xs font-bold text-primary">Email</label>
           <div className="relative mt-2">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-third" size={16} />
             <input
@@ -73,13 +73,14 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
               className="w-full pl-10 pr-4 py-3 bg-white border border-fourth rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
             />
           </div>
+          <p className="text-[10px] text-third italic">pastikan email Anda valid</p>
           {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Input Password */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-secondary">Password <span className="text-red-500">*</span></label>
+            <label className="text-xs font-bold text-primary">Password <span className="text-red-500">*</span></label>
             <div className="relative mt-2">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-third" size={16} />
               <input
@@ -106,7 +107,7 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
 
           {/* Input Konfirmasi Password */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-secondary">Konfirmasi Password <span className="text-red-500">*</span></label>
+            <label className="text-xs font-bold text-primary">Konfirmasi Password <span className="text-red-500">*</span></label>
             <div className="relative mt-2">
               <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-third" size={16} />
               <input

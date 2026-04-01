@@ -17,7 +17,7 @@ export default function SelectInput({ label, value, options, onSelect, placehold
 
   return (
     <div className="space-y-1 relative" ref={ref}>
-      <label className="text-[11px] font-bold text-secondary uppercase">
+      <label className="text-[11px] font-bold text-primary uppercase">
         {label} <span className="text-red-500">*</span>
       </label>
       <div 

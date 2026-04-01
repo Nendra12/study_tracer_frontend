@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { publicApi } from "../api/alumni";
 import Loader from "../components/Loaders";
 import { STORAGE_BASE_URL } from "../api/axios";
+import FooterModals from "../components/alumni/FooterModals"; // Sesuaikan path-nya jika berbeda
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -25,6 +26,10 @@ export default function LandingPage() {
   const [jobList, setJobList] = useState([]);
   const [activeSection, setActiveSection] = useState("beranda");
   const [loading, setLoading] = useState(false)
+  const [modalType, setModalType] = useState(null);
+
+  const openModal = (type) => setModalType(type);
+  const closeModal = () => setModalType(null);
 
   // Fetch data landing page dari API
   useEffect(() => {
@@ -121,9 +126,9 @@ export default function LandingPage() {
 
   // console.log(alumniList)
   return (
-    <div className="relative min-h-screen font-sans text-secondary overflow-hidden selection:bg-primary selection:text-white">
+    <div className="relative min-h-screen font-sans text-primary/80 overflow-hidden selection:bg-primary selection:text-white">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[25%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-secondary/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-primary/80/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* Floating Modern Navbar */}
       <NavbarLanding setActiveSection={setActiveSection} activeSection={activeSection} />
@@ -164,7 +169,7 @@ export default function LandingPage() {
 
             <motion.p
               variants={itemVariants}
-              className="text-lg text-secondary leading-relaxed max-w-md font-medium"
+              className="text-lg text-primary/80 leading-relaxed max-w-md font-medium"
             >
               Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni,
               temukan info lowongan kerja, dan bangun jaringan yang lebih luas
@@ -176,7 +181,7 @@ export default function LandingPage() {
             >
               <button
                 onClick={() => user ? navigate("/alumni") : navigate("/login")}
-                className="bg-primary text-white px-8 py-4 rounded-xl font-bold cursor-pointer hover:bg-secondary hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2"
+                className="bg-primary text-white px-8 py-4 rounded-xl font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2"
               >
                 Masuk Portal Alumni <span className="text-xl">→</span>
               </button>
@@ -189,7 +194,7 @@ export default function LandingPage() {
                           key={index}
                           src={`${getImageUrl(i.foto)}`}
                           alt="user"
-                          className="w-10 h-10 object-cover rounded-full border-2 border-[#f3f4f4]"
+                          className="w-10 h-10 object-cover rounded-full border-2 border-fourth"
                         />
                       )}
                     </>
@@ -230,7 +235,7 @@ export default function LandingPage() {
               transition={{ delay: 0.5 }}
             >
               <div className="flex items-center gap-4">
-                {/* <div className="w-12 h-12 rounded-full bg-[#f3f4f4] flex items-center justify-center text-2xl">💼</div>*/}
+                {/* <div className="w-12 h-12 rounded-full bg-fourth flex items-center justify-center text-2xl">💼</div>*/}
                 <img src={Work} alt="kerja" className="w-12" />
                 <div>
                   <div className="text-2xl font-black text-primary">{stats?.career_distribution?.bekerja?.percentage || 0}%</div>
@@ -274,7 +279,7 @@ export default function LandingPage() {
       {/* Karir & Lowongan - Sleek List */}
       <CareerSection jobList={jobList} />
 
-      <footer className="bg-[#f3f4f4] pt-20 pb-10 px-4 sm:px-6 lg:px-8 border-t border-[#f3f4f4]">
+      <footer className="bg-fourth pt-20 pb-10 px-4 sm:px-6 lg:px-8 border-t border-fourth">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             {/* Kolom 1: Branding */}
@@ -291,7 +296,7 @@ export default function LandingPage() {
                   <span className='text-xs font-semibold'>SMK Negeri 1 Gondang</span>
                 </div>
               </Link>
-              <p className="text-secondary text-sm leading-relaxed font-medium">
+              <p className="text-primary/80 text-sm leading-relaxed font-medium">
                 Platform pelacakan dan jaringan alumni resmi. Menghubungkan
                 lulusan, membina pertumbuhan, dan membangun komunitas yang lebih
                 kuat bersama-sama.
@@ -300,7 +305,7 @@ export default function LandingPage() {
                 {[<Globe />, <Mail />, <Phone />].map((icon, i) => (
                   <button
                     key={i}
-                    className="w-10 h-10 rounded-full bg-[#f3f4f4] flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-fourth flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer"
                   >
                     {icon}
                   </button>
@@ -341,7 +346,7 @@ export default function LandingPage() {
                         handleSmoothScroll(e, item.href);
 
                       }}
-                      className="text-secondary text-sm font-bold hover:text-primary transition-colors"
+                      className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
                     >
                       {item.label}
                     </a>
@@ -364,7 +369,7 @@ export default function LandingPage() {
                   <li key={item}>
                     <a
                       href="#"
-                      className="text-secondary text-sm font-bold hover:text-primary transition-colors"
+                      className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
                     >
                       {item}
                     </a>
@@ -378,7 +383,7 @@ export default function LandingPage() {
               <h3 className="text-primary font-black">
                 Berlangganan Newsletter
               </h3>
-              <p className="text-secondary text-sm font-medium">
+              <p className="text-primary/80 text-sm font-medium">
                 Berlangganan untuk menerima pembaruan tentang pekerjaan dan
                 acara.
               </p>
@@ -386,7 +391,7 @@ export default function LandingPage() {
                 <input
                   type="email"
                   placeholder="Alamat email Anda"
-                  className="w-full px-5 py-4 rounded-xl bg-[#f3f4f4] border-transparent focus:bg-white focus:border-primary/20 focus:ring-0 text-sm font-medium transition-all outline-none"
+                  className="w-full px-5 py-4 rounded-xl bg-fourth border-transparent focus:bg-white focus:border-primary/20 focus:ring-0 text-sm font-medium transition-all outline-none"
                 />
                 <button className="cursor-pointer w-full py-4 bg-third
                  hover:bg-primary text-white rounded-xl font-black text-sm shadow-sm transition-all active:scale-95">
@@ -397,30 +402,41 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-[#f3f4f4] flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-third
-             text-xs font-bold">
+          <div className="pt-8 border-t border-[#f3f4f4] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
+            <p className="text-third text-xs font-bold text-center md:text-left">
               © {currentYear} Alumni Tracer. Hak cipta dilindungi undang-undang.
             </p>
-            <div className="flex gap-8">
-              <a
-                href="#"
-                className="text-third
-                 text-xs font-bold hover:text-primary"
+            
+            <div className="flex flex-wrap justify-center md:justify-end gap-4 sm:gap-6">
+              <button 
+                onClick={() => openModal('privasi')}
+                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
               >
                 Kebijakan Privasi
-              </a>
-              <a
-                href="#"
-                className="text-third
-                 text-xs font-bold hover:text-primary"
+              </button>
+              <button 
+                onClick={() => openModal('layanan')}
+                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
               >
-                Syarat Layanan
-              </a>
+                Ketentuan Layanan
+              </button>
+              <button 
+                onClick={() => openModal('kontak')}
+                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+              >
+                Kontak Dukungan
+              </button>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Render Modal Footer di paling bawah setelah tag </footer> */}
+      <FooterModals 
+        isOpen={!!modalType} 
+        type={modalType} 
+        onClose={closeModal} 
+      />
     </div>
   );
 }

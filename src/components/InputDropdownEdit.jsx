@@ -52,7 +52,7 @@ export default function InputDropdownEdit({
 
   return (
     <div className="space-y-1 w-full relative" ref={dropdownRef}>
-      <label className="text-[11px] font-bold text-secondary uppercase tracking-wider">
+      <label className="text-[11px] font-bold text-primary uppercase tracking-wider">
         {label} {isRequired && <span className="text-red-500">*</span>}
       </label>
 
@@ -69,7 +69,7 @@ export default function InputDropdownEdit({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full p-3 text-sm outline-none bg-transparent text-secondary placeholder:text-third/50"
+          className="w-full p-3 text-sm outline-none bg-transparent text-primary placeholder:text-third/50"
         />
 
         <button
@@ -91,7 +91,7 @@ export default function InputDropdownEdit({
             <li
               key={option}
               onClick={() => handleSelect(option)}
-              className="flex items-center justify-between px-4 py-3 text-sm cursor-pointer hover:bg-fourth text-secondary hover:text-primary transition-colors group"
+              className="flex items-center justify-between px-4 py-3 text-sm cursor-pointer hover:bg-fourth text-primary hover:text-primary transition-colors group"
             >
               <span className={selected === option ? "font-bold text-primary" : ""}>
                 {option}
