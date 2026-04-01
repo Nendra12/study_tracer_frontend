@@ -3,7 +3,55 @@ import { ArrowLeft, Download, Eye, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-async function generateCvPdf(alumni) {
+import { useThemeSettings } from '../../context/ThemeContext';
+import DefaultLogo from '../../assets/icon.png';
+
+/**
+ * Convert image URL ke data URL untuk dipakai di jsPDF.
+ */
+function loadImageAsDataUrl(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+/**
+ * Render watermark logo + "Alumni Tracer | Nama Sekolah" di kiri atas setiap halaman PDF.
+ */
+function addWatermark(doc, namaSekolah, logoDataUrl) {
+  const x = 14;
+  const y = 8;
+  const logoSize = 8;
+
+  // Gambar logo di kiri atas
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', x, y - 1, logoSize, logoSize, undefined, 'FAST');
+  }
+
+  // Teks watermark di sebelah kanan logo
+  const textX = logoDataUrl ? x + logoSize + 3 : x;
+  const watermarkText = `Alumni Tracer | ${namaSekolah}`;
+
+  doc.setFontSize(14);
+  doc.setTextColor(160, 160, 160);
+  doc.text(watermarkText, textX, y + 5);
+}
+
+async function generateCvPdf(alumni, namaSekolah, logoUrl) {
+  // Pre-load logo sebagai data URL
+  const logoDataUrl = await loadImageAsDataUrl(logoUrl || DefaultLogo);
+
   const captureRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
   if (!captureRoot) {
     throw new Error('Area profil tidak ditemukan');
@@ -90,12 +138,14 @@ async function generateCvPdf(alumni) {
   let position = margin;
 
   doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
+  addWatermark(doc, namaSekolah, logoDataUrl);
   heightLeft -= availableH;
 
   while (heightLeft > 0) {
     doc.addPage();
     position = margin - (imgH - heightLeft);
     doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
+    addWatermark(doc, namaSekolah, logoDataUrl);
     heightLeft -= availableH;
   }
 
@@ -105,11 +155,12 @@ async function generateCvPdf(alumni) {
 export default function PublicProfileBar({ alumniData }) {
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState(false);
+  const { theme } = useThemeSettings();
 
   async function handleDownloadPdf() {
     try {
       setDownloading(true);
-      await generateCvPdf(alumniData);
+      await generateCvPdf(alumniData, theme?.namaSekolah || 'SMK Negeri 1 Gondang', theme?.logo);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
       alert('Gagal membuat PDF. Silakan coba lagi.');
