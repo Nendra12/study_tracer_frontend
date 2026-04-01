@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, KeyRound, Lock, Eye, EyeOff, Loader2, CheckCircle, RefreshCw } from 'lucide-react';
-import LoginImage from '../assets/login_image.webp';
-import Logo from '../assets/icon.png';
+import DefaultLoginImage from '../assets/login_image.webp';
+import DefaultLogo from '../assets/icon.png';
 import { authApi } from '../api/auth';
 import { alertSuccess, alertError } from '../utilitis/alert';
+import { useThemeSettings } from '../context/ThemeContext';
 
 export default function LupaPass() {
   const navigate = useNavigate();
+  const { theme } = useThemeSettings();
 
   // Step: 1 = email, 2 = OTP, 3 = new password
   const [step, setStep] = useState(1);
@@ -165,15 +167,15 @@ export default function LupaPass() {
       <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden h-[75vh] lg:h-[85vh]">
         {/* Left Image */}
         <div className="hidden lg:block lg:w-1/2 h-full relative">
-          <img src={LoginImage} alt="Login Visual" className="w-full h-full object-cover" />
+          <img src={theme?.loginBg || DefaultLoginImage} alt="Login Visual" className="w-full h-full object-cover" />
           <div className="bg-black/30 absolute top-0 w-full h-full"></div>
           <div className="absolute bottom-0 z-10 p-5">
             <div className="flex items-center gap-3">
-              <img src={Logo} alt="" className="w-15" />
+              <img src={theme?.logo || DefaultLogo} alt="" className="w-15" />
               <h1 className="font-extrabold text-fourth">Alumni Tracer Study</h1>
             </div>
             <p className="text-fourth text-medium">
-              Masuk dan terhubung kembali dengan SMKN 1 Gondang. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
+              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Gondang'}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
             </p>
           </div>
         </div>

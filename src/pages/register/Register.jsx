@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import Logo from '../../assets/icon.png';
+import DefaultLogo from '../../assets/icon.png';
 import Step1Account from './Step1Account';
 import Step2Profile from './Step2Profile';
 import Step3Status from './Step3Status';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { alumniApi } from '../../api/alumni';
+import { useThemeSettings } from '../../context/ThemeContext';
 
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -15,6 +16,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { theme } = useThemeSettings();
   const navigate = useNavigate();
 
   // Shared form data across all steps
@@ -223,10 +225,10 @@ export default function Register() {
       {/* Navbar Minimalis */}
       <header className="bg-white border-b border-fourth px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <img src={Logo} alt="Logo" className="w-10" />
+          <img src={theme?.logo || DefaultLogo} alt="Logo" className="w-10" />
           <div>
             <h1 className="text-primary font-bold text-sm leading-tight">Alumni Tracer Study</h1>
-            <p className="text-[10px] text-third">SMK Negeri 1 Gondang</p>
+            <p className="text-[10px] text-third">{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">

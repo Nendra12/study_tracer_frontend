@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api/axios';
-import { STORAGE_BASE_URL } from '../api/axios';
 
 // 1. Buat Context
 const ThemeContext = createContext();
@@ -34,18 +33,15 @@ export const ThemeProvider = ({ children }) => {
   };
 
   // Helper: map API response ke format frontend theme
+  // API Resource mengembalikan: logo, login_bg (sudah berupa full URL dari Storage::url())
   const mapApiToTheme = (data) => {
     return {
       namaSekolah: data.nama_sekolah || DEFAULT_THEME.namaSekolah,
       primaryColor: data.primary_color || DEFAULT_THEME.primaryColor,
       secondaryColor: data.secondary_color || DEFAULT_THEME.secondaryColor,
       thirdColor: data.third_color || DEFAULT_THEME.thirdColor,
-      logo: data.logo_url
-        ? (data.logo_url.startsWith('http') ? data.logo_url : `${STORAGE_BASE_URL}/${data.logo_url}`)
-        : DEFAULT_THEME.logo,
-      loginBg: data.login_bg_url
-        ? (data.login_bg_url.startsWith('http') ? data.login_bg_url : `${STORAGE_BASE_URL}/${data.login_bg_url}`)
-        : DEFAULT_THEME.loginBg,
+      logo: data.logo || DEFAULT_THEME.logo,
+      loginBg: data.login_bg || DEFAULT_THEME.loginBg,
     };
   };
 

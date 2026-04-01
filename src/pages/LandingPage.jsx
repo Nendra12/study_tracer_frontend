@@ -14,10 +14,12 @@ import { useAuth } from "../context/AuthContext";
 import { publicApi } from "../api/alumni";
 import Loader from "../components/Loaders";
 import { STORAGE_BASE_URL } from "../api/axios";
+import { useThemeSettings } from "../context/ThemeContext";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { user } = useAuth()
+  const { theme } = useThemeSettings();
 
   // State untuk data dinamis
   const [stats, setStats] = useState(null);
@@ -147,7 +149,7 @@ export default function LandingPage() {
             >
               <img src={Alumni} alt="" className="w-7" />
               <span className="text-[12px] font-bold text-primary">
-                Selamat datang di Tracer Study SMK Negeri 1 Gondang
+                Selamat datang di Tracer Study {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
               </span>
             </motion.div>
 
@@ -158,7 +160,7 @@ export default function LandingPage() {
               Tetap Terhubung <br />
               <span>dengan Alumni </span> <br />
               <span className="text-transparent bg-clip-text bg-third">
-                SMKN 1 Gondang.
+                {theme?.namaSekolah || 'SMKN 1 Gondang'}.
               </span>
             </motion.h1>
 
@@ -282,13 +284,13 @@ export default function LandingPage() {
               <Link
                 to="/" className="flex items-center gap-2.5 group">
                 <img
-                  src="/icon.png"
+                  src={theme?.logo || "/icon.png"}
                   alt="Alumni Tracer Logo"
                   className="w-12 h-10 object-contain drop-shadow-sm"
                 />
                 <div className='flex flex-col transition-all duration-500 ease-in-out'>
                   <span className="font-black text-primary text-lg">Alumni Tracer</span>
-                  <span className='text-xs font-semibold'>SMK Negeri 1 Gondang</span>
+                  <span className='text-xs font-semibold'>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>
                 </div>
               </Link>
               <p className="text-secondary text-sm leading-relaxed font-medium">
