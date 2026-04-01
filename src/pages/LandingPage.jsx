@@ -126,7 +126,6 @@ export default function LandingPage() {
     );
   }
 
-  // console.log(alumniList)
   return (
     <div className="relative min-h-screen font-sans text-primary/80 overflow-hidden selection:bg-primary selection:text-white">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[25%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -185,7 +184,7 @@ export default function LandingPage() {
                 onClick={() => user ? navigate("/alumni") : navigate("/login")}
                 className="bg-primary text-white px-8 py-4 rounded-xl font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2"
               >
-                Masuk Portal Alumni <span className="text-xl">→</span>
+                Masuk Portal {user ? user.role == 'alumni' ? 'Alumni': 'Admin' : 'Alumni'} <span className="text-xl">→</span>
               </button>
               <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
                 <div className="flex -space-x-3">
