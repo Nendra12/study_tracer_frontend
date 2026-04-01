@@ -19,6 +19,28 @@ const DEFAULT_THEME = {
   loginBg: null,
 };
 
+// Derive storage base from API base URL
+// API = http://localhost:8000/api → Storage = http://localhost:8000/storage
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const STORAGE_BASE = API_BASE.replace('/api', '/storage');
+
+/**
+ * Fix Storage URL yang salah dari backend.
+ * Backend mungkin mengembalikan http://localhost/storage/... (tanpa port)
+ * karena APP_URL di .env Laravel belum diatur dengan benar.
+ * Fungsi ini mengoreksi bagian /storage/... agar sesuai base yang benar.
+ */
+const fixStorageUrl = (url) => {
+  if (!url) return null;
+  // Ambil path setelah /storage/ dari URL yang dikembalikan backend
+  const storageIndex = url.indexOf('/storage/');
+  if (storageIndex !== -1) {
+    const relativePath = url.substring(storageIndex + '/storage/'.length);
+    return `${STORAGE_BASE}/${relativePath}`;
+  }
+  return url;
+};
+
 // 3. Provider Component
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(DEFAULT_THEME);
@@ -33,15 +55,16 @@ export const ThemeProvider = ({ children }) => {
   };
 
   // Helper: map API response ke format frontend theme
-  // API Resource mengembalikan: logo, login_bg (sudah berupa full URL dari Storage::url())
+  // API Resource mengembalikan: logo, login_bg (URL dari Storage::url())
+  // fixStorageUrl diperlukan karena APP_URL backend mungkin tidak sesuai
   const mapApiToTheme = (data) => {
     return {
       namaSekolah: data.nama_sekolah || DEFAULT_THEME.namaSekolah,
       primaryColor: data.primary_color || DEFAULT_THEME.primaryColor,
       secondaryColor: data.secondary_color || DEFAULT_THEME.secondaryColor,
       thirdColor: data.third_color || DEFAULT_THEME.thirdColor,
-      logo: data.logo || DEFAULT_THEME.logo,
-      loginBg: data.login_bg || DEFAULT_THEME.loginBg,
+      logo: fixStorageUrl(data.logo) || DEFAULT_THEME.logo,
+      loginBg: fixStorageUrl(data.login_bg) || DEFAULT_THEME.loginBg,
     };
   };
 
