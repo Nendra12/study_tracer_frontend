@@ -10,7 +10,7 @@ export default function DateOfBirthInput({ onChange, isRequired, value }) {
 
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-bold text-secondary uppercase block">
+      <label className="text-[11px] font-bold text-primary uppercase block">
         Tanggal Lahir {isRequired && <span className="text-red-500">*</span>}
       </label>
       

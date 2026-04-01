@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X,
-  IdCardLanyard, Megaphone // <-- Tambahkan Megaphone disini
+  IdCardLanyard, Megaphone, Palette // <-- Tambahkan Megaphone disini
 } from 'lucide-react';
-import Logo from '../../assets/icon.png';
+import DefaultLogo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { alertConfirm } from '../../utilitis/alert';
+import { useThemeSettings } from '../../context/ThemeContext';
 
 export default function SideBar({ active, setActive }) {
   const [activeMenu, setActiveMenu] = useState('Beranda');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { logout } = useAuth();
+  const { theme } = useThemeSettings();
   const navigate = useNavigate();
   const location = useLocation()
 
@@ -25,6 +27,7 @@ export default function SideBar({ active, setActive }) {
     { name: 'Data Master', icon: <Database size={20} />, path: '/wb-admin/master' },
     { name: 'Kuesioner', icon: <FileText size={20} />, path: '/wb-admin/kuisoner' },
     { name: 'Pengumuman', icon: <Megaphone size={20} />, path: '/wb-admin/pengumuman' }, 
+    { name: 'Pengaturan Tampilan', icon: <Palette size={20} />, path: '/wb-admin/tampilan' },
   ];
 
   const handleLogout = async () => {
@@ -57,6 +60,7 @@ export default function SideBar({ active, setActive }) {
     { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid/detail/:detailid", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/update-kuesioner/:id", title: "Kuesioner" },
     { path: "/wb-admin/pengumuman", title: "Pengumuman" },
+    { path: "/wb-admin/tampilan", title: "Pengaturan Tampilan" },
   ];
 
   const getTitle = () => {
@@ -94,9 +98,9 @@ export default function SideBar({ active, setActive }) {
         {/* Header Sidebar + Tombol Close */}
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="Logo" className='w-10 md:w-12'/>
+            <img src={theme?.logo || DefaultLogo} alt="Logo" className='w-10 md:w-12'/>
             <div className="min-w-0">
-              <h1 className="text-primary font-bold leading-tight text-sm truncate">Alumni Tracer</h1>
+              <h1 className="text-primary font-bold leading-tight text-sm truncate">{theme?.namaSekolah || 'Alumni Tracer'}</h1>
               <p className="text-third text-[10px]">Admin Portal</p>
             </div>
           </div>
@@ -125,7 +129,7 @@ export default function SideBar({ active, setActive }) {
                   w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
                   ${isActive
                     ? 'bg-fourth text-primary font-bold shadow-sm'
-                    : 'text-third hover:bg-fourth/50 hover:text-secondary'}
+                    : 'text-third hover:bg-fourth/50 hover:text-primary'}
                 `}
               >
                 <span className={isActive ? 'text-primary' : 'text-third'}>
@@ -158,6 +162,6 @@ export default function SideBar({ active, setActive }) {
           </div>
         </div>
       )}
-    </>
+    </> 
   );
 }
