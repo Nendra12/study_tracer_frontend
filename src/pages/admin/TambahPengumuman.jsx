@@ -108,6 +108,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
       fd.append('judul', formData.judul);
       fd.append('konten', formData.konten);
       fd.append('status', formData.status);
+      fd.append('is_pinned', formData.is_pinned ? '1' : '0');
       
       if (formData.foto instanceof File) {
         fd.append('foto', formData.foto);

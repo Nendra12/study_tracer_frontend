@@ -117,11 +117,19 @@ export default function Beranda() {
         setLoadingAnnouncements(true);
         const res = await alumniApi.getPengumuman({ per_page: 5, status: 'aktif' });
         const responseData = res.data?.data;
+        let items = [];
         if (responseData?.data) {
-          setAnnouncements(responseData.data);
+          items = responseData.data;
         } else if (Array.isArray(responseData)) {
-          setAnnouncements(responseData);
+          items = responseData;
         }
+        // Pastikan yang pinned selalu muncul pertama
+        items.sort((a, b) => {
+          if (a.is_pinned && !b.is_pinned) return -1;
+          if (!a.is_pinned && b.is_pinned) return 1;
+          return 0;
+        });
+        setAnnouncements(items);
       } catch (err) {
         console.error('Failed to fetch pengumuman:', err);
       } finally {

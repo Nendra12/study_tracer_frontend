@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Image as ImageIcon, Save, RefreshCcw, Eye } from 'lucide-react';
-import { alertSuccess, alertConfirm } from '../../utilitis/alert';
+import { alertSuccess, alertConfirm, alertError } from '../../utilitis/alert';
 
 // Import Hook dari ThemeContext
 import { useThemeSettings } from '../../context/ThemeContext';
 // Import Komponen Preview
 import TampilanPreview from '../../components/admin/TampilanPreview';
+// Import Admin API
+import { adminApi } from '../../api/admin';
 
 export default function PengaturanTampilan() {
-  const { theme, updateSettings } = useThemeSettings();
+  const { theme, updateSettings, refreshFromApi } = useThemeSettings();
 
   const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMK Negeri 1 Gondang');
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
@@ -17,6 +19,10 @@ export default function PengaturanTampilan() {
   
   const [logoPreview, setLogoPreview] = useState(theme?.logo || null);
   const [loginBgPreview, setLoginBgPreview] = useState(theme?.loginBg || null);
+  
+  // Menyimpan file asli untuk dikirim ke backend
+  const [logoFile, setLogoFile] = useState(null);
+  const [loginBgFile, setLoginBgFile] = useState(null);
   
   const [isSaving, setIsSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -39,9 +45,10 @@ export default function PengaturanTampilan() {
     }
   }, [theme]);
 
-  const handleImageChange = (e, setPreview) => {
+  const handleImageChange = (e, setPreview, setFile) => {
     const file = e.target.files[0];
     if (file) {
+      setFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
@@ -62,18 +69,40 @@ export default function PengaturanTampilan() {
     if (!confirm.isConfirmed) return;
 
     setIsSaving(true);
-    setTimeout(() => {
-      updateSettings({
-        namaSekolah,
-        primaryColor,
-        secondaryColor,
-        thirdColor,
-        logo: logoPreview,
-        loginBg: loginBgPreview
-      });
+    
+    try {
+      // Bangun FormData untuk dikirim ke backend
+      const formData = new FormData();
+      formData.append('nama_sekolah', namaSekolah);
+      formData.append('primary_color', primaryColor);
+      formData.append('secondary_color', secondaryColor);
+      formData.append('third_color', thirdColor);
+      
+      // Kirim file gambar hanya jika ada file baru yang dipilih
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+      if (loginBgFile) {
+        formData.append('login_bg', loginBgFile);
+      }
+
+      await adminApi.updatePengaturanTampilan(formData);
+
+      // Refresh theme dari API agar semua komponen mendapatkan URL gambar terbaru
+      await refreshFromApi();
+
+      // Reset file state setelah berhasil
+      setLogoFile(null);
+      setLoginBgFile(null);
+
+      alertSuccess("Tampilan aplikasi berhasil diperbarui secara global.");
+    } catch (error) {
+      console.error('Gagal menyimpan pengaturan tampilan:', error);
+      const message = error.response?.data?.message || 'Terjadi kesalahan saat menyimpan pengaturan.';
+      alertError(message);
+    } finally {
       setIsSaving(false);
-      alertSuccess("Berhasil Disimpan", "Tampilan aplikasi berhasil diperbarui secara global.");
-    }, 1000);
+    }
   };
 
   const handleReset = () => {
@@ -83,6 +112,8 @@ export default function PengaturanTampilan() {
     setThirdColor(theme?.thirdColor || '#9CA3AF');
     setLogoPreview(theme?.logo || null);
     setLoginBgPreview(theme?.loginBg || null);
+    setLogoFile(null);
+    setLoginBgFile(null);
   };
 
   return (
@@ -125,7 +156,7 @@ export default function PengaturanTampilan() {
                       {logoPreview ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
                     </div>
                     <div className="space-y-2 flex-1">
-                      <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview)} />
+                      <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
                       <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
                         <Upload size={14} /> Ganti Logo
                       </button>
@@ -142,7 +173,7 @@ export default function PengaturanTampilan() {
                       {loginBgPreview ? <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
                     </div>
                     <div className="space-y-2 flex-1">
-                      <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview)} />
+                      <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
                       <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
                         <Upload size={14} /> Ganti Gambar
                       </button>
@@ -229,9 +260,9 @@ export default function PengaturanTampilan() {
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         thirdColor={thirdColor}
-        logo={logoPreview}         // <--- Pastikan ini ada
-        loginBg={loginBgPreview}   // <--- Pastikan ini ada
-        namaSekolah={namaSekolah}  // <--- Pastikan ini ada
+        logo={logoPreview}
+        loginBg={loginBgPreview}
+        namaSekolah={namaSekolah}
       />
 
     </div>

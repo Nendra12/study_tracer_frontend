@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import LoginImage from "../assets/login_image.webp";
-import Logo from "../assets/icon.png";
+import DefaultLoginImage from "../assets/login_image.webp";
+import DefaultLogo from "../assets/icon.png";
 import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useThemeSettings } from "../context/ThemeContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { theme } = useThemeSettings();
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -47,7 +49,7 @@ export default function Login() {
         {/* Bagian Kiri: Banner Gambar */}
         <div className="hidden lg:block lg:w-1/2 h-full relative">
           <img
-            src={LoginImage}
+            src={theme?.loginBg || DefaultLoginImage}
             alt="Login Visual"
             className="w-full h-full object-cover"
           />
@@ -61,13 +63,13 @@ export default function Login() {
           </Link>
           <div className="absolute bottom-0 z-10 p-5">
             <div className="flex items-center gap-3">
-              <img src={Logo} alt="" className="w-15" />
+              <img src={theme?.logo || DefaultLogo} alt="" className="w-15" />
               <h1 className="font-extrabold text-fourth">
                 Alumni Tracer Study
               </h1>
             </div>
             <p className="text-fourth text-medium">
-              Masuk dan terhubung kembali dengan SMKN 1 Gondang. Pantau peluang
+              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Gondang'}. Pantau peluang
               kerja dan tetap dekat dengan sesama alumni.
             </p>
           </div>
@@ -77,13 +79,13 @@ export default function Login() {
         <div className="w-full lg:w-1/2 py-3 px-8 md:p-12 flex flex-col justify-center bg-white max-h-dvh">
           <div className="max-w-md mx-auto w-full">
             <div className="flex items-center gap-3 mb-6 lg:hidden">
-              <img src={Logo} alt="logo" className="w-15" />
+              <img src={theme?.logo || DefaultLogo} alt="logo" className="w-15" />
               <div>
                 <h1 className="font-extrabold text-secondary">
                   Alumni Tracer Study
                 </h1>
                 <p className="font-light text-xs text-third">
-                  SMK Negeri 1 Gondang
+                  {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
                 </p>
               </div>
             </div>
