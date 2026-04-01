@@ -188,7 +188,7 @@ export default function Notifikasi() {
       {/* --- MAIN CONTENT (FLOATING CARD AREA) --- */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12 flex flex-col">
 
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-[500px]">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-125">
 
           {/* TOOLBAR FILTER & AKSI */}
           <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white shrink-0">
@@ -253,7 +253,7 @@ export default function Notifikasi() {
 
             {/* Loading State */}
             {loading ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center py-10">
+              <div className="flex flex-col items-center justify-center h-full min-h-75 text-center py-10">
                 <Loader2 size={40} className="text-[#425A5C] animate-spin mb-4" />
                 <p className="text-slate-500 text-sm">Memuat notifikasi...</p>
               </div>
@@ -322,7 +322,7 @@ export default function Notifikasi() {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center h-full min-h-[300px] text-center py-10"
+                    className="flex flex-col items-center justify-center h-full min-h-75 text-center py-10"
                   >
                     <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-5">
                       <Bell size={40} className="text-slate-300" />

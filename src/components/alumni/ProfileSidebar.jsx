@@ -368,7 +368,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       </div>
 
       {showCropModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={handleCloseCropModal} />
           <div className="relative w-full max-w-2xl rounded-3xl bg-white border border-slate-100 shadow-2xl overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
@@ -382,7 +382,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
             </div>
 
             <div className="p-6">
-              <div className="relative w-full h-[360px] bg-slate-900 rounded-2xl overflow-hidden">
+              <div className="relative w-full h-90 bg-slate-900 rounded-2xl overflow-hidden">
                 {rawPreviewUrl && (
                   <Cropper
                     image={rawPreviewUrl}

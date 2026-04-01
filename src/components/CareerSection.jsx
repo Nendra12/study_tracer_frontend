@@ -80,10 +80,10 @@ export default function CareerSection({ jobList }) {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl lg:text-5xl font-black text-[#3c5759] tracking-tight mb-4">
-            Lowongan <span className="text-[#9ca3af]">Pekerjaan</span>
+          <h2 className="text-4xl lg:text-5xl font-black text-primary tracking-tight mb-4">
+            Lowongan <span className="text-third">Pekerjaan</span>
           </h2>
-          <p className="text-[#526061] font-medium">
+          <p className="text-primary/80 font-medium">
             Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis SMKN 1 Gondang.
           </p>
         </motion.div>
@@ -97,7 +97,7 @@ export default function CareerSection({ jobList }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group bg-white rounded-[2rem] overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500 flex flex-col"
+              className="group bg-white rounded-4xl overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500 flex flex-col"
             >
               {/* Job Banner - Dibuat bisa diklik */}
               <div 
@@ -111,7 +111,7 @@ export default function CareerSection({ jobList }) {
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black text-[#3c5759] uppercase">
+                  <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black text-primary uppercase">
                     {job.type}
                   </span>
                 </div>
@@ -120,25 +120,25 @@ export default function CareerSection({ jobList }) {
               {/* Job Content */}
               <div className="p-6 flex flex-col flex-grow">
                 <div className="mb-4">
-                  <h3 className="text-lg font-bold text-[#3c5759] leading-tight mb-1 group-hover:text-amber-600 transition-colors cursor-pointer">
+                  <h3 className="text-lg font-bold text-primary leading-tight mb-1 group-hover:text-amber-600 transition-colors cursor-pointer">
                     {job.role}
                   </h3>
-                  <p className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider">
+                  <p className="text-xs font-bold text-third uppercase tracking-wider">
                     {job.comp}
                   </p>
                 </div>
 
-                <p className="text-sm text-[#526061] leading-relaxed mb-6 line-clamp-2">
+                <p className="text-sm text-primary/80 leading-relaxed mb-6 line-clamp-2">
                   {job.desc}
                 </p>
 
                 {/* Footer Card */}
-                <div className="mt-auto pt-4 border-t border-[#f3f4f4] flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[#9ca3af]">
+                <div className="mt-auto pt-4 border-t border-fourth flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-third">
                     <MapPin size={16} />
                     <span className="text-xs font-bold">{job.loc}</span>
                   </div>
-                  <button className="w-8 h-8 rounded-full bg-[#f3f4f4] text-[#3c5759] flex items-center justify-center group-hover:bg-[#3c5759] group-hover:text-white transition-all cursor-pointer">
+                  <button className="w-8 h-8 rounded-full bg-fourth text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all cursor-pointer">
                     <MoveUpRight size={15} />
                   </button>
                 </div>
@@ -151,7 +151,7 @@ export default function CareerSection({ jobList }) {
       {/* MODAL PREVIEW GAMBAR */}
       <AnimatePresence>
         {selectedImage && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
+          <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 md:p-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -164,7 +164,7 @@ export default function CareerSection({ jobList }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative max-w-4xl w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl z-10 flex flex-col"
+              className="relative max-w-4xl w-full bg-white rounded-4xl overflow-hidden shadow-2xl z-10 flex flex-col"
             >
               <div className="absolute top-4 right-4 z-20">
                 <button
@@ -182,7 +182,7 @@ export default function CareerSection({ jobList }) {
                 />
               </div>
               <div className="p-5 text-center border-t border-slate-100 bg-white">
-                <h3 className="font-bold text-[#3c5759] text-sm">Pratinjau Banner Lowongan</h3>
+                <h3 className="font-bold text-primary text-sm">Pratinjau Banner Lowongan</h3>
               </div>
             </motion.div>
           </div>

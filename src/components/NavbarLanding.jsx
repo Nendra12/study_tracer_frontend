@@ -122,7 +122,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                 Alumni Tracer
               </span>
               {!scrolled && (
-                <span className="text-xs font-semibold text-[#526061]">
+                <span className="text-xs font-semibold text-primary/80">
                   {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
                 </span>
               )}
@@ -130,7 +130,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden xl:flex bg-[#f3f4f4]/80 p-1 rounded-2xl border border-white/60">
+          <div className="hidden xl:flex bg-fourth/80 p-1 rounded-2xl border border-white/60">
             {navLinks.map((item, i) => {
               const isActive = activeSection === item.href.replace("#", "");
               return (
@@ -178,7 +178,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                       </div>
                       <ChevronDown
                         size={14}
-                        className={`text-[#526061] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                        className={`text-primary/80 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                       />
                     </button>
 
@@ -192,8 +192,8 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                           className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden z-50"
                         >
                           {/* User Info Header */}
-                          <div className="px-5 py-4 bg-[#f3f4f4]/50 border-b border-white/50">
-                            <p className="text-[10px] font-black text-[#9ca3af] uppercase tracking-widest">
+                          <div className="px-5 py-4 bg-fourth/50 border-b border-white/50">
+                            <p className="text-[10px] font-black text-third uppercase tracking-widest">
                               Masuk sebagai
                             </p>
                             <p className="text-sm font-bold text-primary truncate mt-1">
@@ -206,11 +206,11 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                             <Link
                               to="/alumni/profile"
                               onClick={() => setIsDropdownOpen(false)}
-                              className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#526061] hover:text-primary hover:bg-[#f3f4f4] rounded-xl transition-all"
+                              className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-primary/80 hover:text-primary hover:bg-fourth rounded-xl transition-all"
                             >
                               <User
                                 size={18}
-                                className="text-[#9ca3af] group-hover:text-primary"
+                                className="text-third group-hover:text-primary"
                               />
                               Profil Anda
                             </Link>
@@ -240,7 +240,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="xl:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-[#f3f4f4] rounded-full"
+              className="xl:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-fourth rounded-full"
             >
               <motion.span
                 animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
@@ -264,14 +264,14 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                 initial={{ opacity: 0, y: -20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl xl:hidden flex flex-col gap-2"
+                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-4xl shadow-2xl xl:hidden flex flex-col gap-2"
               >
                 {user && (
                   <div className="py-4 flex items-center justify-between gap-2">
                     <div className="flex items-center">
                       <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
-                      <div className="px-5 bg-[#f3f4f4]/50 border-b border-white/50">
-                        <p className="text-[10px] font-black text-[#9ca3af] uppercase tracking-widest">
+                      <div className="px-5 bg-fourth/50 border-b border-white/50">
+                        <p className="text-[10px] font-black text-third uppercase tracking-widest">
                           Masuk sebagai
                         </p>
                         <p className="text-sm font-bold text-primary truncate mt-1">
@@ -279,7 +279,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                         </p>
                       </div>
                     </div>
-                    <button className="w-10 h-10 flex items-center justify-center bg-[#f3f4f4] rounded-md" onClick={navigate("/alumni/profile")}>
+                    <button className="w-10 h-10 flex items-center justify-center bg-fourth rounded-md" onClick={navigate("/alumni/profile")}>
                       <UserPen size={24} />
                     </button>
                   </div>
@@ -302,7 +302,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                       }}
                       className={`px-6 py-4 rounded-2xl font-bold transition-all ${isActive
                         ? "bg-primary text-white"
-                        : "text-[#526061] hover:bg-[#f3f4f4] hover:text-primary"
+                        : "text-primary/80 hover:bg-fourth hover:text-primary"
                         }`}
                     >
                       {item.name}
@@ -312,8 +312,8 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                 {user ? (
                   // <div className="px-6 py-4 flex items-center gap-2">
                   //   <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
-                  //   <div className="px-5 bg-[#f3f4f4]/50 border-b border-white/50">
-                  //     <p className="text-[10px] font-black text-[#9ca3af] uppercase tracking-widest">
+                  //   <div className="px-5 bg-fourth/50 border-b border-white/50">
+                  //     <p className="text-[10px] font-black text-third uppercase tracking-widest">
                   //       Masuk sebagai
                   //     </p>
                   //     <p className="text-sm font-bold text-primary truncate mt-1">
@@ -324,7 +324,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   <></>
                 ) : (
                   <>
-                    <hr className="border-[#f3f4f4] my-2" />
+                    <hr className="border-fourth my-2" />
                     <div className="w-full">
                       <LoginButton />
                     </div>

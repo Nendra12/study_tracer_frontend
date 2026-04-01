@@ -130,7 +130,7 @@ export default function PengumumanAlumni() {
             {/* FORM PENCARIAN (Ditambahkan mt-3 agar sejajar dengan dropdown) */}
             <form 
               onSubmit={handleSearch} 
-              className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+              className="mt-3 flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
             >
               <div className="relative flex-1 flex items-center">
                 <Search className="absolute left-3 text-gray-400" size={18} />
@@ -269,7 +269,7 @@ export default function PengumumanAlumni() {
       {/* --- MODAL POPUP PREVIEW GAMBAR --- */}
       <AnimatePresence>
         {selectedImage && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -284,7 +284,7 @@ export default function PengumumanAlumni() {
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="relative w-max max-w-[90vw] md:max-w-[70vw] lg:max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="relative overflow-hidden flex items-center justify-center bg-slate-100 min-h-[300px]">
+              <div className="relative overflow-hidden flex items-center justify-center bg-slate-100 min-h-75">
                 <img
                   src={selectedImage}
                   alt="Pratinjau Pengumuman"

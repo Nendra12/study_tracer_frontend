@@ -83,10 +83,10 @@ export default function LowonganDetail() {
     return (
       <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <AlertCircle size={56} className="text-[#3c5759]/30" />
-          <h2 className="text-xl font-black text-[#3c5759]">Lowongan Tidak Tersedia</h2>
+          <AlertCircle size={56} className="text-primary/30" />
+          <h2 className="text-xl font-black text-primary">Lowongan Tidak Tersedia</h2>
           <p className="text-sm font-medium text-slate-500">{error || 'Data lowongan mungkin telah dihapus.'}</p>
-          <button onClick={() => navigate('/lowongan')} className="mt-4 px-6 py-2.5 bg-[#3c5759] text-white text-sm font-bold rounded-xl hover:bg-[#2c4042] transition-all cursor-pointer">
+          <button onClick={() => navigate('/lowongan')} className="mt-4 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-[#2c4042] transition-all cursor-pointer">
             Kembali ke Bursa Kerja
           </button>
         </div>
@@ -99,14 +99,14 @@ export default function LowonganDetail() {
     : bannerDefault;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-[#3c5759]/20">
+    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20">
 
-      <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
+      <main className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
 
         {/* Tombol Kembali */}
         <button
           onClick={() => navigate('/alumni/lowongan')}
-          className="flex items-center gap-2 text-slate-500 hover:text-[#3c5759] text-sm font-bold mb-6 transition-colors cursor-pointer w-fit group"
+          className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold mb-6 transition-colors cursor-pointer w-fit group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Kembali
@@ -118,12 +118,12 @@ export default function LowonganDetail() {
           <div className="lg:col-span-8 space-y-6">
 
             {/* AREA HEADER BARU */}
-            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
+            <div className="bg-white rounded-4xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
 
               {/* --- BAGIAN POSTER HEADER (Bisa Diklik Untuk Pratinjau) --- */}
               <div
                 onClick={() => setShowPreviewModal(true)}
-                className="w-full h-[220px] md:h-[280px] bg-slate-50 flex items-center justify-center border-b border-slate-100 relative overflow-hidden cursor-pointer"
+                className="w-full h-55 md:h-70 bg-slate-50 flex items-center justify-center border-b border-slate-100 relative overflow-hidden cursor-pointer"
                 title="Klik untuk lihat poster penuh"
               >
                 <img
@@ -143,11 +143,11 @@ export default function LowonganDetail() {
 
                   {/* Perusahaan & Lokasi */}
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-[#3c5759]/5 rounded-2xl flex items-center justify-center border border-[#3c5759]/10 shrink-0">
-                      <Building2 size={24} className="text-[#3c5759]" />
+                    <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center border border-primary/10 shrink-0">
+                      <Building2 size={24} className="text-primary" />
                     </div>
                     <div>
-                      <h2 className="text-[#3c5759] font-black text-sm uppercase tracking-widest leading-none mb-1.5">
+                      <h2 className="text-primary font-black text-sm uppercase tracking-widest leading-none mb-1.5">
                         {job.perusahaan?.nama || '-'}
                       </h2>
                       <p className="text-[12px] text-slate-500 font-bold flex items-center gap-1.5">
@@ -162,20 +162,20 @@ export default function LowonganDetail() {
                       onClick={handleToggleSave}
                       disabled={savingId === job.id}
                       className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all shrink-0 cursor-pointer ${job.is_saved
-                          ? 'bg-[#3c5759]/10 border-[#3c5759]/20 text-[#3c5759]'
-                          : 'bg-white border-slate-200 text-slate-400 hover:text-[#3c5759] hover:border-[#3c5759]/30 hover:bg-slate-50'
+                          ? 'bg-primary/10 border-primary/20 text-primary'
+                          : 'bg-white border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50'
                         } ${savingId === job.id ? 'opacity-80 cursor-not-allowed' : ''}`}
                       title={job.is_saved ? "Hapus dari Tersimpan" : "Simpan Lowongan"}
                     >
                       <Bookmark
                         size={20}
                         fill={job.is_saved ? 'currentColor' : 'none'}
-                        className={`transition-all ${savingId === job.id ? 'animate-pulse scale-110 text-[#3c5759]' : ''}`}
+                        className={`transition-all ${savingId === job.id ? 'animate-pulse scale-110 text-primary' : ''}`}
                       />
                     </button>
                     <button
                       onClick={() => setShowPreviewModal(true)}
-                      className="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 hover:text-[#3c5759] hover:border-[#3c5759]/30 hover:bg-slate-50 transition-all cursor-pointer"
+                      className="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50 transition-all cursor-pointer"
                       title="Pratinjau Poster Penuh"
                     >
                       <Eye size={20} />
@@ -189,7 +189,7 @@ export default function LowonganDetail() {
 
                 {/* Tags Tipe & Deadline */}
                 <div className="flex flex-wrap gap-3 items-center">
-                  <span className="px-4 py-2 bg-[#f3f4f4] text-slate-600 text-[11px] font-black uppercase tracking-widest rounded-xl">
+                  <span className="px-4 py-2 bg-fourth text-slate-600 text-[11px] font-black uppercase tracking-widest rounded-xl">
                     {job.tipe_pekerjaan || 'Tipe Tidak Ditentukan'}
                   </span>
                   {job.lowongan_selesai && (
@@ -203,14 +203,14 @@ export default function LowonganDetail() {
             </div>
 
             {/* Kartu Deskripsi */}
-            <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                <div className="p-2 bg-[#f3f4f4] rounded-xl text-[#3c5759]">
+                <div className="p-2 bg-fourth rounded-xl text-primary">
                   <FileText size={20} strokeWidth={2.5} />
                 </div>
                 <h2 className="text-xl font-black text-slate-900 tracking-tight">Deskripsi Pekerjaan</h2>
               </div>
-              <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-[#526061] font-medium leading-relaxed whitespace-pre-line">
+              <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-primary/80 font-medium leading-relaxed whitespace-pre-line">
                 {job.deskripsi || 'Tidak ada deskripsi yang disediakan oleh perusahaan.'}
               </div>
             </div>
@@ -222,7 +222,7 @@ export default function LowonganDetail() {
             <div className="lg:sticky lg:top-28 space-y-6">
 
               {/* Card Ringkasan Info */}
-              <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+              <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
                 <h3 className="font-black text-slate-800 uppercase tracking-widest text-[11px] border-b border-slate-100 pb-4">
                   Ringkasan Posisi
                 </h3>
@@ -236,12 +236,12 @@ export default function LowonganDetail() {
                     { icon: Timer, label: "Jam Kerja", value: (job.jam_mulai && job.jam_berakhir) ? `${job.jam_mulai.substring(0, 5)} - ${job.jam_berakhir.substring(0, 5)} WIB` : '-' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4 text-slate-600 group">
-                      <div className="p-2 bg-slate-50 rounded-xl text-slate-400 group-hover:bg-[#3c5759]/10 group-hover:text-[#3c5759] transition-colors border border-slate-100 shrink-0">
+                      <div className="p-2 bg-slate-50 rounded-xl text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-100 shrink-0">
                         <item.icon size={16} />
                       </div>
                       <div className="pt-0.5">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
-                        <p className="text-sm font-bold text-[#3c5759] leading-tight">{item.value || '-'}</p>
+                        <p className="text-sm font-bold text-primary leading-tight">{item.value || '-'}</p>
                       </div>
                     </div>
                   ))}
@@ -256,7 +256,7 @@ export default function LowonganDetail() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {job.skills.map((skill) => (
-                        <span key={skill.id} className="px-3 py-1.5 bg-[#f3f4f4] border border-slate-100 text-[#526061] text-[11px] font-bold rounded-lg shadow-sm">
+                        <span key={skill.id} className="px-3 py-1.5 bg-fourth border border-slate-100 text-primary/80 text-[11px] font-bold rounded-lg shadow-sm">
                           {skill.nama}
                         </span>
                       ))}
@@ -266,7 +266,7 @@ export default function LowonganDetail() {
               </div>
 
               {/* TIPS MELAMAR */}
-              <div className="bg-[#3c5759] rounded-[2rem] p-7 text-white shadow-xl shadow-[#3c5759]/20 relative overflow-hidden">
+              <div className="bg-primary rounded-4xl p-7 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
                 <div className="relative z-10 space-y-4">
 
                   <div className="flex items-center gap-3 mb-2">
@@ -312,7 +312,7 @@ export default function LowonganDetail() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowPreviewModal(false)}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm cursor-pointer"
+            className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm cursor-pointer"
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
@@ -320,7 +320,7 @@ export default function LowonganDetail() {
               exit={{ scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()} // Mencegah modal tutup saat gambar diklik
-              className="relative max-w-4xl w-auto max-h-[90vh] bg-white rounded-[2rem] overflow-hidden shadow-2xl p-2 flex flex-col items-center justify-center min-h-[300px]"
+              className="relative max-w-4xl w-auto max-h-[90vh] bg-white rounded-4xl overflow-hidden shadow-2xl p-2 flex flex-col items-center justify-center min-h-75"
             >
               {/* Tombol Tutup Modal */}
               <button

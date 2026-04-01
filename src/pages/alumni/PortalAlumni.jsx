@@ -54,7 +54,7 @@ const mockStats = [
   { label: "Bekerja", percentage: 65, color: "bg-emerald-500" },
   { label: "Melanjutkan Studi", percentage: 20, color: "bg-blue-500" },
   { label: "Wirausaha", percentage: 10, color: "bg-amber-500" },
-  { label: "Mencari Kerja", percentage: 5, color: "bg-[#9ca3af]" },
+  { label: "Mencari Kerja", percentage: 5, color: "bg-third" },
 ];
 
 // Mock data status pengajuan
@@ -157,10 +157,10 @@ export default function AlumniPortal() {
   return (
     <div>
       {/* ================= HERO SECTION ================= */}
-      <div className="relative bg-[#3c5759] pt-30 pb-28 overflow-hidden rounded-b-[3rem] shadow-xl">
+      <div className="relative bg-primary pt-30 pb-28 overflow-hidden rounded-b-[3rem] shadow-xl">
         {/* Abstract Background Elements */}
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[50%] bg-[#526061] rounded-full blur-[120px] pointer-events-none opacity-50"></div>
-        <div className="absolute bottom-[-20%] right-[-5%] w-[30%] h-[50%] bg-[#f3f4f4]/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[50%] bg-primary/80 rounded-full blur-[120px] pointer-events-none opacity-50"></div>
+        <div className="absolute bottom-[-20%] right-[-5%] w-[30%] h-[50%] bg-fourth/20 rounded-full blur-[100px] pointer-events-none"></div>
 
         {/* Header Section */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-white">
@@ -180,17 +180,17 @@ export default function AlumniPortal() {
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4">
                 Halo,
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f3f4f4] to-[#9ca3af]">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fourth to-third">
                   {mockProfile.name}
                 </span>
               </h1>
-              <p className="text-lg text-[#9ca3af] max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+              <p className="text-lg text-third max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
                 Portal ini dirancang untuk memantau progres karir Anda,
                 menemukan peluang eksklusif, dan menjaga silaturahmi dengan
                 almamater tercinta.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <button className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#3c5759] rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                <button className="w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
                   <ClipboardCheck size={18} /> Isi Kuesioner Sekarang
                 </button>
                 <button className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-full text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2">
@@ -200,7 +200,7 @@ export default function AlumniPortal() {
             </motion.div>
 
             {/* Right: Floating Contextual Cards (From previous prompt) */}
-            <div className="hidden lg:flex relative z-10 w-full max-w-[450px] h-[320px] items-center justify-center">
+            <div className="hidden lg:flex relative z-10 w-full max-w-112.5 h-80 items-center justify-center">
               {/* 1. Kuesioner Progress Card (Main Center Card) */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
@@ -210,7 +210,7 @@ export default function AlumniPortal() {
                   rotate: { duration: 0.6, delay: 0.2 },
                   y: { repeat: Infinity, duration: 6, ease: "easeInOut" },
                 }}
-                className="absolute inset-0 m-auto w-[340px] h-[210px] bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col justify-between overflow-hidden"
+                className="absolute inset-0 m-auto w-85 h-52.5 bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col justify-between overflow-hidden"
               >
                 {/* Glow effect */}
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
@@ -247,7 +247,7 @@ export default function AlumniPortal() {
                       75%
                     </span>
                   </div>
-                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden p-[2px] border border-slate-200">
+                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: "75%" }}
@@ -350,13 +350,13 @@ export default function AlumniPortal() {
               key={idx}
               className="bg-white p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow"
             >
-              <div className="w-10 h-10 rounded-full bg-[#f3f4f4] text-[#3c5759] flex items-center justify-center mb-3">
+              <div className="w-10 h-10 rounded-full bg-fourth text-primary flex items-center justify-center mb-3">
                 {item.icon}
               </div>
-              <p className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider mb-1">
+              <p className="text-xs text-third font-bold uppercase tracking-wider mb-1">
                 {item.label}
               </p>
-              <p className="text-sm sm:text-base font-black text-[#3c5759] leading-tight">
+              <p className="text-sm sm:text-base font-black text-primary leading-tight">
                 {item.value}
               </p>
             </div>
@@ -494,7 +494,7 @@ export default function AlumniPortal() {
                     </p>
                   </div>
                 </div>
-                <div className="bg-[#f3f4f4] rounded-xl px-3 py-2 text-center">
+                <div className="bg-fourth rounded-xl px-3 py-2 text-center">
                   <p className="text-xs font-bold text-slate-600">
                     {alumni.job}
                   </p>
@@ -507,17 +507,17 @@ export default function AlumniPortal() {
         {/* LEFT COLUMN: Announcements & Jobs */}
         <div className="grid lg:grid-cols-3 gap-5 space-y-8">
           {/* Announcements */}
-          <section className="bg-white rounded-[2rem] lg:col-span-2 mb-0 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+          <section className="bg-white rounded-4xl lg:col-span-2 mb-0 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
             <div className="flex justify-between items-end">
               <div>
-                <h2 className="text-2xl font-black text-[#3c5759]">
+                <h2 className="text-2xl font-black text-primary">
                   Pengumuman Sekolah
                 </h2>
-                <p className="text-sm text-[#9ca3af] mt-1 font-medium">
+                <p className="text-sm text-third mt-1 font-medium">
                   Informasi terbaru seputar kegiatan dan agenda.
                 </p>
               </div>
-              <button className="text-sm font-bold text-[#3c5759] hover:text-[#526061] flex items-center gap-1">
+              <button className="text-sm font-bold text-primary hover:text-primary/80 flex items-center gap-1">
                 Lihat Semua <ArrowRight size={16} />
               </button>
             </div>
@@ -525,18 +525,18 @@ export default function AlumniPortal() {
               {mockAnnouncements.map((ann) => (
                 <div
                   key={ann.id}
-                  className="group p-5 rounded-2xl border border-gray-100 hover:border-[#3c5759]/30 hover:bg-[#f3f4f4]/50 transition-all cursor-pointer"
+                  className="group p-5 rounded-2xl border border-gray-100 hover:border-primary/30 hover:bg-fourth/50 transition-all cursor-pointer"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-bold text-[#3c5759] group-hover:text-[#526061]">
+                      <h3 className="text-lg font-bold text-primary group-hover:text-primary/80">
                         {ann.title}
                       </h3>
-                      <p className="text-sm text-[#526061] mt-2 line-clamp-2">
+                      <p className="text-sm text-primary/80 mt-2 line-clamp-2">
                         {ann.desc}
                       </p>
                     </div>
-                    <span className="shrink-0 px-3 py-1 bg-[#f3f4f4] text-[#526061] text-xs font-bold rounded-lg border border-gray-200">
+                    <span className="shrink-0 px-3 py-1 bg-fourth text-primary/80 text-xs font-bold rounded-lg border border-gray-200">
                       {ann.date}
                     </span>
                   </div>
@@ -545,7 +545,7 @@ export default function AlumniPortal() {
             </div>
           </section>
 
-          <section className="bg-[#3c5759] text-white rounded-[2rem] p-6 sm:p-8 shadow-lg relative overflow-hidden">
+          <section className="bg-primary text-white rounded-4xl p-6 sm:p-8 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
             <h2 className="text-xl font-black relative z-10">
               Statistik Lulusan
@@ -577,17 +577,17 @@ export default function AlumniPortal() {
         </div>
 
         {/* Job Vacancies */}
-        <section className="bg-white rounded-[2rem] mt-8 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <section className="bg-white rounded-4xl mt-8 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
           <div className="flex justify-between items-end mb-6">
             <div>
-              <h2 className="text-2xl font-black text-[#3c5759]">
+              <h2 className="text-2xl font-black text-primary">
                 Peluang Karir
               </h2>
-              <p className="text-sm text-[#9ca3af] mt-1 font-medium">
+              <p className="text-sm text-third mt-1 font-medium">
                 Lowongan eksklusif dari mitra industri sekolah.
               </p>
             </div>
-            <button className="text-sm font-bold text-[#3c5759] hover:text-[#526061] flex items-center gap-1">
+            <button className="text-sm font-bold text-primary hover:text-primary/80 flex items-center gap-1">
               Cari Lowongan <ArrowRight size={16} />
             </button>
           </div>
@@ -598,26 +598,26 @@ export default function AlumniPortal() {
                 className="p-5 rounded-2xl border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all bg-white flex flex-col justify-between h-full"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-[#f3f4f4] flex items-center justify-center text-[#9ca3af] mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-fourth flex items-center justify-center text-third mb-4">
                     <Building2 size={24} />
                   </div>
-                  <h3 className="font-bold text-[#3c5759] text-lg">
+                  <h3 className="font-bold text-primary text-lg">
                     {job.role}
                   </h3>
-                  <p className="text-sm font-semibold text-[#526061] mb-4">
+                  <p className="text-sm font-semibold text-primary/80 mb-4">
                     {job.company}
                   </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="flex items-center gap-1 text-xs font-semibold text-[#9ca3af] bg-[#f3f4f4] px-2.5 py-1 rounded-md">
+                    <span className="flex items-center gap-1 text-xs font-semibold text-third bg-fourth px-2.5 py-1 rounded-md">
                       <MapPin size={12} /> {job.location}
                     </span>
-                    <span className="text-xs font-semibold text-[#9ca3af] bg-[#f3f4f4] px-2.5 py-1 rounded-md">
+                    <span className="text-xs font-semibold text-third bg-fourth px-2.5 py-1 rounded-md">
                       {job.type}
                     </span>
                   </div>
-                  <button className="w-full py-2.5 rounded-xl border-2 border-[#3c5759] text-[#3c5759] font-bold text-sm hover:bg-[#3c5759] hover:text-white transition-colors">
+                  <button className="w-full py-2.5 rounded-xl border-2 border-primary text-primary font-bold text-sm hover:bg-primary hover:text-white transition-colors">
                     Lihat Detail
                   </button>
                 </div>
@@ -639,7 +639,7 @@ export default function AlumniPortal() {
         />
 
         {selectedImage && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -661,7 +661,7 @@ export default function AlumniPortal() {
                   <X size={20} className="text-slate-800" />
                 </button>
               </div>
-              <div className="bg-slate-50 flex items-center justify-center p-2 min-h-[300px]">
+              <div className="bg-slate-50 flex items-center justify-center p-2 min-h-75">
                 <img
                   src={selectedImage}
                   alt="Pratinjau"

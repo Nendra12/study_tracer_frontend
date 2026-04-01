@@ -59,7 +59,7 @@ export default function TopPerusahaan({
 
       {/* ================= SECTION 1: MARQUEE LOGO BERJALAN ================= */}
       <div className={`w-full overflow-hidden py-4 ${locked ? 'grayscale opacity-60' : ''}`}>
-        <p className="text-2xl font-black text-[#3c5759] tracking-tight text-center mb-6">
+        <p className="text-2xl font-black text-primary tracking-tight text-center mb-6">
           Mitra Industri Teknologi & Perguruan Tinggi Terkemuka
         </p>
         <div className="relative w-full overflow-hidden py-4">
@@ -97,7 +97,7 @@ export default function TopPerusahaan({
           {/* STATS: COMPANIES */}
           <div className={`space-y-8 ${locked ? 'blur-sm select-none' : ''}`}>
             <div className="space-y-1">
-              <span className="text-[#3c5759] font-bold text-4xl">01</span>
+              <span className="text-primary font-bold text-4xl">01</span>
               <h3 className="text-2xl font-black text-slate-900 tracking-tight">Top 5 Perusahaan</h3>
               <p className="text-slate-500 text-sm">Top Perusahaan yang banyak menyerap alumni.</p>
             </div>
@@ -108,7 +108,7 @@ export default function TopPerusahaan({
                   <div className="flex justify-between items-end mb-2">
                     <div className="flex flex-col pb-1">
                       {/* Rank dihapus */}
-                      <span className="text-lg font-bold text-slate-800 group-hover:text-[#3c5759] transition-colors leading-none">
+                      <span className="text-lg font-bold text-slate-800 group-hover:text-primary transition-colors leading-none">
                         {comp.name}
                       </span>
                     </div>
@@ -117,12 +117,12 @@ export default function TopPerusahaan({
                       <span className="block text-[10px] font-bold text-slate-400 uppercase leading-none">Alumni</span>
                     </div>
                   </div>
-                  <div className="h-[6px] w-full bg-slate-200/50 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-200/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${(comp.alumniCount / maxCompAlumni) * 100}%` }}
                       transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                      className="h-full bg-[#3c5759]"
+                      className="h-full bg-primary"
                     />
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function TopPerusahaan({
                       <span className="block text-[10px] font-bold text-slate-400 uppercase leading-none">Alumni</span>
                     </div>
                   </div>
-                  <div className="h-[6px] w-full bg-slate-200/50 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-200/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${(univ.alumniCount / maxUnivAlumni) * 100}%` }}

@@ -130,7 +130,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
         </div>
       </div>
 
-      <div className="p-4 overflow-x-auto min-h-[250px]">
+      <div className="p-4 overflow-x-auto min-h-62.5">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
@@ -197,7 +197,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                   <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
                     <td className="py-3 px-3 font-medium text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
                     <td className="py-3 px-3 text-xs text-gray-500">{item.kota?.nama || '-'}</td>
-                    <td className="py-3 px-3 text-xs text-gray-500 max-w-[200px] truncate">{item.jalan || '-'}</td>
+                    <td className="py-3 px-3 text-xs text-gray-500 max-w-50 truncate">{item.jalan || '-'}</td>
                     <td className="py-3 px-3">
                       <div className="flex justify-end gap-1 transition-opacity">
                         <button onClick={() => startEdit(item)} className="cursor-pointer p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg active:scale-90" title="Edit"><Pencil size={14} /></button>

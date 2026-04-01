@@ -63,7 +63,7 @@ export default function AlumniSuccess({ alumniList }) {
     /* Menggunakan bg-[#f9fafb] (Off-White sedikit hangat) agar beda dengan section sebelumnya */
     <section
       id="alumni"
-      className="py-15 bg-[#f3f4f4] px-4 sm:px-6  lg:px-8 overflow-hidden"
+      className="py-15 bg-fourth px-4 sm:px-6  lg:px-8 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header dengan Layout Flex yang dinamis */}
@@ -74,11 +74,11 @@ export default function AlumniSuccess({ alumniList }) {
             viewport={{ once: true }}
             className=""
           >
-            <h2 className="text-4xl lg:text-5xl font-black text-[#3c5759] leading-tight mb-4">
+            <h2 className="text-4xl lg:text-5xl font-black text-primary leading-tight mb-4">
               Tetap terhubung dengan <br />
-              <span className="text-[#9ca3af]">Alumni Kita.</span>
+              <span className="text-third">Alumni Kita.</span>
             </h2>
-            <p className="text-[#526061] font-medium text-lg italic border-l-4 border-amber-400 pl-4">
+            <p className="text-primary/80 font-medium text-lg italic border-l-4 border-amber-400 pl-4">
               "Pendidikan adalah tiket ke masa depan." — Lihat bagaimana alumni
               kami mewujudkannya.
             </p>
@@ -98,7 +98,7 @@ export default function AlumniSuccess({ alumniList }) {
             >
               {/* Image Container dengan efek zoom */}
               <div className="relative h-72 w-full rounded-3xl overflow-hidden mb-6">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#3c5759]/80 via-transparent to-transparent z-10 opacity-40 group-hover:opacity-70 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent z-10 opacity-40 group-hover:opacity-70 transition-opacity duration-500"></div>
                 <img
                   src={alumni.img}
                   alt={alumni.name}
@@ -108,7 +108,7 @@ export default function AlumniSuccess({ alumniList }) {
                 {/* Floating Badge Year */}
                 <div className="absolute top-4 right-4 z-20">
                   <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm">
-                    <span className="text-[#3c5759] text-[12px] font-black ">
+                    <span className="text-primary text-[12px] font-black ">
                       Angkatan {alumni.year}
                     </span>
                   </div>
@@ -117,16 +117,16 @@ export default function AlumniSuccess({ alumniList }) {
 
               {/* Info Details */}
               <div className="px-3 pb-4">
-                <h3 className="text-2xl font-black text-[#3c5759] group-hover:text-amber-600 transition-colors">
+                <h3 className="text-2xl font-black text-primary group-hover:text-amber-600 transition-colors">
                   {alumni.name}
                 </h3>
                 <div className="flex flex-col gap-1 mt-2">
-                  <span className="text-sm font-extrabold text-[#526061]">
+                  <span className="text-sm font-extrabold text-primary/80">
                     {alumni.role}
                   </span>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
-                    <span className="text-xs font-bold text-[#9ca3af] uppercase tracking-widest">
+                    <span className="text-xs font-bold text-third uppercase tracking-widest">
                       {alumni.company}
                     </span>
                   </div>
