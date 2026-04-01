@@ -59,9 +59,7 @@ export default function PengumumanSekolah({ announcements, loading, getImageUrl 
                             {ann.judul}
                           </h3>
                         </div>
-                        <p className="text-sm text-primary/80 mt-1 line-clamp-2">
-                          {ann.konten}
-                        </p>
+                        <div className="text-sm text-primary/80 mt-1 line-clamp-2" dangerouslySetInnerHTML={{ __html:  ann.konten}} />
                       </div>
                       
                       {/* Badge Tanggal */}

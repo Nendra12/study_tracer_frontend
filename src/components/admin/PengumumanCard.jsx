@@ -110,9 +110,7 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed whitespace-pre-line">
-          {item.konten}
-        </p>
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: item.konten}} />
         
         {/* Aksi */}
         <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">

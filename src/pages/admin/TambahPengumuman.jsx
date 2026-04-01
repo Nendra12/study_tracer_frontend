@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Image as ImageIcon, Loader2 } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
+import TeksEditorInputan from '../../components/admin/TeksEditorInputan';
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { alertError } from '../../utilitis/alert';
@@ -236,13 +237,14 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
             {/* Input Konten */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Isi Pengumuman *</label>
-              <textarea 
-                name="konten" 
-                rows={6} 
-                value={formData.konten} 
-                onChange={handleInputChange} 
-                placeholder="Tuliskan detail pengumuman di sini..." 
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none" 
+              <TeksEditorInputan 
+                content={formData.konten}
+                onChange={(html) => {
+                  setFormData(prev => ({ ...prev, konten: html }));
+                  if (errors.konten) setErrors(prev => ({ ...prev, konten: undefined }));
+                }}
+                placeholder="Tuliskan detail pengumuman di sini..."
+                minHeight="200px"
               />
               {errors.konten && <p className="text-red-500 text-xs mt-1">{errors.konten[0]}</p>}
             </div>

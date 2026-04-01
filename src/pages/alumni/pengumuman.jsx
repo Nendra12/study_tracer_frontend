@@ -240,9 +240,7 @@ export default function PengumumanAlumni() {
                         {item.judul}
                       </h3>
                       
-                      <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed">
-                        {item.konten}
-                      </p>
+                      <div className="text-sm text-slate-500 line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.konten }} />
                     </div>
                   </div>
                 );
