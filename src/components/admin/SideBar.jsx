@@ -127,7 +127,7 @@ export default function SideBar({ active, setActive }) {
                   w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
                   ${isActive
                     ? 'bg-fourth text-primary font-bold shadow-sm'
-                    : 'text-third hover:bg-fourth/50 hover:text-secondary'}
+                    : 'text-third hover:bg-fourth/50 hover:text-primary'}
                 `}
               >
                 <span className={isActive ? 'text-primary' : 'text-third'}>

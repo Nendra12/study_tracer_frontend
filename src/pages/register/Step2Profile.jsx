@@ -109,13 +109,13 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           <div className="p-1.5 bg-fourth rounded-lg text-primary"><User size={18} /></div>
           <h3 className="font-bold text-primary text-lg">Personal Info</h3>
         </div>
-        <span className="text-[10px] bg-fourth px-3 py-1 rounded-full text-secondary font-bold uppercase">Langkah 2 dari 3</span>
+        <span className="text-[10px] bg-fourth px-3 py-1 rounded-full text-primary font-bold uppercase">Langkah 2 dari 3</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         {/* --- Baris 1 --- */}
         <div className="space-y-1">
-          <label className="text-[11px] font-bold text-secondary uppercase">Nama Lengkap <span className="text-red-500">*</span></label>
+          <label className="text-[11px] font-bold text-primary uppercase">Nama Lengkap <span className="text-red-500">*</span></label>
           <input type="text" value={formData.nama_alumni || ""} onChange={(e) => { updateFormData({ nama_alumni: e.target.value }); setErrors(prev => ({ ...prev, nama_alumni: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.nama_alumni ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all`} placeholder="Nama lengkap" />
           {errors.nama_alumni && <p className="text-xs text-red-500 mt-0.5">{errors.nama_alumni}</p>}
         </div>
@@ -144,20 +144,20 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         <div className="space-y-1">
-          <label className="text-[11px] font-bold text-secondary uppercase">No HP <span className="text-red-500">*</span></label>
+          <label className="text-[11px] font-bold text-primary uppercase">No HP <span className="text-red-500">*</span></label>
           <input type="text" inputMode="numeric" value={formData.no_hp || ""} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); updateFormData({ no_hp: val }); setErrors(prev => ({ ...prev, no_hp: undefined })); }} maxLength={13} className={`w-full p-2.5 bg-white border ${errors.no_hp ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="08..." />
           {errors.no_hp && <p className="text-xs text-red-500 mt-0.5">{errors.no_hp}</p>}
         </div>
 
         {/* --- Baris 3 --- */}
         <div className="space-y-1">
-          <label className="text-[11px] font-bold text-secondary uppercase">NIS <span className="text-red-500">*</span></label>
+          <label className="text-[11px] font-bold text-primary uppercase">NIS <span className="text-red-500">*</span></label>
           <input type="text" value={formData.nis || ""} onChange={(e) => { updateFormData({ nis: e.target.value }); setErrors(prev => ({ ...prev, nis: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.nis ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="NIS" />
           {errors.nis && <p className="text-xs text-red-500 mt-0.5">{errors.nis}</p>}
         </div>
 
         <div className="space-y-1">
-          <label className="text-[11px] font-bold text-secondary uppercase">NISN <span className="text-red-500">*</span></label>
+          <label className="text-[11px] font-bold text-primary uppercase">NISN <span className="text-red-500">*</span></label>
           <input type="text" value={formData.nisn || ""} onChange={(e) => { updateFormData({ nisn: e.target.value }); setErrors(prev => ({ ...prev, nisn: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.nisn ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="NISN" />
           {errors.nisn && <p className="text-xs text-red-500 mt-0.5">{errors.nisn}</p>}
         </div>
@@ -174,7 +174,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
         {/* --- Baris 5 --- */}
         <div className="space-y-1">
-          <label className="text-[11px] font-bold text-secondary uppercase">Tempat Lahir <span className="text-red-500">*</span></label>
+          <label className="text-[11px] font-bold text-primary uppercase">Tempat Lahir <span className="text-red-500">*</span></label>
           <div className="relative">
             <MapPin size={16} className="absolute left-3 top-3 text-third" />
             <input type="text" value={formData.tempat_lahir || ""} onChange={(e) => { updateFormData({ tempat_lahir: e.target.value }); setErrors(prev => ({ ...prev, tempat_lahir: undefined })); }} className={`w-full pl-9 p-2.5 bg-white border ${errors.tempat_lahir ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="Kota" />
@@ -190,13 +190,13 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         {/* --- Baris 6 (Full Width) --- */}
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-secondary uppercase">Alamat <span className="text-red-500">*</span></label>
+              <label className="text-[11px] font-bold text-primary uppercase">Alamat <span className="text-red-500">*</span></label>
               <textarea rows="4" value={formData.alamat || ""} onChange={(e) => { updateFormData({ alamat: e.target.value }); setErrors(prev => ({ ...prev, alamat: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.alamat ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-[106px]`} placeholder="Alamat lengkap..." />
               {errors.alamat && <p className="text-xs text-red-500 mt-0.5">{errors.alamat}</p>}
            </div>
            
            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-secondary uppercase">Foto <span className="text-red-500">*</span></label>
+              <label className="text-[11px] font-bold text-primary uppercase">Foto <span className="text-red-500">*</span></label>
               <label className="flex items-center gap-4 border border-dashed border-fourth rounded-xl p-3 cursor-pointer hover:border-primary h-[106px] relative group transition-all">
                 {preview ? (
                   <img src={preview} alt="preview" className="w-20 h-20 object-cover rounded-lg border border-gray-200" />
@@ -239,7 +239,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
       {/* --- Footer Buttons --- */}
       <div className="pt-6 mt-4 flex justify-between border-t border-fourth">
-        <button onClick={onBack} className="flex items-center gap-2 px-5 py-2.5 border border-fourth rounded-xl text-xs font-bold text-secondary hover:bg-fourth transition-all active:scale-95">
+        <button onClick={onBack} className="flex items-center gap-2 px-5 py-2.5 border border-fourth rounded-xl text-xs font-bold text-primary hover:bg-fourth transition-all active:scale-95">
           <ArrowLeft size={14} /> Kembali
         </button>
         <button onClick={handleNext} className="flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20">

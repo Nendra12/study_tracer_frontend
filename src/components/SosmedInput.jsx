@@ -98,7 +98,7 @@ export default function SosmedInput({ value, onChange }) {
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <label className="text-[11px] font-bold text-secondary tracking-wider uppercase">
+        <label className="text-[11px] font-bold text-primary tracking-wider uppercase">
           Sosial Media <span className="text-[10px] text-third italic lowercase">(opsional)</span>
         </label>
 
@@ -151,7 +151,7 @@ export default function SosmedInput({ value, onChange }) {
                               updateSocial(index, 'platformId', p.id);
                               setOpenDropdownIndex(null);
                             }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-fourth cursor-pointer transition-colors text-sm text-secondary"
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-fourth cursor-pointer transition-colors text-sm text-primary"
                           >
                             {getIcon(p)}
                             <span>{p.label}</span>
@@ -168,7 +168,7 @@ export default function SosmedInput({ value, onChange }) {
                   value={item.url}
                   onChange={(e) => updateSocial(index, 'url', e.target.value)}
                   placeholder={`Url ${selectedPlatform?.label || ''}`}
-                  className="w-full p-2.5 text-sm outline-none bg-transparent text-secondary placeholder:text-third/50"
+                  className="w-full p-2.5 text-sm outline-none bg-transparent text-primary placeholder:text-third/50"
                 />
               </div>
 
