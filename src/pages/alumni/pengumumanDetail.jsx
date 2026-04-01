@@ -154,7 +154,7 @@ export default function PengumumanDetailAlumni() {
       <AnimatePresence>
         {showImageModal && (
           <div 
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowImageModal(false)}
           >
             <motion.div

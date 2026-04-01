@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit, Mail, Phone, Plus, X, Loader2, Check } from 'lucide-react';
+import { Edit, Mail, Phone, Plus, X, Loader2, Check, Clock } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaInstagram, FaFacebook, FaGlobe } from 'react-icons/fa';
 import Cropper from 'react-easy-crop';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
 import { STORAGE_BASE_URL } from '../../api/axios';
+import { alertConfirm } from '../../utilitis/alert';
 
 // Helper untuk URL Foto
 function getImageUrl(path) {
@@ -70,27 +71,54 @@ const SOCIAL_PLATFORMS = [
   { key: 'website', label: 'Website', icon: <FaGlobe size={16} />, placeholder: 'https://yourwebsite.com' },
 ];
 
+// Helper: konversi array social_media dari pending new_data menjadi map {key: url}
+// Menggunakan String() untuk menghindari type mismatch antara id numerik dan string
+function pendingSocialToMap(pendingSocialArray, masterList) {
+  const map = {};
+  if (!Array.isArray(pendingSocialArray)) return map;
+  for (const item of pendingSocialArray) {
+    // Gunakan String() agar tidak gagal karena type mismatch int vs string
+    const master = masterList.find(
+      sm => String(sm.id_sosmed ?? sm.id) === String(item.id_sosmed)
+    );
+    if (!master) continue;
+    const name = (master.nama_sosmed || master.nama || '').toLowerCase();
+    for (const platform of SOCIAL_PLATFORMS) {
+      if (name.includes(platform.key)) {
+        map[platform.key] = item.url;
+        break;
+      }
+    }
+  }
+  return map;
+}
+
 export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
   const fileInputRef = useRef(null);
 
   // States
   const [savingFoto, setSavingFoto] = useState(false);
   const [savingSocial, setSavingSocial] = useState(false);
+  const [cancelingSocial, setCancelingeSocial] = useState(false);
 
   const [showCropModal, setShowCropModal] = useState(false);
   const [rawPreviewUrl, setRawPreviewUrl] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  
-  const [editingSocial, setEditingSocial] = useState(false);
+
+  // Mode edit: 'view' | 'edit' | 'edit_pending'
+  const [editMode, setEditMode] = useState('view');
   const [socialForm, setSocialForm] = useState({});
   const [socialMediaList, setSocialMediaList] = useState([]);
   const [showAddSocial, setShowAddSocial] = useState(false);
 
   // Inisialisasi form sosial saat profile berubah
+  // Hanya reset jika tidak sedang dalam mode edit (agar form tidak hilang saat refresh)
   useEffect(() => {
-    initSocialForm(profile);
+    if (editMode === 'view') {
+      initSocialForm(profile);
+    }
   }, [profile]);
 
   useEffect(() => {
@@ -135,12 +163,12 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       formData.append('nama_alumni', profile?.nama || '');
       await alumniApi.updateProfile(formData);
       onShowSuccess('Perubahan foto dikirim dan menunggu persetujuan admin');
-      onRefresh(); // Refresh data di parent
-    } catch (err) { 
-      alert('Gagal mengunggah foto'); 
-    } finally { 
-      setSavingFoto(false); 
-      if(fileInputRef.current) fileInputRef.current.value = '';
+      onRefresh();
+    } catch (err) {
+      alert('Gagal mengunggah foto');
+    } finally {
+      setSavingFoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
 
@@ -178,46 +206,156 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
     } catch (err) { console.error('Failed to load social media options:', err); }
   }
 
+  // Mulai edit dari data saat ini (approved)
+  async function handleStartEdit() {
+    await loadSocialMediaMaster();
+    initSocialForm(profile);
+    setShowAddSocial(false);
+    setEditMode('edit');
+  }
+
+  // Mulai edit ulang dari data pending
+  async function handleStartEditPending() {
+    // Ambil data pending langsung dari profile
+    const pending = (profile?.pending_updates || []).find(
+      u => u.section === 'social_media' && u.status === 'pending'
+    ) || null;
+
+    const pendingData = pending?.new_data?.social_media || [];
+
+    // Strategi 1: coba map via master list (untuk resolusi nama platform)
+    const masterList = socialMediaList.length > 0 ? socialMediaList : await loadMasterAndReturn();
+    let pendingMap = pendingSocialToMap(pendingData, masterList);
+
+    // Strategi 2: jika map kosong atau partial, coba match via nama platform di master
+
+    if (pendingData.length > 0 && Object.keys(pendingMap).length === 0) {
+      for (const item of pendingData) {
+        const master = masterList.find(
+          sm => Number(sm.id_sosmed ?? sm.id) === Number(item.id_sosmed)
+        );
+        if (master) {
+          const name = (master.nama_sosmed || master.nama || '').toLowerCase();
+          for (const platform of SOCIAL_PLATFORMS) {
+            if (name.includes(platform.key)) {
+              pendingMap[platform.key] = item.url;
+              break;
+            }
+          }
+        } else {
+          for (const platform of SOCIAL_PLATFORMS) {
+            const url = (item.url || '').toLowerCase();
+            if (url.includes(platform.key)) {
+              pendingMap[platform.key] = item.url;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    setSocialForm({
+      linkedin: pendingMap.linkedin || '',
+      github: pendingMap.github || '',
+      instagram: pendingMap.instagram || '',
+      facebook: pendingMap.facebook || '',
+      website: pendingMap.website || '',
+    });
+    setShowAddSocial(true);
+    setEditMode('edit_pending');
+  }
+
+  async function loadMasterAndReturn() {
+    const res = await masterDataApi.getSocialMedia();
+    const list = res.data.data || res.data || [];
+    setSocialMediaList(list);
+    return list;
+  }
+
+  function handleCancelEdit() {
+    setEditMode('view');
+    setShowAddSocial(false);
+    initSocialForm(profile);
+  }
+
   async function handleSaveSocial() {
     try {
       setSavingSocial(true);
       // Pastikan master data sudah dimuat
       let currentMaster = socialMediaList;
-      if(currentMaster.length === 0) {
+      if (currentMaster.length === 0) {
         const res = await masterDataApi.getSocialMedia();
         currentMaster = res.data.data || res.data || [];
         setSocialMediaList(currentMaster);
       }
 
-      const formData = new FormData();
-      formData.append('nama_alumni', profile?.nama || '');
-      
-      let index = 0;
+      // Build array social_media untuk backend
+      const socialMediaPayload = [];
       for (const platform of SOCIAL_PLATFORMS) {
         const url = socialForm[platform.key]?.trim();
         if (url) {
           const master = currentMaster.find(sm => (sm.nama_sosmed || sm.nama || '').toLowerCase().includes(platform.key));
           if (master) {
-            formData.append(`social_media[${index}][id_sosmed]`, master.id_sosmed || master.id);
-            formData.append(`social_media[${index}][url]`, url);
-            index++;
+            socialMediaPayload.push({
+              id_sosmed: master.id_sosmed || master.id,
+              url,
+            });
           }
         }
       }
 
-      await alumniApi.updateProfile(formData);
-      setEditingSocial(false);
+      if (editMode === 'edit_pending') {
+        // Ambil id pending dari profile
+        const pending = (profile?.pending_updates || []).find(
+          u => u.section === 'social_media' && u.status === 'pending'
+        ) || null;
+        if (pending?.id) {
+          await alumniApi.updatePendingSocialMedia(pending.id, socialMediaPayload);
+          onShowSuccess('Pengajuan tautan sosial berhasil diperbarui, menunggu persetujuan admin');
+        }
+      } else {
+        // Kirim via updateProfile
+        const formData = new FormData();
+        formData.append('nama_alumni', profile?.nama || '');
+        let index = 0;
+        for (const item of socialMediaPayload) {
+          formData.append(`social_media[${index}][id_sosmed]`, item.id_sosmed);
+          formData.append(`social_media[${index}][url]`, item.url);
+          index++;
+        }
+        await alumniApi.updateProfile(formData);
+        onShowSuccess('Tautan sosial dikirim, menunggu persetujuan admin');
+      }
+
+      setEditMode('view');
       setShowAddSocial(false);
-      onShowSuccess('Tautan sosial berhasil diperbarui');
-      onRefresh(); // Refresh data di parent
-    } catch (err) { 
-      alert('Gagal menyimpan tautan sosial'); 
-    } finally { 
-      setSavingSocial(false); 
+      onRefresh();
+    } catch (err) {
+      alert('Gagal menyimpan tautan sosial');
+    } finally {
+      setSavingSocial(false);
     }
   }
 
-  // Persiapan render
+  async function handleCancelPending() {
+    const confirm = await alertConfirm("Apakah anda yakin membatalkan pengajuan tautan sosial ini? Data yang ada sebelumnya akan tetap berlaku.")
+    if(!confirm.isConfirmed) return;
+    const pending = (profile?.pending_updates || []).find(
+      u => u.section === 'social_media' && u.status === 'pending'
+    ) || null;
+    if (!pending?.id) return;
+    try {
+      setCancelingeSocial(true);
+      await alumniApi.cancelPendingSocialMedia(pending.id);
+      onShowSuccess('Pengajuan tautan sosial berhasil dibatalkan');
+      onRefresh();
+    } catch (err) {
+      alert('Gagal membatalkan pengajuan');
+    } finally {
+      setCancelingeSocial(false);
+    }
+  }
+  
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
   const pendingUpdates = (profile?.pending_updates || []).filter(
     (u) => u.section === 'personal_info' && u.status === 'pending'
@@ -238,17 +376,15 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
   });
 
   const isFotoPending = isFotoPendingFromLatest || isFotoPendingFromUpdates;
-  const socialLinks = [];
-  if (profile?.linkedin) socialLinks.push({ key: 'linkedin', url: profile.linkedin, icon: <FaLinkedin size={16} /> });
-  if (profile?.github) socialLinks.push({ key: 'github', url: profile.github, icon: <FaGithub size={16} /> });
-  if (profile?.instagram) socialLinks.push({ key: 'instagram', url: profile.instagram, icon: <FaInstagram size={16} /> });
-  if (profile?.facebook) socialLinks.push({ key: 'facebook', url: profile.facebook, icon: <FaFacebook size={16} /> });
-  if (profile?.website) socialLinks.push({ key: 'website', url: profile.website, icon: <FaGlobe size={16} /> });
 
-  // console.log(fotoUrl)
+  // Pending social media (diakses juga oleh handler)
+  const pendingSocial = (profile?.pending_updates || []).find(
+    u => u.section === 'social_media' && u.status === 'pending'
+  ) || null;
+
   return (
     <div className="lg:col-span-4 space-y-6">
-      
+
       {/* Input File Tersembunyi */}
       <input type="file" ref={fileInputRef} className="hidden" onChange={handleFotoSelect} accept="image/*" />
 
@@ -269,15 +405,15 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
               PENDING
             </span>
           )}
-          <button 
-            onClick={() => fileInputRef.current?.click()} 
-            disabled={savingFoto} 
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={savingFoto}
             className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-[#2A3E3F] transition-colors border-2 border-white shadow-sm disabled:opacity-50"
           >
-            {savingFoto ? <Loader2 size={14} className="animate-spin"/> : <Edit size={14} />}
+            {savingFoto ? <Loader2 size={14} className="animate-spin" /> : <Edit size={14} />}
           </button>
         </div>
-        
+
         <h2 className="text-xl font-black text-primary">{profile?.nama || '-'}</h2>
         <p className="text-sm font-semibold text-primary/60 mb-6">
           Angkatan {profile?.tahun_masuk || '-'}
@@ -296,79 +432,163 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       </div>
 
       {/* KOTAK 2: TAUTAN SOSIAL */}
-      <div className="bg-white rounded-4xl p-8 shadow-sm border border-slate-100">
-        <div className="flex justify-between items-center mb-5">
-          <h3 className="font-black text-primary">Tautan Sosial</h3>
-          {editingSocial ? (
-            <div className="flex items-center gap-2">
-              <button onClick={() => { setEditingSocial(false); setShowAddSocial(false); initSocialForm(profile); }} className="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">
-                Batal
-              </button>
-              <button onClick={handleSaveSocial} disabled={savingSocial} className="text-xs font-bold text-primary hover:underline cursor-pointer disabled:opacity-50">
-                {savingSocial ? 'Menyimpan...' : 'Simpan'}
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => { setEditingSocial(true); loadSocialMediaMaster(); }} className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center">
-              <Edit size={12} className="mr-1" />Edit
-            </button>
-          )}
-        </div>
+      {(() => {
+        const hasPending = !!pendingSocial;
+        const isEditing = editMode === 'edit' || editMode === 'edit_pending';
 
-        {editingSocial ? (
-          <div className="space-y-4 mb-6">
-            {SOCIAL_PLATFORMS.map((platform) => {
-              const hasValue = socialForm[platform.key];
-              if (!hasValue && !showAddSocial) return null;
-              return (
-                <div key={platform.key} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">{platform.icon}</div>
-                  <input 
-                    type="text" 
-                    value={socialForm[platform.key] || ''} 
-                    onChange={(e) => setSocialForm(prev => ({ ...prev, [platform.key]: e.target.value }))} 
-                    placeholder={platform.placeholder} 
-                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-primary"
-                  />
-                  {hasValue && (
-                    <button onClick={() => setSocialForm(prev => ({ ...prev, [platform.key]: '' }))} className="text-slate-300 hover:text-red-500 cursor-pointer">
-                      <X size={14} />
+        const approvedLinks = [];
+        if (profile?.linkedin) approvedLinks.push({ key: 'linkedin', url: profile.linkedin, icon: <FaLinkedin size={16} /> });
+        if (profile?.github) approvedLinks.push({ key: 'github', url: profile.github, icon: <FaGithub size={16} /> });
+        if (profile?.instagram) approvedLinks.push({ key: 'instagram', url: profile.instagram, icon: <FaInstagram size={16} /> });
+        if (profile?.facebook) approvedLinks.push({ key: 'facebook', url: profile.facebook, icon: <FaFacebook size={16} /> });
+        if (profile?.website) approvedLinks.push({ key: 'website', url: profile.website, icon: <FaGlobe size={16} /> });
+
+        return (
+          <div className={`bg-white rounded-4xl p-8 shadow-sm border transition-all ${hasPending && !isEditing ? 'border-amber-200' : 'border-slate-100'}`}>
+            {/* Header */}
+            <div className="flex justify-between items-center mb-5">
+              <div className="flex items-center gap-2">
+                <h3 className="font-black text-primary">Tautan Sosial</h3>
+                {hasPending && !isEditing && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full border border-amber-200">
+                    <Clock size={9} /> PENDING
+                  </span>
+                )}
+              </div>
+              {isEditing ? (
+                <div className="flex items-center gap-2">
+                  <button onClick={handleCancelEdit} className="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">
+                    Batal
+                  </button>
+                  <button onClick={handleSaveSocial} disabled={savingSocial} className="text-xs font-bold text-primary hover:underline cursor-pointer disabled:opacity-50">
+                    {savingSocial ? 'Menyimpan...' : 'Simpan'}
+                  </button>
+                </div>
+              ) : (
+                hasPending ? (
+                  <></>
+                ) : (
+                  <button onClick={handleStartEdit} className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center">
+                    <Edit size={12} className="mr-1" />Edit
+                  </button>
+                )
+              )}
+            </div>
+
+            {/* === MODE EDIT === */}
+            {isEditing && (
+              <>
+                {editMode === 'edit_pending' && (
+                  <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
+                    <Clock size={14} className="text-amber-500 shrink-0" />
+                    <p className="text-xs text-amber-700 font-medium">
+                      Anda sedang mengedit pengajuan yang belum disetujui admin. Perubahan ini akan menggantikan isi pengajuan sebelumnya.
+                    </p>
+                  </div>
+                )}
+                <div className="space-y-3 mb-4">
+                  {SOCIAL_PLATFORMS.map((platform) => {
+                    const hasValue = socialForm[platform.key];
+                    if (!hasValue && !showAddSocial) return null;
+                    return (
+                      <div key={platform.key} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0 text-primary/60">
+                          {platform.icon}
+                        </div>
+                        <input
+                          type="text"
+                          value={socialForm[platform.key] || ''}
+                          onChange={(e) => setSocialForm(prev => ({ ...prev, [platform.key]: e.target.value }))}
+                          placeholder={platform.placeholder}
+                          className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-primary"
+                        />
+                        {hasValue && (
+                          <button
+                            onClick={() => setSocialForm(prev => ({ ...prev, [platform.key]: '' }))}
+                            className="text-slate-300 hover:text-red-500 cursor-pointer"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {!showAddSocial && (
+                    <button
+                      onClick={() => setShowAddSocial(true)}
+                      className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer mt-2"
+                    >
+                      <Plus size={16} /> Tampilkan semua platform
                     </button>
                   )}
                 </div>
-              );
-            })}
-            {!showAddSocial && (
-              <button onClick={() => setShowAddSocial(true)} className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer mt-2">
-                <Plus size={16} /> Tampilkan semua platform
-              </button>
+              </>
+            )}
+
+            {/* === MODE VIEW === */}
+            {!isEditing && (
+              <>
+                {/* Banner Pending */}
+                {hasPending && (
+                  <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <Clock size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-xs text-amber-800 font-bold mb-0.5">Perubahan Menunggu Persetujuan Admin</p>
+                        <p className="text-[11px] text-amber-700">
+                          Tautan sosial yang baru diinput akan berlaku setelah disetujui admin.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={handleStartEditPending}
+                        className="flex items-center gap-1 text-[11px] font-bold text-primary bg-white border border-primary/30 hover:bg-primary/5 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors"
+                      >
+                        <Edit size={11} /> Edit Ulang
+                      </button>
+                      <button
+                        onClick={handleCancelPending}
+                        disabled={cancelingSocial}
+                        className="flex items-center gap-1 text-[11px] font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                      >
+                        <X size={11} /> {cancelingSocial ? 'Membatalkan...' : 'Batalkan Pengajuan'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Daftar tautan sosial (approved) */}
+                <div className="space-y-3">
+                  {approvedLinks.length > 0 ? approvedLinks.map((link) => (
+                    <div key={link.key} className="flex items-center gap-3 text-primary/70">
+                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
+                        {link.icon}
+                      </div>
+                      <span className="text-sm font-medium truncate flex-1">{displayUrl(link.url)}</span>
+                    </div>
+                  )) : !hasPending ? (
+                    <p className="text-sm text-slate-400 font-medium">Belum ada tautan sosial</p>
+                  ) : null}
+                </div>
+
+                {/* Tombol tambah jika kosong */}
+                {approvedLinks.length === 0 && !hasPending && (
+                  <button
+                    onClick={() => { setShowAddSocial(true); handleStartEdit(); }}
+                    className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer mt-4"
+                  >
+                    <Plus size={16} /> Tambahkan tautan sosial
+                  </button>
+                )}
+              </>
             )}
           </div>
-        ) : (
-          <>
-            <div className="space-y-4 mb-6">
-              {socialLinks.length > 0 ? socialLinks.map((link) => (
-                <div key={link.key} className="flex items-center justify-between group">
-                  <div className="flex items-center gap-3 text-primary/70 truncate pr-4">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">{link.icon}</div>
-                    <span className="text-sm font-medium truncate">{displayUrl(link.url)}</span>
-                  </div>
-                </div>
-              )) : (
-                <p className="text-sm text-slate-400 font-medium">Belum ada tautan sosial</p>
-              )}
-            </div>
-            {socialLinks.length === 0 && (
-              <button onClick={() => { setEditingSocial(true); setShowAddSocial(true); loadSocialMediaMaster(); }} className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer">
-                <Plus size={16} /> Tambahkan tautan sosial
-              </button>
-            )}
-          </>
-        )}
-      </div>
+        );
+      })()}
 
       {showCropModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={handleCloseCropModal} />
           <div className="relative w-full max-w-2xl rounded-3xl bg-white border border-slate-100 shadow-2xl overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
@@ -382,7 +602,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
             </div>
 
             <div className="p-6">
-              <div className="relative w-full h-[360px] bg-slate-900 rounded-2xl overflow-hidden">
+              <div className="relative w-full h-90 bg-slate-900 rounded-2xl overflow-hidden">
                 {rawPreviewUrl && (
                   <Cropper
                     image={rawPreviewUrl}

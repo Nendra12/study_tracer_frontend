@@ -43,17 +43,17 @@ export function TimelineProgress({ timeline }) {
   return (
     <div className="flex items-start w-full relative pt-1">
       {timeline.map((step, idx) => (
-        <div key={step.step} className="flex flex-col items-center min-w-[70px] flex-1 relative">
+        <div key={step.step} className="flex flex-col items-center min-w-17.5 flex-1 relative">
           {/* Pembungkus Ikon dan Garis */}
           <div className="relative w-full flex justify-center items-center mb-1.5">
             {/* Garis Kiri (Mulai dari item ke-2) */}
             {idx > 0 && (
-              <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-[2px] z-0 ${getLineColor(timeline[idx - 1])}`} />
+              <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-0.5 z-0 ${getLineColor(timeline[idx - 1])}`} />
             )}
             
             {/* Garis Kanan (Berhenti sebelum item terakhir) */}
             {idx < timeline.length - 1 && (
-              <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-[2px] z-0 ${getLineColor(step)}`} />
+              <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-0.5 z-0 ${getLineColor(step)}`} />
             )}
 
             {/* Ikon Step (z-index lebih tinggi dari garis) */}

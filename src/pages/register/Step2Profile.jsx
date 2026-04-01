@@ -225,7 +225,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           />
         </div>
         
-        <div className="md:col-span-1 pt-[2px]">
+        <div className="md:col-span-1 pt-0.5">
           <MultiSelectDropdown 
             label="Keahlian / Skills" 
             placeholder="Cari skill..." 

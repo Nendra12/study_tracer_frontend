@@ -318,7 +318,7 @@ export default function UserManagement() {
             <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full lg:w-auto flex-1 lg:justify-end">
               
               {/* Search Bar - Akan shrink otomatis jika ruang sempit */}
-              <div className="relative group w-full sm:w-auto flex-1 min-w-[150px] max-w-full lg:max-w-[280px]">
+              <div className="relative group w-full sm:w-auto flex-1 min-w-37.5 max-w-full lg:max-w-70">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3C5759] transition-colors" size={16} />
                 <input
                   type="text"
@@ -395,7 +395,7 @@ export default function UserManagement() {
         {/* Modal Pop-up Foto Bulat */}
         {showPhotoPreview && createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"
+            className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"
             onClick={() => setShowPhotoPreview(false)}
           >
             <div className="relative max-w-lg w-full bg-white p-2 rounded-3xl shadow-2xl" onClick={e => e.stopPropagation()}>

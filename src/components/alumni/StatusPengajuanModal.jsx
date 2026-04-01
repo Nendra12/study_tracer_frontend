@@ -77,7 +77,7 @@ export default function StatusPengajuanModal({ isOpen, onClose, data }) {
 
   return (
     // Overlay Background
-    <div className="fixed inset-0 z-[100] flex justify-end bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-100 flex justify-end bg-black/40 backdrop-blur-sm">
       
       <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         
@@ -117,7 +117,7 @@ export default function StatusPengajuanModal({ isOpen, onClose, data }) {
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       {visual.icon}
-                      {!isLast && <div className="w-[2px] h-full bg-slate-200 my-2"></div>}
+                      {!isLast && <div className="w-0.5 h-full bg-slate-200 my-2"></div>}
                     </div>
 
                     <div className={`flex-1 ${isLast ? 'pb-2' : 'pb-8'} ${visual.opacity}`}>

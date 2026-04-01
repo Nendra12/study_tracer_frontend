@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/alumni/Navbar';
 import { alumniApi } from '../../api/alumni';
+import { alertConfirm } from '../../utilitis/alert';
 
 // Helper untuk icon dan warna berdasarkan type
 const getNotificationStyle = (type) => {
@@ -137,8 +138,8 @@ export default function Notifikasi() {
   };
 
   const clearAllNotifications = async () => {
-    if (!window.confirm('Yakin ingin menghapus semua notifikasi?')) return;
-
+    const confirm = await alertConfirm("Apakah anda yakin ingin menghapus semua notifikasi?")
+    if (!confirm.isConfirmed) return;
     try {
       await alumniApi.deleteAllNotifications();
       fetchNotifications();
@@ -188,7 +189,7 @@ export default function Notifikasi() {
       {/* --- MAIN CONTENT (FLOATING CARD AREA) --- */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12 flex flex-col">
 
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-[500px]">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-125">
 
           {/* TOOLBAR FILTER & AKSI */}
           <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white shrink-0">
@@ -226,7 +227,7 @@ export default function Notifikasi() {
                 <button
                   onClick={markAllAsRead}
                   disabled={unreadCount === 0 || loading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-500 hover:text-[#425A5C] hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-500 hover:text-[#425A5C] hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check size={14} strokeWidth={3} /> <span className="hidden sm:inline">Tandai semua dibaca</span>
                 </button>
@@ -234,7 +235,7 @@ export default function Notifikasi() {
                 <button
                   onClick={clearAllNotifications}
                   disabled={loading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Trash2 size={14} /> <span className="hidden sm:inline">Bersihkan</span>
                 </button>
@@ -253,7 +254,7 @@ export default function Notifikasi() {
 
             {/* Loading State */}
             {loading ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center py-10">
+              <div className="flex flex-col items-center justify-center h-full min-h-75 text-center py-10">
                 <Loader2 size={40} className="text-[#425A5C] animate-spin mb-4" />
                 <p className="text-slate-500 text-sm">Memuat notifikasi...</p>
               </div>
@@ -299,10 +300,10 @@ export default function Notifikasi() {
                                 <span className="text-[11px] font-bold text-slate-400 whitespace-nowrap mt-0.5">
                                   {formatRelativeTime(notif.created_at)}
                                 </span>
-                                {/* Delete Button */}
+    
                                 <button
                                   onClick={(e) => deleteNotification(notif.id_notification, e)}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-red-100 rounded-lg"
+                                  className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-red-100 rounded-lg"
                                   title="Hapus notifikasi"
                                 >
                                   <Trash2 size={14} className="text-slate-400 hover:text-red-500" />
@@ -322,7 +323,7 @@ export default function Notifikasi() {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center h-full min-h-[300px] text-center py-10"
+                    className="flex flex-col items-center justify-center h-full min-h-75 text-center py-10"
                   >
                     <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-5">
                       <Bell size={40} className="text-slate-300" />

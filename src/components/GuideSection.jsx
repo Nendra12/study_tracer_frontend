@@ -84,7 +84,7 @@ export default function GuideSection() {
         {/* 4 Cards Sejajar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
           {/* Garis Penghubung Modern */}
-          <div className="hidden lg:block absolute top-[45%] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/10 to-transparent -z-0"></div>
+          <div className="hidden lg:block absolute top-[45%] left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/10 to-transparent -z-0"></div>
 
           {steps.map((step, index) => (
             <motion.div

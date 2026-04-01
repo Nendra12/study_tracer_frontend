@@ -280,7 +280,7 @@ export default function ProfileUpdateRequests() {
                     {(req.changes || []).map((change, idx) => (
                       <>
                         {change.new !== "-" && (
-                          <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
+                          <span key={idx} className="px-3 py-1.5 bg-fourth text-primary/80 border border-slate-100 rounded-lg text-[11px] font-bold">
                             {change.label}
                           </span>
                         )}
