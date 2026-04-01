@@ -13,6 +13,7 @@
   import { motion, AnimatePresence } from "framer-motion";
   import { STORAGE_BASE_URL } from "../../api/axios";
   import { alumniApi } from "../../api/alumni";
+  import { useThemeSettings } from "../../context/ThemeContext";
 
   function getImageUrl(path) {
     if (!path) return null;
@@ -37,6 +38,7 @@
     ];
 
     const navigate = useNavigate();
+    const { theme } = useThemeSettings();
 
     useEffect(() => {
       const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -86,7 +88,7 @@
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
           <Link to="/alumni" className="flex items-center gap-2.5 group">
             <img
-              src="/icon.png"
+              src={theme?.logo || "/icon.png"}
               alt="Alumni Tracer Logo"
               className="w-10 h-10 object-contain drop-shadow-sm"
             />

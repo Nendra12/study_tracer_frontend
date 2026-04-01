@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import { useAuth } from "../context/AuthContext";
 import { ChevronDown, Home, LogOut, User, UserPen } from "lucide-react";
 import { STORAGE_BASE_URL } from "../api/axios";
+import { useThemeSettings } from "../context/ThemeContext";
 
 export default function NavbarLanding({ setActiveSection, activeSection }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +15,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
-
+  const { theme } = useThemeSettings();
   function getImageUrl(path) {
     if (!path) return null;
     if (path.startsWith("http")) return path;
@@ -112,7 +113,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <img
-              src="/icon.png"
+              src={theme?.logo || "/icon.png"}
               alt="Alumni Tracer Logo"
               className="w-12 h-10 object-contain drop-shadow-sm"
             />
@@ -122,7 +123,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
               </span>
               {!scrolled && (
                 <span className="text-xs font-semibold text-[#526061]">
-                  SMK Negeri 1 Gondang
+                  {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
                 </span>
               )}
             </div>

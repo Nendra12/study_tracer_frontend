@@ -327,4 +327,15 @@ export const adminApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+
+  // ── Pengaturan Tampilan ───────────────────────
+  getPengaturanTampilan() {
+    return api.get('/admin/pengaturan-tampilan');
+  },
+
+  updatePengaturanTampilan(data) {
+    return api.post('/admin/pengaturan-tampilan', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };

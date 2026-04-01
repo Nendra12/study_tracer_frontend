@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { alumniApi } from '../../api/alumni';
+import { useThemeSettings } from '../../context/ThemeContext';
 
 export default function NavbarAlumni({ user }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,7 @@ export default function NavbarAlumni({ user }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useThemeSettings();
 
   const canAccessAll = user?.can_access_all ?? false;
 
@@ -82,13 +84,13 @@ export default function NavbarAlumni({ user }) {
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <img
-              src="/icon.png"
+              src={theme?.logo || "/icon.png"}
               alt="Alumni Tracer Logo"
               className="w-12 h-10 object-contain drop-shadow-sm"
             />
             <div className='flex flex-col transition-all duration-500 ease-in-out'>
               <span className="font-black text-primary text-lg">Alumni Tracer</span>
-              {!scrolled && <span className='text-xs font-semibold text-primary/80'>SMK Negeri 1 Gondang</span>}
+              {!scrolled && <span className='text-xs font-semibold text-primary/80'>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>}
             </div>
           </Link>
 

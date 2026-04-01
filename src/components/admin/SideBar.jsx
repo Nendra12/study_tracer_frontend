@@ -4,15 +4,17 @@ import {
   FileText, LogOut, X,
   IdCardLanyard, Megaphone, Palette // <-- Tambahkan Megaphone disini
 } from 'lucide-react';
-import Logo from '../../assets/icon.png';
+import DefaultLogo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { alertConfirm } from '../../utilitis/alert';
+import { useThemeSettings } from '../../context/ThemeContext';
 
 export default function SideBar({ active, setActive }) {
   const [activeMenu, setActiveMenu] = useState('Beranda');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { logout } = useAuth();
+  const { theme } = useThemeSettings();
   const navigate = useNavigate();
   const location = useLocation()
 
@@ -96,9 +98,9 @@ export default function SideBar({ active, setActive }) {
         {/* Header Sidebar + Tombol Close */}
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="Logo" className='w-10 md:w-12'/>
+            <img src={theme?.logo || DefaultLogo} alt="Logo" className='w-10 md:w-12'/>
             <div className="min-w-0">
-              <h1 className="text-primary font-bold leading-tight text-sm truncate">Alumni Tracer</h1>
+              <h1 className="text-primary font-bold leading-tight text-sm truncate">{theme?.namaSekolah || 'Alumni Tracer'}</h1>
               <p className="text-third text-[10px]">Admin Portal</p>
             </div>
           </div>
