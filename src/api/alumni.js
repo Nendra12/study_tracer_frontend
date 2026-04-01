@@ -46,6 +46,20 @@ export const alumniApi = {
     return api.delete(`/alumni/profile/pending-skills/${pendingId}`);
   },
 
+  // Social media pending management
+  updatePendingSocialMedia(pendingId, socialMedia) {
+    return api.put(`/alumni/profile/pending-social/${pendingId}`, { social_media: socialMedia });
+  },
+
+  cancelPendingSocialMedia(pendingId) {
+    return api.delete(`/alumni/profile/pending-social/${pendingId}`);
+  },
+
+  // General: cancel any pending profile update by id (personal_info, dll.)
+  cancelPendingProfileUpdate(pendingId) {
+    return api.delete(`/alumni/profile/pending/${pendingId}`);
+  },
+
   // Lowongan (restricted - needs verified + kuesioner)
   getLowongan(params = {}) {
     return api.get('/alumni/lowongan', { params });

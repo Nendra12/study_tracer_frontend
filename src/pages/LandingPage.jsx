@@ -15,6 +15,7 @@ import { publicApi } from "../api/alumni";
 import Loader from "../components/Loaders";
 import { STORAGE_BASE_URL } from "../api/axios";
 import { useThemeSettings } from "../context/ThemeContext";
+import FooterModals from "../components/alumni/FooterModals";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -433,7 +434,7 @@ export default function LandingPage() {
       </footer>
 
       {/* Render Modal Footer di paling bawah setelah tag </footer> */}
-      <FooterModals 
+      <FooterModals  
         isOpen={!!modalType} 
         type={modalType} 
         onClose={closeModal} 

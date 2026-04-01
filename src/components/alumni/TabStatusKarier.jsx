@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
-import SmoothDropdown from '../admin/SmoothDropdown'; 
+import SmoothDropdown from '../admin/SmoothDropdown';
 
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   const [showForm, setShowForm] = useState(false);
@@ -17,6 +17,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [jurusanKuliahList, setJurusanKuliahList] = useState([]);
   const [loadingKota, setLoadingKota] = useState(false);
+
+  const [isSaatIni, setIsSaatIni] = useState(false);
 
   const [form, setForm] = useState({
     id_status: '', tahun_mulai: '', tahun_selesai: '',
@@ -51,8 +53,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
     try {
       const res = await masterDataApi.getKota(idProvinsi);
       setKotaList(res.data.data || res.data || []);
-    } catch (err) { 
-      console.error('Failed to load kota:', err); 
+    } catch (err) {
+      console.error('Failed to load kota:', err);
       setKotaList([]);
     } finally {
       setLoadingKota(false);
@@ -248,7 +250,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
             <h3 className="text-sm font-black text-primary">Tambahkan Status Baru</h3>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer"><X size={18} /></button>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
             {/* Status */}
             <div className="sm:col-span-2 relative z-[60]">
@@ -270,8 +272,44 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
               <input type="number" placeholder="2024" value={form.tahun_mulai} onChange={(e) => setForm(prev => ({ ...prev, tahun_mulai: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Tahun Selesai <span className="normal-case font-medium text-slate-400">(opsional)</span></label>
-              <input type="number" placeholder="2025" value={form.tahun_selesai} onChange={(e) => setForm(prev => ({ ...prev, tahun_selesai: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              {!isSaatIni ? (
+                <div>
+                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">
+                    Tahun Selesai <span className="normal-case font-medium text-slate-400">(opsional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="2025"
+                    value={form.tahun_selesai}
+                    onChange={(e) => setForm(prev => ({ ...prev, tahun_selesai: e.target.value }))}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">
+                    Tahun Selesai <span className="normal-case font-medium text-slate-400">(opsional)</span>
+                  </label>
+                  {/* Tampilan input disabled saat dicentang, saya sesuaikan padding-nya agar sama dengan input asli Anda */}
+                  <div className="w-full bg-gray-100 border border-slate-200 rounded-xl px-4 py-3 text-sm text-gray-500 font-medium cursor-not-allowed">
+                    Sedang Berlangsung
+                  </div>
+                </div>
+              )}
+
+              <label className="flex items-center gap-2 pt-1.5 text-[11px] text-secondary cursor-pointer hover:text-primary transition-colors w-fit">
+                <input
+                  type="checkbox"
+                  checked={isSaatIni}
+                  onChange={(e) => {
+                    setIsSaatIni(e.target.checked);
+                    // Kosongkan value tahun_selesai di dalam object form saat dicentang
+                    if (e.target.checked) setForm(prev => ({ ...prev, tahun_selesai: '' }));
+                  }}
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
+                />
+                <span className="font-bold">Masih berlangsung (Saat ini)</span>
+              </label>
             </div>
 
             {/* FIELD UNTUK PEKERJAAN */}
@@ -285,7 +323,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                   <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Nama Perusahaan</label>
                   <input type="text" placeholder="Contoh: PT. Teknologi Sukses" value={form.nama_perusahaan} onChange={(e) => setForm(prev => ({ ...prev, nama_perusahaan: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
-                
+
                 {/* PROVINSI & KOTA BERSEBELAHAN */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:col-span-2 relative z-50">
                   <div className="w-full">
@@ -333,7 +371,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                   <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Nama Universitas</label>
                   <input type="text" placeholder="Contoh: Universitas Indonesia" value={form.nama_universitas} onChange={(e) => setForm(prev => ({ ...prev, nama_universitas: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
-                
+
                 <div className="sm:col-span-2 relative z-50">
                   <SmoothDropdown
                     label="Program Studi / Jurusan"
@@ -382,7 +420,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                   <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Nama Usaha</label>
                   <input type="text" placeholder="Contoh: Toko Kopi Sejahtera" value={form.nama_usaha} onChange={(e) => setForm(prev => ({ ...prev, nama_usaha: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
-                
+
                 <div className="sm:col-span-2 relative z-50">
                   <SmoothDropdown
                     label="Bidang Usaha"
@@ -588,8 +626,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
                       <div className="space-y-1.5 mt-3">
                         {details.map((detail, idx) => (
                           <div key={idx} className="flex items-start gap-2">
-                             <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider w-24 shrink-0 mt-0.5">{detail.label}</span>
-                             <span className="font-medium text-sm text-slate-700 leading-tight">{detail.value}</span>
+                            <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider w-24 shrink-0 mt-0.5">{detail.label}</span>
+                            <span className="font-medium text-sm text-slate-700 leading-tight">{detail.value}</span>
                           </div>
                         ))}
                       </div>
