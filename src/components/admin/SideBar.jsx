@@ -155,7 +155,7 @@ export default function SideBar({ active, setActive }) {
       </div>
 
       {isLoggingOut && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-9999">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-700 font-medium">Menghapus sesi...</p>

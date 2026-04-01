@@ -443,7 +443,7 @@ export default function Lowongan() {
             {/* FORM PENCARIAN */}
             <form
               onSubmit={activeTab === 'saya' ? handleMySearch : handleSearch}
-              className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+              className="mt-3 flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
             >
               <div className="relative flex-1 flex items-center">
                 <Search className="absolute left-3 text-gray-400" size={18} />
@@ -467,7 +467,7 @@ export default function Lowongan() {
             {/* DROPDOWN FILTERS */}
             {activeTab !== 'saya' && (
               <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-                <div className="w-[calc(50%-6px)] lg:w-36 relative z-[60]">
+                <div className="w-[calc(50%-6px)] lg:w-36 relative z-60">
                   <SmoothDropdown options={tipeOptions} value={selectedTipe} onSelect={(val) => setSelectedTipe(val === 'Semua Tipe' ? '' : val)} placeholder="Tipe Pekerjaan" />
                 </div>
                 <div className="w-[calc(50%-6px)] lg:w-40 relative z-50">
@@ -495,7 +495,7 @@ export default function Lowongan() {
       {/* --- MODAL IMAGE PREVIEW --- */}
       <AnimatePresence>
         {selectedImage && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedImage(null)} className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-pointer" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="relative w-max max-w-[90vw] md:max-w-[70vw] lg:max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
               <div className="relative overflow-hidden flex items-center justify-center bg-slate-100">

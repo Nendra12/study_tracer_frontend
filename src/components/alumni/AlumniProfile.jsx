@@ -53,7 +53,7 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick }) {
 
         {/* Efek Gelombang Bawah */}
         <svg
-          className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-[1px]"
+          className="absolute bottom-0 left-0 w-[102%] -translate-x-[1%] h-10 z-20 translate-y-px"
           viewBox="0 0 1440 100"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"

@@ -208,7 +208,7 @@ export default function Pengumuman() {
 
               {/* 2. SEARCH BAR SKELETON / REAL */}
               {loading ? (
-                <div className="flex-1 w-full h-[42px] bg-gray-200 rounded-xl animate-pulse"></div>
+                <div className="flex-1 w-full h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
               ) : (
                 <div className="relative flex-1 group w-full">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={16} />
@@ -291,7 +291,7 @@ export default function Pengumuman() {
       {/* --- RENDER MODAL GAMBAR SAJA (POP-UP LIGHTBOX) --- */}
       {selectedImage && (
         <div 
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in zoom-in-95 duration-200"
+          className="fixed inset-0 z-120 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in zoom-in-95 duration-200"
           onClick={() => setSelectedImage(null)}
         >
           <div 

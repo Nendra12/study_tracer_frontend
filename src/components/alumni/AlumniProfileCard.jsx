@@ -48,16 +48,16 @@ export default function AlumniProfileCard({ data, locked, onImageClick }) {
 
           {/* Teks Info */}
           <div className="flex-1 flex flex-col justify-center">
-            <h3 className="font-bold text-[#3c5759] text-base line-clamp-1">{data.name}</h3>
-            <p className="text-[#526061] text-xs font-semibold">
+            <h3 className="font-bold text-primary text-base line-clamp-1">{data.name}</h3>
+            <p className="text-primary/80 text-xs font-semibold">
               {data.major || data.jurusan || '-'} • {data.year || data.angkatan || '-'}
             </p>
           </div>
         </div>
 
         {/* BAGIAN BAWAH: Box Pekerjaan/Status */}
-        <div className="mt-auto bg-[#f3f4f4] rounded-xl px-4 py-2.5 text-center flex items-center justify-center">
-           <p className="text-xs font-bold text-[#526061] uppercase tracking-wider line-clamp-1">
+        <div className="mt-auto bg-fourth rounded-xl px-4 py-2.5 text-center flex items-center justify-center">
+           <p className="text-xs font-bold text-primary/80 uppercase tracking-wider line-clamp-1">
              {data.job || data.role || data.status || '-'}
            </p>
         </div>

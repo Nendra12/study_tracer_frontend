@@ -170,7 +170,7 @@ export default function Alumni() {
               
               <form 
                 onSubmit={handleSearch} 
-                className="mt-3 flex h-[47px] w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+                className="mt-3 flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
               >
                 <div className="relative flex-1 flex items-center">
                   <Search className="absolute left-3 text-gray-400" size={18} />
@@ -191,7 +191,7 @@ export default function Alumni() {
               </form>
 
               <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-                <div className="w-[calc(50%-6px)] lg:w-40 relative z-[60]">
+                <div className="w-[calc(50%-6px)] lg:w-40 relative z-60">
                   {/* PERUBAHAN: Placeholder dan handler disesuaikan dengan 'Semua Angkatan' */}
                   <SmoothDropdown 
                     options={tahunOptions} 
@@ -269,7 +269,7 @@ export default function Alumni() {
       {/* --- MODAL POPUP PREVIEW GAMBAR --- */}
       <AnimatePresence>
         {selectedImage && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

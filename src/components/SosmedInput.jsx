@@ -57,7 +57,7 @@ export default function SosmedInput({ value, onChange }) {
       });
   }, []);
 
-  const getIcon = (p) => iconMap[p.key] || <span className="w-[18px] h-[18px] rounded-full bg-gray-300 inline-block" />;
+  const getIcon = (p) => iconMap[p.key] || <span className="w-4.5 h-4.5 rounded-full bg-gray-300 inline-block" />;
 
   const fireOnChange = (updatedSocials) => {
     if (onChange) {
@@ -130,7 +130,7 @@ export default function SosmedInput({ value, onChange }) {
                   <button
                     type="button"
                     onClick={() => setOpenDropdownIndex(openDropdownIndex === index ? null : index)}
-                    className="flex items-center gap-2 px-3 py-2.5 cursor-pointer min-w-[50px] justify-center"
+                    className="flex items-center gap-2 px-3 py-2.5 cursor-pointer min-w-12.5 justify-center"
                   >
                     {selectedPlatform && getIcon(selectedPlatform)}
                     <ChevronDown size={14} className={`text-third transition-transform duration-300 ${openDropdownIndex === index ? 'rotate-180' : ''}`} />

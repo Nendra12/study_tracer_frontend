@@ -95,7 +95,7 @@ export default function PengumumanDetail() {
         </button>
 
         {/* Card Detail Utama */}
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-4xl shadow-sm border border-slate-100 overflow-hidden">
           
           {/* Banner Image (Bisa di-klik untuk Pop-up) */}
           <div 
@@ -165,7 +165,7 @@ export default function PengumumanDetail() {
       {/* RENDER MODAL GAMBAR SAJA (POP-UP LIGHTBOX) */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in zoom-in-95 duration-200"
+          className="fixed inset-0 z-120 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in zoom-in-95 duration-200"
           onClick={() => setShowImageModal(false)}
         >
           <div 

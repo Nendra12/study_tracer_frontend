@@ -59,7 +59,7 @@ export default function FooterModals({ isOpen, type, onClose }) {
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -75,7 +75,7 @@ export default function FooterModals({ isOpen, type, onClose }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden"
+            className="relative w-full max-w-lg bg-white rounded-4xl shadow-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">

@@ -197,7 +197,7 @@ export default function Kuesioner() {
 
                                         {/* Dropdown Menu - Tambahkan z-50 dan top-full */}
                                         {isMenuOpen && (
-                                            <div className="absolute right-0 top-full mt-2 w-full md:w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-[999] overflow-hidden">
+                                            <div className="absolute right-0 top-full mt-2 w-full md:w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-999 overflow-hidden">
                                                 {karierOptions.map((opt) => (
                                                     <button
                                                         key={opt}

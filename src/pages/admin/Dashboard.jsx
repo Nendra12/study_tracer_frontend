@@ -269,7 +269,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           <div className="w-full flex flex-col items-center text-center">
             <h1 className="text-primary text-base md:text-lg font-bold mb-4">Status Karir</h1>
-            <div className="w-full max-w-[300px] lg:max-w-full">
+            <div className="w-full max-w-75 lg:max-w-full">
               <ChartKarir data={statusDistribution} />
             </div>
           </div>

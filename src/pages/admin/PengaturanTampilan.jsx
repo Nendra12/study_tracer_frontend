@@ -160,7 +160,7 @@ export default function PengaturanTampilan() {
                       <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
                         <Upload size={14} /> Ganti Logo
                       </button>
-                      <p className="text-[11px] text-gray-400 font-medium max-w-[200px]">Format: PNG transparan (Max 2MB).</p>
+                      <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: PNG transparan (Max 2MB).</p>
                     </div>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function PengaturanTampilan() {
                       <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
                         <Upload size={14} /> Ganti Gambar
                       </button>
-                      <p className="text-[11px] text-gray-400 font-medium max-w-[200px]">Format: JPG/PNG (Max 5MB). Resolusi ideal potrait/landscape.</p>
+                      <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: JPG/PNG (Max 5MB). Resolusi ideal potrait/landscape.</p>
                     </div>
                   </div>
                 </div>

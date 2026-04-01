@@ -29,7 +29,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div
         whileHover={locked ? {} : { y: -4 }}
-        className={`bg-white rounded-[2rem] overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col h-full transition-all duration-500
+        className={`bg-white rounded-4xl overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col h-full transition-all duration-500
           ${locked ? '' : 'hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] group cursor-pointer'}`}
       >
         
@@ -50,7 +50,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
             onError={(e) => { e.target.src = 'https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg'; }}
           />
           <div className="absolute top-4 left-4 z-20 pointer-events-none">
-            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black text-[#3c5759] uppercase">
+            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black text-primary uppercase">
               {tipePekerjaan}
             </span>
           </div>
@@ -59,27 +59,27 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
         {/* BAGIAN TENGAH: Job Content */}
         <div className="p-6 flex flex-col flex-grow">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-[#3c5759] leading-tight mb-1 group-hover:text-amber-600 transition-colors">
+            <h3 className="text-lg font-bold text-primary leading-tight mb-1 group-hover:text-amber-600 transition-colors">
               {judul}
             </h3>
-            <p className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider">
+            <p className="text-xs font-bold text-third uppercase tracking-wider">
               {perusahaanNama}
             </p>
           </div>
 
-          <p className="text-sm text-[#526061] leading-relaxed mb-6 line-clamp-2">
+          <p className="text-sm text-primary/80 leading-relaxed mb-6 line-clamp-2">
             {deskripsi}
           </p>
 
           {/* BAGIAN BAWAH: Footer Card (Lokasi & Tombol Panah) */}
-          <div className="mt-auto pt-4 border-t border-[#f3f4f4] flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[#9ca3af]">
+          <div className="mt-auto pt-4 border-t border-fourth flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-third">
               <MapPin size={16} />
-              <span className="text-xs font-bold line-clamp-1 max-w-[150px]">{lokasi}</span>
+              <span className="text-xs font-bold line-clamp-1 max-w-37.5">{lokasi}</span>
             </div>
             
             <button className={`cursor-pointer w-8 h-8 rounded-full flex items-center justify-center transition-all 
-              ${locked ? 'bg-slate-100 text-slate-400' : 'bg-[#f3f4f4] text-[#3c5759] group-hover:bg-[#3c5759] group-hover:text-white'}`}
+              ${locked ? 'bg-slate-100 text-slate-400' : 'bg-fourth text-primary group-hover:bg-primary group-hover:text-white'}`}
             >
               <MoveUpRight size={15} />
             </button>

@@ -248,13 +248,13 @@ export default function Beranda() {
   }, [hasCompletedKuesioner, loading, refreshUser]);
 
   return (
-    <div className="w-full bg-[#f8f9fa] min-h-screen selection:bg-[#3c5759]/20 overflow-x-hidden">
+    <div className="w-full bg-[#f8f9fa] min-h-screen selection:bg-primary/20 overflow-x-hidden">
 
       {/* ================= HERO SECTION (DESAIN BARU) ================= */}
-      <div className="relative bg-[#3c5759] pt-28 pb-32 overflow-hidden rounded-b-[3rem] shadow-xl">
+      <div className="relative bg-primary pt-28 pb-32 overflow-hidden rounded-b-[3rem] shadow-xl">
         {/* Abstract Background Elements */}
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[50%] bg-[#526061] rounded-full blur-[120px] pointer-events-none opacity-50"></div>
-        <div className="absolute bottom-[-20%] right-[-5%] w-[30%] h-[50%] bg-[#f3f4f4]/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[50%] bg-primary/80 rounded-full blur-[120px] pointer-events-none opacity-50"></div>
+        <div className="absolute bottom-[-20%] right-[-5%] w-[30%] h-[50%] bg-fourth/20 rounded-full blur-[100px] pointer-events-none"></div>
 
         {/* Header Section */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-white mt-4">
@@ -275,7 +275,7 @@ export default function Beranda() {
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-tight">
                 Halo,
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f3f4f4] to-[#9ca3af]">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fourth to-third">
                   {/* Mengambil kata pertama saja */}
                   {namaAlumni ? namaAlumni.split(' ')[0] : 'Alumni'}
                 </span>
@@ -288,7 +288,7 @@ export default function Beranda() {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full">
                 <button
                   onClick={() => navigate("/alumni/lowongan")}
-                  className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-[#3c5759] rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                  className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
                 >
                   <ArrowRight size={18} /> Lihat Lowongan 
                 </button>
@@ -314,10 +314,10 @@ export default function Beranda() {
                 }}
                 className="absolute inset-0 m-auto w-[340px] h-[210px] bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col justify-between overflow-hidden"
               >
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#3c5759]/20 rounded-full blur-2xl"></div>
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                 <div className="relative z-10 flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-[#3c5759]/10 text-[#3c5759] rounded-2xl flex items-center justify-center shadow-sm">
+                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-sm">
                       <ClipboardCheck size={24} strokeWidth={2.5} />
                     </div>
                     <div>
@@ -343,7 +343,7 @@ export default function Beranda() {
                 <div className="relative z-10 space-y-3">
                   <div className="flex justify-between text-xs font-bold items-end">
                     <span className="text-slate-600">Progres Kuesioner</span>
-                    <span className="text-2xl font-black text-[#3c5759]">
+                    <span className="text-2xl font-black text-primary">
                       {hasCompletedKuesioner ? "100%" : "75%"}
                     </span>
                   </div>
@@ -352,7 +352,7 @@ export default function Beranda() {
                       initial={{ width: 0 }}
                       animate={{ width: hasCompletedKuesioner ? "100%" : "75%" }}
                       transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-[#526061] to-[#3c5759] rounded-full relative"
+                      className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full relative"
                     >
                       <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
                     </motion.div>
@@ -375,7 +375,7 @@ export default function Beranda() {
                 onClick={() => navigate("/alumni/berita")}
               >
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-xl bg-[#3c5759]/10 flex items-center justify-center text-[#3c5759]">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                     <BellRing size={20} strokeWidth={2.5} />
                   </div>
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
@@ -417,7 +417,7 @@ export default function Beranda() {
             <p className="text-slate-500 mb-6">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-[#3c5759] text-white px-8 py-3 rounded-xl font-bold hover:bg-opacity-90 transition-all cursor-pointer"
+              className="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-opacity-90 transition-all cursor-pointer"
             >
               Coba Lagi
             </button>
@@ -434,13 +434,13 @@ export default function Beranda() {
                 { label: `${statusNew === "Bekerja" ? 'Instansi/Perusahaan' : 'Universitas'}`, value: place || "-", icon: <Building2 size={20} /> },
               ].map((item, idx) => (
                 <div key={idx} className="bg-white p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 rounded-full bg-[#f3f4f4] text-[#3c5759] flex items-center justify-center mb-3">
+                  <div className="w-10 h-10 rounded-full bg-fourth text-primary flex items-center justify-center mb-3">
                     {item.icon}
                   </div>
-                  <p className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider mb-1 line-clamp-1" title={item.label}>
+                  <p className="text-xs text-third font-bold uppercase tracking-wider mb-1 line-clamp-1" title={item.label}>
                     {item.label}
                   </p>
-                  <p className="text-sm sm:text-base font-black text-[#3c5759] leading-tight line-clamp-2" title={item.value}>
+                  <p className="text-sm sm:text-base font-black text-primary leading-tight line-clamp-2" title={item.value}>
                     {item.value}
                   </p>
                 </div>
@@ -504,7 +504,7 @@ export default function Beranda() {
                             navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
                           }
                         }}
-                        className={`w-full md:w-auto bg-[#3c5759] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-[#3c5759]/20 
+                        className={`w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 
                         ${isVerified ? "cursor-pointer" : "cursor-n opacity-50 cursor-not-allowed"}`}
                       >
                         ISI SEKARANG
@@ -516,10 +516,10 @@ export default function Beranda() {
             </div>
 
             {/* JEJARING ALUMNI TERBARU */}
-            <section className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-2">
+            <section className="bg-white p-6 sm:p-8 rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-2">
               <div className="flex justify-between items-end mb-8">
                 <div>
-                  <h2 className="text-2xl font-black text-[#3c5759] tracking-tight">
+                  <h2 className="text-2xl font-black text-primary tracking-tight">
                     Jejaring Alumni
                   </h2>
                   <p className="text-slate-500 text-sm font-medium mt-1">
@@ -528,7 +528,7 @@ export default function Beranda() {
                 </div>
                 <button
                   onClick={() => { if (canAccessAll) navigate("/alumni/daftar-alumni"); }}
-                  className={`group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all ${canAccessAll ? "bg-white text-[#3c5759] border-slate-200 hover:border-[#3c5759] cursor-pointer" : "text-slate-300 border-slate-100 cursor-not-allowed"}`}
+                  className={`group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all ${canAccessAll ? "bg-white text-primary border-slate-200 hover:border-primary cursor-pointer" : "text-slate-300 border-slate-100 cursor-not-allowed"}`}
                 >
                   Lihat Semua{" "}
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -573,7 +573,7 @@ export default function Beranda() {
               />
 
               {/* Statistics (Static Mocks) */}
-              <section className="bg-[#3c5759] text-white rounded-[2rem] p-6 sm:p-8 shadow-lg relative overflow-hidden flex flex-col justify-center">
+              <section className="bg-primary text-white rounded-4xl p-6 sm:p-8 shadow-lg relative overflow-hidden flex flex-col justify-center">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <h2 className="text-xl font-black relative z-10">Statistik Lulusan</h2>
                 <p className="text-xs text-white/60 mb-8 font-medium relative z-10">Distribusi status alumni saat ini.</p>
@@ -601,15 +601,15 @@ export default function Beranda() {
             </div>
 
             {/* LOWONGAN PEKERJAAN */}
-            <section className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+            <section className="bg-white p-6 sm:p-8 rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="flex justify-between items-end mb-8">
                 <div>
-                  <h2 className="text-2xl font-black text-[#3c5759] tracking-tight">Peluang Karir</h2>
+                  <h2 className="text-2xl font-black text-primary tracking-tight">Peluang Karir</h2>
                   <p className="text-slate-500 text-sm font-medium mt-1">Temukan pekerjaan yang sesuai dengan keahlianmu</p>
                 </div>
                 <button
                   onClick={() => { if (canAccessAll) navigate("/alumni/lowongan"); }}
-                  className={`group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all ${canAccessAll ? "bg-white text-[#3c5759] border-slate-200 hover:border-[#3c5759] cursor-pointer" : "text-slate-300 border-slate-100 cursor-not-allowed"}`}
+                  className={`group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all ${canAccessAll ? "bg-white text-primary border-slate-200 hover:border-primary cursor-pointer" : "text-slate-300 border-slate-100 cursor-not-allowed"}`}
                 >
                   Cari Lowongan <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </button>
@@ -663,7 +663,7 @@ export default function Beranda() {
         />
 
         {selectedImage && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -685,7 +685,7 @@ export default function Beranda() {
                   <X size={20} className="text-slate-800" />
                 </button>
               </div>
-              <div className="bg-slate-50 flex items-center justify-center p-2 min-h-[300px]">
+              <div className="bg-slate-50 flex items-center justify-center p-2 min-h-75">
                 <img
                   src={selectedImage}
                   alt="Pratinjau"

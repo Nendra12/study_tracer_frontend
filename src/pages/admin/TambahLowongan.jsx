@@ -251,7 +251,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-bold text-primary">{isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}</h2>

@@ -65,7 +65,7 @@ export default function TopPerusahaan({
 
       {/* ================= SECTION 1: MARQUEE LOGO BERJALAN ================= */}
       <div className={`w-full overflow-hidden py-4 ${locked ? 'grayscale opacity-60' : ''}`}>
-        <p className="text-2xl font-black text-[#3c5759] tracking-tight text-center mb-6">
+        <p className="text-2xl font-black text-primary tracking-tight text-center mb-6">
           Mitra Industri Teknologi & Perguruan Tinggi Terkemuka
         </p>
         <div className="flex overflow-hidden relative w-full py-4">
@@ -98,14 +98,14 @@ export default function TopPerusahaan({
       <div className={`grid grid-cols-1 xl:grid-cols-2 gap-6 relative transition-all duration-500 ${locked ? 'grayscale opacity-60' : ''}`}>
         
         {/* --- KOLOM KIRI: STATISTIK TOP PERUSAHAAN --- */}
-        <div className="bg-white rounded-[2rem] border border-slate-100 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full">
+        <div className="bg-white rounded-4xl border border-slate-100 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-2xl font-black text-[#3c5759] tracking-tight">Statistik Perusahaan</h2>
+              <h2 className="text-2xl font-black text-primary tracking-tight">Statistik Perusahaan</h2>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Serapan Alumni Terbanyak</p>
             </div>
-            <div className="hidden sm:flex w-12 h-12 bg-[#3c5759]/10 rounded-2xl items-center justify-center text-[#3c5759] shrink-0">
+            <div className="hidden sm:flex w-12 h-12 bg-primary/10 rounded-2xl items-center justify-center text-primary shrink-0">
               <Building2 size={24} strokeWidth={2.5} />
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function TopPerusahaan({
                 <div key={comp.id || idx} className="group flex flex-col gap-2 relative">
                   <div className="flex items-end justify-between">
                     <div className="flex items-center gap-3 min-w-0 pr-4">
-                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-[#3c5759] border border-slate-100 shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-primary border border-slate-100 shrink-0">
                         <Building2 size={16} />
                       </div>
                       <div className="min-w-0">
@@ -128,7 +128,7 @@ export default function TopPerusahaan({
                       </div>
                     </div>
                     <div className="text-right shrink-0 pb-1">
-                      <span className="text-lg font-black text-[#3c5759] leading-none">{comp.alumniCount}</span>
+                      <span className="text-lg font-black text-primary leading-none">{comp.alumniCount}</span>
                       <span className="text-[10px] font-bold text-slate-400 ml-1">Alumni</span>
                     </div>
                   </div>
@@ -139,7 +139,7 @@ export default function TopPerusahaan({
                       whileInView={{ width: `${(comp.alumniCount / maxCompAlumni) * 100}%` }}
                       viewport={{ once: true, amount: 0.8 }}
                       transition={{ duration: 1.2, ease: "easeOut", delay: idx * 0.1 }}
-                      className="h-full bg-gradient-to-r from-[#526061] to-[#3c5759] rounded-full relative"
+                      className="h-full bg-gradient-to-r from-[#526061] to-primary rounded-full relative"
                     >
                       <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
                     </motion.div>
@@ -156,11 +156,11 @@ export default function TopPerusahaan({
         </div>
 
         {/* --- KOLOM KANAN: STATISTIK TOP UNIVERSITAS --- */}
-        <div className="bg-white rounded-[2rem] border border-slate-100 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full">
+        <div className="bg-white rounded-4xl border border-slate-100 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-2xl font-black text-[#3c5759] tracking-tight">Statistik Universitas</h2>
+              <h2 className="text-2xl font-black text-primary tracking-tight">Statistik Universitas</h2>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Pilihan Studi Lanjutan</p>
             </div>
             <div className="hidden sm:flex w-12 h-12 bg-amber-50 rounded-2xl items-center justify-center text-amber-500 shrink-0">
@@ -185,7 +185,7 @@ export default function TopPerusahaan({
                     </div>
                   </div>
                   <div className="text-right shrink-0 pb-1">
-                    <span className="text-lg font-black text-[#3c5759] leading-none">{univ.alumniCount}</span>
+                    <span className="text-lg font-black text-primary leading-none">{univ.alumniCount}</span>
                     <span className="text-[10px] font-bold text-slate-400 ml-1">Alumni</span>
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export default function TopPerusahaan({
         {locked && (
           <LockOverlay 
             message="Verifikasi akun & isi kuesioner untuk membuka statistik ini" 
-            roundedClass="rounded-[2rem]"
+            roundedClass="rounded-4xl"
             iconSize={32}
             textClass="text-sm"
           />
@@ -220,5 +220,3 @@ export default function TopPerusahaan({
     </section>
   );
 }
-
-Desain ulang dengan tampilan modern khas dribble dan jangan pakai icon" 
