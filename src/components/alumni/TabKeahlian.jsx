@@ -234,7 +234,6 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
       .filter(Boolean)
     : [];
 
-    console.log(hasChanges)
   return (
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
 

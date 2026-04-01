@@ -24,7 +24,8 @@ function buildDisplayProfile(profile) {
 
   const next = { ...profile };
 
-  // Map latest personal info payload to existing frontend keys.
+  // Map latest personal info payload ke frontend keys
+  // (latest sudah berisi data merged: approved + pending override dari backend)
   if (latest.nama_alumni ?? latest.nama) next.nama = latest.nama_alumni ?? latest.nama;
   if (latest.nis !== undefined) next.nis = latest.nis;
   if (latest.nisn !== undefined) next.nisn = latest.nisn;
@@ -37,9 +38,18 @@ function buildDisplayProfile(profile) {
   if (latest.foto !== undefined) next.foto = latest.foto;
   if (latest.foto_path !== undefined) next.foto = latest.foto_path;
 
-  next.latest_pending_fields = Array.isArray(latest.pending_fields) ? latest.pending_fields : [];
+  // Teruskan latest_personal_info AS-IS agar TabDetailPribadi bisa menggunakannya
+  // Pastikan changed_fields tersedia (backend mengirim sebagai 'changed_fields')
+  next.latest_personal_info = {
+    ...latest,
+    changed_fields: latest.changed_fields || latest.pending_fields || [],
+    pending_update_id: latest.pending_update_id || latest.pending_id || null,
+  };
+
+  // Legacy keys untuk komponen lama (ProfileSidebar, dll.)
+  next.latest_pending_fields = next.latest_personal_info.changed_fields;
   next.latest_personal_info_status = latest.status || null;
-  next.latest_personal_info_pending_id = latest.pending_id || null;
+  next.latest_personal_info_pending_id = next.latest_personal_info.pending_update_id;
 
   return next;
 }
@@ -118,18 +128,13 @@ export default function Profil() {
         <ProfileHeader profile={displayProfile} onPerbarui={handlePerbarui} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-          {/* --- SIDEBAR KIRI (Dipanggil dari Komponen) --- */}
           <ProfileSidebar
             profile={displayProfile}
             onRefresh={refreshProfile}
             onShowSuccess={showSuccess}
           />
-
-          {/* --- KONTEN KANAN DENGAN TAB SPA --- */}
           <div className="lg:col-span-8 bg-white rounded-4xl shadow-sm flex flex-col overflow-hidden border border-slate-100">
 
-            {/* Header Tabs */}
             <div className="flex border-b border-slate-100 px-2 overflow-x-auto md:overflow-x-hidden whitespace-nowrap scrollbar-hide">
               <button
                 onClick={() => setActiveTab('detail')}

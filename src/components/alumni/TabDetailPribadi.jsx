@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Save, X, ChevronDown, Loader2, Clock } from 'lucide-react';
 import { alumniApi } from '../../api/alumni';
+import { alertConfirm } from '../../utilitis/alert';
 
+// Map field backend → alias yang mungkin ada di changed_fields
 const FIELD_KEYS = {
   nama_alumni: ['nama_alumni', 'nama'],
   nis: ['nis'],
@@ -14,38 +16,72 @@ const FIELD_KEYS = {
   tahun_masuk: ['tahun_masuk'],
 };
 
+// Ambil nilai dari latest_personal_info (data merged pending+approved)
+function getLatestValue(latest, field) {
+  if (!latest) return '';
+  const map = {
+    nama_alumni: latest.nama ?? latest.nama_alumni,
+    nis: latest.nis,
+    nisn: latest.nisn,
+    tempat_lahir: latest.tempat_lahir,
+    tanggal_lahir: latest.tanggal_lahir,
+    jenis_kelamin: latest.jenis_kelamin,
+    alamat: latest.alamat,
+    no_hp: latest.no_hp,
+    tahun_masuk: latest.tahun_masuk,
+  };
+  return map[field] ?? '';
+}
+
 export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, triggerEdit }) {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [canceling, setCanceling] = useState(false);
   const [editForm, setEditForm] = useState({});
 
+  // latest_personal_info: data merged (pending override approved), dikirim dari backend
+  const latest = profile?.latest_personal_info || null;
+  const hasPending = latest?.status === 'pending';
+  const changedFields = latest?.changed_fields || [];
+  const pendingUpdateId = latest?.pending_update_id || null;
+
+  // Inisialisasi form — saat view mode, gunakan latest (includes pending preview)
+  // Saat edit, juga mulai dari latest agar user tahu apa yang sebelumnya diajukan
   useEffect(() => {
-    initEditForm(profile);
+    if (!isEditing) {
+      initFormFromLatest();
+    }
   }, [profile]);
 
-  // Auto-enter edit mode when triggerEdit changes to true
   useEffect(() => {
-    if (triggerEdit) {
-      setIsEditing(true);
-    }
+    if (triggerEdit) setIsEditing(true);
   }, [triggerEdit]);
 
-  function initEditForm(data) {
+  function initFormFromLatest() {
+    const src = latest || profile;
     setEditForm({
-      nama_alumni: data?.nama || '',
-      nis: data?.nis || '',
-      nisn: data?.nisn || '',
-      tempat_lahir: data?.tempat_lahir || '',
-      tanggal_lahir: data?.tanggal_lahir || '',
-      jenis_kelamin: data?.jenis_kelamin || '',
-      alamat: data?.alamat || '',
-      no_hp: data?.no_hp || '',
-      tahun_masuk: data?.tahun_masuk || '',
+      nama_alumni: src?.nama ?? src?.nama_alumni ?? '',
+      nis: src?.nis ?? '',
+      nisn: src?.nisn ?? '',
+      tempat_lahir: src?.tempat_lahir ?? '',
+      tanggal_lahir: src?.tanggal_lahir ?? '',
+      jenis_kelamin: src?.jenis_kelamin ?? '',
+      alamat: src?.alamat ?? '',
+      no_hp: src?.no_hp ?? '',
+      tahun_masuk: src?.tahun_masuk ?? '',
     });
   }
 
-  function startEditing() { setIsEditing(true); }
-  function cancelEditing() { setIsEditing(false); initEditForm(profile); }
+  function startEditing() {
+    // Isi form dari latest (data terbaru termasuk pending)
+    initFormFromLatest();
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setIsEditing(false);
+    initFormFromLatest();
+  }
 
   async function handleSaveProfile() {
     try {
@@ -53,7 +89,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       await alumniApi.updateProfile(editForm);
       setIsEditing(false);
       onShowSuccess('Perubahan profil telah dikirim, menunggu persetujuan admin');
-      onRefresh(); 
+      onRefresh();
     } catch (err) {
       console.error('Failed to update profile:', err);
       alert('Gagal menyimpan profil: ' + (err.response?.data?.message || err.message));
@@ -62,36 +98,42 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
     }
   }
 
-  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'personal_info' && u.status === 'pending');
-  const latestPendingFields = profile?.latest_personal_info_status === 'pending'
-    ? (profile?.latest_pending_fields || [])
-    : [];
-
-  const hasNonPhotoPendingFromUpdates = pendingUpdates.some((u) => {
-    const oldData = u?.old_data || {};
-    const newData = u?.new_data || {};
-    const keys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
-    if (keys.length === 0) return true;
-    return keys.some((field) => !['foto', 'foto_path', 'gambar_path'].includes(field));
-  });
-
-  const hasNonPhotoPending = latestPendingFields.length > 0
-    ? latestPendingFields.some((field) => !['foto', 'foto_path', 'gambar_path'].includes(field))
-    : hasNonPhotoPendingFromUpdates;
-
-  function isFieldPending(fieldName) {
-    const aliases = FIELD_KEYS[fieldName] || [fieldName];
-    return aliases.some(alias => latestPendingFields.includes(alias));
+  async function handleCancelPending() {
+    if (!pendingUpdateId) return;
+    const result = await alertConfirm('Batalkan pengajuan perubahan detail pribadi ini? Data yang ada sebelumnya akan tetap berlaku.');
+    if (!result.isConfirmed) return;
+    try {
+      setCanceling(true);
+      await alumniApi.cancelPendingProfileUpdate(pendingUpdateId);
+      onShowSuccess('Pengajuan perubahan berhasil dibatalkan');
+      onRefresh();
+    } catch (err) {
+      alert('Gagal membatalkan: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setCanceling(false);
+    }
   }
 
+  // Cek apakah field ini ada di changed_fields (untuk badge per-field)
+  function isFieldChanged(fieldName) {
+    if (!hasPending) return false;
+    const aliases = FIELD_KEYS[fieldName] || [fieldName];
+    return aliases.some(alias => changedFields.includes(alias));
+  }
+
+  // Hanya tampilkan badge PENDING jika ada perubahan non-foto
+  const hasNonPhotoChange = changedFields.some(
+    f => !['foto', 'foto_path', 'gambar_path'].includes(f)
+  );
+
   function renderLabel(label, fieldName) {
-    const pending = isFieldPending(fieldName);
+    const changed = isFieldChanged(fieldName);
     return (
       <span className="flex items-center gap-2">
         <span>{label}</span>
-        {pending && (
-          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-black tracking-wide uppercase">
-            Pending
+        {changed && (
+          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-black tracking-wide uppercase border border-amber-200">
+            <Clock size={8} /> Pending
           </span>
         )}
       </span>
@@ -99,74 +141,184 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
   }
 
   const inputClass = (isEdit) => isEdit
-    ? "w-full bg-white border border-primary/30 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-    : "w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none";
+    ? 'w-full bg-white border border-primary/30 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+    : 'w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none';
+
+  // Nilai yang ditampilkan di form (latest data termasuk pending preview)
+  const displayForm = isEditing ? editForm : {
+    nama_alumni: getLatestValue(latest, 'nama_alumni') || profile?.nama || '',
+    nis: getLatestValue(latest, 'nis') || profile?.nis || '',
+    nisn: getLatestValue(latest, 'nisn') || profile?.nisn || '',
+    tempat_lahir: getLatestValue(latest, 'tempat_lahir') || profile?.tempat_lahir || '',
+    tanggal_lahir: getLatestValue(latest, 'tanggal_lahir') || profile?.tanggal_lahir || '',
+    jenis_kelamin: getLatestValue(latest, 'jenis_kelamin') || profile?.jenis_kelamin || '',
+    alamat: getLatestValue(latest, 'alamat') || profile?.alamat || '',
+    no_hp: getLatestValue(latest, 'no_hp') || profile?.no_hp || '',
+    tahun_masuk: getLatestValue(latest, 'tahun_masuk') || profile?.tahun_masuk || '',
+  };
 
   return (
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-xl font-black text-primary tracking-tight">Detail Pribadi</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-black text-primary tracking-tight">Detail Pribadi</h2>
+            {hasPending && hasNonPhotoChange && !isEditing && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full border border-amber-200">
+                <Clock size={9} /> PENDING
+              </span>
+            )}
+          </div>
           <p className="text-sm text-primary/60">Informasi dasar akun Anda.</p>
         </div>
+
         {isEditing ? (
           <div className="flex items-center gap-2">
-            <button onClick={cancelEditing} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all cursor-pointer">
+            <button
+              onClick={cancelEditing}
+              className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all cursor-pointer"
+            >
               Batal
             </button>
-            <button onClick={handleSaveProfile} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50">
+            <button
+              onClick={handleSaveProfile}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50"
+            >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Simpan
             </button>
           </div>
         ) : (
-          <button onClick={startEditing} className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-all cursor-pointer">
-            <Edit size={14} /> Edit Data
+          <button
+            onClick={startEditing}
+            className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-all cursor-pointer"
+          >
+            <Edit size={14} /> {hasPending && hasNonPhotoChange ? 'Edit Ulang' : 'Edit Data'}
           </button>
         )}
       </div>
 
-      {/* Pending Update Alert */}
-      {hasNonPhotoPending && (
-        <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
-          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
-            <p className="text-xs text-amber-700/80 font-medium">
-              Anda memiliki perubahan detail pribadi yang sedang ditinjau oleh admin. Perubahan baru akan menggantikan pengajuan sebelumnya.
-            </p>
+      {/* Banner Pending */}
+      {hasPending && hasNonPhotoChange && !isEditing && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
+              <p className="text-xs text-amber-700/80 font-medium">
+                Data yang ditampilkan di bawah adalah <strong>data terbaru yang Anda ajukan</strong> dan sedang dalam proses peninjauan. Perubahan akan berlaku setelah disetujui admin.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={startEditing}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-primary bg-white border border-primary/30 hover:bg-primary/5 rounded-lg px-3 py-1.5 cursor-pointer transition-colors"
+            >
+              <Edit size={11} /> Edit Ulang
+            </button>
+            <button
+              onClick={handleCancelPending}
+              disabled={canceling}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg px-3 py-1.5 cursor-pointer transition-colors disabled:opacity-50"
+            >
+              <X size={11} /> {canceling ? 'Membatalkan...' : 'Batalkan Pengajuan'}
+            </button>
           </div>
         </div>
       )}
 
+      {/* Info banner saat edit ulang pending */}
+      {isEditing && hasPending && hasNonPhotoChange && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center gap-2">
+          <Clock size={14} className="text-amber-500 shrink-0" />
+          <p className="text-xs text-amber-700 font-medium">
+            Form diisi dengan data dari pengajuan sebelumnya. Simpan untuk mengganti pengajuan yang sedang pending.
+          </p>
+        </div>
+      )}
+
+      {/* Form Fields */}
       <div className="space-y-6">
         <div>
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Nama Lengkap', 'nama_alumni')}</label>
-          <input type="text" readOnly={!isEditing} value={editForm.nama_alumni} onChange={(e) => setEditForm(prev => ({ ...prev, nama_alumni: e.target.value }))} className={inputClass(isEditing)} />
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+            {renderLabel('Nama Lengkap', 'nama_alumni')}
+          </label>
+          <input
+            type="text"
+            readOnly={!isEditing}
+            value={isEditing ? editForm.nama_alumni : displayForm.nama_alumni}
+            onChange={(e) => setEditForm(prev => ({ ...prev, nama_alumni: e.target.value }))}
+            className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('nama_alumni') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+          />
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('NIS', 'nis')}</label>
-            <input type="text" readOnly={!isEditing} value={editForm.nis} onChange={(e) => setEditForm(prev => ({ ...prev, nis: e.target.value }))} className={inputClass(isEditing)} />
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+              {renderLabel('NIS', 'nis')}
+            </label>
+            <input
+              type="text"
+              readOnly={!isEditing}
+              value={isEditing ? editForm.nis : displayForm.nis}
+              onChange={(e) => setEditForm(prev => ({ ...prev, nis: e.target.value }))}
+              className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('nis') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+            />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('NISN', 'nisn')}</label>
-            <input type="text" readOnly={!isEditing} value={editForm.nisn} onChange={(e) => setEditForm(prev => ({ ...prev, nisn: e.target.value }))} className={inputClass(isEditing)} />
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+              {renderLabel('NISN', 'nisn')}
+            </label>
+            <input
+              type="text"
+              readOnly={!isEditing}
+              value={isEditing ? editForm.nisn : displayForm.nisn}
+              onChange={(e) => setEditForm(prev => ({ ...prev, nisn: e.target.value }))}
+              className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('nisn') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+            />
           </div>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Tempat Lahir', 'tempat_lahir')}</label>
-            <input type="text" readOnly={!isEditing} value={editForm.tempat_lahir} onChange={(e) => setEditForm(prev => ({ ...prev, tempat_lahir: e.target.value }))} className={inputClass(isEditing)} />
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+              {renderLabel('Tempat Lahir', 'tempat_lahir')}
+            </label>
+            <input
+              type="text"
+              readOnly={!isEditing}
+              value={isEditing ? editForm.tempat_lahir : displayForm.tempat_lahir}
+              onChange={(e) => setEditForm(prev => ({ ...prev, tempat_lahir: e.target.value }))}
+              className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('tempat_lahir') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+            />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Tanggal Lahir', 'tanggal_lahir')}</label>
-            <input type={isEditing ? 'date' : 'text'} readOnly={!isEditing} value={editForm.tanggal_lahir} onChange={(e) => setEditForm(prev => ({ ...prev, tanggal_lahir: e.target.value }))} className={inputClass(isEditing)} />
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+              {renderLabel('Tanggal Lahir', 'tanggal_lahir')}
+            </label>
+            <input
+              type={isEditing ? 'date' : 'text'}
+              readOnly={!isEditing}
+              value={isEditing ? editForm.tanggal_lahir : displayForm.tanggal_lahir}
+              onChange={(e) => setEditForm(prev => ({ ...prev, tanggal_lahir: e.target.value }))}
+              className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('tanggal_lahir') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+            />
           </div>
         </div>
+
         <div>
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Jenis Kelamin', 'jenis_kelamin')}</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+            {renderLabel('Jenis Kelamin', 'jenis_kelamin')}
+          </label>
           <div className="relative">
-            <select disabled={!isEditing} className={`${inputClass(isEditing)} appearance-none`} value={editForm.jenis_kelamin} onChange={(e) => setEditForm(prev => ({ ...prev, jenis_kelamin: e.target.value }))}>
+            <select
+              disabled={!isEditing}
+              className={`${inputClass(isEditing)} appearance-none ${!isEditing && isFieldChanged('jenis_kelamin') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+              value={isEditing ? editForm.jenis_kelamin : displayForm.jenis_kelamin}
+              onChange={(e) => setEditForm(prev => ({ ...prev, jenis_kelamin: e.target.value }))}
+            >
               <option value="">-</option>
               <option value="Laki-laki">Laki-laki</option>
               <option value="Perempuan">Perempuan</option>
@@ -174,19 +326,45 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
             <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
           </div>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('No. HP', 'no_hp')}</label>
-            <input type="text" readOnly={!isEditing} value={editForm.no_hp} onChange={(e) => setEditForm(prev => ({ ...prev, no_hp: e.target.value }))} className={inputClass(isEditing)} />
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+              {renderLabel('No. HP', 'no_hp')}
+            </label>
+            <input
+              type="text"
+              readOnly={!isEditing}
+              value={isEditing ? editForm.no_hp : displayForm.no_hp}
+              onChange={(e) => setEditForm(prev => ({ ...prev, no_hp: e.target.value }))}
+              className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('no_hp') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+            />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Tahun Masuk', 'tahun_masuk')}</label>
-            <input type="text" readOnly={!isEditing} value={editForm.tahun_masuk} onChange={(e) => setEditForm(prev => ({ ...prev, tahun_masuk: e.target.value }))} className={inputClass(isEditing)} />
+            <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+              {renderLabel('Tahun Masuk', 'tahun_masuk')}
+            </label>
+            <input
+              type="text"
+              readOnly={!isEditing}
+              value={isEditing ? editForm.tahun_masuk : displayForm.tahun_masuk}
+              onChange={(e) => setEditForm(prev => ({ ...prev, tahun_masuk: e.target.value }))}
+              className={`${inputClass(isEditing)} ${!isEditing && isFieldChanged('tahun_masuk') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+            />
           </div>
         </div>
+
         <div>
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">{renderLabel('Alamat', 'alamat')}</label>
-          <textarea readOnly={!isEditing} rows="3" value={editForm.alamat} onChange={(e) => setEditForm(prev => ({ ...prev, alamat: e.target.value }))} className={`${inputClass(isEditing)} resize-none`} />
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">
+            {renderLabel('Alamat', 'alamat')}
+          </label>
+          <textarea
+            readOnly={!isEditing}
+            rows="3"
+            value={isEditing ? editForm.alamat : displayForm.alamat}
+            onChange={(e) => setEditForm(prev => ({ ...prev, alamat: e.target.value }))}
+            className={`${inputClass(isEditing)} resize-none ${!isEditing && isFieldChanged('alamat') ? 'border-amber-200 bg-amber-50/50' : ''}`}
+          />
         </div>
       </div>
     </div>
