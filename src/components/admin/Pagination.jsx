@@ -29,7 +29,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           <button
             key={i}
             onClick={() => typeof page === "number" && onPageChange(page)}
-            className={`min-w-[28px] cursor-pointer h-7 rounded-lg text-xs font-bold transition-all ${
+            className={`min-w-7 cursor-pointer h-7 rounded-lg text-xs font-bold transition-all ${
               currentPage === page
                 ? "bg-primary text-white shadow-sm"
                 : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"

@@ -75,7 +75,7 @@ export default function MultiSelectDropdown({
       
       {/* Container Input & Badge */}
       <div 
-        className="w-full px-2 py-1.5 min-h-[42px] bg-white border border-fourth rounded-xl focus-within:ring-2 focus-within:ring-primary flex flex-wrap gap-1 items-center cursor-text transition-all" 
+        className="w-full px-2 py-1.5 min-h-10.5 bg-white border border-fourth rounded-xl focus-within:ring-2 focus-within:ring-primary flex flex-wrap gap-1 items-center cursor-text transition-all" 
         onClick={() => setIsOpen(true)}
       >
         {selected.length === 0 && !search && (
@@ -93,7 +93,7 @@ export default function MultiSelectDropdown({
         {/* Input Pencarian */}
         <input 
           type="text" 
-          className="flex-1 min-w-[60px] outline-none bg-transparent text-sm h-full py-1" 
+          className="flex-1 min-w-15 outline-none bg-transparent text-sm h-full py-1" 
           value={search} 
           onChange={(e) => setSearch(e.target.value)} 
           onFocus={() => setIsOpen(true)} 
@@ -104,7 +104,7 @@ export default function MultiSelectDropdown({
 
       {/* Dropdown Options */}
       {isOpen && (
-        <div className="absolute z-[100] w-full mt-1 bg-white border border-fourth rounded-xl shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+        <div className="absolute z-100 w-full mt-1 bg-white border border-fourth rounded-xl shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
           
           {/* List Opsi Tersedia */}
           {filteredOptions.length > 0 && (

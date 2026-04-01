@@ -46,7 +46,7 @@ export default function ProfileUpdateDetailModal({
   // console.log(detail)
   return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
+      <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 md:p-6">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -62,7 +62,7 @@ export default function ProfileUpdateDetailModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-5xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-5xl bg-white rounded-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
           <div className="p-6 md:px-8 md:pt-8 md:pb-6 flex items-start justify-between bg-white relative z-10">

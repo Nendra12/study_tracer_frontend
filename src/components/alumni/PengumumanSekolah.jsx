@@ -6,12 +6,12 @@ export default function PengumumanSekolah({ announcements, loading, getImageUrl 
   const navigate = useNavigate();
 
   return (
-    <section className="bg-white rounded-[2rem] lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+    <section className="bg-white rounded-4xl lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
       {/* Header: Judul & Tombol Lihat Semua */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-black text-[#3c5759]">Pengumuman Sekolah</h2>
-          <p className="text-sm text-[#9ca3af] mt-1 font-medium">
+          <h2 className="text-2xl font-black text-primary">Pengumuman Sekolah</h2>
+          <p className="text-sm text-third mt-1 font-medium">
             Informasi terbaru seputar kegiatan dan agenda.
           </p>
         </div>
@@ -19,7 +19,7 @@ export default function PengumumanSekolah({ announcements, loading, getImageUrl 
         {/* Tombol Lihat Semua */}
         <button
           onClick={() => navigate("/alumni/pengumuman")}
-          className="group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all bg-white text-[#3c5759] border-slate-200 hover:border-[#3c5759] cursor-pointer shrink-0"
+          className="group flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-full border transition-all bg-white text-primary border-slate-200 hover:border-primary cursor-pointer shrink-0"
         >
           Lihat Semua <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </button>
@@ -42,7 +42,7 @@ export default function PengumumanSekolah({ announcements, loading, getImageUrl 
               <div 
                 key={ann.id} 
                 onClick={() => navigate(`/alumni/pengumuman/${ann.id}`)} // Opsional: jika mau cardnya bisa diklik ke detail
-                className="group p-5 rounded-2xl border border-gray-100 hover:border-[#3c5759]/30 hover:bg-[#f3f4f4]/50 transition-all cursor-pointer"
+                className="group p-5 rounded-2xl border border-gray-100 hover:border-primary/30 hover:bg-fourth/50 transition-all cursor-pointer"
               >
                 <div className="flex items-start gap-4">
                   {annImage && (
@@ -54,18 +54,18 @@ export default function PengumumanSekolah({ announcements, loading, getImageUrl 
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          {ann.is_pinned && <Pin size={12} className="text-[#3c5759] fill-[#3c5759] flex-shrink-0" />}
-                          <h3 className="text-base font-bold text-[#3c5759] group-hover:text-[#526061] line-clamp-1">
+                          {ann.is_pinned && <Pin size={12} className="text-primary fill-primary flex-shrink-0" />}
+                          <h3 className="text-base font-bold text-primary group-hover:text-primary/80 line-clamp-1">
                             {ann.judul}
                           </h3>
                         </div>
-                        <p className="text-sm text-[#526061] mt-1 line-clamp-2">
+                        <p className="text-sm text-primary/80 mt-1 line-clamp-2">
                           {ann.konten}
                         </p>
                       </div>
                       
                       {/* Badge Tanggal */}
-                      <span className="shrink-0 px-3 py-1 bg-[#f3f4f4] text-[#526061] text-xs font-bold rounded-lg border border-gray-200 w-fit">
+                      <span className="shrink-0 px-3 py-1 bg-fourth text-primary/80 text-xs font-bold rounded-lg border border-gray-200 w-fit">
                         {annDate}
                       </span>
                     </div>

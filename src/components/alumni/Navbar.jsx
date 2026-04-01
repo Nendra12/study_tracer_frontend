@@ -129,12 +129,12 @@
                   {isActive ? (
                     <motion.div
                       layoutId="underline"
-                      className="absolute bottom-1 left-0 right-0 h-[2px] bg-primary mx-4"
+                      className="absolute bottom-1 left-0 right-0 h-0.5 bg-primary mx-4"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   ) : (
                     // Garis bawah saat HOVER (Muncul dari tengah)
-                    <div className="absolute bottom-1 left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out mx-4 origin-center" />
+                    <div className="absolute bottom-1 left-0 right-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out mx-4 origin-center" />
                   )}
                 </Link>
               );
@@ -150,7 +150,7 @@
               {unreadCount > 0 && (
                 <>
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
+                    <span className="absolute top-1 right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
