@@ -183,12 +183,16 @@ export default function LandingPage() {
               <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
                 <div className="flex -space-x-3">
                   {alumniList.map((i, index) => (
-                    <img
-                      key={index}
-                      src={`${getImageUrl(i.foto)}`}
-                      alt="user"
-                      className="w-10 h-10 object-cover rounded-full border-2 border-[#f3f4f4]"
-                    />
+                    <>
+                      {index < 4 && (
+                        <img
+                          key={index}
+                          src={`${getImageUrl(i.foto)}`}
+                          alt="user"
+                          className="w-10 h-10 object-cover rounded-full border-2 border-[#f3f4f4]"
+                        />
+                      )}
+                    </>
                   ))}
                 </div>
                 <span className="text-sm font-bold text-primary">

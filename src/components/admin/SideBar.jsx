@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X,
-  IdCardLanyard, Megaphone // <-- Tambahkan Megaphone disini
+  IdCardLanyard, Megaphone, Palette // <-- Tambahkan Megaphone disini
 } from 'lucide-react';
 import Logo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
@@ -25,6 +25,7 @@ export default function SideBar({ active, setActive }) {
     { name: 'Data Master', icon: <Database size={20} />, path: '/wb-admin/master' },
     { name: 'Kuesioner', icon: <FileText size={20} />, path: '/wb-admin/kuisoner' },
     { name: 'Pengumuman', icon: <Megaphone size={20} />, path: '/wb-admin/pengumuman' }, 
+    { name: 'Pengaturan Tampilan', icon: <Palette size={20} />, path: '/wb-admin/tampilan' },
   ];
 
   const handleLogout = async () => {
@@ -57,6 +58,7 @@ export default function SideBar({ active, setActive }) {
     { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid/detail/:detailid", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/update-kuesioner/:id", title: "Kuesioner" },
     { path: "/wb-admin/pengumuman", title: "Pengumuman" },
+    { path: "/wb-admin/tampilan", title: "Pengaturan Tampilan" },
   ];
 
   const getTitle = () => {
@@ -158,6 +160,6 @@ export default function SideBar({ active, setActive }) {
           </div>
         </div>
       )}
-    </>
+    </> 
   );
 }

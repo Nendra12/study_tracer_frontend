@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock } from 'lucide-react';
+import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock, AlertCircle } from 'lucide-react';
 import SmoothDropdown from '../admin/SmoothDropdown';
 import { alumniApi } from '../../api/alumni';
 import DeskripsiKerierInput from '../admin/DeskripsiKerierInput';
@@ -9,31 +9,55 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Mode: 'add' | 'edit' (deskripsi yg sudah approved) | 'edit_pending' (edit ulang pending)
+  const [editMode, setEditMode] = useState('add');
+
   const [formData, setFormData] = useState({
-    id: '',
+    id: '',               // id deskripsi karier (untuk edit approved)
     id_riwayat: '',
-    deskripsi: ''
+    deskripsi: '',
+    pendingId: '',        // id pending_profile_updates (untuk edit/cancel pending)
   });
 
   const riwayatKarier = profile?.riwayat_status || [];
   const deskripsiList = profile?.deskripsi_karier || [];
-  const pendingUpdates = (profile?.pending_updates || []).filter(u => u.section === 'deskripsi_karier' && u.status === 'pending');
+
+  // Semua pending deskripsi karier milik alumni ini
+  const pendingDeskripsi = (profile?.pending_updates || []).filter(
+    u => u.section === 'deskripsi_karier' && u.status === 'pending'
+  );
 
   const handleInputChange = (data) => {
     setFormData(prev => ({ ...prev, deskripsi: data }));
   };
 
   const resetForm = () => {
-    setFormData({ id: '', id_riwayat: '', deskripsi: '' });
+    setFormData({ id: '', id_riwayat: '', deskripsi: '', pendingId: '' });
     setIsEditing(false);
+    setEditMode('add');
   };
 
+  // Edit deskripsi yang sudah approved
   const handleEdit = (item) => {
     setFormData({
       id: String(item.id),
       id_riwayat: String(item.status_karier_id || item.id_riwayat),
-      deskripsi: item.deskripsi
+      deskripsi: item.deskripsi,
+      pendingId: '',
     });
+    setEditMode('edit');
+    setIsEditing(true);
+  };
+
+  // Edit ulang pending yang sudah dikirim
+  const handleEditPending = (pending) => {
+    setFormData({
+      id: '',
+      id_riwayat: String(pending.new_data?.id_riwayat || ''),
+      deskripsi: pending.new_data?.deskripsi || '',
+      pendingId: String(pending.id),
+    });
+    setEditMode('edit_pending');
     setIsEditing(true);
   };
 
@@ -57,28 +81,56 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
     }
   };
 
+  // Batalkan pending
+  const handleCancelPending = async (pendingId) => {
+    const result = await alertConfirm(
+      'Apakah Anda yakin ingin membatalkan pengajuan ini? Data yang telah ada sebelumnya akan tetap berlaku.'
+    );
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await alumniApi.cancelPendingDeskripsiKarier(pendingId);
+        onShowSuccess('Pengajuan deskripsi karier berhasil dibatalkan');
+        onRefresh();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Gagal membatalkan pengajuan';
+        alert(message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.id_riwayat) {
-      alert("Pilih status karier terlebih dahulu!");
+      alert('Pilih status karier terlebih dahulu!');
       return;
     }
 
     try {
       setLoading(true);
 
-      if (formData.id) {
-        // Update existing
+      if (editMode === 'edit_pending') {
+        // Edit ulang pending yang sudah dikirim
+        await alumniApi.updatePendingDeskripsiKarier(formData.pendingId, {
+          deskripsi: formData.deskripsi,
+        });
+        onShowSuccess('Pengajuan deskripsi karier berhasil diperbarui, menunggu persetujuan admin');
+      } else if (editMode === 'edit' && formData.id) {
+        // Update deskripsi yang sudah approved
         await alumniApi.updateDeskripsiKarier(formData.id, {
           id_riwayat: formData.id_riwayat,
-          deskripsi: formData.deskripsi
+          deskripsi: formData.deskripsi,
         });
         onShowSuccess('Perubahan deskripsi karier telah dikirim, menunggu persetujuan admin');
       } else {
-        // Add new
+        // Tambah baru
         await alumniApi.addDeskripsiKarier({
           id_riwayat: formData.id_riwayat,
-          deskripsi: formData.deskripsi
+          deskripsi: formData.deskripsi,
         });
         onShowSuccess('Deskripsi karier telah dikirim, menunggu persetujuan admin');
       }
@@ -107,37 +159,48 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
     return item.status?.nama || 'Status Tidak Diketahui';
   };
 
-  // Filter riwayat karir yang belum ada deskripsinya (kecuali yang sedang diedit)
+  // Mendapatkan label karier dari id_riwayat (untuk pending baru/create)
+  const getKarierLabelById = (idRiwayat) => {
+    const karier = riwayatKarier.find(k => String(k.id) === String(idRiwayat));
+    return karier ? getKarierLabel(karier) : 'Status Tidak Diketahui';
+  };
+
+  // Filter riwayat karir yang belum ada deskripsinya DAN belum ada pending-nya
   const getAvailableRiwayat = () => {
     return riwayatKarier.filter(karier => {
       // Jika sedang edit dan ini adalah karir yang sedang diedit, tampilkan
       if (formData.id && String(karier.id) === String(formData.id_riwayat)) {
         return true;
       }
-      // Cek apakah karir ini sudah ada deskripsinya
+      // Cek apakah karir ini sudah ada deskripsinya (approved)
       const hasDescription = deskripsiList.some(
         desc => String(desc.status_karier_id || desc.id_riwayat) === String(karier.id)
       );
-      return !hasDescription;
+      // Cek apakah sudah ada pending create untuk riwayat ini
+      const hasPendingCreate = pendingDeskripsi.some(
+        p => p.action === 'create' && String(p.new_data?.id_riwayat) === String(karier.id)
+      );
+      return !hasDescription && !hasPendingCreate;
     });
   };
 
+  // id_riwayat yang sedang diedit pending (agar tidak muncul di form tambah)
+  const editingPendingRiwayatId = editMode === 'edit_pending' ? formData.id_riwayat : null;
 
+  // Pending yang action-nya 'create' (deskripsi baru belum disetujui)
+  const pendingCreate = pendingDeskripsi.filter(p => p.action === 'create');
+  // Pending yang action-nya 'update' (edit deskripsi yang sudah ada)
+  const pendingUpdate = pendingDeskripsi.filter(p => p.action === 'update');
+  // Pending yang action-nya 'delete'
+  const pendingDelete = pendingDeskripsi.filter(p => p.action === 'delete');
+
+  // Deskripsi yang sedang diedit (sembunyikan card asli)
+  const editingDeskripsiId = (editMode === 'edit' || (editMode === 'edit' && formData.id)) ? formData.id : null;
+  // Pending yang sedang diedit ulang (sembunyikan card pending lama)
+  const editingPendingId = editMode === 'edit_pending' ? formData.pendingId : null;
 
   return (
     <div className="p-6 lg:p-10 animate-fade-in">
-      {/* Pending Update Alert */}
-      {pendingUpdates.length > 0 && (
-        <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
-          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-bold text-amber-800 mb-0.5">Menunggu Persetujuan Admin</h3>
-            <p className="text-xs text-amber-700/80 font-medium">
-              Anda memiliki perubahan deskripsi karier yang sedang ditinjau oleh admin. Perubahan baru akan menggantikan pengajuan sebelumnya.
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -147,7 +210,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
 
         {!isEditing && getAvailableRiwayat().length > 0 && (
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => { setEditMode('add'); setIsEditing(true); }}
             className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl font-bold text-sm transition-all"
           >
             <Plus size={16} /> Deskripsi Karier
@@ -163,7 +226,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
         </div>
       )}
 
-      {riwayatKarier.length > 0 && getAvailableRiwayat().length === 0 && !isEditing && (
+      {riwayatKarier.length > 0 && getAvailableRiwayat().length === 0 && pendingCreate.length === 0 && !isEditing && (
         <div className="text-center py-12 bg-green-50 rounded-2xl border border-dashed border-green-200 mb-8">
           <FileText className="mx-auto text-green-400 mb-4" size={40} />
           <h3 className="text-base font-bold text-green-800 mb-1">Semua Status Karier Sudah Memiliki Deskripsi</h3>
@@ -171,34 +234,35 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
         </div>
       )}
 
+      {/* Form Tambah / Edit */}
       {isEditing && (
         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-lg text-primary">
-              {formData.id ? 'Edit Deskripsi Karier' : 'Tambah Deskripsi Karier Baru'}
+              {editMode === 'edit_pending'
+                ? 'Edit Ulang Pengajuan'
+                : editMode === 'edit'
+                ? 'Edit Deskripsi Karier'
+                : 'Tambah Deskripsi Karier Baru'}
             </h3>
             <button type="button" onClick={resetForm} className="text-slate-400 hover:text-red-500">
               <X size={20} />
             </button>
           </div>
 
+          {editMode === 'edit_pending' && (
+            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
+              <Clock size={15} className="text-amber-500 shrink-0" />
+              <p className="text-xs text-amber-700 font-medium">
+                Anda sedang mengedit pengajuan yang belum disetujui admin. Perubahan ini akan menggantikan isi pengajuan sebelumnya.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="relative z-60 ">
-              {formData.id ? (
-                // Saat edit, tampilkan sebagai read-only
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    Status Karier <span className="text-red-500">*</span>
-                  </label>
-                  <div className="mt-3 w-full p-3 bg-slate-100 border-2 border-slate-200 rounded-xl text-sm text-slate-700 font-medium">
-                    {riwayatKarier.find(k => String(k.id) === String(formData.id_riwayat))
-                      ? getKarierLabel(riwayatKarier.find(k => String(k.id) === String(formData.id_riwayat)))
-                      : "Status tidak ditemukan"}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1 italic">Status karier tidak dapat diubah saat edit</p>
-                </div>
-              ) : (
-                // Saat tambah baru, tampilkan dropdown
+            <div className="relative z-60">
+              {editMode === 'add' ? (
+                // Tambah baru — tampilkan dropdown
                 <SmoothDropdown
                   label="Pilih Status Karier"
                   isRequired={true}
@@ -208,7 +272,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
                   value={
                     formData.id_riwayat && riwayatKarier.find(k => String(k.id) === String(formData.id_riwayat))
                       ? getKarierLabel(riwayatKarier.find(k => String(k.id) === String(formData.id_riwayat)))
-                      : ""
+                      : ''
                   }
                   onSelect={(selectedLabel) => {
                     const selectedKarier = getAvailableRiwayat().find(k => getKarierLabel(k) === selectedLabel);
@@ -217,11 +281,24 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
                     }
                   }}
                 />
+              ) : (
+                // Edit approved atau edit pending — read-only
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    Status Karier <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-3 w-full p-3 bg-slate-100 border-2 border-slate-200 rounded-xl text-sm text-slate-700 font-medium">
+                    {getKarierLabelById(formData.id_riwayat)}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 italic">Status karier tidak dapat diubah saat edit</p>
+                </div>
               )}
             </div>
 
             <div className="relative z-0 mt-4">
-              <label className="block text-sm font-semibold text-primary mb-3">Deskripsi Tanggung Jawab & Pencapaian <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-primary mb-3">
+                Deskripsi Tanggung Jawab & Pencapaian <span className="text-red-500">*</span>
+              </label>
               <DeskripsiKerierInput
                 content={formData.deskripsi}
                 onChange={(html) => handleInputChange(html)}
@@ -250,8 +327,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
         </div>
       )}
 
-      {/* --- LIST DESKRIPSI KARIER --- */}
-      {!isEditing && riwayatKarier.length > 0 && deskripsiList.length === 0 && (
+      {!isEditing && riwayatKarier.length > 0 && deskripsiList.length === 0 && pendingCreate.length === 0 && (
         <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
           <FileText className="mx-auto text-slate-300 mb-4" size={40} />
           <h3 className="text-base font-bold text-primary mb-1">Belum ada deskripsi</h3>
@@ -260,41 +336,157 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
       )}
 
       <div className="space-y-4">
+        {/* --- Deskripsi Karier yang sudah APPROVED --- */}
         {deskripsiList
-          .filter(item => !isEditing || String(item.id) !== String(formData.id))
+          .filter(item => String(item.id) !== String(editingDeskripsiId))
           .map((item, idx) => {
             const karierTerkait = riwayatKarier.find(k => String(k.id) === String(item.status_karier_id || item.id_riwayat));
+            const hasPendingUpdate = pendingUpdate.some(p => String(p.related_id) === String(item.id));
+            const hasPendingDelete = pendingDelete.some(p => String(p.related_id) === String(item.id));
 
             return (
-              <div key={idx} className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm relative group">
+              <div
+                key={`approved-${idx}`}
+                className={`p-5 bg-white rounded-2xl border shadow-sm relative group transition-all ${
+                  hasPendingDelete
+                    ? 'border-red-200 opacity-60'
+                    : hasPendingUpdate
+                    ? 'border-amber-200'
+                    : 'border-slate-100'
+                }`}
+              >
                 <div className="flex justify-between items-start mb-3">
-                  <div>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-slate-800 text-base">
                       {karierTerkait ? getKarierLabel(karierTerkait) : 'Pekerjaan Tidak Diketahui'}
                     </h3>
+                    {hasPendingUpdate && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full border border-amber-200">
+                        <Clock size={10} /> Ada Perubahan Pending
+                      </span>
+                    )}
+                    {hasPendingDelete && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 text-[11px] font-bold rounded-full border border-red-200">
+                        <AlertCircle size={10} /> Menunggu Penghapusan
+                      </span>
+                    )}
+                  </div>
+                  {!hasPendingDelete && !hasPendingUpdate && (
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="cursor-pointer p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                        title="Edit Deskripsi"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="cursor-pointer p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Hapus Deskripsi"
+                        disabled={loading}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p
+                  className="prose text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: item.deskripsi }}
+                ></p>
+              </div>
+            );
+          })}
+
+        {/* --- Card deskripsi dari pending UPDATE (preview data baru) --- */}
+        {pendingUpdate
+          .filter(p => String(p.id) !== String(editingPendingId))
+          .map((pending, idx) => {
+            const karierLabel = getKarierLabelById(pending.new_data?.id_riwayat);
+            return (
+              <div
+                key={`pending-update-${idx}`}
+                className="p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm relative group"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-slate-800 text-base">{karierLabel}</h3>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full border border-amber-300">
+                      <Clock size={10} /> Menunggu Persetujuan
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => handleEdit(item)}
+                      onClick={() => handleEditPending(pending)}
                       className="cursor-pointer p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Edit Deskripsi"
+                      title="Edit Ulang Pengajuan"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleCancelPending(pending.id)}
                       className="cursor-pointer p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Hapus Deskripsi"
+                      title="Batalkan Pengajuan"
                       disabled={loading}
                     >
-                      <Trash2 size={16} />
+                      <X size={16} />
                     </button>
                   </div>
                 </div>
                 <p
-                  className="prose  text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: item.deskripsi }}
+                  className="prose text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: pending.new_data?.deskripsi || '' }}
                 ></p>
+                <p className="text-xs text-amber-600 mt-3 italic">
+                  * Ini adalah perubahan yang menunggu persetujuan admin. Data asli tetap aktif hingga disetujui.
+                </p>
+              </div>
+            );
+          })}
+
+        {/* --- Card deskripsi baru yang masih PENDING CREATE --- */}
+        {pendingCreate
+          .filter(p => String(p.id) !== String(editingPendingId))
+          .map((pending, idx) => {
+            const karierLabel = getKarierLabelById(pending.new_data?.id_riwayat);
+            return (
+              <div
+                key={`pending-create-${idx}`}
+                className="p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm relative group"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-slate-800 text-base">{karierLabel}</h3>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full border border-amber-300">
+                      <Clock size={10} /> Menunggu Persetujuan
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleEditPending(pending)}
+                      className="cursor-pointer p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Edit Ulang Pengajuan"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleCancelPending(pending.id)}
+                      className="cursor-pointer p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Batalkan Pengajuan"
+                      disabled={loading}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+                <p
+                  className="prose text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: pending.new_data?.deskripsi || '' }}
+                ></p>
+                <p className="text-xs text-amber-600 mt-3 italic">
+                  * Deskripsi baru ini menunggu persetujuan admin sebelum tampil di profil.
+                </p>
               </div>
             );
           })}

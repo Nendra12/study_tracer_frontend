@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LoginButton from "./alumni/LoginButton";
 import Login from "../pages/Login";
 import { useAuth } from "../context/AuthContext";
-import { ChevronDown, Home, LogOut, User } from "lucide-react";
+import { ChevronDown, Home, LogOut, User, UserPen } from "lucide-react";
 import { STORAGE_BASE_URL } from "../api/axios";
 
 export default function NavbarLanding({ setActiveSection, activeSection }) {
@@ -84,7 +84,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
   const namaAlumni = profile?.nama || 'Alumni';
   const canAccessAll = user?.can_access_all ?? false;
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
-  
+
   const navLinks = [
     { name: "Beranda", href: "#beranda" },
     { name: "Petunjuk", href: "#petunjuk" },
@@ -105,8 +105,8 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
       >
         <div
           className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled
-              ? "shadow-md bg-white/70 backdrop-blur-xl px-6"
-              : "bg-transparant"
+            ? "shadow-md bg-white/70 backdrop-blur-xl px-6"
+            : "bg-transparant"
             }`}
         >
           {/* Logo Section */}
@@ -138,8 +138,8 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   href={item.href}
                   onClick={(e) => handleSmoothScroll(e, item.href)}
                   className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${isActive
-                      ? "bg-white text-primary shadow-sm"
-                      : "text-third hover:text-primary"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-third hover:text-primary"
                     }`}
                 >
                   {item.name}
@@ -154,7 +154,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
               <>
                 <div className="hidden xl:flex items-center gap-2">
                   {/* Notification Button */}
-                
+
 
                   {/* Profile Dropdown */}
                   <div className="relative" ref={dropdownRef}>
@@ -265,6 +265,24 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
                 className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl xl:hidden flex flex-col gap-2"
               >
+                {user && (
+                  <div className="py-4 flex items-center justify-between gap-2">
+                    <div className="flex items-center">
+                      <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
+                      <div className="px-5 bg-[#f3f4f4]/50 border-b border-white/50">
+                        <p className="text-[10px] font-black text-[#9ca3af] uppercase tracking-widest">
+                          Masuk sebagai
+                        </p>
+                        <p className="text-sm font-bold text-primary truncate mt-1">
+                          {namaAlumni || "Alumni"}
+                        </p>
+                      </div>
+                    </div>
+                    <button className="w-10 h-10 flex items-center justify-center bg-[#f3f4f4] rounded-md" onClick={navigate("/alumni/profile")}>
+                      <UserPen size={24} />
+                    </button>
+                  </div>
+                )}
                 {navLinks.map((item, i) => {
                   const isActive = activeSection === item.href.replace("#", "");
                   return (
@@ -282,18 +300,35 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                         transition: { delay: i * 0.1 },
                       }}
                       className={`px-6 py-4 rounded-2xl font-bold transition-all ${isActive
-                          ? "bg-primary text-white"
-                          : "text-[#526061] hover:bg-[#f3f4f4] hover:text-primary"
+                        ? "bg-primary text-white"
+                        : "text-[#526061] hover:bg-[#f3f4f4] hover:text-primary"
                         }`}
                     >
                       {item.name}
                     </motion.a>
                   );
                 })}
-                <hr className="border-[#f3f4f4] my-2" />
-                <div className="w-full">
-                  <LoginButton />
-                </div>
+                {user ? (
+                  // <div className="px-6 py-4 flex items-center gap-2">
+                  //   <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
+                  //   <div className="px-5 bg-[#f3f4f4]/50 border-b border-white/50">
+                  //     <p className="text-[10px] font-black text-[#9ca3af] uppercase tracking-widest">
+                  //       Masuk sebagai
+                  //     </p>
+                  //     <p className="text-sm font-bold text-primary truncate mt-1">
+                  //       {namaAlumni || "Alumni"}
+                  //     </p>
+                  //   </div>
+                  // </div>
+                  <></>
+                ) : (
+                  <>
+                    <hr className="border-[#f3f4f4] my-2" />
+                    <div className="w-full">
+                      <LoginButton />
+                    </div>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

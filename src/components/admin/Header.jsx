@@ -60,6 +60,11 @@ export default function Header({ toggleSidebar, user }) {
       title: "Detail Pengumuman",
       text: "Melihat konten pengumuman secara penuh",
     },
+    {
+      path: "/wb-admin/tampilan",
+      title: "Pengaturan Tampilan",
+      text: "Sesuaikan tema warna, logo, dan ikon aplikasi",
+    },
   ];
 
   const getTitle = () => {
