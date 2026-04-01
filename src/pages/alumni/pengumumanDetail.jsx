@@ -141,9 +141,7 @@ export default function PengumumanDetailAlumni() {
 
             {/* Teks Konten */}
             <div className="prose max-w-none">
-              <p className="text-slate-600 leading-relaxed whitespace-pre-line text-sm md:text-[15px]">
-                {data.konten}
-              </p>
+              <div className="text-slate-600 leading-relaxed whitespace-pre-line text-sm md:text-[15px]" dangerouslySetInnerHTML={{ __html: data.konten }} />
             </div>
           </div>
           
