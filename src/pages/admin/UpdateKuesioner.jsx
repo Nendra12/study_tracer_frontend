@@ -339,7 +339,7 @@ const UpdateKuesioner = () => {
                             <div className="space-y-4 sm:space-y-5">
                                 {/* title */}
                                 <div data-error={!!errors.title}>
-                                    <label className="text-[10px] sm:text-[11px] font-bold text-secondary uppercase">Judul <span className="text-red-500">*</span></label>
+                                    <label className="text-[10px] sm:text-[11px] font-bold text-primary/80 uppercase">Judul <span className="text-red-500">*</span></label>
                                     <div className="relative mt-2 sm:mt-3">
                                         <input
                                             type="text"
@@ -417,7 +417,7 @@ const UpdateKuesioner = () => {
 
                                 {/* Deskripsi */}
                                 <div>
-                                    <label className="text-[10px] sm:text-[11px] font-bold text-secondary uppercase">Deskripsi Singkat</label>
+                                    <label className="text-[10px] sm:text-[11px] font-bold text-primary/80 uppercase">Deskripsi Singkat</label>
                                     <div className="relative mt-2 sm:mt-3">
                                         <textarea
                                             rows="4"
@@ -455,7 +455,7 @@ const UpdateKuesioner = () => {
                                 </div>
                                 <button
                                     onClick={addQuestion}
-                                    className="cursor-pointer w-full sm:w-auto text-xs bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+                                    className="cursor-pointer w-full sm:w-auto text-xs bg-primary/80/10 text-primary/80 hover:bg-primary/80 hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     <Plus size={16} /> <span className="hidden sm:inline">Tambah Pertanyaan</span><span className="sm:hidden">Tambah</span>
                                 </button>
@@ -517,7 +517,7 @@ const UpdateKuesioner = () => {
                                                     ))}
                                                     <button
                                                         onClick={() => addOption(q.id)}
-                                                        className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-5 sm:ml-7 pt-2 hover:underline active:opacity-70"
+                                                        className="cursor-pointer text-xs text-primary/80 font-bold flex items-center gap-1.5 ml-5 sm:ml-7 pt-2 hover:underline active:opacity-70"
                                                     >
                                                         <Plus size={14} /> Tambah Opsi
                                                     </button>

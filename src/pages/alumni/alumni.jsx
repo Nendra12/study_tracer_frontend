@@ -139,7 +139,7 @@ export default function Alumni() {
   return (
     <div className='w-full min-h-screen bg-[#f8f9fa]'>
       {/* --- HEADER SECTION DENGAN BACKGROUND GELAP (KONSISTEN DENGAN BERANDA) --- */}
-      <section className=" relative pt-28 pb-15 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+      <section className=" relative pt-28 pb-15 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className=" relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center md:items-center gap-8">
           
           <div className="max-w-2xl">
@@ -184,7 +184,7 @@ export default function Alumni() {
                 </div>
                 <button 
                   type="submit" 
-                  className="bg-[#425A5C] text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                  className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
                 >
                   Cari
                 </button>
@@ -222,7 +222,7 @@ export default function Alumni() {
               <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
               <p className="text-slate-500 text-sm mb-4">{error}</p>
-              <button onClick={() => fetchAlumni(currentPage)} className="bg-[#425A5C] text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2e4042] transition-colors">
+              <button onClick={() => fetchAlumni(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2e4042] transition-colors">
                 Coba Lagi
               </button>
             </div>
@@ -299,7 +299,7 @@ export default function Alumni() {
                 </button>
               </div>
               <div className="p-4 sm:p-5 text-center bg-white border-t border-slate-100">
-                <h3 className="text-sm sm:text-base font-bold text-[#425A5C]">Pratinjau Foto Profil</h3>
+                <h3 className="text-sm sm:text-base font-bold text-primary">Pratinjau Foto Profil</h3>
               </div>
             </motion.div>
           </div>

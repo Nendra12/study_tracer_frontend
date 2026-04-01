@@ -224,7 +224,7 @@ const TambahKuisioner = () => {
 
                             <div className="space-y-5">
                                 <div data-error={!!errors.title}>
-                                    <label className="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-wider">Judul Kuesioner</label>
+                                    <label className="text-[10px] md:text-[11px] font-bold text-primary/80 uppercase tracking-wider">Judul Kuesioner</label>
                                     <input
                                         type="text"
                                         className={`w-full mt-2 p-3 bg-slate-50 border ${errors.title ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all`}
@@ -248,7 +248,7 @@ const TambahKuisioner = () => {
                                 />
 
                                 <div>
-                                    <label className="text-[11px] font-bold text-slate-500 uppercase">Deskripsi (Opsional)</label>
+                                    <label className="text-[11px] font-bold text-primary/80 uppercase">Deskripsi (Opsional)</label>
                                     <textarea
                                         rows="3"
                                         className="w-full mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -271,7 +271,7 @@ const TambahKuisioner = () => {
                                 </div>
                                 <button
                                     onClick={addQuestion}
-                                    className="flex items-center justify-center gap-2 bg-primary text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:bg-secondary cursor-pointer transition-all shadow-sm"
+                                    className="flex items-center justify-center gap-2 bg-primary text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:opacity-70 cursor-pointer transition-all shadow-sm"
                                 >
                                     <Plus size={16} /> Tambah Pertanyaan
                                 </button>
@@ -283,7 +283,7 @@ const TambahKuisioner = () => {
 
                                         {/* Question Header */}
                                         <div className="flex items-start gap-3 md:gap-4 mb-5">
-                                            <div className="flex-none w-7 h-7 md:w-8 md:h-8 bg-[#3D5A5C] text-white rounded-lg flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
+                                            <div className="flex-none w-7 h-7 md:w-8 md:h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
                                                 {qIndex + 1}
                                             </div>
                                             <div className="grow">

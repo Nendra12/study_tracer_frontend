@@ -35,7 +35,7 @@ export default function SmoothDropdown({
   return (
     <div className="space-y-1 w-full relative" ref={dropdownRef}>
       {label && (
-        <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+        <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider">
           {label} {isRequired ? <span className="text-red-500">*</span> : <span className="text-[9px] text-slate-400 italic">{message}</span>}
         </label>
       )}
@@ -45,7 +45,7 @@ export default function SmoothDropdown({
         onClick={() => setIsOpen(!isOpen)}
         className="cursor-pointer mt-3 w-full p-3 bg-white border-2 border-gray-100 flex items-center justify-between rounded-xl text-sm transition-all outline-none"
       >
-        <span className={selected ? 'text-slate-700 font-medium' : 'text-gray-400'}>
+        <span className={selected ? 'text-primary/80 font-medium' : 'text-gray-400'}>
           {selected || placeholder}
         </span>
         <ChevronDown size={18} className={`text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
