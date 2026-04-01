@@ -244,7 +244,7 @@ export default function LupaPass() {
 
                 <form onSubmit={handleSendOtp} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-secondary mb-2">Alamat Email</label>
+                    <label className="block text-sm font-semibold text-primary/80 mb-2">Alamat Email</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
                         <Mail size={18} />
@@ -303,7 +303,7 @@ export default function LupaPass() {
                         className={`w-11 h-13 sm:w-13 sm:h-15 text-center text-xl font-bold rounded-xl border-2 outline-none transition-all ${
                           digit
                             ? 'border-primary bg-primary/5 text-primary'
-                            : 'border-fourth bg-fourth text-secondary focus:border-primary focus:ring-2 focus:ring-primary/20'
+                            : 'border-fourth bg-fourth text-primary/80 focus:border-primary focus:ring-2 focus:ring-primary/20'
                         }`}
                       />
                     ))}
@@ -367,7 +367,7 @@ export default function LupaPass() {
 
                 <form onSubmit={handleResetPassword} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-secondary mb-2">Password Baru</label>
+                    <label className="block text-sm font-semibold text-primary/80 mb-2">Password Baru</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
                         <Lock size={18} />
@@ -392,7 +392,7 @@ export default function LupaPass() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-secondary mb-2">Konfirmasi Password</label>
+                    <label className="block text-sm font-semibold text-primary/80 mb-2">Konfirmasi Password</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
                         <Lock size={18} />
