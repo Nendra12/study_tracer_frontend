@@ -98,7 +98,7 @@ const ManagedTable = ({
           <button
             onClick={() => { setIsAdding(true); setEditId(null); resetForm(); }}
             disabled={loading}
-            className="text-fourth bg-primary flex items-center gap-1 text-xs font-bold hover:text-white hover:bg-secondary px-2.5 py-2 rounded-lg transition-all group cursor-pointer disabled:opacity-50"
+            className="text-fourth bg-primary flex items-center gap-1 text-xs font-bold hover:text-white hover:opacity-90 px-2.5 py-2 rounded-lg transition-all group cursor-pointer disabled:opacity-50"
           >
             <Plus size={12} className="group-hover:scale-125 transition-transform" />
             <span className="hidden sm:inline">{onAddLabel}</span>

@@ -44,7 +44,7 @@ export default function FooterModals({ isOpen, type, onClose }) {
           <p>Butuh bantuan atau menemukan masalah teknis? Tim dukungan kami siap membantu Anda.</p>
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 inline-block w-full mt-2">
             <p className="font-bold text-slate-800">Email:</p>
-            <p className="text-[#425A5C]">smkn1gondangstudytracer@gmail.com</p>
+            <p className="text-primary">smkn1gondangstudytracer@gmail.com</p>
             <p className="font-bold text-slate-800 mt-3">Jam Operasional:</p>
             <p>Senin - Jumat | 08.00 - 16.00 WIB</p>
           </div>
@@ -104,7 +104,7 @@ export default function FooterModals({ isOpen, type, onClose }) {
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button
                 onClick={onClose}
-                className="bg-[#425A5C] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer flex items-center gap-2"
+                className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer flex items-center gap-2"
               >
                 <Check size={16} /> Mengerti
               </button>

@@ -96,10 +96,10 @@ export default function PengumumanAlumni() {
   };
 
   return (
-    <div className='w-full min-h-screen bg-[#f8f9fa] flex flex-col font-sans selection:bg-[#425A5C]/20 overflow-x-hidden'>
+    <div className='w-full min-h-screen bg-[#f8f9fa] flex flex-col font-sans selection:bg-primary/20 overflow-x-hidden'>
       
       {/* --- HEADER SECTION --- */}
-      <section className="relative pt-28 pb-15 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+      <section className="relative pt-28 pb-15 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-8">
           
           <div className="max-w-2xl">
@@ -144,7 +144,7 @@ export default function PengumumanAlumni() {
               </div>
               <button 
                 type="submit" 
-                className="bg-[#425A5C] text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
               >
                 Cari
               </button>
@@ -178,7 +178,7 @@ export default function PengumumanAlumni() {
               <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
               <p className="text-slate-500 text-sm mb-4">{error}</p>
-              <button onClick={() => fetchPengumuman(currentPage)} className="bg-[#425A5C] text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2e4042] transition-colors">
+              <button onClick={() => fetchPengumuman(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2e4042] transition-colors">
                 Coba Lagi
               </button>
             </div>
@@ -187,7 +187,7 @@ export default function PengumumanAlumni() {
           <div className="flex items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
             <div className="text-center">
               <Megaphone size={56} className="text-slate-300 mx-auto mb-4 opacity-50" />
-              <h2 className="text-lg font-black text-[#425A5C] mb-2">Tidak Ada Pengumuman</h2>
+              <h2 className="text-lg font-black text-primary mb-2">Tidak Ada Pengumuman</h2>
               <p className="text-slate-500 text-sm font-medium">Belum ada pengumuman atau coba ubah kata kunci pencarian Anda.</p>
             </div>
           </div>
@@ -204,7 +204,7 @@ export default function PengumumanAlumni() {
                   <div 
                     key={item.id}
                     onClick={() => navigate(`/alumni/pengumuman/${item.id}`)}
-                    className={`bg-white rounded-2xl border ${item.is_pinned ? 'border-[#425A5C]/30 bg-[#425A5C]/5' : 'border-slate-100'} shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col group`}
+                    className={`bg-white rounded-2xl border ${item.is_pinned ? 'border-primary/30 bg-primary/5' : 'border-slate-100'} shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col group`}
                   >
                     {/* Area Gambar (Klik untuk Zoom) */}
                     <div 
@@ -223,8 +223,8 @@ export default function PengumumanAlumni() {
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
                       
                       {item.is_pinned && (
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-[#425A5C] px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
-                          <Pin size={12} className="fill-[#425A5C]" /> Disematkan
+                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-primary px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
+                          <Pin size={12} className="fill-primary" /> Disematkan
                         </div>
                       )}
                     </div>
@@ -232,11 +232,11 @@ export default function PengumumanAlumni() {
                     {/* Area Teks (Klik untuk Detail) */}
                     <div className="p-5 flex flex-col flex-1">
                       <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold mb-2.5">
-                        <Calendar size={14} className="text-[#425A5C]" />
+                        <Calendar size={14} className="text-primary" />
                         <span>{annDate}</span>
                       </div>
                       
-                      <h3 className="font-bold text-slate-800 text-base leading-snug mb-2 group-hover:text-[#425A5C] transition-colors line-clamp-2">
+                      <h3 className="font-bold text-slate-800 text-base leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
                         {item.judul}
                       </h3>
                       

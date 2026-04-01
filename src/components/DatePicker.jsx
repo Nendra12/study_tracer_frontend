@@ -77,7 +77,7 @@ const DateRangePicker = ({ formData, setFormData, errors = {} }) => {
     <div className="grid grid-cols-2 gap-3">
       {/* TANGGAL MULAI */}
       <div className="space-y-2">
-        <label className="text-[11px] mb-3 font-bold text-secondary uppercase block mb-1">
+        <label className="text-[11px] mb-3 font-bold text-primary/80 uppercase block mb-1">
           Tgl Mulai
         </label>
         <DatePicker
@@ -110,7 +110,7 @@ const DateRangePicker = ({ formData, setFormData, errors = {} }) => {
 
       {/* TANGGAL SELESAI */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold text-secondary mb-3 uppercase block mb-1">
+        <label className="text-[11px] font-bold text-primary/80 mb-3 uppercase block mb-1">
           Tgl Selesai
         </label>
         <DatePicker

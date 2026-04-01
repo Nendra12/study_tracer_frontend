@@ -261,7 +261,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         <div className="p-6 space-y-8">
           {/* Banner */}
           <div className="space-y-3">
-            <span className="text-sm font-bold text-slate-700">Gambar / Banner <span className="text-gray-400 font-normal">(opsional)</span></span>
+            <span className="text-sm font-bold text-primary/80">Gambar / Banner <span className="text-gray-400 font-normal">(opsional)</span></span>
             <div className="flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/30">
               <div className="w-32 h-32 sm:w-24 sm:h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0">
                 {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <ImageIcon size={32} className="text-gray-300" />}
@@ -278,35 +278,35 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
 
           <div className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Job Title *</label>
+              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Job Title *</label>
               <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20" />
               {errors.judul_lowongan && <p className="text-red-500 text-xs mt-1">{errors.judul_lowongan[0]}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Nama Perusahaan *</label>
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Nama Perusahaan *</label>
                 <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Tanggal Berakhir</label>
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Tanggal Berakhir</label>
                 <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Jam Mulai</label>
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Jam Mulai</label>
                 <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Jam Berakhir</label>
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Jam Berakhir</label>
                 <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Tipe Pekerjaan</label>
+              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Tipe Pekerjaan</label>
               <select name="tipe_pekerjaan" value={formData.tipe_pekerjaan} onChange={handleInputChange} className="cursor-pointer w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none">
                 <option value="">-- Pilih Tipe --</option>
                 <option value="Full-time">Full-time</option>
@@ -350,7 +350,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
 
             {/* --- BAGIAN SKILLS (SEARCHABLE & ADD NEW) --- */}
             <div className="space-y-1.5" ref={skillDropdownRef}>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">
                 Skills <span className="text-gray-400 font-normal text-[10px]">(opsional)</span>
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
@@ -423,7 +423,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Deskripsi</label>
+              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Deskripsi</label>
               <textarea name="deskripsi" rows={4} value={formData.deskripsi} onChange={handleInputChange} placeholder="Deskripsi peran..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none resize-none min-h-30" />
             </div>
           </div>
