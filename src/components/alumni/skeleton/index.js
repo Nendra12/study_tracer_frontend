@@ -4,3 +4,4 @@ export { default as AlumniSkeleton } from './AlumniSkeleton';
 export { default as ProfilSkeleton } from './ProfilSkeleton';
 export { default as LowonganDetailSkeleton } from './LowonganDetailSkeleton';
 export { default as AlumniDetailSkeleton } from './AlumniDetailSkeleton';
+export { default as PengumumanDetailSkeleton } from './PengumumanDetail';
