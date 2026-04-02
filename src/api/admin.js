@@ -338,4 +338,15 @@ export const adminApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+
+  // ── Meta Data Management ──────────────────────
+  getMetaData() {
+    return api.get('/metadata'); 
+  },
+  
+  updateMetaData(data) {
+    return api.post('/admin/metadata', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };

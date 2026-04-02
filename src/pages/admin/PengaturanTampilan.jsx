@@ -17,7 +17,7 @@ export default function PengaturanTampilan() {
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
   const [secondaryColor, setSecondaryColor] = useState(theme?.secondaryColor || '#F3F4F4');
   const [thirdColor, setThirdColor] = useState(theme?.thirdColor || '#9CA3AF');
-  
+
   // State Teks Footer & Modal Baru
   const [deskripsiFooter, setDeskripsiFooter] = useState(theme?.deskripsiFooter || '');
   const [emailKontak, setEmailKontak] = useState(theme?.emailKontak || '');
@@ -27,16 +27,23 @@ export default function PengaturanTampilan() {
   const [teksLayanan, setTeksLayanan] = useState(theme?.teksLayanan || '');
   const [teksDukungan, setTeksDukungan] = useState(theme?.teksDukungan || '');
 
+  // State Meta Data
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [metaIconPreview, setMetaIconPreview] = useState(null);
+  const [metaIconFile, setMetaIconFile] = useState(null);
+  const metaIconInputRef = useRef(null);
+
   // State Preview Gambar
   const [logoPreview, setLogoPreview] = useState(theme?.logo || null);
   const [loginBgPreview, setLoginBgPreview] = useState(theme?.loginBg || null);
   const [landingBgPreview, setLandingBgPreview] = useState(theme?.landingBg || null);
-  
+
   // File untuk diupload
   const [logoFile, setLogoFile] = useState(null);
   const [loginBgFile, setLoginBgFile] = useState(null);
   const [landingBgFile, setLandingBgFile] = useState(null);
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
@@ -61,12 +68,30 @@ export default function PengaturanTampilan() {
       setTeksPrivasi(theme.teksPrivasi || '');
       setTeksLayanan(theme.teksLayanan || '');
       setTeksDukungan(theme.teksDukungan || '');
-      
+
       if (theme.logo) setLogoPreview(theme.logo);
       if (theme.loginBg) setLoginBgPreview(theme.loginBg);
       if (theme.landingBg) setLandingBgPreview(theme.landingBg);
     }
   }, [theme]);
+
+  // Fetch Meta Data secara terpisah
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const res = await adminApi.getMetaData();
+        const data = res.data?.data;
+        if (data) {
+          setMetaTitle(data.title || '');
+          setMetaDescription(data.description || '');
+          if (data.icon_url) setMetaIconPreview(data.icon_url);
+        }
+      } catch (err) {
+        console.error('Failed to fetch metadata', err);
+      }
+    };
+    fetchMeta();
+  }, []);
 
   const handleImageChange = (e, setPreview, setFile) => {
     const file = e.target.files[0];
@@ -92,14 +117,14 @@ export default function PengaturanTampilan() {
     if (!confirm.isConfirmed) return;
 
     setIsSaving(true);
-    
+
     try {
       const formData = new FormData();
       formData.append('nama_sekolah', namaSekolah);
       formData.append('primary_color', primaryColor);
       formData.append('secondary_color', secondaryColor);
       formData.append('third_color', thirdColor);
-      
+
       // Append data Footer & Modal baru
       formData.append('deskripsi_footer', deskripsiFooter);
       formData.append('email_kontak', emailKontak);
@@ -108,12 +133,21 @@ export default function PengaturanTampilan() {
       formData.append('teks_privasi', teksPrivasi);
       formData.append('teks_layanan', teksLayanan);
       formData.append('teks_dukungan', teksDukungan);
-      
+
       if (logoFile) formData.append('logo', logoFile);
       if (loginBgFile) formData.append('login_bg', loginBgFile);
       if (landingBgFile) formData.append('landing_bg', landingBgFile);
 
+      // --- Meta Data Request ---
+      const metaDataForm = new FormData();
+      if (metaTitle) metaDataForm.append('title', metaTitle);
+      if (metaDescription) metaDataForm.append('description', metaDescription);
+      if (metaIconFile) metaDataForm.append('icon', metaIconFile);
+
+      // Jalankan keduanya secara bersamaan (atau berurutan)
       await adminApi.updatePengaturanTampilan(formData);
+      await adminApi.updateMetaData(metaDataForm);
+
       await refreshFromApi();
 
       setLogoFile(null);
@@ -147,14 +181,60 @@ export default function PengaturanTampilan() {
     setLogoFile(null);
     setLoginBgFile(null);
     setLandingBgFile(null);
+    setMetaIconFile(null);
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 w-full relative">
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden relative z-10">
         <div className="p-6 md:p-8 space-y-12">
-          
-          {/* SECTION 1: TEKS & GAMBAR */}
+
+          {/* Section 1 : Meta Data Management */}
+          <section>
+            <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
+              <h3 className="text-lg font-bold text-primary">Manajemen Meta Data (SEO)</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Meta Title</label>
+                  <input
+                    type="text" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
+                    placeholder="Contoh: Study Tracer - Alumni"
+                  />
+                  <p className="text-[11px] text-gray-400 font-medium mt-1">Muncul di tab browser hasil pencarian mesin telusur.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Meta Deskripsi</label>
+                  <textarea
+                    value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows="3"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"
+                    placeholder="Masukkan deskripsi singkat tentang website untuk SEO..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-sm font-bold text-gray-700">Meta Icon (Favicon)</label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {metaIconPreview ? <img src={metaIconPreview} alt="Meta Icon" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <input type="file" accept=".ico,.png,.jpg,.jpeg,.svg" className="hidden" ref={metaIconInputRef} onChange={(e) => handleImageChange(e, setMetaIconPreview, setMetaIconFile)} />
+                    <button onClick={() => metaIconInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                      <Upload size={14} /> Ganti Icon
+                    </button>
+                    <p className="text-[11px] text-gray-400 font-medium max-w-50">Format: ICO, PNG, SVG (Idealnya 1:1, max 2MB).</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 2: TEKS & GAMBAR */}
           <section>
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold text-primary">Identitas & Media</h3>
@@ -165,13 +245,13 @@ export default function PengaturanTampilan() {
                 <Eye size={14} className='text-primary' /> Preview Tampilan
               </button>
             </div>
-            
+
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-8">
                   <div className="space-y-3">
                     <label className="block text-sm font-bold text-gray-700">Nama Sekolah / Organisasi</label>
-                    <input 
+                    <input
                       type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
                       placeholder="Contoh: SMK Negeri 1 Gondang"
@@ -192,7 +272,7 @@ export default function PengaturanTampilan() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-8">
                   <div className="space-y-3">
                     <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
@@ -227,7 +307,7 @@ export default function PengaturanTampilan() {
             </div>
           </section>
 
-          {/* SECTION 2: WARNA TEMA */}
+          {/* SECTION 3: WARNA TEMA */}
           <section>
             <h3 className="text-lg font-bold text-primary mb-6 border-b border-gray-100 pb-2">Palet Warna Aplikasi</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -245,24 +325,24 @@ export default function PengaturanTampilan() {
                     <input type="color" ref={item.ref} value={item.val} onChange={(e) => item.set(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0 appearance-none [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm" />
                   </div>
                   <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-mono">#</span>
-                      <input type="text" value={item.val} onChange={(e) => handleColorTextChange(e.target.value, item.set, item.ref)} className="w-full pl-7 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-mono uppercase text-gray-600 outline-none transition-all focus:ring-1 focus:ring-primary/20 focus:border-primary" placeholder="XXXXXX" maxLength={7} />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-mono">#</span>
+                    <input type="text" value={item.val} onChange={(e) => handleColorTextChange(e.target.value, item.set, item.ref)} className="w-full pl-7 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-mono uppercase text-gray-600 outline-none transition-all focus:ring-1 focus:ring-primary/20 focus:border-primary" placeholder="XXXXXX" maxLength={7} />
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* SECTION 3: KONTEN FOOTER & TEKS MODAL */}
+          {/* SECTION 4: KONTEN FOOTER & TEKS MODAL */}
           <section>
             <h3 className="text-lg font-bold text-primary mb-6 border-b border-gray-100 pb-2">Konten Footer & Teks Modal</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              
+
               {/* Kolom Kiri: Informasi Kontak Footer */}
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Deskripsi Footer</label>
-                  <textarea 
+                  <textarea
                     value={deskripsiFooter} onChange={(e) => setDeskripsiFooter(e.target.value)} rows="3"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"
                     placeholder="Masukkan deskripsi singkat tentang sistem alumni..."
@@ -289,7 +369,7 @@ export default function PengaturanTampilan() {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Teks Modal Kebijakan Privasi</label>
-                  <textarea 
+                  <textarea
                     value={teksPrivasi} onChange={(e) => setTeksPrivasi(e.target.value)} rows="3"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"
                     placeholder="Masukkan teks kebijakan privasi..."
@@ -297,7 +377,7 @@ export default function PengaturanTampilan() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Teks Modal Ketentuan Layanan</label>
-                  <textarea 
+                  <textarea
                     value={teksLayanan} onChange={(e) => setTeksLayanan(e.target.value)} rows="3"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"
                     placeholder="Masukkan teks ketentuan layanan..."
@@ -305,7 +385,7 @@ export default function PengaturanTampilan() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Teks Pengantar Kontak Dukungan</label>
-                  <textarea 
+                  <textarea
                     value={teksDukungan} onChange={(e) => setTeksDukungan(e.target.value)} rows="2"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"
                     placeholder="Masukkan pesan pengantar untuk modal kontak..."
@@ -315,7 +395,6 @@ export default function PengaturanTampilan() {
 
             </div>
           </section>
-
         </div>
 
         {/* FOOTER ACTIONS */}
@@ -330,8 +409,8 @@ export default function PengaturanTampilan() {
         </div>
       </div>
 
-      <TampilanPreview 
-        isOpen={showPreviewModal} 
+      <TampilanPreview
+        isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
