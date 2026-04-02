@@ -106,7 +106,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
       >
         <div
           className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled
-            ? "shadow-md bg-white/70 backdrop-blur-xl px-6"
+            ? "shadow-md bg-white/70 backdrop-blur-xl px-4"
             : "bg-transparant"
             }`}
         >
@@ -130,7 +130,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden xl:flex bg-fourth/80 p-1 rounded-2xl border border-white/60">
+          <div className="hidden xl:flex bg-fourth/80 p-1 rounded-md border border-white/60">
             {navLinks.map((item, i) => {
               const isActive = activeSection === item.href.replace("#", "");
               return (
@@ -138,7 +138,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   key={i}
                   href={item.href}
                   onClick={(e) => handleSmoothScroll(e, item.href)}
-                  className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${isActive
+                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
                     ? "bg-white text-primary shadow-sm"
                     : "text-third hover:text-primary"
                     }`}
@@ -161,7 +161,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   <div className="relative" ref={dropdownRef}>
                     <button
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="cursor-pointer flex items-center gap-2 p-1 pr-3 rounded-xl border border-white/60 bg-white/80 backdrop-blur-sm hover:bg-fourth transition-all"
+                      className="cursor-pointer flex items-center gap-2 p-1 pr-3 rounded-md border border-white/60 bg-white/80 backdrop-blur-sm hover:bg-fourth transition-all"
                     >
                       <div className="w-8 h-8 rounded-lg bg-primary overflow-hidden">
                         {fotoUrl ? (
@@ -189,7 +189,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden z-50"
+                          className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden z-50"
                         >
                           {/* User Info Header */}
                           <div className="px-5 py-4 bg-fourth/50 border-b border-white/50">
@@ -206,7 +206,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                             <Link
                               to="/alumni/profile"
                               onClick={() => setIsDropdownOpen(false)}
-                              className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-primary/80 hover:text-primary hover:bg-fourth rounded-xl transition-all"
+                              className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-primary/80 hover:text-primary hover:bg-fourth rounded-md transition-all"
                             >
                               <User
                                 size={18}
@@ -216,7 +216,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                             </Link>
                             <button
                               onClick={() => navigate("/logout")}
-                              className="w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                              className="w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-md transition-all"
                             >
                               <LogOut size={18} />
                               Keluar Aplikasi
@@ -264,7 +264,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                 initial={{ opacity: 0, y: -20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-4xl shadow-2xl xl:hidden flex flex-col gap-2"
+                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
               >
                 {user && (
                   <div className="py-4 flex items-center justify-between gap-2">
@@ -300,7 +300,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                         x: 0,
                         transition: { delay: i * 0.1 },
                       }}
-                      className={`px-6 py-4 rounded-2xl font-bold transition-all ${isActive
+                      className={`px-6 py-4 rounded-md font-bold transition-all ${isActive
                         ? "bg-primary text-white"
                         : "text-primary/80 hover:bg-fourth hover:text-primary"
                         }`}

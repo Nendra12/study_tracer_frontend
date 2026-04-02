@@ -29,7 +29,7 @@ export default function AlumniStats({ stats }) {
   return (
     <section
       id="fitur"
-      className="py-15 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+      className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8  max-w-7xl mx-auto"
     >
       {/* Header Section */}
       <div className="mb-16 gap-6">
@@ -57,7 +57,7 @@ export default function AlumniStats({ stats }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 1 * 0.1 }}
-            className="md:col-span-4 lg:col-span-4 bg-white rounded-[2.5rem] p-10 border border-white shadow-sm flex flex-col gap-2 justify-between relative overflow-hidden group"
+            className="md:col-span-4 lg:col-span-4 bg-white rounded-md p-10 border border-white shadow-sm flex flex-col gap-2 justify-between relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 w-80 h-80 bg-fourth rounded-full translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform duration-700"></div>
 
@@ -102,12 +102,12 @@ export default function AlumniStats({ stats }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 2 * 0.1 }}
-            className="md:col-span-2 lg:col-span-2 bg-primary rounded-[2.5rem] p-8 text-white flex flex-col justify-between relative overflow-hidden"
+            className="md:col-span-2 lg:col-span-2 bg-primary rounded-md p-8 text-white flex flex-col justify-between relative overflow-hidden"
           >
             <div className="absolute -bottom-6 -right-6 text-9xl opacity-10 rotate-12">
               <img src={Education} alt="education" className="w-40" />
             </div>
-            <div className="p-2 w-15 h-15 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-xl relative z-10">
+            <div className="p-2 w-15 h-15 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-xl relative z-10">
               <img src={EducationStats} alt="stats" className="" />
             </div>
             <div className="relative z-10">
@@ -127,9 +127,9 @@ export default function AlumniStats({ stats }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 3 * 0.1 }}
-            className="md:col-span-2 lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-white shadow-sm flex flex-col justify-between"
+            className="md:col-span-2 lg:col-span-2 bg-white rounded-md p-8 border border-white shadow-sm flex flex-col justify-between"
           >
-            <div className="w-15 h-15 p-2 bg-fourth rounded-2xl flex items-center justify-center text-xl text-primary">
+            <div className="w-15 h-15 p-2 bg-fourth rounded-full flex items-center justify-center text-xl text-primary">
               <img src={Relation} alt="stats" className="" />
             </div>
             <div>
@@ -149,7 +149,7 @@ export default function AlumniStats({ stats }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 4 * 0.1 }}
-            className="md:col-span-4 lg:col-span-4 flex-col lg:flex-row bg-gradient-to-br from-primary to-primary rounded-[2.5rem] p-8 md:p-10 text-white flex lg:items-center gap-3 lg:justify-between relative overflow-hidden"
+            className="md:col-span-4 lg:col-span-4 flex-col lg:flex-row bg-gradient-to-br from-primary to-primary rounded-md p-8 md:p-10 text-white flex lg:items-center gap-3 lg:justify-between relative overflow-hidden"
           >
             <div className="absolute right-0 top-0 w-1/3 h-full bg-white/5 skew-x-12 translate-x-10"></div>
             <div className="order-2 lg:order-1 max-w-xl relative z-10">
@@ -160,7 +160,7 @@ export default function AlumniStats({ stats }) {
                 Bantu adik kelasmu mendapatkan karir impian dengan membagikan info lowongan kerja dari perusahaan tempatmu bekerja.
               </p>
             </div>
-            <div className="order-1 lg:order-2 p-3 w-15 h-15 lg:p-5 lg:w-20 lg:h-20 bg-white/10 backdrop-blur-md rounded-2xl flex text-xl relative z-10">
+            <div className="order-1 lg:order-2 p-3 w-15 h-15 lg:p-5 lg:w-20 lg:h-20 bg-white/10 backdrop-blur-md rounded-full flex text-xl relative z-10">
               <img src={Job} alt="stats" className="" />
             </div>
           </motion.div>

@@ -93,10 +93,10 @@ export default function GuideSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.15, duration: 0.5 }}
-              className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-[2.5rem] border border-white shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(60,87,89,0.08)] transition-all duration-500"
+              className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-md border border-white shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(60,87,89,0.08)] transition-all duration-500"
             >
               {/* Step Number Badge */}
-              <div className="absolute -top-4 left-10 w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center text-sm font-black shadow-[0_10px_20px_rgba(60,87,89,0.2)] z-20 group-hover:scale-110 transition-transform">
+              <div className="absolute -top-4 left-10 w-10 h-10 rounded-md bg-primary text-white flex items-center justify-center text-sm font-black shadow-[0_10px_20px_rgba(60,87,89,0.2)] z-20 group-hover:scale-110 transition-transform">
                 0{index + 1}
               </div>
 
@@ -115,7 +115,7 @@ export default function GuideSection() {
 
               {/* Hover Accent Glow yang sangat tipis */}
               <div
-                className={`absolute inset-0 rounded-[2.5rem] bg-gradient-to-br ${step.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`}
+                className={`absolute inset-0 rounded-md bg-gradient-to-br ${step.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`}
               ></div>
             </motion.div>
           ))}

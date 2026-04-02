@@ -63,7 +63,7 @@ export default function AlumniSuccess({ alumniList }) {
     /* Menggunakan bg-[#f9fafb] (Off-White sedikit hangat) agar beda dengan section sebelumnya */
     <section
       id="alumni"
-      className="py-15 bg-fourth px-4 sm:px-6  lg:px-8 overflow-hidden"
+      className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8  max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header dengan Layout Flex yang dinamis */}
@@ -94,10 +94,10 @@ export default function AlumniSuccess({ alumniList }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="group relative bg-white rounded-3xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500"
+              className="group relative bg-white rounded-md p-4 shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500"
             >
               {/* Image Container dengan efek zoom */}
-              <div className="relative h-72 w-full rounded-3xl overflow-hidden mb-6">
+              <div className="relative h-72 w-full rounded-md overflow-hidden mb-6">
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent z-10 opacity-40 group-hover:opacity-70 transition-opacity duration-500"></div>
                 <img
                   src={alumni.img}
@@ -107,7 +107,7 @@ export default function AlumniSuccess({ alumniList }) {
 
                 {/* Floating Badge Year */}
                 <div className="absolute top-4 right-4 z-20">
-                  <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm">
+                  <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl shadow-sm">
                     <span className="text-primary text-[12px] font-black ">
                       Angkatan {alumni.year}
                     </span>
