@@ -120,7 +120,6 @@ export default function LandingPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>*/}
         <Loader />
       </div>
     );
@@ -182,7 +181,7 @@ export default function LandingPage() {
             >
               <button
                 onClick={() => user ? navigate("/alumni") : navigate("/login")}
-                className="bg-primary text-white px-8 py-4 rounded-xl font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2"
+                className="bg-primary text-white px-8 py-4 rounded-md font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2 transition-all duration-300 ease-in-out"
               >
                 Masuk Portal {user ? user.role == 'alumni' ? 'Alumni': 'Admin' : 'Alumni'} <span className="text-xl">→</span>
               </button>
@@ -212,7 +211,7 @@ export default function LandingPage() {
           <div className="relative h-[600px] w-full hidden lg:block">
             {/* Main Image Card */}
             <motion.div
-              className="absolute top-10 right-0 w-[80%] h-[80%] bg-white rounded-[2rem] p-2 shadow-2xl shadow-third
+              className="absolute top-10 right-0 w-[80%] h-[80%] bg-white rounded-md p-2 shadow-2xl shadow-third
               /20 transform rotate-2 hover:-rotate-3 transition-transform duration-500 z-10"
               initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
               animate={{ opacity: 1, scale: 1, rotate: 2 }}
@@ -228,7 +227,7 @@ export default function LandingPage() {
 
             {/* Floating Stat Card */}
             <motion.div
-              className="absolute top-[20%] left-[-5%] bg-white/80 backdrop-blur-xl p-5 rounded-3xl border border-white/60 shadow-xl z-20 animate-bounce"
+              className="absolute top-[20%] left-[-5%] bg-white/80 backdrop-blur-xl p-5 rounded-md border border-white/60 shadow-xl z-20 animate-bounce"
               style={{ animationDuration: "3s" }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -236,7 +235,6 @@ export default function LandingPage() {
               transition={{ delay: 0.5 }}
             >
               <div className="flex items-center gap-4">
-                {/* <div className="w-12 h-12 rounded-full bg-fourth flex items-center justify-center text-2xl">💼</div>*/}
                 <img src={Work} alt="kerja" className="w-12" />
                 <div>
                   <div className="text-2xl font-black text-primary">{stats?.career_distribution?.bekerja?.percentage || 0}%</div>
@@ -249,7 +247,7 @@ export default function LandingPage() {
 
             {/* Floating Info Card */}
             <motion.div
-              className="absolute bottom-[11%] left-[7%] bg-primary text-white p-6 rounded-3xl shadow-[0_20px_40px_rgba(60,87,89,0.4)] z-20 w-64 transform -rotate-3 hover:rotate-0 transition-transform duration-500"
+              className="absolute bottom-[11%] left-[7%] bg-primary text-white p-6 rounded-md shadow-[0_20px_40px_rgba(60,87,89,0.4)] z-20 w-64 transform -rotate-3 hover:rotate-0 transition-transform duration-500"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
