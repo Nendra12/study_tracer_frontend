@@ -2,6 +2,8 @@ import { Outlet } from "react-router-dom";
 import Footer from "../components/alumni/Footer";
 import { useAuth } from "../context/AuthContext";
 import NavbarAlumni from "../components/alumni/NavbarAlumni";
+import useInactivityTimeout from "../utilitis/useInactivityTimeout";
+import SessionWarningModal from "../components/SessionWarningModal";
 
 export default function AlumniLayout() {
   const { user } = useAuth()
@@ -16,6 +18,9 @@ export default function AlumniLayout() {
     can_access_all: canAccessAll,
   };
 
+  // Session inactivity timeout (5 jam)
+  const { showWarning, remainingSeconds, extendSession, dismissWarning } = useInactivityTimeout();
+
   return (
     // Di file Layout utama Anda
     <div className="min-h-screen font-sans flex flex-col bg-slate-50">
@@ -26,6 +31,14 @@ export default function AlumniLayout() {
       </main>
 
       <Footer />
+
+      {/* Session Warning Modal */}
+      <SessionWarningModal
+        show={showWarning}
+        remainingSeconds={remainingSeconds}
+        onExtend={extendSession}
+        onDismiss={dismissWarning}
+      />
     </div>
   )
 }

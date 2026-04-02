@@ -42,6 +42,8 @@ export function AuthProvider({ children }) {
 
     localStorage.setItem('auth_token', newToken);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('last_activity', Date.now().toString());
+    localStorage.removeItem('session_expired_reason');
     return userData;
   }, []);
 
@@ -69,6 +71,7 @@ export function AuthProvider({ children }) {
       setUser(null);
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('last_activity');
     }
   }, []);
 
