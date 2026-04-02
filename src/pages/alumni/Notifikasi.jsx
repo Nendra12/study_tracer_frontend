@@ -170,10 +170,10 @@ export default function Notifikasi() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-[#425A5C]/20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-x-hidden">
 
       {/* --- HEADER SECTION (GAYA BARU KONSISTEN) --- */}
-      <section className="relative pt-28 pb-24 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+      <section className="relative pt-28 pb-24 w-full z-30 bg-primary rounded-b-[2.5rem]">
         {/* max-w-5xl digunakan untuk notifikasi agar nyaman dibaca, tapi padding disejajarkan dengan class w-full */}
         <div className="relative z-10 w-full max-w-5xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
 
@@ -205,8 +205,8 @@ export default function Notifikasi() {
               <button
                 onClick={() => setActiveFilter('semua')}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeFilter === 'semua'
-                    ? 'bg-[#425A5C] text-white shadow-md'
-                    : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'
                   }`}
               >
                 Semua
@@ -214,13 +214,13 @@ export default function Notifikasi() {
               <button
                 onClick={() => setActiveFilter('belum_dibaca')}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-2 ${activeFilter === 'belum_dibaca'
-                    ? 'bg-[#425A5C] text-white shadow-md'
-                    : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'
                   }`}
               >
                 Belum Dibaca
                 {unreadCount > 0 && (
-                  <span className={`${activeFilter === 'belum_dibaca' ? 'bg-white text-[#425A5C]' : 'bg-red-500 text-white'
+                  <span className={`${activeFilter === 'belum_dibaca' ? 'bg-white text-primary' : 'bg-red-500 text-white'
                     } text-[10px] px-1.5 py-0.5 rounded-full min-w-5 text-center leading-none shadow-sm`}>
                     {unreadCount}
                   </span>
@@ -234,7 +234,7 @@ export default function Notifikasi() {
                 <button
                   onClick={markAllAsRead}
                   disabled={unreadCount === 0 || loading}
-                  className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-500 hover:text-[#425A5C] hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold text-slate-500 hover:text-primary hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check size={14} strokeWidth={3} /> <span className="hidden sm:inline">Tandai semua dibaca</span>
                 </button>
@@ -262,7 +262,7 @@ export default function Notifikasi() {
             {/* Loading State */}
             {loading ? (
               <div className="flex flex-col items-center justify-center h-full min-h-75 text-center py-10">
-                <Loader2 size={40} className="text-[#425A5C] animate-spin mb-4" />
+                <Loader2 size={40} className="text-primary animate-spin mb-4" />
                 <p className="text-slate-500 text-sm">Memuat notifikasi...</p>
               </div>
             ) : (
@@ -314,7 +314,7 @@ export default function Notifikasi() {
                           {/* Content */}
                           <div className="flex-1 min-w-0 pt-0.5">
                             <div className="flex justify-between items-start gap-2 mb-1">
-                              <h3 className={`text-sm font-bold ${!notif.is_read ? 'text-[#425A5C]' : 'text-slate-700'}`}>
+                              <h3 className={`text-sm font-bold ${!notif.is_read ? 'text-primary' : 'text-slate-700'}`}>
                                 {notif.title}
                               </h3>
                               <div className="flex items-center gap-2 shrink-0">
@@ -349,7 +349,7 @@ export default function Notifikasi() {
                     <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-5">
                       <Bell size={40} className="text-slate-300" />
                     </div>
-                    <h3 className="text-lg font-black text-[#425A5C] mb-2">Tidak Ada Notifikasi</h3>
+                    <h3 className="text-lg font-black text-primary mb-2">Tidak Ada Notifikasi</h3>
                     <p className="text-slate-500 text-sm max-w-sm mx-auto">
                       {activeFilter === 'belum_dibaca'
                         ? 'Hebat! Anda telah membaca semua notifikasi terbaru. Tidak ada hal mendesak saat ini.'
@@ -367,7 +367,7 @@ export default function Notifikasi() {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-[#425A5C] hover:bg-slate-50 border border-transparent hover:border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-primary hover:bg-slate-50 border border-transparent hover:border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft size={16} /> Sebelumnya
               </button>
@@ -379,7 +379,7 @@ export default function Notifikasi() {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-[#425A5C] hover:bg-slate-50 border border-transparent hover:border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-primary hover:bg-slate-50 border border-transparent hover:border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Selanjutnya <ChevronRight size={16} />
               </button>

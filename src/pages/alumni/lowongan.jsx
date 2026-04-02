@@ -276,7 +276,7 @@ export default function Lowongan() {
             <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
             <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
             <p className="text-slate-500 text-sm mb-4">{myError}</p>
-            <button onClick={() => fetchMyLowongan(myPage)} className="bg-[#425A5C] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer">
+            <button onClick={() => fetchMyLowongan(myPage)} className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer">
               Coba Lagi
             </button>
           </div>
@@ -288,12 +288,12 @@ export default function Lowongan() {
       return (
         <div className="flex items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
           <div className="text-center text-slate-400">
-            <FileText size={56} className="mx-auto mb-4 opacity-30 text-[#425A5C]" />
-            <h2 className="text-lg font-black text-[#425A5C] mb-2">Belum Ada Lowongan</h2>
+            <FileText size={56} className="mx-auto mb-4 opacity-30 text-primary" />
+            <h2 className="text-lg font-black text-primary mb-2">Belum Ada Lowongan</h2>
             <p className="text-sm font-medium mb-4">Anda belum mengajukan lowongan kerja apapun.</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#425A5C] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer inline-flex items-center gap-2"
+              className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer inline-flex items-center gap-2"
             >
               <Plus size={16} /> Pasang Lowongan
             </button>
@@ -332,7 +332,7 @@ export default function Lowongan() {
             <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
             <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
             <p className="text-slate-500 text-sm mb-4">{error}</p>
-            <button onClick={() => fetchLowongan(currentPage)} className="bg-[#425A5C] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer">
+            <button onClick={() => fetchLowongan(currentPage)} className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer">
               Coba Lagi
             </button>
           </div>
@@ -344,8 +344,8 @@ export default function Lowongan() {
       return (
         <div className="flex items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
           <div className="text-center text-slate-400">
-            <Briefcase size={56} className="mx-auto mb-4 opacity-30 text-[#425A5C]" />
-            <h2 className="text-lg font-black text-[#425A5C] mb-2">
+            <Briefcase size={56} className="mx-auto mb-4 opacity-30 text-primary" />
+            <h2 className="text-lg font-black text-primary mb-2">
               {activeTab === 'disimpan' ? 'Belum Ada Lowongan Tersimpan' : 'Pencarian Tidak Ditemukan'}
             </h2>
             <p className="text-sm font-medium">
@@ -383,9 +383,9 @@ export default function Lowongan() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-[#425A5C]/20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-x-hidden">
       {/* --- HEADER SECTION (GAYA BARU) --- */}
-      <section className="relative pt-30 pb-30 w-full z-30 bg-[#425A5C] rounded-b-[2.5rem]">
+      <section className="relative pt-30 pb-30 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
@@ -411,19 +411,19 @@ export default function Lowongan() {
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => { setActiveTab('semua'); setCurrentPage(1); }}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-[#425A5C] text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'}`}
+                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 Semua Lowongan
               </button>
               <button
                 onClick={() => { setActiveTab('disimpan'); setCurrentPage(1); }}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'disimpan' ? 'bg-[#425A5C] text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'}`}
+                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'disimpan' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 <Bookmark size={14} fill={activeTab === 'disimpan' ? 'currentColor' : 'none'} /> Disimpan
               </button>
               <button
                 onClick={() => { setActiveTab('saya'); setMyPage(1); }}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'saya' ? 'bg-[#425A5C] text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-[#425A5C] hover:bg-slate-100 border border-slate-200'}`}
+                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'saya' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 <FileText size={14} /> Lowongan Saya
               </button>
@@ -431,7 +431,7 @@ export default function Lowongan() {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-white border-2 border-[#425A5C]/20 text-[#425A5C] px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-sm hover:bg-[#425A5C] hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="bg-white border-2 border-primary/20 text-primary px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-sm hover:bg-primary hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Plus size={16} /> Tambah Lowongan
             </button>
@@ -458,7 +458,7 @@ export default function Lowongan() {
 
               <button
                 type="submit"
-                className="bg-[#425A5C] text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
               >
                 Cari
               </button>
@@ -505,7 +505,7 @@ export default function Lowongan() {
                 </button>
               </div>
               <div className="p-4 sm:p-5 text-center bg-white border-t border-slate-100">
-                <h3 className="text-sm sm:text-base font-bold text-[#425A5C]">Pratinjau Poster Lowongan</h3>
+                <h3 className="text-sm sm:text-base font-bold text-primary">Pratinjau Poster Lowongan</h3>
               </div>
             </motion.div>
           </div>

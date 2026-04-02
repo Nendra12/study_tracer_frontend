@@ -161,7 +161,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
         <div className="p-6 space-y-8">
           {/* Section Upload Gambar */}
           <div className="space-y-3">
-            <span className="text-sm font-bold text-slate-700">Gambar / Banner <span className="text-gray-400 font-normal">(opsional)</span></span>
+            <span className="text-sm font-bold text-primary">Gambar / Banner <span className="text-gray-400 font-normal">(opsional)</span></span>
             <div className="flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/30">
               <div className="w-32 h-32 sm:w-24 sm:h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0 relative group">
                 {previewUrl ? (
@@ -191,7 +191,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
           <div className="space-y-5">
             {/* Input Judul */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Judul Pengumuman *</label>
+              <label className="text-xs font-bold text-primary uppercase tracking-wider">Judul Pengumuman *</label>
               <input 
                 name="judul" 
                 value={formData.judul} 
@@ -229,7 +229,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
                 className="w-5 h-5 cursor-pointer accent-primary"
               />
               <div className="flex flex-col">
-                <label htmlFor="is_pinned" className="text-sm font-bold text-slate-700 cursor-pointer">Sematkan di Atas</label>
+                <label htmlFor="is_pinned" className="text-sm font-bold text-primary cursor-pointer">Sematkan di Atas</label>
                 <p className="text-xs text-gray-500">Pengumuman akan selalu muncul di urutan pertama dashboard pengguna.</p>
               </div>
             </div>

@@ -34,7 +34,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
         whileHover={locked ? {} : { y: -6 }}
         onClick={() => !locked && navigate(`/alumni/lowongan/${data.id}`)}
         className={`bg-white rounded-[1.6rem] overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer h-full
-          ${locked ? '' : 'hover:shadow-xl hover:border-[#16372a]/20'}`}
+          ${locked ? '' : 'hover:shadow-xl hover:border-primary/20'}`}
       >
 
         {/* poster image */}
@@ -82,7 +82,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
 
         {/* content */}
         <div className="px-5 pt-1 pb-5 flex flex-col flex-1 relative z-10 bg-white">
-          <h3 className="font-black text-slate-800 text-[16px] leading-snug line-clamp-2 mb-3">
+          <h3 className="font-black text-primary text-[16px] leading-snug line-clamp-2 mb-3">
             {data.judul}
           </h3>
 
@@ -91,7 +91,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
             <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
               <Building2 size={17} className="text-slate-400" />
             </div>
-            <span className="font-bold text-[13px] text-slate-700 line-clamp-1">{perusahaanNama}</span>
+            <span className="font-bold text-[13px] text-primary/80 line-clamp-1">{perusahaanNama}</span>
           </div>
 
           {/* location */}
@@ -136,16 +136,16 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
                   className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {data.is_saved ? (
-                    <Bookmark size={16} className="text-[#16372a]" fill="currentColor" />
+                    <Bookmark size={16} className="text-primary" fill="currentColor" />
                   ) : (
-                    <Bookmark size={16} className="text-slate-300 hover:text-[#16372a]" />
+                    <Bookmark size={16} className="text-slate-300 hover:text-primary" />
                   )}
                 </button>
                 
                 {/* Tombol Arah Panah (Ke Detail) */}
                 <button 
                   onClick={(e) => { e.stopPropagation(); navigate(`/alumni/lowongan/${data.id}`); }}
-                  className="w-8 h-8 flex items-center justify-center bg-[#16372a] rounded-full hover:bg-[#1e5c3e] transition-colors cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center bg-primary rounded-full hover:bg-primary/80 transition-colors cursor-pointer"
                 >
                   <ArrowRight size={15} className="text-white" />
                 </button>
