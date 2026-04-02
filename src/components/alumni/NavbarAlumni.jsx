@@ -78,7 +78,7 @@ export default function NavbarAlumni({ user }) {
     >
       <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${scrolled ? 'px-8 sm:px-12 lg:px-25' : 'px-4 sm:px-6 lg:px-8'
         }`}>
-        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled ? 'shadow-md bg-white/70 backdrop-blur-xl px-6' : 'bg-white/90 backdrop-blur-xl px-6'
+        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled ? 'shadow-md bg-white/70 backdrop-blur-xl px-6' : 'bg-transparant'
           }`}>
 
           {/* Logo Section */}
@@ -89,13 +89,13 @@ export default function NavbarAlumni({ user }) {
               className="w-12 h-10 object-contain drop-shadow-sm"
             />
             <div className='flex flex-col transition-all duration-500 ease-in-out'>
-              <span className="font-black text-primary text-lg">Alumni Tracer</span>
-              {!scrolled && <span className='text-xs font-semibold text-primary/80'>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>}
+              <span className={`font-black text-lg ${scrolled ? 'text-primary' : 'text-white'}`}>Alumni Tracer</span>
+              {!scrolled && <span className={`text-xs font-semibold ${scrolled ? 'text-primary/80' : 'text-white/80'}`}>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>}
             </div>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden xl:flex bg-fourth/80 p-1 rounded-2xl border border-white/60">
+          <div className="hidden xl:flex bg-fourth/80 p-1 rounded-md ">
             {navLinks.map((item, i) => {
               // Cek isActive: Khusus pengumuman, kita buat aktif juga jika sedang di halaman detailnya
               const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
@@ -104,7 +104,7 @@ export default function NavbarAlumni({ user }) {
                 return (
                   <div
                     key={i}
-                    className="group flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-slate-400 cursor-not-allowed opacity-50"
+                    className="group flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold text-slate-400 cursor-not-allowed opacity-50"
                   >
                     <Lock size={14} />
                     {item.name}
@@ -122,7 +122,7 @@ export default function NavbarAlumni({ user }) {
                 <Link
                   key={i}
                   to={item.path}
-                  className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${isActive
+                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
                     ? 'bg-white text-primary shadow-sm'
                     : 'text-third hover:text-primary'
                     }`}
@@ -140,7 +140,7 @@ export default function NavbarAlumni({ user }) {
               {/* Notification Button */}
               <button
                 onClick={() => navigate('/alumni/notifikasi')}
-                className="cursor-pointer relative group p-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-white/60 text-primary/80 hover:text-primary hover:bg-fourth  transition-all"
+                className="cursor-pointer relative group p-2.5 rounded-md bg-white/80 backdrop-blur-sm border border-white/60 text-primary/80 hover:text-primary hover:bg-fourth  transition-all"
               >
                 <Bell size={20} />
                 {/* Notification Badge */}
@@ -162,7 +162,7 @@ export default function NavbarAlumni({ user }) {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="cursor-pointer flex items-center gap-2 p-1 pr-3 rounded-xl border border-white/60 bg-white/80 backdrop-blur-sm hover:bg-fourth transition-all"
+                  className="cursor-pointer flex items-center gap-2 p-1 pr-3 rounded-md border border-white/60 bg-white/80 backdrop-blur-sm hover:bg-fourth transition-all"
                 >
                   <div className="w-8 h-8 rounded-lg bg-primary overflow-hidden">
                     {fotoUrl ? (
@@ -186,7 +186,7 @@ export default function NavbarAlumni({ user }) {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden z-50"
+                      className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden z-50"
                     >
                       {/* User Info Header */}
                       <div className="px-5 py-4 bg-fourth/50 border-b border-white/50">
@@ -249,7 +249,7 @@ export default function NavbarAlumni({ user }) {
                 initial={{ opacity: 0, y: -20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-4xl shadow-2xl xl:hidden flex flex-col gap-2"
+                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
               >
                 {/* Navigation Links */}
                 {navLinks.map((item, i) => {
@@ -259,7 +259,7 @@ export default function NavbarAlumni({ user }) {
                     return (
                       <div
                         key={i}
-                        className="flex items-center justify-between px-6 py-4 rounded-2xl bg-fourth/50 text-slate-400 opacity-60"
+                        className="flex items-center justify-between px-6 py-4 rounded-md bg-fourth/50 text-slate-400 opacity-60"
                       >
                         <span className="font-bold">{item.name}</span>
                         <Lock size={16} />
@@ -276,7 +276,7 @@ export default function NavbarAlumni({ user }) {
                       <Link
                         to={item.path}
                         onClick={() => setIsOpen(false)}
-                        className={`block px-6 py-4 rounded-2xl font-bold transition-all ${isActive
+                        className={`block px-6 py-4 rounded-md font-bold transition-all ${isActive
                           ? 'bg-primary text-white'
                           : 'text-primary/80 hover:bg-fourth hover:text-primary'
                           }`}

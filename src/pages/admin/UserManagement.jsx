@@ -302,7 +302,8 @@ export default function UserManagement() {
         <div className="space-y-6">
           
           {/* --- TOOLBAR UTAMA (Responsif & Rapi Sebaris) --- */}
-          <div className="bg-white p-2 md:p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 md:gap-4 transition-all overflow-hidden">
+          {/* PERUBAHAN: Menghapus overflow-hidden dan menambahkan relative z-40 agar dropdown tidak terpotong */}
+          <div className="bg-white p-2 md:p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 md:gap-4 transition-all relative z-40">
             
             {/* TABS (Kiri) */}
             <div className="w-full lg:w-max overflow-x-auto no-scrollbar shrink-0">
@@ -319,18 +320,19 @@ export default function UserManagement() {
               
               {/* Search Bar - Akan shrink otomatis jika ruang sempit */}
               <div className="relative group w-full sm:w-auto flex-1 min-w-37.5 max-w-full lg:max-w-70">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3C5759] transition-colors" size={16} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={16} />
                 <input
                   type="text"
                   placeholder="Cari nama, NIS, NISN..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 focus:border-[#3C5759] focus:ring-1 focus:ring-[#3C5759]/20 rounded-xl text-sm outline-none transition-all"
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary/20 rounded-xl text-sm outline-none transition-all"
                 />
               </div>
 
-              {/* Grouping Filter & Button agar selalu sejajar */}
-              <div className="flex items-center gap-2.5 w-full sm:w-auto overflow-x-auto no-scrollbar shrink-0">
+              {/* Grouping Filter & Button */}
+              {/* PERUBAHAN: Menghapus overflow-x-auto dan menggantinya dengan flex-wrap agar tidak memotong dropdown */}
+              <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 relative z-50">
                 <FilterJurusan
                   isFilterOpen={isFilterOpen}
                   setIsFilterOpen={setIsFilterOpen}
@@ -350,7 +352,7 @@ export default function UserManagement() {
                 <button
                   onClick={handleExport}
                   disabled={exportLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#3C5759] text-white font-bold rounded-xl hover:bg-[#2A3E3F] active:scale-95 transition-all text-sm shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/80 active:scale-95 transition-all text-sm shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                   <span className="inline">Eksport CSV</span>

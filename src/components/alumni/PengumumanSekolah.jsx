@@ -6,7 +6,7 @@ export default function PengumumanSekolah({ announcements, loading, getImageUrl 
   const navigate = useNavigate();
 
   return (
-    <section className="bg-white rounded-4xl lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+    <section className="bg-white rounded-md lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
       {/* Header: Judul & Tombol Lihat Semua */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
         <div>

@@ -97,7 +97,7 @@ export default function CareerSection({ jobList }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group bg-white rounded-4xl overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500 flex flex-col"
+              className="group bg-white rounded-md overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500 flex flex-col"
             >
               {/* Job Banner - Dibuat bisa diklik */}
               <div 
