@@ -7,7 +7,7 @@ import {
   Pencil,
   Search,
   Loader2,
-  Handshake
+  Image as ImageIcon
 } from "lucide-react";
 import { alertSuccess, alertError, alertConfirm, alertWarning } from "../../utilitis/alert"; 
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
@@ -16,7 +16,7 @@ import Pagination from "../../components/admin/Pagination";
 const DATA_PER_PAGE = 7;
 
 // ============================================================================
-// DATA DUMMY (Pengganti Database/API sementara)
+// DATA DUMMY
 // ============================================================================
 const DUMMY_KOTA = [
   { id: 1, nama: "Jakarta" },
@@ -27,31 +27,31 @@ const DUMMY_KOTA = [
 ];
 
 const DUMMY_UNIVERSITAS = [
-  { id: 1, nama: "Universitas Brawijaya", id_kota: 3, kota: { id: 3, nama: "Malang" }, jalan: "Jl. Veteran Malang" },
-  { id: 2, nama: "Universitas Indonesia", id_kota: 1, kota: { id: 1, nama: "Jakarta" }, jalan: "Kampus UI Depok" },
-  { id: 3, nama: "Institut Teknologi Bandung", id_kota: 4, kota: { id: 4, nama: "Bandung" }, jalan: "Jl. Ganesha No. 10" },
-  { id: 4, nama: "Universitas Gadjah Mada", id_kota: 5, kota: { id: 5, nama: "Yogyakarta" }, jalan: "Bulaksumur, Yogyakarta" },
+  { id: 1, nama: "Universitas Brawijaya", jalan: "Jl. Veteran Malang", image: null },
+  { id: 2, nama: "Universitas Indonesia", jalan: "Kampus UI Depok", image: null },
+  { id: 3, nama: "Institut Teknologi Bandung", jalan: "Jl. Ganesha No. 10, Bandung", image: null },
+  { id: 4, nama: "Universitas Gadjah Mada", jalan: "Bulaksumur, Yogyakarta", image: null },
 ];
 
 const DUMMY_PERUSAHAAN = [
-  { id: 1, nama: "PT Telkom Indonesia", id_kota: 4, kota: { id: 4, nama: "Bandung" }, jalan: "Jl. Japati No. 1" },
-  { id: 2, nama: "PT GoTo Gojek Tokopedia", id_kota: 1, kota: { id: 1, nama: "Jakarta" }, jalan: "Gedung Pasaraya Blok M" },
-  { id: 3, nama: "CV Maju Mundur", id_kota: 2, kota: { id: 2, nama: "Surabaya" }, jalan: "Jl. Pahlawan No. 12" },
+  { id: 1, nama: "PT Telkom Indonesia", jalan: "Jl. Japati No. 1, Bandung", image: null },
+  { id: 2, nama: "PT GoTo Gojek Tokopedia", jalan: "Gedung Pasaraya Blok M, Jakarta", image: null },
+  { id: 3, nama: "CV Maju Mundur", jalan: "Jl. Pahlawan No. 12, Surabaya", image: null },
 ];
 
 
 // ============================================================================
 // 1. TABEL MITRA UNIVERSITAS / KAMPUS
 // ============================================================================
-const UniversitasTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelete }) => {
+const UniversitasTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ nama_universitas: "", id_kota: "", jalan: "" });
+  const [formData, setFormData] = useState({ nama: "", jalan: "", imagePreview: null, imageFile: null });
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const resetForm = () => setFormData({ nama_universitas: "", id_kota: "", jalan: "" });
+  const resetForm = () => setFormData({ nama: "", jalan: "", imagePreview: null, imageFile: null });
 
   const isDuplicate = (name, currentId = null) => {
     return data.some(item => 
@@ -59,29 +59,39 @@ const UniversitasTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDele
     );
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) return alertWarning("Ukuran gambar maksimal 2MB");
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData(prev => ({ ...prev, imageFile: file, imagePreview: reader.result }));
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreate = async () => {
-    const trimmedName = formData.nama_universitas.trim();
+    const trimmedName = formData.nama.trim();
     if (!trimmedName) return;
     if (isDuplicate(trimmedName)) return alertWarning(`Universitas "${trimmedName}" sudah ada dalam daftar.`);
 
     setSaving(true);
     setTimeout(() => {
-      onCreate(formData);
+      onCreate({ nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
       alertSuccess("Universitas berhasil ditambahkan");
       resetForm();
       setIsAdding(false);
       setSaving(false);
-    }, 500); // Simulasi delay API
+    }, 500);
   };
 
   const handleUpdate = async (id) => {
-    const trimmedName = formData.nama_universitas.trim();
+    const trimmedName = formData.nama.trim();
     if (!trimmedName) return;
     if (isDuplicate(trimmedName, id)) return alertWarning(`Nama universitas "${trimmedName}" sudah digunakan.`);
 
     setSaving(true);
     setTimeout(() => {
-      onUpdate(id, formData);
+      onUpdate(id, { nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
       alertSuccess("Universitas berhasil diperbarui");
       setEditId(null);
       resetForm();
@@ -100,9 +110,10 @@ const UniversitasTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDele
     setEditId(item.id);
     setIsAdding(false);
     setFormData({
-      nama_universitas: item.nama || "",
-      id_kota: item.kota?.id || item.id_kota || "",
+      nama: item.nama || "",
       jalan: item.jalan || "",
+      imagePreview: item.image || null,
+      imageFile: null
     });
   };
 
@@ -141,32 +152,44 @@ const UniversitasTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDele
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
-              <th className="px-3 py-3 w-1/4">Nama Kampus</th>
-              <th className="px-3 py-3 w-1/4">Kota</th>
-              <th className="px-3 py-3 w-1/3">Alamat</th>
+              <th className="px-3 py-3 w-20 text-center">Logo</th>
+              <th className="px-3 py-3 w-1/3">Nama Kampus</th>
+              <th className="px-3 py-3 w-1/3">Alamat Lengkap</th>
               <th className="px-3 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {isAdding && (
               <tr className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-                <td className="py-2 px-3">
-                  <input type="text" value={formData.nama_universitas} onChange={(e) => setFormData(p => ({ ...p, nama_universitas: e.target.value }))} placeholder="Nama Universitas" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
+                <td className="py-2 px-3 text-center">
+                  <label className="cursor-pointer flex flex-col items-center justify-center w-14 h-14 mx-auto rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 hover:border-primary transition-all group relative overflow-hidden bg-white shadow-sm" title="Upload Logo">
+                    {formData.imagePreview ? (
+                      <>
+                        <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-contain p-1" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-[8px] text-white font-bold uppercase">Ganti</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon size={16} className="text-gray-400 group-hover:text-primary mb-1 transition-colors" />
+                        <span className="text-[7px] font-bold text-gray-400 group-hover:text-primary uppercase tracking-wider transition-colors">Upload</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                  </label>
                 </td>
                 <td className="py-2 px-3">
-                  <select value={formData.id_kota} onChange={(e) => setFormData(p => ({ ...p, id_kota: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none bg-white">
-                    <option value="">-- Kota --</option>
-                    {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                  </select>
+                  <input type="text" value={formData.nama} onChange={(e) => setFormData(p => ({ ...p, nama: e.target.value }))} placeholder="Nama Universitas" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" autoFocus />
                 </td>
                 <td className="py-2 px-3">
-                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
+                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat lengkap (termasuk kota)" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" />
                 </td>
                 <td className="py-2 px-3">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors">Batal</button>
-                    <button onClick={handleCreate} disabled={saving || !formData.nama_universitas.trim()} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold bg-primary text-white rounded shadow-sm flex items-center gap-1 hover:opacity-90 disabled:opacity-50">
-                      {saving && <Loader2 size={10} className="animate-spin" />} Simpan
+                  <div className="flex justify-end gap-2 mt-1">
+                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="cursor-pointer px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+                    <button onClick={handleCreate} disabled={saving || !formData.nama.trim()} className="cursor-pointer px-4 py-2 text-xs font-bold bg-primary text-white rounded-lg shadow-sm flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50">
+                      {saving ? <Loader2 size={12} className="animate-spin" /> : null} Simpan
                     </button>
                   </div>
                 </td>
@@ -174,36 +197,56 @@ const UniversitasTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDele
             )}
 
             {paginatedData.length === 0 && !isAdding ? (
-              <tr><td colSpan={4} className="py-6 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
+              <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
             ) : (
               paginatedData.map((item) =>
                 editId === item.id ? (
                   <tr key={item.id} className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-                    <td className="py-2 px-3">
-                      <input type="text" value={formData.nama_universitas} onChange={(e) => setFormData(p => ({ ...p, nama_universitas: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
+                    <td className="py-2 px-3 text-center">
+                      <label className="cursor-pointer flex flex-col items-center justify-center w-14 h-14 mx-auto rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 hover:border-primary transition-all group relative overflow-hidden bg-white shadow-sm" title="Ganti Logo">
+                        {formData.imagePreview ? (
+                          <>
+                            <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-contain p-1" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-[8px] text-white font-bold uppercase">Ganti</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon size={16} className="text-gray-400 group-hover:text-primary mb-1 transition-colors" />
+                            <span className="text-[7px] font-bold text-gray-400 group-hover:text-primary uppercase tracking-wider transition-colors">Upload</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                      </label>
                     </td>
                     <td className="py-2 px-3">
-                      <select value={formData.id_kota} onChange={(e) => setFormData(p => ({ ...p, id_kota: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none bg-white">
-                        <option value="">-- Kota --</option>
-                        {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                      </select>
+                      <input type="text" value={formData.nama} onChange={(e) => setFormData(p => ({ ...p, nama: e.target.value }))} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" autoFocus />
                     </td>
                     <td className="py-2 px-3">
-                      <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
+                      <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" />
                     </td>
                     <td className="py-2 px-3">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => { setEditId(null); resetForm(); }} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors">Batal</button>
-                        <button onClick={() => handleUpdate(item.id)} disabled={saving || !formData.nama_universitas.trim()} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold bg-primary text-white rounded shadow-sm flex items-center gap-1 hover:opacity-90 disabled:opacity-50">
-                          {saving && <Loader2 size={10} className="animate-spin" />} Simpan
+                      <div className="flex justify-end gap-2 mt-1">
+                        <button onClick={() => { setEditId(null); resetForm(); }} className="cursor-pointer px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+                        <button onClick={() => handleUpdate(item.id)} disabled={saving || !formData.nama.trim()} className="cursor-pointer px-4 py-2 text-xs font-bold bg-primary text-white rounded-lg shadow-sm flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50">
+                          {saving ? <Loader2 size={12} className="animate-spin" /> : null} Simpan
                         </button>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
-                    <td className="py-3 px-3 font-medium text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
-                    <td className="py-3 px-3 text-xs text-gray-500">{item.kota?.nama || '-'}</td>
+                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-middle">
+                    <td className="py-3 px-3 text-center">
+                      <div className="w-12 h-12 mx-auto rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
+                        {item.image ? (
+                          <img src={item.image} alt={item.nama} className="w-full h-full object-contain p-1" />
+                        ) : (
+                          <GraduationCap size={20} className="text-gray-300" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 font-bold text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
                     <td className="py-3 px-3 text-xs text-gray-500 max-w-[12.5rem] truncate">{item.jalan || '-'}</td>
                     <td className="py-3 px-3">
                       <div className="flex justify-end gap-1 transition-opacity">
@@ -231,15 +274,15 @@ const UniversitasTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDele
 // ============================================================================
 // 2. TABEL MITRA PERUSAHAAN
 // ============================================================================
-const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelete }) => {
+const PerusahaanTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ nama_perusahaan: "", id_kota: "", jalan: "" });
+  const [formData, setFormData] = useState({ nama: "", jalan: "", imagePreview: null, imageFile: null });
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const resetForm = () => setFormData({ nama_perusahaan: "", id_kota: "", jalan: "" });
+  const resetForm = () => setFormData({ nama: "", jalan: "", imagePreview: null, imageFile: null });
 
   const isDuplicate = (name, currentId = null) => {
     return data.some(item => 
@@ -247,14 +290,24 @@ const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelet
     );
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) return alertWarning("Ukuran gambar maksimal 2MB");
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData(prev => ({ ...prev, imageFile: file, imagePreview: reader.result }));
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreate = async () => {
-    const trimmedName = formData.nama_perusahaan.trim();
+    const trimmedName = formData.nama.trim();
     if (!trimmedName) return;
     if (isDuplicate(trimmedName)) return alertWarning(`Perusahaan "${trimmedName}" sudah ada dalam daftar.`);
 
     setSaving(true);
     setTimeout(() => {
-      onCreate(formData);
+      onCreate({ nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
       alertSuccess("Perusahaan berhasil ditambahkan");
       resetForm();
       setIsAdding(false);
@@ -263,13 +316,13 @@ const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelet
   };
 
   const handleUpdate = async (id) => {
-    const trimmedName = formData.nama_perusahaan.trim();
+    const trimmedName = formData.nama.trim();
     if (!trimmedName) return;
     if (isDuplicate(trimmedName, id)) return alertWarning(`Nama perusahaan "${trimmedName}" sudah digunakan oleh data lain.`);
 
     setSaving(true);
     setTimeout(() => {
-      onUpdate(id, formData);
+      onUpdate(id, { nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
       alertSuccess("Perusahaan berhasil diperbarui");
       setEditId(null);
       resetForm();
@@ -288,9 +341,10 @@ const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelet
     setEditId(item.id);
     setIsAdding(false);
     setFormData({
-      nama_perusahaan: item.nama || "",
-      id_kota: item.kota?.id || item.id_kota || "",
+      nama: item.nama || "",
       jalan: item.jalan || "",
+      imagePreview: item.image || null,
+      imageFile: null
     });
   };
 
@@ -329,32 +383,44 @@ const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelet
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
-              <th className="px-3 py-3 w-1/4">Nama Perusahaan</th>
-              <th className="px-3 py-3 w-1/4">Kota</th>
-              <th className="px-3 py-3 w-1/3">Alamat</th>
+              <th className="px-3 py-3 w-20 text-center">Logo</th>
+              <th className="px-3 py-3 w-1/3">Nama Perusahaan</th>
+              <th className="px-3 py-3 w-1/3">Alamat Lengkap</th>
               <th className="px-3 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {isAdding && (
               <tr className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-                <td className="py-2 px-3">
-                  <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} placeholder="Nama Perusahaan" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
+                <td className="py-2 px-3 text-center">
+                  <label className="cursor-pointer flex flex-col items-center justify-center w-14 h-14 mx-auto rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 hover:border-primary transition-all group relative overflow-hidden bg-white shadow-sm" title="Upload Logo">
+                    {formData.imagePreview ? (
+                      <>
+                        <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-contain p-1" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-[8px] text-white font-bold uppercase">Ganti</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon size={16} className="text-gray-400 group-hover:text-primary mb-1 transition-colors" />
+                        <span className="text-[7px] font-bold text-gray-400 group-hover:text-primary uppercase tracking-wider transition-colors">Upload</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                  </label>
                 </td>
                 <td className="py-2 px-3">
-                  <select value={formData.id_kota} onChange={(e) => setFormData(p => ({ ...p, id_kota: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none bg-white">
-                    <option value="">-- Kota --</option>
-                    {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                  </select>
+                  <input type="text" value={formData.nama} onChange={(e) => setFormData(p => ({ ...p, nama: e.target.value }))} placeholder="Nama Perusahaan" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" autoFocus />
                 </td>
                 <td className="py-2 px-3">
-                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
+                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat lengkap (termasuk kota)" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" />
                 </td>
                 <td className="py-2 px-3">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors">Batal</button>
-                    <button onClick={handleCreate} disabled={saving || !formData.nama_perusahaan.trim()} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold bg-primary text-white rounded shadow-sm flex items-center gap-1 hover:opacity-90 disabled:opacity-50">
-                      {saving && <Loader2 size={10} className="animate-spin" />} Simpan
+                  <div className="flex justify-end gap-2 mt-1">
+                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="cursor-pointer px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+                    <button onClick={handleCreate} disabled={saving || !formData.nama.trim()} className="cursor-pointer px-4 py-2 text-xs font-bold bg-primary text-white rounded-lg shadow-sm flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50">
+                      {saving ? <Loader2 size={12} className="animate-spin" /> : null} Simpan
                     </button>
                   </div>
                 </td>
@@ -362,36 +428,56 @@ const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelet
             )}
 
             {paginatedData.length === 0 && !isAdding ? (
-              <tr><td colSpan={4} className="py-6 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
+              <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
             ) : (
               paginatedData.map((item) =>
                 editId === item.id ? (
                   <tr key={item.id} className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-                    <td className="py-2 px-3">
-                      <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
+                    <td className="py-2 px-3 text-center">
+                      <label className="cursor-pointer flex flex-col items-center justify-center w-14 h-14 mx-auto rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 hover:border-primary transition-all group relative overflow-hidden bg-white shadow-sm" title="Ganti Logo">
+                        {formData.imagePreview ? (
+                          <>
+                            <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-contain p-1" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-[8px] text-white font-bold uppercase">Ganti</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon size={16} className="text-gray-400 group-hover:text-primary mb-1 transition-colors" />
+                            <span className="text-[7px] font-bold text-gray-400 group-hover:text-primary uppercase tracking-wider transition-colors">Upload</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                      </label>
                     </td>
                     <td className="py-2 px-3">
-                      <select value={formData.id_kota} onChange={(e) => setFormData(p => ({ ...p, id_kota: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none bg-white">
-                        <option value="">-- Kota --</option>
-                        {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                      </select>
+                      <input type="text" value={formData.nama} onChange={(e) => setFormData(p => ({ ...p, nama: e.target.value }))} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" autoFocus />
                     </td>
                     <td className="py-2 px-3">
-                      <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
+                      <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary outline-none" />
                     </td>
                     <td className="py-2 px-3">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => { setEditId(null); resetForm(); }} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors">Batal</button>
-                        <button onClick={() => handleUpdate(item.id)} disabled={saving || !formData.nama_perusahaan.trim()} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold bg-primary text-white rounded shadow-sm flex items-center gap-1 hover:opacity-90 disabled:opacity-50">
-                          {saving && <Loader2 size={10} className="animate-spin" />} Simpan
+                      <div className="flex justify-end gap-2 mt-1">
+                        <button onClick={() => { setEditId(null); resetForm(); }} className="cursor-pointer px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">Batal</button>
+                        <button onClick={() => handleUpdate(item.id)} disabled={saving || !formData.nama.trim()} className="cursor-pointer px-4 py-2 text-xs font-bold bg-primary text-white rounded-lg shadow-sm flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50">
+                          {saving ? <Loader2 size={12} className="animate-spin" /> : null} Simpan
                         </button>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
-                    <td className="py-3 px-3 font-medium text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
-                    <td className="py-3 px-3 text-xs text-gray-500">{item.kota?.nama || '-'}</td>
+                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-middle">
+                    <td className="py-3 px-3 text-center">
+                      <div className="w-12 h-12 mx-auto rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
+                        {item.image ? (
+                          <img src={item.image} alt={item.nama} className="w-full h-full object-contain p-1" />
+                        ) : (
+                          <Building2 size={20} className="text-gray-300" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 font-bold text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
                     <td className="py-3 px-3 text-xs text-gray-500 max-w-[12.5rem] truncate">{item.jalan || '-'}</td>
                     <td className="py-3 px-3">
                       <div className="flex justify-end gap-1 transition-opacity">
@@ -417,7 +503,7 @@ const PerusahaanTable = ({ data = [], kotaList = [], onCreate, onUpdate, onDelet
 };
 
 // ============================================================================
-// 3. MAIN PAGE COMPONENT: KEMITRAAN (DENGAN DATA DUMMY)
+// 3. MAIN PAGE COMPONENT: KEMITRAAN (DENGAN DATA DUMMY & IMAGE UPLOAD)
 // ============================================================================
 export default function Kemitraan() {
   const [selectedFormat, setSelectedFormat] = useState("CSV");
@@ -427,19 +513,14 @@ export default function Kemitraan() {
   // Menggunakan DUMMY STATE
   const [universitasData, setUniversitasData] = useState(DUMMY_UNIVERSITAS);
   const [perusahaanData, setPerusahaanData] = useState(DUMMY_PERUSAHAAN);
-  const [kotaList] = useState(DUMMY_KOTA);
-
-  // Fungsi pencari kota berdasarkan ID
-  const getKotaObj = (id) => kotaList.find(k => String(k.id) === String(id));
 
   // --- CRUD UNIVERSITAS (Local State) ---
   const handleCreateUniv = (formData) => {
     const newItem = {
       id: Date.now(),
-      nama: formData.nama_universitas,
-      id_kota: formData.id_kota,
-      kota: getKotaObj(formData.id_kota),
-      jalan: formData.jalan
+      nama: formData.nama,
+      jalan: formData.jalan,
+      image: formData.image
     };
     setUniversitasData([newItem, ...universitasData]);
   };
@@ -447,7 +528,7 @@ export default function Kemitraan() {
   const handleUpdateUniv = (id, formData) => {
     setUniversitasData(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, nama: formData.nama_universitas, id_kota: formData.id_kota, kota: getKotaObj(formData.id_kota), jalan: formData.jalan };
+        return { ...item, nama: formData.nama, jalan: formData.jalan, image: formData.image };
       }
       return item;
     }));
@@ -462,10 +543,9 @@ export default function Kemitraan() {
   const handleCreatePerusahaan = (formData) => {
     const newItem = {
       id: Date.now(),
-      nama: formData.nama_perusahaan,
-      id_kota: formData.id_kota,
-      kota: getKotaObj(formData.id_kota),
-      jalan: formData.jalan
+      nama: formData.nama,
+      jalan: formData.jalan,
+      image: formData.image
     };
     setPerusahaanData([newItem, ...perusahaanData]);
   };
@@ -473,7 +553,7 @@ export default function Kemitraan() {
   const handleUpdatePerusahaan = (id, formData) => {
     setPerusahaanData(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, nama: formData.nama_perusahaan, id_kota: formData.id_kota, kota: getKotaObj(formData.id_kota), jalan: formData.jalan };
+        return { ...item, nama: formData.nama, jalan: formData.jalan, image: formData.image };
       }
       return item;
     }));
@@ -491,14 +571,14 @@ export default function Kemitraan() {
       let headers, rows, fileName, title;
       if (selectedReport === 'Mitra Universitas') {
         if (universitasData.length === 0) return alertWarning("Data Universitas kosong");
-        headers = ['Nama Kampus/Universitas', 'Kota', 'Alamat'];
-        rows = universitasData.map(u => [u.nama, u.kota?.nama || '', u.jalan || '']);
+        headers = ['Nama Kampus/Universitas', 'Alamat Lengkap'];
+        rows = universitasData.map(u => [u.nama, u.jalan || '']);
         fileName = `laporan_universitas_${new Date().toISOString().slice(0,10)}`;
         title = 'Laporan Data Mitra Universitas';
       } else {
         if (perusahaanData.length === 0) return alertWarning("Data Perusahaan kosong");
-        headers = ['Nama Perusahaan', 'Kota', 'Alamat'];
-        rows = perusahaanData.map(p => [p.nama, p.kota?.nama || '', p.jalan || '']);
+        headers = ['Nama Perusahaan', 'Alamat Lengkap'];
+        rows = perusahaanData.map(p => [p.nama, p.jalan || '']);
         fileName = `laporan_perusahaan_${new Date().toISOString().slice(0,10)}`;
         title = 'Laporan Data Mitra Perusahaan';
       }
@@ -532,7 +612,6 @@ export default function Kemitraan() {
           {/* TABEL UNIVERSITAS */}
           <UniversitasTable 
             data={universitasData} 
-            kotaList={kotaList} 
             onCreate={handleCreateUniv}
             onUpdate={handleUpdateUniv}
             onDelete={handleDeleteUniv}
@@ -541,7 +620,6 @@ export default function Kemitraan() {
           {/* TABEL PERUSAHAAN */}
           <PerusahaanTable 
             data={perusahaanData} 
-            kotaList={kotaList} 
             onCreate={handleCreatePerusahaan}
             onUpdate={handleUpdatePerusahaan}
             onDelete={handleDeletePerusahaan}
