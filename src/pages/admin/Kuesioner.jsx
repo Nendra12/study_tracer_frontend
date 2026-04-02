@@ -85,6 +85,10 @@ export default function Kuesioner() {
             let bodyPas = {
                 "status": data
             }
+            // Pastikan tanggal_publikasi terisi saat mengaktifkan kuesioner
+            if (data === 'aktif') {
+                bodyPas.tanggal_publikasi = new Date().toISOString().split('T')[0];
+            }
             await adminApi.updateStatusKuesioner(id, bodyPas)
             alertSuccess("Kuesioner berhasil di update")
             setUpdateStatus(prev => !prev)

@@ -271,6 +271,7 @@ const UpdateKuesioner = () => {
             ...rest,
             tanggal_mulai: tanggalMulai,
             tanggal_selesai: tanggalSelesai,
+            tanggal_publikasi: formData.status === 'aktif' ? new Date().toISOString().split('T')[0] : null,
             id_status: statusObj?.id,
             status: formData.status,
             created_at: new Date().toISOString()

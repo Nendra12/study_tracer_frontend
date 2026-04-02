@@ -17,6 +17,14 @@ const DEFAULT_THEME = {
   thirdColor: '#9ca3af',
   logo: null,
   loginBg: null,
+  landingBg: null,
+  deskripsiFooter: '',
+  emailKontak: '',
+  webKontak: '',
+  telpKontak: '',
+  teksPrivasi: '',
+  teksLayanan: '',
+  teksDukungan: '',
 };
 
 // Derive storage base from API base URL
@@ -65,6 +73,14 @@ export const ThemeProvider = ({ children }) => {
       thirdColor: data.third_color || DEFAULT_THEME.thirdColor,
       logo: fixStorageUrl(data.logo) || DEFAULT_THEME.logo,
       loginBg: fixStorageUrl(data.login_bg) || DEFAULT_THEME.loginBg,
+      landingBg: fixStorageUrl(data.landing_bg) || DEFAULT_THEME.landingBg,
+      deskripsiFooter: data.deskripsi_footer ?? DEFAULT_THEME.deskripsiFooter,
+      emailKontak: data.email_kontak ?? DEFAULT_THEME.emailKontak,
+      webKontak: data.web_kontak ?? DEFAULT_THEME.webKontak,
+      telpKontak: data.telp_kontak ?? DEFAULT_THEME.telpKontak,
+      teksPrivasi: data.teks_privasi ?? DEFAULT_THEME.teksPrivasi,
+      teksLayanan: data.teks_layanan ?? DEFAULT_THEME.teksLayanan,
+      teksDukungan: data.teks_dukungan ?? DEFAULT_THEME.teksDukungan,
     };
   };
 
