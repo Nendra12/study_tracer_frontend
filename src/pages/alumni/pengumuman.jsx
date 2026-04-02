@@ -11,9 +11,7 @@ import { AlumniSkeleton } from '../../components/alumni/skeleton'; // Menggunaka
 // Konfigurasi & API
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
-
-// Ganti dengan ilustrasi SVG kamu jika ada (contoh: announcement.svg)
-// import AnnouncementImg from '../../assets/svg/announcement.svg';
+import JobsImg from '../../assets/svg/news-broadcast-svgrepo-com.svg';
 
 export default function PengumumanAlumni() {
   const navigate = useNavigate();
@@ -114,8 +112,7 @@ export default function PengumumanAlumni() {
 
           {/* Elemen Dekoratif Kanan (Gunakan SVG/Icon jika ada) */}
           <div className="hidden lg:flex items-center justify-center opacity-80">
-             {/* Jika punya gambar SVG untuk pengumuman, letakkan di sini. Sementara pakai icon besar */}
-             <Megaphone size={120} className="text-white/20 -rotate-12" strokeWidth={1} />
+             <img src={JobsImg} alt="job" className='w-40' />
           </div>
 
         </div>
