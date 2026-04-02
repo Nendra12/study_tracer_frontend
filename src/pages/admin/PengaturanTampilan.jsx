@@ -46,6 +46,7 @@ export default function PengaturanTampilan() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [activePreviewTab, setActivePreviewTab] = useState('landing');
 
   const logoInputRef = useRef(null);
   const loginBgInputRef = useRef(null);
@@ -184,6 +185,11 @@ export default function PengaturanTampilan() {
     setMetaIconFile(null);
   };
 
+  const openPreview = (tabName) => {
+    setActivePreviewTab(tabName);
+    setShowPreviewModal(true);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500 w-full relative">
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden relative z-10">
@@ -193,6 +199,12 @@ export default function PengaturanTampilan() {
           <section>
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold text-primary">Manajemen Meta Data (SEO)</h3>
+              <button
+                onClick={() => openPreview('meta')}
+                className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <Eye size={14} className='text-primary' /> Preview Tampilan
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -239,7 +251,7 @@ export default function PengaturanTampilan() {
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold text-primary">Identitas & Media</h3>
               <button
-                onClick={() => setShowPreviewModal(true)}
+                onClick={() => openPreview('landing')}
                 className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
               >
                 <Eye size={14} className='text-primary' /> Preview Tampilan
@@ -335,7 +347,15 @@ export default function PengaturanTampilan() {
 
           {/* SECTION 4: KONTEN FOOTER & TEKS MODAL */}
           <section>
-            <h3 className="text-lg font-bold text-primary mb-6 border-b border-gray-100 pb-2">Konten Footer & Teks Modal</h3>
+            <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
+              <h3 className="text-lg font-bold text-primary">Konten Footer & Teks Modal</h3>
+              <button
+                onClick={() => openPreview('footer')}
+                className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <Eye size={14} className='text-primary' /> Preview Tampilan
+              </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
               {/* Kolom Kiri: Informasi Kontak Footer */}
@@ -412,6 +432,7 @@ export default function PengaturanTampilan() {
       <TampilanPreview
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
+        activeTab={activePreviewTab}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         thirdColor={thirdColor}
@@ -419,6 +440,9 @@ export default function PengaturanTampilan() {
         loginBg={loginBgPreview}
         landingBg={landingBgPreview}
         namaSekolah={namaSekolah}
+        metaTitle={metaTitle}
+        metaDescription={metaDescription}
+        metaIcon={metaIconPreview}
       />
     </div>
   );
