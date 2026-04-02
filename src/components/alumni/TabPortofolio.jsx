@@ -236,7 +236,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Judul Proyek</label>
+              <label className="block text-sm font-semibold text-primary mb-2">Judul Proyek</label>
               <input
                 type="text"
                 name="judul"
@@ -303,7 +303,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Deskripsi Proyek</label>
+              <label className="block text-sm font-semibold text-primary mb-2">Deskripsi Proyek</label>
               <textarea
                 name="deskripsi"
                 value={formData.deskripsi}
@@ -385,7 +385,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
 
             {/* Content Area */}
             <div className="p-5 flex-1 flex flex-col">
-              <h3 className="font-bold text-lg text-slate-800 line-clamp-1 mb-2">{item.judul}</h3>
+              <h3 className="font-bold text-lg text-primary line-clamp-1 mb-2">{item.judul}</h3>
               <p className="text-slate-600 text-sm flex-1 line-clamp-3 mb-4">{item.deskripsi}</p>
 
               {item.link_project && (

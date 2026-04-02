@@ -466,7 +466,7 @@ export default function AlumniDetail() {
 
                       {/* Area Konten */}
                       <div className="p-5 flex-1 flex flex-col">
-                        <h3 className="font-bold text-lg text-slate-800 line-clamp-1 mb-2">{porto.judul}</h3>
+                        <h3 className="font-bold text-lg text-primary line-clamp-1 mb-2">{porto.judul}</h3>
                         <p className="text-slate-600 text-sm flex-1 line-clamp-3 mb-4">{porto.deskripsi}</p>
 
                         {porto.link_project && (

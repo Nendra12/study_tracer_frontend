@@ -162,7 +162,7 @@ export default function Kuesioner() {
 
                             {/* Toolbar & Filter */}
                             <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-8">
-                                <button onClick={() => navigate("/wb-admin/kuisoner/tambah-kuesioner")} className="cursor-pointer bg-primary text-white px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 text-xs font-bold hover:bg-secondary transition-all shadow-sm">
+                                <button onClick={() => navigate("/wb-admin/kuisoner/tambah-kuesioner")} className="cursor-pointer bg-primary text-white px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 text-xs font-bold hover:opacity-90 transition-all shadow-sm">
                                     <Plus size={18} /> Tambah Kuesioner
                                 </button>
                                 <div className="flex flex-col md:flex-row bg-slate-200/50 p-1 rounded-xl gap-1 relative">
@@ -171,7 +171,7 @@ export default function Kuesioner() {
                                             <button
                                                 key={tab}
                                                 onClick={() => setActiveTab(tab == 'nonaktif' ? 'hidden' : tab)}
-                                                className={`text-[10px] md:text-xs flex-1 md:flex-none cursor-pointer px-4 py-2 font-bold rounded-lg transition-all capitalize whitespace-nowrap ${(activeTab === tab) || (tab === "nonaktif" && activeTab === "hidden") ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:text-secondary"
+                                                className={`text-[10px] md:text-xs flex-1 md:flex-none cursor-pointer px-4 py-2 font-bold rounded-lg transition-all capitalize whitespace-nowrap ${(activeTab === tab) || (tab === "nonaktif" && activeTab === "hidden") ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:primary"
                                                     }`}
                                             >
                                                 {tab}
@@ -186,7 +186,7 @@ export default function Kuesioner() {
                                                 e.stopPropagation();
                                                 setIsMenuOpen(!isMenuOpen);
                                             }}
-                                            className='w-full flex text-[10px] md:text-xs gap-2 items-center justify-between cursor-pointer p-2.5 rounded-lg transition-all border bg-primary text-white hover:bg-secondary'
+                                            className='w-full flex text-[10px] md:text-xs gap-2 items-center justify-between cursor-pointer p-2.5 rounded-lg transition-all border bg-primary text-white hover:opacity-90'
                                         >
                                             <div className="flex items-center gap-2 pointer-events-none">
                                                 <Filter size={14} />

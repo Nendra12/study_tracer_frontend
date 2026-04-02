@@ -183,7 +183,7 @@ export default function LowonganDetail() {
                   </div>
                 </div>
 
-                <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tight mb-5">
+                <h1 className="text-3xl md:text-4xl font-black text-primary leading-tight tracking-tight mb-5">
                   {job.judul}
                 </h1>
 
@@ -208,7 +208,7 @@ export default function LowonganDetail() {
                 <div className="p-2 bg-fourth rounded-xl text-primary">
                   <FileText size={20} strokeWidth={2.5} />
                 </div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">Deskripsi Pekerjaan</h2>
+                <h2 className="text-xl font-black text-primary tracking-tight">Deskripsi Pekerjaan</h2>
               </div>
               <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-primary/80 font-medium leading-relaxed whitespace-pre-line">
                 {job.deskripsi || 'Tidak ada deskripsi yang disediakan oleh perusahaan.'}
@@ -223,7 +223,7 @@ export default function LowonganDetail() {
 
               {/* Card Ringkasan Info */}
               <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
-                <h3 className="font-black text-slate-800 uppercase tracking-widest text-[11px] border-b border-slate-100 pb-4">
+                <h3 className="font-black text-primary uppercase tracking-widest text-[11px] border-b border-slate-100 pb-4">
                   Ringkasan Posisi
                 </h3>
 
@@ -325,7 +325,7 @@ export default function LowonganDetail() {
               {/* Tombol Tutup Modal */}
               <button
                 onClick={() => setShowPreviewModal(false)}
-                className="absolute top-4 right-4 z-10 bg-white/90 p-2.5 rounded-full shadow-lg text-slate-800 hover:bg-white transition-all cursor-pointer backdrop-blur-md border border-slate-100"
+                className="absolute top-4 right-4 z-10 bg-white/90 p-2.5 rounded-full shadow-lg text-primary hover:bg-white transition-all cursor-pointer backdrop-blur-md border border-slate-100"
               >
                 <X size={20} />
               </button>

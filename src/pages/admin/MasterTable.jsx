@@ -116,7 +116,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
           <h3 className="font-bold text-primary text-md truncate">Manajemen Perusahaan</h3>
           <span className="text-xs text-slate-400 font-medium">({filteredData.length})</span>
         </div>
-        <button onClick={() => { setIsAdding(true); setEditId(null); resetForm(); }} className="text-fourth bg-primary flex items-center gap-1 text-xs font-bold hover:text-white hover:bg-secondary px-2.5 py-2 rounded-lg transition-all cursor-pointer group">
+        <button onClick={() => { setIsAdding(true); setEditId(null); resetForm(); }} className="text-fourth bg-primary flex items-center gap-1 text-xs font-bold hover:text-white hover:opacity-90 px-2.5 py-2 rounded-lg transition-all cursor-pointer group">
           <Plus size={12} className="group-hover:scale-125 transition-transform" /> <span className="hidden sm:inline">Tambah Perusahaan</span>
         </button>
       </div>

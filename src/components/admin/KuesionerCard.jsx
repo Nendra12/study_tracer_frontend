@@ -91,10 +91,10 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
             </div>
 
             <div className='flex gap-2'>
-                <button onClick={() => navigate(`/wb-admin/kuisoner/preview-kuesioner/${id}`)} className="mb-3  flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
+                <button onClick={() => navigate(`/wb-admin/kuisoner/preview-kuesioner/${id}`)} className="mb-3  flex items-center justify-center gap-1.5 bg-primary hover:opacity-70 text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
                     <ScanEye size={14} /> Preview
                 </button>
-                <button onClick={() => navigate(`/wb-admin/kuisoner/tinjau-jawaban/${id}`)} className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-secondary text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
+                <button onClick={() => navigate(`/wb-admin/kuisoner/tinjau-jawaban/${id}`)} className="mb-3 w-full flex items-center justify-center gap-1.5 bg-primary hover:opacity-70 text-white text-xs font-medium py-2.5 px-3 rounded-lg transition-colors cursor-pointer">
                     <FolderSync size={14} />Tinjau Jawaban
                 </button>
             </div>

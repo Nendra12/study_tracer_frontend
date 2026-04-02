@@ -310,17 +310,6 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   );
                 })}
                 {user ? (
-                  // <div className="px-6 py-4 flex items-center gap-2">
-                  //   <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
-                  //   <div className="px-5 bg-fourth/50 border-b border-white/50">
-                  //     <p className="text-[10px] font-black text-third uppercase tracking-widest">
-                  //       Masuk sebagai
-                  //     </p>
-                  //     <p className="text-sm font-bold text-primary truncate mt-1">
-                  //       {namaAlumni || "Alumni"}
-                  //     </p>
-                  //   </div>
-                  // </div>
                   <></>
                 ) : (
                   <>
