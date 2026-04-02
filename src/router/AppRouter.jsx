@@ -9,7 +9,6 @@ import AlumniPortal from "../pages/alumni/PortalAlumni";
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
-// const Landing = lazy(() => import("../pages/landing"));
 const Pengumuman = lazy(() => import("../pages/admin/Pengumuman"));
 const PengumumanDetail = lazy(() => import("../pages/admin/PengumumanDetail"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
@@ -25,6 +24,7 @@ const LihatJawabanDetail = lazy(() => import("../pages/admin/LihatJawabanDetail"
 const UpdateKuesioner = lazy(() => import("../pages/admin/UpdateKuesioner"));
 const StatistikKuesioner = lazy(() => import("../pages/admin/StatistikKuesioner"));
 const PengaturanTampilan = lazy(() => import("../pages/admin/PengaturanTampilan"));
+const Kemitraan = lazy(() => import("../pages/admin/Kemitraan"));
 
 const LupaPass = lazy(() => import("../pages/LupaPass"));
 const Register = lazy(() => import("../pages/register/Register"));
@@ -93,6 +93,7 @@ export default function AppRouter() {
             </Route>
           </Route>
           <Route path="tampilan" element={<PengaturanTampilan />} />
+          <Route path="kemitraan" element={<Kemitraan />} />
         </Route>
       </Route>
 

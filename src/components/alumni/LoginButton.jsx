@@ -20,9 +20,11 @@ const StyledWrapper = styled.div`
     padding: 12px 25px;
     border: unset;
     border-radius: 15px;
-    color: #3c5759;
+    /* Mengambil warna primary dari tema, default ke #3c5759 jika gagal */
+    color: var(--color-primary, #3c5759); 
     z-index: 1;
-    background: #f3f4f4;
+    /* Mengambil warna secondary dari tema, default ke #f3f4f4 jika gagal */
+    background: var(--color-secondary, #f3f4f4); 
     position: relative;
     font-weight: 1000;
     font-size: 14px;
@@ -38,7 +40,8 @@ const StyledWrapper = styled.div`
     height: 100%;
     width: 0;
     border-radius: 15px;
-    background-color: #3c5759;
+    /* Background hover menggunakan warna primary */
+    background-color: var(--color-primary, #3c5759); 
     z-index: -1;
     transition: all 250ms;
   }

@@ -303,7 +303,7 @@ const UpdateKuesioner = () => {
                         <button
                             onClick={handleSimpan}
                             disabled={isValidating}
-                            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2D4345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-primary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Save size={18} /> {isValidating ? 'Memproses...' : 'Simpan'}
                         </button>

@@ -14,6 +14,7 @@ import {
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
 import { useNavigate } from 'react-router-dom';
 import { adminApi } from '../../api/admin';
+import { alertWarning } from '../../utilitis/alert';
 
 
 export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loadingHapus }) => {
@@ -25,9 +26,24 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
     };
 
     const navigate = useNavigate()
-    const handleStatus = (id, data) => {
-        update(id, data)
-    }
+
+    const handleStatus = (id, newStatus) => {
+        // Jika admin mencoba mengubah status menjadi "aktif"
+        if (newStatus === "aktif") {
+            // Cek apakah tanggal selesai kosong
+            if (!tanggal_selesai) {
+                return alertWarning("Silakan atur 'Tanggal Berakhir' terlebih dahulu melalui menu Edit sebelum mengaktifkan kuesioner.");
+            }
+            
+            // Cek apakah tanggal selesai sudah terlewat (di masa lalu)
+            if (new Date(tanggal_selesai) <= new Date()) {
+                return alertWarning("Tanggal Berakhir kuesioner ini sudah terlewat. Silakan perbarui tanggalnya di menu Edit terlebih dahulu.");
+            }
+        }
+
+        // Lanjut ke proses update jika lolos pengecekan
+        update(id, newStatus);
+    };
 
     const handleHapus = (id) => {
         hapus(id)
