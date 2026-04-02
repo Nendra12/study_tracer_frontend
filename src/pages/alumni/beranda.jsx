@@ -143,6 +143,23 @@ export default function Beranda() {
     };
   }, []);
 
+  // Re-fetch beranda data saat user kembali ke tab (agar kuesioner yang diaktifkan kembali muncul)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && !loading) {
+        try {
+          const res = await alumniApi.getBeranda();
+          setBerandaData(res.data.data);
+        } catch (err) {
+          console.error('Error refreshing beranda on visibility change:', err);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [loading]);
+
   // Fetch alumni directory untuk compute statistik & top universitas
   useEffect(() => {
     async function fetchDirectoryStats() {

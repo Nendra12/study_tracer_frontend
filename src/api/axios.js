@@ -60,12 +60,23 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
+      const errorCode = error.response?.data?.error_code;
+      
+      // Handle session expired karena inaktif (dari CheckTokenExpiration middleware)
+      if (errorCode === 'TOKEN_EXPIRED_INACTIVE') {
+        localStorage.setItem('session_expired_reason', 
+          error.response?.data?.message || 'Sesi Anda telah berakhir karena tidak aktif selama lebih dari 5 jam. Silakan login kembali.'
+        );
+      }
+
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-      // Redirect to landing page if not already there and not on logout page
+      localStorage.removeItem('last_activity');
+      
+      // Redirect to login page if not already there
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/logout' && currentPath !== '/') {
-        window.location.href = '/';
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
