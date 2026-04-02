@@ -4,8 +4,6 @@ import { ArrowLeft, Calendar, Megaphone, Pin, X, Loader2, AlertCircle } from 'lu
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import PengumumanDetailSkeleton from '../../components/admin/skeleton/PengumumanDetailSkeleton';
-
-// Fallback gambar lokal
 import imgPengumuman from '../../assets/pengumuman.jpg';
 
 // Helper untuk URL gambar

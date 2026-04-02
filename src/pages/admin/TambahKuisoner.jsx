@@ -330,7 +330,7 @@ const TambahKuisioner = () => {
 
                                             <button
                                                 onClick={() => addOption(q.id)}
-                                                className="cursor-pointer text-xs text-secondary font-bold flex items-center gap-1.5 ml-5 sm:ml-7 pt-2 hover:underline active:opacity-70"
+                                                className="cursor-pointer text-xs text-primary/80 font-bold flex items-center gap-1.5 ml-5 sm:ml-7 pt-2 hover:underline active:opacity-70"
                                             >
                                                 <Plus size={14} /> Tambah Opsi
                                             </button>
