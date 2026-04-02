@@ -445,21 +445,29 @@ export default function Beranda() {
           <div className="flex flex-col gap-4">
 
             {/* Quick Summary Cards (Statistik Profil Personal) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: "Tahun Lulus", value: tahunLulus || "-", icon: DateIcon },
                 { label: "Jurusan", value: jurusan || "-", icon: EducationIcon },
                 { label: "Status Saat Ini", value: statusNew || "-", icon: UserIcon },
                 { label: `${statusNew === "Bekerja" ? 'Instansi/Perusahaan' : 'Universitas'}`, value: place || "-", icon: BuildingIcon },
               ].map((item, idx) => (
-                <div key={idx} className="bg-white p-5 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
-                  <img src={item.icon} alt="" className="w-8 h-8 mb-3"/>
-                  <p className="text-xs text-third font-bold uppercase tracking-wider mb-1 line-clamp-1" title={item.label}>
-                    {item.label}
-                  </p>
-                  <p className="text-sm sm:text-base font-black text-primary leading-tight line-clamp-2" title={item.value}>
-                    {item.value}
-                  </p>
+                <div 
+                  key={idx} 
+                  className="bg-white p-4 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100/50">
+                    <img src={item.icon} alt="" className="w-6 h-6 opacity-75"/>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5 line-clamp-1" title={item.label}>
+                      {item.label}
+                    </p>
+                    <p className="text-sm font-black text-primary leading-tight line-clamp-2" title={item.value}>
+                      {item.value}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -494,7 +502,7 @@ export default function Beranda() {
                 )}
 
                 {/* 2. TUGAS KUESIONER */}
-                {kuesionerPending.length > 0 && (isVerified ? !hasCompletedKuesioner : true) && (
+                {kuesionerPending.length > 0 && (
                   <motion.div key="kuesioner-alert" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="bg-white rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center gap-6 border border-blue-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
                       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
@@ -517,12 +525,11 @@ export default function Beranda() {
                       </div>
                       <button
                         onClick={() => {
-                          if (isVerified && kuesionerPending[0]?.id) {
+                          if (kuesionerPending[0]?.id) {
                             navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
                           }
                         }}
-                        className={`w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 
-                        ${isVerified ? "cursor-pointer" : "cursor-n opacity-50 cursor-not-allowed"}`}
+                        className="w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 cursor-pointer"
                       >
                         ISI SEKARANG
                       </button>
