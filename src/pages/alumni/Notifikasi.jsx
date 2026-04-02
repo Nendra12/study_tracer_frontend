@@ -21,6 +21,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { alumniApi } from '../../api/alumni';
 import { alertConfirm } from '../../utilitis/alert';
+import JobsImg from '../../assets/svg/notification-svgrepo-com.svg';
 
 // Helper untuk icon dan warna berdasarkan type
 const getNotificationStyle = (type) => {
@@ -96,7 +97,7 @@ export default function Notifikasi() {
     try {
       const params = {
         page: currentPage,
-        per_page: 15
+        per_page: 10
       };
 
       if (activeFilter === 'belum_dibaca') {
@@ -172,10 +173,10 @@ export default function Notifikasi() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-x-hidden">
 
-      {/* --- HEADER SECTION (GAYA BARU KONSISTEN) --- */}
-      <section className="relative pt-28 pb-24 w-full z-30 bg-primary rounded-b-[2.5rem]">
-        {/* max-w-5xl digunakan untuk notifikasi agar nyaman dibaca, tapi padding disejajarkan dengan class w-full */}
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      {/* --- HEADER SECTION --- */}
+      <section className="relative pt-26 pb-18 w-full z-30 bg-primary rounded-b-[2.5rem]">
+        {/* PERUBAHAN: max-w-5xl diubah menjadi max-w-7xl agar lebarnya sama dengan halaman lain */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
 
           <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
@@ -187,20 +188,21 @@ export default function Notifikasi() {
           </div>
 
           <div className="hidden lg:flex items-center justify-center opacity-80">
-            <Bell size={120} className="text-white/10" />
+            <img src={JobsImg} alt="job" className='w-40' />
           </div>
 
         </div>
       </section>
 
       {/* --- MAIN CONTENT (FLOATING CARD AREA) --- */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12 flex flex-col">
+      {/* PERUBAHAN: max-w-5xl diubah menjadi max-w-7xl */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12 flex flex-col">
 
         <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-125">
 
           {/* TOOLBAR FILTER & AKSI */}
           <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white shrink-0">
-            {/* Tabs (Gaya Baru) */}
+            {/* Tabs */}
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setActiveFilter('semua')}
