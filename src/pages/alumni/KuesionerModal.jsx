@@ -6,8 +6,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { alumniApi } from '../../api/alumni';
 import { id as idLocale } from 'date-fns/locale';
 import { alertSuccess } from '../../utilitis/alert';
+import { useAuth } from '../../context/AuthContext';
 
 function KuesionerModal() {
+    const { refreshUser } = useAuth();
     const userTes = JSON.parse(localStorage.getItem('user'))
     // console.log(userTes)
     const user = {
@@ -110,6 +112,13 @@ function KuesionerModal() {
             });
 
             alertSuccess("Jawaban berhasil disimpan dengan status: " + (isAllAnswered ? "Selesai" : "Proses"));
+
+            // Refresh user data agar lock state (can_access_all, has_completed_kuesioner) langsung terupdate
+            try {
+              await refreshUser();
+            } catch (e) {
+              console.warn('Failed to refresh user after submit:', e);
+            }
 
             navigate("/alumni")
         } catch (error) {
