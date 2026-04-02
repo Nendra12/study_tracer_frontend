@@ -23,6 +23,7 @@ function App() {
           const linkIcon = document.querySelector('link[rel="icon"]');
           if (linkIcon) {
             // Prioritaskan dari metadata
+            console.log('Setting favicon from metadata:', data.icon_url);
             if (data.icon_url) {
               linkIcon.setAttribute('href', data.icon_url);
             } 
