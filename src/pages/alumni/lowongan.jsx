@@ -385,7 +385,7 @@ export default function Lowongan() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-x-hidden">
       {/* --- HEADER SECTION (GAYA BARU) --- */}
-      <section className="relative pt-30 pb-30 w-full z-30 bg-primary rounded-b-[2.5rem]">
+      <section className="relative pt-28 pb-20 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">

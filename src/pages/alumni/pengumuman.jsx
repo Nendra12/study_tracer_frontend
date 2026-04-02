@@ -99,7 +99,7 @@ export default function PengumumanAlumni() {
     <div className='w-full min-h-screen bg-[#f8f9fa] flex flex-col font-sans selection:bg-primary/20 overflow-x-hidden'>
       
       {/* --- HEADER SECTION --- */}
-      <section className="relative pt-28 pb-15 w-full z-30 bg-primary rounded-b-[2.5rem]">
+      <section className="relative pt-30 pb-24 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-8">
           
           <div className="max-w-2xl">
