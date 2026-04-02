@@ -140,7 +140,7 @@ export function ChartKarir({ data = [] }) {
         padding: "20px",
         borderRadius: "12px"
       }}
-      className="h-full border border-gray-100 shadow-sm"
+      className="h-full w-full flex flex-col justify-center border border-gray-100 shadow-sm"
     >
       <Chart options={options} series={series} type="pie" height={320} />
     </div>
@@ -217,7 +217,7 @@ export function ChartJurusan({ data: propData = [] }) {
         padding: "20px",
         borderRadius: "10px",
       }}
-      className="border border-gray-100 shadow-sm"
+      className="h-full w-full flex flex-col justify-center border border-gray-100 shadow-sm"
     >
       <Chart options={options} series={series} type="bar" height={320} />
     </div>

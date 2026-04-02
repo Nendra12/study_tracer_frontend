@@ -266,17 +266,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-          <div className="w-full flex flex-col items-center text-center">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 items-stretch">
+          <div className="w-full flex flex-col h-full text-center">
             <h1 className="text-primary text-base md:text-lg font-bold mb-4">Status Karir</h1>
-            <div className="w-full max-w-75 lg:max-w-full">
+            <div className="flex-1 w-full max-w-75 mx-auto lg:max-w-full">
               <ChartKarir data={statusDistribution} />
             </div>
           </div>
 
-          <div className="w-full lg:col-span-2">
-            <h1 className="text-primary text-base md:text-lg font-bold mb-4 text-center lg:text-left">Top 5 Alumni Setiap Jurusan</h1>
-            <ChartJurusan data={dashData?.alumni_per_jurusan ?? []} />
+          <div className="w-full lg:col-span-2 flex flex-col h-full text-center lg:text-left">
+            <h1 className="text-primary text-base md:text-lg font-bold mb-4">Top 5 Alumni Setiap Jurusan</h1>
+            <div className="flex-1 w-full">
+              <ChartJurusan data={dashData?.alumni_per_jurusan ?? []} />
+            </div>
           </div>
         </div>
 
