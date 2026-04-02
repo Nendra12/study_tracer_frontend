@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X,
-  IdCardLanyard, Megaphone, Palette, Handshake // <-- Tambahkan Megaphone disini
+  IdCardLanyard, Megaphone, Palette, Handshake
 } from 'lucide-react';
 import DefaultLogo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
@@ -18,7 +18,6 @@ export default function SideBar({ active, setActive }) {
   const navigate = useNavigate();
   const location = useLocation()
 
-  // <-- Tambahkan menu Pengumuman di sini
   const menuItems = [
     { name: 'Beranda', icon: <LayoutDashboard size={20} />, path: '/wb-admin' },
     { name: 'Manajemen Pengguna', icon: <Users size={20} />, path: '/wb-admin/manage-user' },
@@ -45,7 +44,6 @@ export default function SideBar({ active, setActive }) {
     }
   };
 
-  // <-- Tambahkan route Pengumuman di sini untuk deteksi active menu
   const routes = [
     { path: "/wb-admin", title: "Beranda" },
     { path: "/wb-admin/manage-user", title: "Manajemen Pengguna" },
@@ -98,7 +96,7 @@ export default function SideBar({ active, setActive }) {
       `}>
 
         {/* Header Sidebar + Tombol Close */}
-        <div className="p-6 flex items-center justify-between">
+        <div className="p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={theme?.logo || DefaultLogo} alt="Logo" className='w-10 md:w-12'/>
             <div className="min-w-0">
@@ -109,13 +107,13 @@ export default function SideBar({ active, setActive }) {
 
           <button
             onClick={() => setActive(false)}
-            className="lg:hidden p-2 text-third hover:bg-fourth rounded-xl transition-colors"
+            className="lg:hidden p-2 text-third hover:bg-fourth rounded-xl transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Menu Items (Scrollable Area) */}
+        {/* Menu Items (Jalan Tengah: py-3 dan space-y-1.5) */}
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
           {menuItems.map((item, index) => {
             const isActive = activeMenu === item.name;
@@ -128,7 +126,7 @@ export default function SideBar({ active, setActive }) {
                   if(window.innerWidth < 1024) setActive(false);
                 }}
                 className={`
-                  w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
+                  w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
                     ? 'bg-fourth text-primary font-bold shadow-sm'
                     : 'text-third hover:bg-fourth/50 hover:text-primary'}
@@ -147,7 +145,7 @@ export default function SideBar({ active, setActive }) {
         <div className="p-4 border-t border-fourth bg-white">
           <button
             onClick={ handleLogout }
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
           >
             <LogOut size={18} />
             <span className="text-sm font-semibold">Keluar Aplikasi</span>
@@ -157,7 +155,7 @@ export default function SideBar({ active, setActive }) {
       </div>
 
       {isLoggingOut && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-9999">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-700 font-medium">Menghapus sesi...</p>
