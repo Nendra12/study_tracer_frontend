@@ -220,7 +220,7 @@ export default function LandingPage() {
               transition={{ duration: 0.5, ease: [1, 1, 0.3, 1], delay: 0.3 }}
             >
               <img
-                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop"
+                src={theme?.landingBg || "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop"}
                 alt="Graduation"
                 className="w-full h-full object-cover rounded-3xl"
               />
@@ -298,9 +298,7 @@ export default function LandingPage() {
                 </div>
               </Link>
               <p className="text-primary/80 text-sm leading-relaxed font-medium">
-                Platform pelacakan dan jaringan alumni resmi. Menghubungkan
-                lulusan, membina pertumbuhan, dan membangun komunitas yang lebih
-                kuat bersama-sama.
+                {theme?.deskripsiFooter || 'Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas yang lebih kuat bersama-sama.'}
               </p>
               
               {/* List Kontak Info */}
@@ -362,24 +360,24 @@ export default function LandingPage() {
                   <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                     <Globe size={16} />
                   </div>
-                  <a href="https://smkn1gondang-nganjuk.sch.id" target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
-                    smkn1gondang-nganjuk.sch.id
+                  <a href={`https://${(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    {(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}
                   </a>
                 </div>
                 <div className="flex items-center gap-3 group">
                   <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                     <Mail size={16} />
                   </div>
-                  <a href="mailto:smkn1gondang@yahoo.co.id" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
-                    smkn1gondang@yahoo.co.id
+                  <a href={`mailto:${theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    {theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}
                   </a>
                 </div>
                 <div className="flex items-center gap-3 group">
                   <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                     <Phone size={16} />
                   </div>
-                  <a href="tel:0358611606" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
-                    (0358) 611606
+                  <a href={`tel:${(theme?.telpKontak || '(0358) 611606').replace(/[^\d+]/g, '')}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    {theme?.telpKontak || '(0358) 611606'}
                   </a>
                 </div>
               </div>
