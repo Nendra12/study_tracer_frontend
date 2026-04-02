@@ -283,10 +283,10 @@ export default function LandingPage() {
       <footer className="bg-fourth pt-20 pb-10 px-4 sm:px-6 lg:px-8 border-t border-fourth">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-            {/* Kolom 1: Branding */}
+            
+            {/* Kolom 1: Branding & Kontak Info */}
             <div className="space-y-6">
-              <Link
-                to="/" className="flex items-center gap-2.5 group">
+              <Link to="/" className="flex items-center gap-2.5 group">
                 <img
                   src={theme?.logo || "/icon.png"}
                   alt="Alumni Tracer Logo"
@@ -302,16 +302,9 @@ export default function LandingPage() {
                 lulusan, membina pertumbuhan, dan membangun komunitas yang lebih
                 kuat bersama-sama.
               </p>
-              <div className="flex gap-4">
-                {[<Globe />, <Mail />, <Phone />].map((icon, i) => (
-                  <button
-                    key={i}
-                    className="w-10 h-10 rounded-full bg-fourth flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer"
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
+              
+              {/* List Kontak Info */}
+              
             </div>
 
             {/* Kolom 2: Tautan Cepat */}
@@ -319,34 +312,16 @@ export default function LandingPage() {
               <h3 className="text-primary font-black mb-6">Tautan Cepat</h3>
               <ul className="space-y-4">
                 {[
-                  {
-                    "label": "Beranda",
-                    "href": "#beranda"
-                  },
-                  {
-                    "label": "Petunjuk",
-                    "href": "#petunjuk"
-                  },
-                  {
-                    "label": "Statistik Publik",
-                    "href": "#fitur"
-                  },
-                  {
-                    "label": "Alumni",
-                    "href": "#alumni"
-                  },
-                  {
-                    "label": "Bursa Kerja",
-                    "href": "#karir"
-                  }
+                  { label: "Beranda", href: "#beranda" },
+                  { label: "Petunjuk", href: "#petunjuk" },
+                  { label: "Statistik Publik", href: "#fitur" },
+                  { label: "Alumni", href: "#alumni" },
+                  { label: "Bursa Kerja", href: "#karir" }
                 ].map((item) => (
                   <li key={item.label}>
                     <a
                       href={item.href}
-                      onClick={(e) => {
-                        handleSmoothScroll(e, item.href);
-
-                      }}
+                      onClick={(e) => handleSmoothScroll(e, item.href)}
                       className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
                     >
                       {item.label}
@@ -363,9 +338,7 @@ export default function LandingPage() {
                 {[
                   "Masuk",
                   "Daftar",
-                  "Perbarui Profil",
-                  "Kirim Data Tracer",
-                  "Kalender Acara",
+                  "Perbarui Profil"
                 ].map((item) => (
                   <li key={item}>
                     <a
@@ -379,25 +352,36 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Kolom 4: Newsletter */}
+            {/* Kolom 4: Kontak Kami */}
             <div className="space-y-6">
               <h3 className="text-primary font-black">
-                Berlangganan Newsletter
+                Kontak Kami
               </h3>
-              <p className="text-primary/80 text-sm font-medium">
-                Berlangganan untuk menerima pembaruan tentang pekerjaan dan
-                acara.
-              </p>
-              <div className="space-y-3">
-                <input
-                  type="email"
-                  placeholder="Alamat email Anda"
-                  className="w-full px-5 py-4 rounded-xl bg-fourth border-transparent focus:bg-white focus:border-primary/20 focus:ring-0 text-sm font-medium transition-all outline-none"
-                />
-                <button className="cursor-pointer w-full py-4 bg-third
-                 hover:bg-primary text-white rounded-xl font-black text-sm shadow-sm transition-all active:scale-95">
-                  Berlangganan
-                </button>
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3 group">
+                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Globe size={16} />
+                  </div>
+                  <a href="https://smkn1gondang-nganjuk.sch.id" target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    smkn1gondang-nganjuk.sch.id
+                  </a>
+                </div>
+                <div className="flex items-center gap-3 group">
+                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Mail size={16} />
+                  </div>
+                  <a href="mailto:smkn1gondang@yahoo.co.id" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    smkn1gondang@yahoo.co.id
+                  </a>
+                </div>
+                <div className="flex items-center gap-3 group">
+                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Phone size={16} />
+                  </div>
+                  <a href="tel:0358611606" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    (0358) 611606
+                  </a>
+                </div>
               </div>
             </div>
           </div>

@@ -173,7 +173,7 @@ export default function AlumniDetail() {
         )}
 
         {/* PROFILE HEADER CARD */}
-        <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
+        <div data-pdf-section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative shrink-0">
               <div className="w-32 h-32 md:w-44 md:h-44 rounded-3xl border-8 border-white shadow-2xl overflow-hidden bg-slate-50">
@@ -221,7 +221,7 @@ export default function AlumniDetail() {
         </div>
 
         {/* 2-COLUMN CONTENT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div data-pdf-section className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
           {/* SIDEBAR KIRI */}
           <div className="lg:col-span-4 space-y-8">

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DefaultLoginImage from "../assets/login_image.webp";
 import DefaultLogo from "../assets/icon.png";
-import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useThemeSettings } from "../context/ThemeContext";
@@ -12,9 +12,19 @@ export default function Login() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sessionExpiredMsg, setSessionExpiredMsg] = useState('');
   const { login } = useAuth();
   const { theme } = useThemeSettings();
   const navigate = useNavigate();
+
+  // Cek apakah user diredirect karena session expired
+  useEffect(() => {
+    const reason = localStorage.getItem('session_expired_reason');
+    if (reason) {
+      setSessionExpiredMsg(reason);
+      localStorage.removeItem('session_expired_reason');
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -99,6 +109,17 @@ export default function Login() {
                 Masukan email dan password untuk mengakses akun anda
               </p>
             </div>
+
+            {/* Session Expired Warning */}
+            {sessionExpiredMsg && (
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                <Clock size={20} className="text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-amber-800">Sesi Berakhir</p>
+                  <p className="text-xs text-amber-600 mt-0.5">{sessionExpiredMsg}</p>
+                </div>
+              </div>
+            )}
 
             {/* Error Message */}
             {error && (
