@@ -19,6 +19,7 @@ import {
   Pin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import JobsImg from '../../assets/svg/news-broadcast-svgrepo-com.svg';
 
 // Import Komponen & API Eksternal
 import StatusPengajuanModal from "../../components/alumni/StatusPengajuanModal";
@@ -30,6 +31,10 @@ import AlumniProfileCard from "../../components/alumni/AlumniProfileCard";
 import JobPosterCard from "../../components/alumni/JobPosterCard";
 import TopPerusahaan from "../../components/alumni/TopPerusahaan";
 import PengumumanKampus from "../../components/alumni/PengumumanSekolah";
+import EducationIcon from "../../assets/svg/education-cap-svgrepo-com.svg"
+import DateIcon from "../../assets/svg/date-range-svgrepo-com.svg"
+import BuildingIcon from "../../assets/svg/building-svgrepo-com.svg"
+import UserIcon from "../../assets/svg/user-id-svgrepo-com.svg"
 
 // Import Asset Sapaan
 import morning from '../../assets/morning.png';
@@ -284,7 +289,7 @@ export default function Beranda() {
               transition={{ duration: 0.6 }}
               className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 lg:max-w-xl"
             >
-              <div className="flex items-center gap-3 font-semibold mb-4 bg-white/10 border border-white/20 px-4 py-2 rounded-3xl backdrop-blur-sm shadow-lg">
+              <div className="flex items-center gap-3 font-semibold mb-4 bg-white/10 border border-white/20 px-4 py-2 rounded-md backdrop-blur-sm shadow-lg">
                 {greeting.icon}
                 <span className="text-white text-sm md:text-base tracking-wide">
                   {greeting.text}
@@ -305,13 +310,13 @@ export default function Beranda() {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full">
                 <button
                   onClick={() => navigate("/alumni/lowongan")}
-                  className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-full text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                  className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-md text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 transition-all duration-300 ease-in-out"
                 >
                   <ArrowRight size={18} /> Lihat Lowongan 
                 </button>
                 <button
                   onClick={() => navigate('/alumni/profile')}
-                  className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-full text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-md text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <User size={18} /> Perbarui Profil
                 </button>
@@ -389,19 +394,16 @@ export default function Beranda() {
                   y: { repeat: Infinity, duration: 7, ease: "easeInOut", delay: 2 },
                 }}
                 className="absolute -bottom-8 -left-6 z-30 bg-white/95 backdrop-blur-md text-slate-800 p-3 pr-6 rounded-2xl shadow-2xl border border-slate-100 flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => navigate("/alumni/berita")}
+                onClick={() => navigate("/alumni/pengumuman")}
               >
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <BellRing size={20} strokeWidth={2.5} />
-                  </div>
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
+                  <img src={JobsImg} alt="" className="w-10 h-10" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">
                     Info Kampus
                   </span>
-                  <span className="text-sm font-black">Agenda Reuni Akbar</span>
+                  <span className="text-sm font-black">Lihat Pengumuman</span>
                 </div>
               </motion.div>
 
@@ -445,15 +447,13 @@ export default function Beranda() {
             {/* Quick Summary Cards (Statistik Profil Personal) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
               {[
-                { label: "Tahun Lulus", value: tahunLulus || "-", icon: <Calendar size={20} /> },
-                { label: "Jurusan", value: jurusan || "-", icon: <GraduationCap size={20} /> },
-                { label: "Status Saat Ini", value: statusNew || "-", icon: <User size={20} /> },
-                { label: `${statusNew === "Bekerja" ? 'Instansi/Perusahaan' : 'Universitas'}`, value: place || "-", icon: <Building2 size={20} /> },
+                { label: "Tahun Lulus", value: tahunLulus || "-", icon: DateIcon },
+                { label: "Jurusan", value: jurusan || "-", icon: EducationIcon },
+                { label: "Status Saat Ini", value: statusNew || "-", icon: UserIcon },
+                { label: `${statusNew === "Bekerja" ? 'Instansi/Perusahaan' : 'Universitas'}`, value: place || "-", icon: BuildingIcon },
               ].map((item, idx) => (
-                <div key={idx} className="bg-white p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 rounded-full bg-fourth text-primary flex items-center justify-center mb-3">
-                    {item.icon}
-                  </div>
+                <div key={idx} className="bg-white p-5 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
+                  <img src={item.icon} alt="" className="w-8 h-8 mb-3"/>
                   <p className="text-xs text-third font-bold uppercase tracking-wider mb-1 line-clamp-1" title={item.label}>
                     {item.label}
                   </p>
@@ -533,7 +533,7 @@ export default function Beranda() {
             </div>
 
             {/* JEJARING ALUMNI TERBARU */}
-            <section className="bg-white p-6 sm:p-8 rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-2">
+            <section className="bg-white p-6 sm:p-8 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-2">
               <div className="flex justify-between items-end mb-8">
                 <div>
                   <h2 className="text-2xl font-black text-primary tracking-tight">
@@ -590,7 +590,7 @@ export default function Beranda() {
               />
 
               {/* Statistics (Static Mocks) */}
-              <section className="bg-primary text-white rounded-4xl p-6 sm:p-8 shadow-lg relative overflow-hidden flex flex-col justify-center">
+              <section className="bg-primary text-white rounded-md p-6 sm:p-8 shadow-lg relative overflow-hidden flex flex-col justify-center">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <h2 className="text-xl font-black relative z-10">Statistik Lulusan</h2>
                 <p className="text-xs text-white/60 mb-8 font-medium relative z-10">Distribusi status alumni saat ini.</p>
@@ -618,7 +618,7 @@ export default function Beranda() {
             </div>
 
             {/* LOWONGAN PEKERJAAN */}
-            <section className="bg-white p-6 sm:p-8 rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+            <section className="bg-white p-6 sm:p-8 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="flex justify-between items-end mb-8">
                 <div>
                   <h2 className="text-2xl font-black text-primary tracking-tight">Peluang Karir</h2>

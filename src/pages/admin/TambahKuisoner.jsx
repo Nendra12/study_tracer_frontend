@@ -155,12 +155,14 @@ const TambahKuisioner = () => {
         }
 
         const statusObj = statusKarir.find(item => item.nama === formData.id_status);
+        const finalStatus = isDraft ? "draft" : "aktif";
         const payload = {
             ...formData,
             tanggal_mulai: formData.tanggalMulai || null,
             tanggal_selesai: formData.tanggalSelesai || null,
+            tanggal_publikasi: finalStatus === 'aktif' ? new Date().toISOString().split('T')[0] : null,
             id_status: statusObj?.id,
-            status: isDraft ? "draft" : "aktif",
+            status: finalStatus,
             questions: questions
         };
 
