@@ -133,7 +133,7 @@ export default function TopPerusahaan({
           {/* STATS: UNIVERSITIES */}
           <div className={`space-y-8 ${locked ? 'blur-sm select-none' : ''}`}>
             <div className="space-y-1">
-              <span className="text-amber-500 font-bold text-4xl">02</span>
+              <span className="text-third font-bold text-4xl">02</span>
               <h3 className="text-2xl font-black text-slate-900 tracking-tight">Top 5 Universitas</h3>
               <p className="text-slate-500 text-sm">Universitas yang digemari para alumni.</p>
             </div>
@@ -143,7 +143,7 @@ export default function TopPerusahaan({
                 <div key={idx} className="group relative">
                   <div className="flex justify-between items-end mb-2">
                     <div className="flex flex-col pb-1">
-                      <span className="text-lg font-bold text-slate-800 group-hover:text-amber-500 transition-colors leading-none">
+                      <span className="text-lg font-bold text-slate-800 group-hover:text-third transition-colors leading-none">
                         {univ.name}
                       </span>
                     </div>
@@ -157,7 +157,7 @@ export default function TopPerusahaan({
                       initial={{ width: 0 }}
                       whileInView={{ width: `${(univ.alumniCount / maxUnivAlumni) * 100}%` }}
                       transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                      className="h-full bg-amber-500"
+                      className="h-full bg-third"
                     />
                   </div>
                 </div>
