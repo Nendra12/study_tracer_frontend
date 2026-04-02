@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { alumniApi } from '../../api/alumni';
 import { alertConfirm } from '../../utilitis/alert';
 import JobsImg from '../../assets/svg/notification-svgrepo-com.svg';
+import { NotifikasiSkeleton } from '../../components/alumni/skeleton';
 
 // Helper untuk icon dan warna berdasarkan type
 const getNotificationStyle = (type) => {
@@ -263,10 +264,7 @@ export default function Notifikasi() {
 
             {/* Loading State */}
             {loading ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-75 text-center py-10">
-                <Loader2 size={40} className="text-primary animate-spin mb-4" />
-                <p className="text-slate-500 text-sm">Memuat notifikasi...</p>
-              </div>
+              <NotifikasiSkeleton />
             ) : (
               <AnimatePresence mode="popLayout">
                 {notifications.length > 0 ? (
