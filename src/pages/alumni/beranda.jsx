@@ -517,12 +517,11 @@ export default function Beranda() {
                       </div>
                       <button
                         onClick={() => {
-                          if (isVerified && kuesionerPending[0]?.id) {
+                          if (kuesionerPending[0]?.id) {
                             navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
                           }
                         }}
-                        className={`w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 
-                        ${isVerified ? "cursor-pointer" : "cursor-n opacity-50 cursor-not-allowed"}`}
+                        className="w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 cursor-pointer"
                       >
                         ISI SEKARANG
                       </button>
