@@ -7,7 +7,8 @@
     Menu,
     X,
   Sparkles,
-  Bell
+  Bell,
+  Megaphone
   } from "lucide-react";
   import { Link, useLocation, useNavigate } from "react-router-dom";
   import { motion, AnimatePresence } from "framer-motion";
@@ -33,6 +34,7 @@
 
     const navItems = [
       { label: "Beranda", path: "/alumni", locked: false },
+      { label: "Pengumuman", path: "/alumni/pengumuman", locked: false },
       { label: "Alumni", path: "/alumni/daftar-alumni", locked: !canAccessAll },
       { label: "Lowongan", path: "/alumni/lowongan", locked: !canAccessAll },
     ];

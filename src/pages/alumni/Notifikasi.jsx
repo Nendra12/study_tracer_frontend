@@ -13,10 +13,12 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Loader2
+  Loader2,
+  Megaphone,
+  UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import Navbar from '../../components/alumni/Navbar';
+import { useNavigate } from 'react-router-dom';
 import { alumniApi } from '../../api/alumni';
 import { alertConfirm } from '../../utilitis/alert';
 
@@ -31,6 +33,10 @@ const getNotificationStyle = (type) => {
       return { icon: CheckCircle2, bg: 'bg-purple-50', text: 'text-purple-600' };
     case 'kuesioner':
       return { icon: FileText, bg: 'bg-amber-50', text: 'text-amber-600' };
+    case 'pengumuman':
+      return { icon: Megaphone, bg: 'bg-orange-50', text: 'text-orange-600' };
+    case 'profile_update':
+      return { icon: UserCheck, bg: 'bg-teal-50', text: 'text-teal-600' };
     case 'rejected':
       return { icon: XCircle, bg: 'bg-red-50', text: 'text-red-600' };
     case 'banned':
@@ -57,6 +63,7 @@ const formatRelativeTime = (timestamp) => {
 
 export default function Notifikasi() {
   const { user: authUser } = useAuth();
+  const navigate = useNavigate();
 
   const navUser = {
     nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
@@ -274,7 +281,21 @@ export default function Notifikasi() {
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.2 }}
                           key={notif.id_notification}
-                          onClick={() => !notif.is_read && markAsRead(notif.id_notification)}
+                          onClick={() => {
+                            // Mark as read
+                            if (!notif.is_read) markAsRead(notif.id_notification);
+                            
+                            // Navigate based on notification type and data
+                            if (notif.type === 'pengumuman' && notif.data?.pengumuman_id) {
+                              navigate(`/alumni/pengumuman/${notif.data.pengumuman_id}`);
+                            } else if (notif.type === 'kuesioner' && notif.data?.kuesioner_id) {
+                              navigate(`/alumni/kuesioner/${notif.data.kuesioner_id}`);
+                            } else if (notif.type === 'lowongan' && notif.data?.lowongan_id) {
+                              navigate(`/alumni/lowongan/${notif.data.lowongan_id}`);
+                            } else if (notif.type === 'profile_update' || notif.type === 'career_status') {
+                              navigate('/alumni/profile');
+                            }
+                          }}
                           className={`group relative flex items-start gap-4 p-4 md:p-5 rounded-2xl cursor-pointer transition-all duration-300 border ${!notif.is_read
                               ? 'bg-blue-50/40 border-blue-100 hover:bg-blue-50/70 shadow-sm'
                               : 'bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 shadow-sm'

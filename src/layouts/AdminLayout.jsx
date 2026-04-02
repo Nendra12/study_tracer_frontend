@@ -2,6 +2,8 @@ import { Outlet } from "react-router-dom";
 import SideBar from "../components/admin/SideBar";
 import Header from "../components/admin/Header";
 import { useState, useEffect } from "react";
+import useInactivityTimeout from "../utilitis/useInactivityTimeout";
+import SessionWarningModal from "../components/SessionWarningModal";
 
 export default function AdminLayout() {
   const [sidebar, setSidebar] = useState(true);
@@ -21,6 +23,9 @@ export default function AdminLayout() {
 
   const user = JSON.parse(localStorage.getItem('user'))
 
+  // Session inactivity timeout (5 jam)
+  const { showWarning, remainingSeconds, extendSession, dismissWarning } = useInactivityTimeout();
+
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-gray-50">
       {/* Sidebar tetap di kiri */}
@@ -36,10 +41,15 @@ export default function AdminLayout() {
             <Outlet />
           </section>
         </main>
-
-
       </div>
 
+      {/* Session Warning Modal */}
+      <SessionWarningModal
+        show={showWarning}
+        remainingSeconds={remainingSeconds}
+        onExtend={extendSession}
+        onDismiss={dismissWarning}
+      />
     </div>
   );
 }

@@ -3,113 +3,237 @@ import { ArrowLeft, Download, Eye, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-async function generateCvPdf(alumni) {
-  const captureRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
-  if (!captureRoot) {
-    throw new Error('Area profil tidak ditemukan');
+import { useThemeSettings } from '../../context/ThemeContext';
+import DefaultLogo from '../../assets/icon.png';
+
+// ═══════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════
+
+function loadImageAsDataUrl(url) {
+  return new Promise((resolve) => {
+    if (!url) { resolve(null); return; }
+    let finalUrl = url;
+    const storagePrefix = 'http://localhost:8000/storage/';
+    if (typeof finalUrl === 'string' && finalUrl.startsWith(storagePrefix)) {
+      finalUrl = `${window.location.origin}/storage/${finalUrl.replace(storagePrefix, '')}`;
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth || 100;
+      c.height = img.naturalHeight || 100;
+      c.getContext('2d').drawImage(img, 0, 0);
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = finalUrl;
+  });
+}
+
+function addWatermark(doc, namaSekolah, logoDataUrl) {
+  const x = 14, y = 8, logoSize = 8;
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', x, y - 1, logoSize, logoSize, undefined, 'FAST');
   }
+  const textX = logoDataUrl ? x + logoSize + 3 : x;
+  doc.setFontSize(14);
+  doc.setTextColor(160, 160, 160);
+  doc.text(`Alumni Tracer | ${namaSekolah}`, textX, y + 5);
+}
 
-  const barEl = document.querySelector('[data-public-profile-bar]');
-  const prevDisplay = barEl ? barEl.style.display : null;
-
-  // Hide action bar so PDF contains only profile content
-  if (barEl) {
-    barEl.style.display = 'none';
-  }
-
-  // Convert backend storage URLs to same-origin proxied URLs for export capture.
-  // This avoids CORS errors when html-to-image fetches image assets.
-  const rewrittenImgs = [];
-  const imgElements = captureRoot.querySelectorAll('img');
-  const storagePrefix = 'http://localhost:8000/storage/';
-  imgElements.forEach((img) => {
+function proxyStorageImages(container) {
+  const rewritten = [];
+  const prefix = 'http://localhost:8000/storage/';
+  container.querySelectorAll('img').forEach((img) => {
     const src = img.getAttribute('src') || '';
-    if (src.startsWith(storagePrefix)) {
-      const path = src.replace(storagePrefix, '');
-      const proxied = `${window.location.origin}/storage/${path}`;
-      rewrittenImgs.push({ img, src });
-      img.setAttribute('src', proxied);
+    if (src.startsWith(prefix)) {
+      rewritten.push({ img, originalSrc: src });
+      img.setAttribute('src', `${window.location.origin}/storage/${src.replace(prefix, '')}`);
     }
   });
+  return rewritten;
+}
 
-  // Give browser one frame to reflow before capture
-  await new Promise((resolve) => requestAnimationFrame(resolve));
+function restoreProxiedImages(list) {
+  list.forEach(({ img, originalSrc }) => img.setAttribute('src', originalSrc));
+}
 
-  let dataUrl;
-  try {
-    const imagePromises = rewrittenImgs.map(({ img }) => {
-      if (img.complete) return Promise.resolve();
-      return new Promise((resolve) => {
-        const done = () => resolve();
-        img.addEventListener('load', done, { once: true });
-        img.addEventListener('error', done, { once: true });
-      });
+async function captureElement(el) {
+  const imgs = el.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map((img) => {
+    if (img.complete) return Promise.resolve();
+    return new Promise((r) => {
+      img.addEventListener('load', r, { once: true });
+      img.addEventListener('error', r, { once: true });
     });
-    await Promise.all(imagePromises);
+  }));
+  return toPng(el, {
+    cacheBust: true,
+    pixelRatio: 2,
+    backgroundColor: '#f8f9fa',
+    skipAutoScale: false,
+    style: { margin: '0' },
+  });
+}
 
-    dataUrl = await toPng(captureRoot, {
-      cacheBust: true,
-      pixelRatio: 2,
-      backgroundColor: '#f8f9fa',
-      skipAutoScale: false,
-      style: {
-        margin: '0',
-      },
-    });
-  } finally {
-    rewrittenImgs.forEach(({ img, src }) => {
-      img.setAttribute('src', src);
-    });
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
 
-    if (barEl) {
-      barEl.style.display = prevDisplay;
+// ═══════════════════════════════════════════
+// GENERATE PDF — Section-aware, layout preserved
+// ═══════════════════════════════════════════
+//
+// Strategi:
+// 1. Capture setiap [data-pdf-section] sebagai gambar TANPA mengubah layout
+//    → Profile Header (full-width) dan Grid 2-kolom (sidebar+konten) tetap sama
+// 2. Untuk setiap section image:
+//    a. Jika muat di sisa halaman → letakkan langsung
+//    b. Jika tidak muat tapi muat di halaman penuh → halaman baru, letakkan utuh
+//    c. Jika lebih tinggi dari halaman penuh → slice dengan canvas per halaman
+// 3. Watermark di setiap halaman
+
+async function generateCvPdf(alumni, namaSekolah, logoUrl) {
+  const logoDataUrl = await loadImageAsDataUrl(logoUrl || DefaultLogo);
+
+  const captureRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
+  if (!captureRoot) throw new Error('Area profil tidak ditemukan');
+
+  // Sembunyikan bar aksi
+  const barEl = document.querySelector('[data-public-profile-bar]');
+  const prevBarDisplay = barEl ? barEl.style.display : null;
+  if (barEl) barEl.style.display = 'none';
+
+  // Proxy gambar untuk CORS
+  const rewrittenImgs = proxyStorageImages(captureRoot);
+  await new Promise((r) => requestAnimationFrame(r));
+  await new Promise((r) => setTimeout(r, 150));
+
+  // Capture setiap section (layout 2-kolom tetap dipertahankan)
+  const sections = captureRoot.querySelectorAll('[data-pdf-section]');
+  const sectionImages = [];
+
+  for (const section of sections) {
+    try {
+      const dataUrl = await captureElement(section);
+      const img = await loadImage(dataUrl);
+      sectionImages.push({ dataUrl, width: img.width, height: img.height });
+    } catch (err) {
+      console.warn('Gagal capture section, skip:', err);
     }
   }
 
-  const doc = new jsPDF('p', 'mm', 'a2');
-  const pw = doc.internal.pageSize.getWidth();
-  const ph = doc.internal.pageSize.getHeight();
+  // Kembalikan semua perubahan
+  restoreProxiedImages(rewrittenImgs);
+  if (barEl) barEl.style.display = prevBarDisplay;
 
-  const margin = 14;
+  if (sectionImages.length === 0) throw new Error('Tidak ada section yang bisa di-capture');
+
+  // ══════════════════════
+  // BUILD PDF (A4)
+  // ══════════════════════
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const pw = doc.internal.pageSize.getWidth();  // ~210mm
+  const ph = doc.internal.pageSize.getHeight(); // ~297mm
+
+  const margin = 12;
+  const watermarkH = 18;
+  const sectionGap = 6;
   const availableW = pw - margin * 2;
-  const availableH = ph - margin * 2;
+  const contentStartY = margin + watermarkH;
+  const pageBottom = ph - margin;
+  const fullPageH = pageBottom - contentStartY; // tinggi satu halaman penuh
 
-  const imgData = dataUrl;
-  const img = new Image();
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-    img.src = imgData;
-  });
+  let cursorY = contentStartY;
 
-  const imgW = availableW;
-  const imgH = (img.height * imgW) / img.width;
+  // Watermark halaman pertama
+  addWatermark(doc, namaSekolah, logoDataUrl);
 
-  // Multi-page split if content exceeds one A2 page
-  let heightLeft = imgH;
-  let position = margin;
+  for (const { dataUrl, width, height } of sectionImages) {
+    const imgW = availableW;
+    const imgH = (height / width) * imgW;
+    const remainingH = pageBottom - cursorY;
 
-  doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
-  heightLeft -= availableH;
+    // ── CASE A: Muat di sisa halaman → letakkan langsung ──
+    if (imgH <= remainingH) {
+      doc.addImage(dataUrl, 'PNG', margin, cursorY, imgW, imgH, undefined, 'FAST');
+      cursorY += imgH + sectionGap;
+      continue;
+    }
 
-  while (heightLeft > 0) {
-    doc.addPage();
-    position = margin - (imgH - heightLeft);
-    doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
-    heightLeft -= availableH;
+    // ── CASE B: Tidak muat di sisa, tapi muat di halaman penuh → halaman baru, letakkan utuh ──
+    if (imgH <= fullPageH) {
+      doc.addPage();
+      cursorY = contentStartY;
+      addWatermark(doc, namaSekolah, logoDataUrl);
+      doc.addImage(dataUrl, 'PNG', margin, cursorY, imgW, imgH, undefined, 'FAST');
+      cursorY += imgH + sectionGap;
+      continue;
+    }
+
+    // ── CASE C: Lebih tinggi dari halaman penuh → slice per halaman ──
+    // Langsung slice dari posisi saat ini (tanpa membuang ruang kosong)
+    const fullImg = await loadImage(dataUrl);
+    const scale = imgW / fullImg.width; // mm per pixel
+
+    let srcY = 0;
+    while (srcY < fullImg.height) {
+      const slotH = pageBottom - cursorY; // sisa ruang di halaman ini (mm)
+      const slotHPx = slotH / scale;       // sisa ruang dalam pixel
+
+      const remainPx = fullImg.height - srcY;
+      const slicePx = Math.min(slotHPx, remainPx);
+      const sliceMM = slicePx * scale;
+
+      // Canvas slice
+      const canvas = document.createElement('canvas');
+      canvas.width = fullImg.width;
+      canvas.height = Math.ceil(slicePx);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#f8f9fa';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(fullImg, 0, srcY, fullImg.width, slicePx, 0, 0, fullImg.width, slicePx);
+
+      const sliceUrl = canvas.toDataURL('image/jpeg', 0.95);
+      doc.addImage(sliceUrl, 'JPEG', margin, cursorY, imgW, sliceMM, undefined, 'FAST');
+
+      srcY += slicePx;
+      cursorY += sliceMM;
+
+      // Jika masih ada sisa gambar, buat halaman baru
+      if (srcY < fullImg.height) {
+        doc.addPage();
+        cursorY = contentStartY;
+        addWatermark(doc, namaSekolah, logoDataUrl);
+      }
+    }
+
+    cursorY += sectionGap;
   }
 
   doc.save(`CV_${(alumni?.nama || 'Alumni').replace(/\s+/g, '_')}.pdf`);
 }
 
+// ═══════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════
+
 export default function PublicProfileBar({ alumniData }) {
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState(false);
+  const { theme } = useThemeSettings();
 
   async function handleDownloadPdf() {
     try {
       setDownloading(true);
-      await generateCvPdf(alumniData);
+      await generateCvPdf(alumniData, theme?.namaSekolah || 'SMK Negeri 1 Gondang', theme?.logo);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
       alert('Gagal membuat PDF. Silakan coba lagi.');
@@ -123,8 +247,6 @@ export default function PublicProfileBar({ alumniData }) {
       
       {/* BAGIAN KIRI — Tombol Kembali & Label Profil Publik */}
       <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto pl-1">
-        
-        {/* Tombol Kembali di Paling Kiri */}
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-[13px] font-bold shadow-sm hover:border-primary/30 hover:text-primary hover:bg-slate-50 transition-all cursor-pointer active:scale-95 shrink-0"
@@ -132,11 +254,7 @@ export default function PublicProfileBar({ alumniData }) {
           <ArrowLeft size={16} strokeWidth={2.5} /> 
           Kembali
         </button>
-
-        {/* Garis Pemisah (Hanya terlihat di layar agak besar) */}
         <div className="w-px h-6 bg-slate-200 hidden sm:block shrink-0"></div>
-
-        {/* Label Profil Publik */}
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-[14px] bg-slate-100 flex items-center justify-center shrink-0">
             <Eye size={18} strokeWidth={2.5} className="text-primary" />
@@ -145,7 +263,6 @@ export default function PublicProfileBar({ alumniData }) {
             Profil Publik
           </span>
         </div>
-
       </div>
 
       {/* BAGIAN KANAN — Tombol Unduh PDF */}
