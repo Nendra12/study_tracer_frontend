@@ -49,6 +49,7 @@ export default function Register() {
     wirausaha: null,
     // CAPTCHA
     captcha_token: '',
+    captcha_key: '',
   });
 
   const updateFormData = (fields) => {
@@ -102,6 +103,9 @@ export default function Register() {
       // CAPTCHA token
       if (formData.captcha_token) {
         fd.append('captcha_token', formData.captcha_token);
+      }
+      if (formData.captcha_key) {
+        fd.append('captcha_key', formData.captcha_key);
       }
 
       // Step 2
