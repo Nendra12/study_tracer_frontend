@@ -32,15 +32,18 @@ function loadImageAsDataUrl(url) {
   });
 }
 
-function addWatermark(doc, namaSekolah, logoDataUrl) {
+function addWatermark(doc, webLink, logoDataUrl) {
   const x = 14, y = 8, logoSize = 8;
+  const displayText = webLink.replace(/^https?:\/\//i, '');
+
   if (logoDataUrl) {
     doc.addImage(logoDataUrl, 'PNG', x, y - 1, logoSize, logoSize, undefined, 'FAST');
   }
+
   const textX = logoDataUrl ? x + logoSize + 3 : x;
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setTextColor(160, 160, 160);
-  doc.text(`Alumni Tracer | ${namaSekolah}`, textX, y + 5);
+  doc.textWithLink(displayText, textX, y + 5, { url: webLink });
 }
 
 function proxyStorageImages(container) {
@@ -100,7 +103,7 @@ function loadImage(dataUrl) {
 //    c. Jika lebih tinggi dari halaman penuh → slice dengan canvas per halaman
 // 3. Watermark di setiap halaman
 
-async function generateCvPdf(alumni, namaSekolah, logoUrl) {
+async function generateCvPdf(alumni, webLink, logoUrl) {
   const logoDataUrl = await loadImageAsDataUrl(logoUrl || DefaultLogo);
 
   const captureRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
@@ -154,7 +157,7 @@ async function generateCvPdf(alumni, namaSekolah, logoUrl) {
   let cursorY = contentStartY;
 
   // Watermark halaman pertama
-  addWatermark(doc, namaSekolah, logoDataUrl);
+  addWatermark(doc, webLink, logoDataUrl);
 
   for (const { dataUrl, width, height } of sectionImages) {
     const imgW = availableW;
@@ -172,7 +175,7 @@ async function generateCvPdf(alumni, namaSekolah, logoUrl) {
     if (imgH <= fullPageH) {
       doc.addPage();
       cursorY = contentStartY;
-      addWatermark(doc, namaSekolah, logoDataUrl);
+      addWatermark(doc, webLink, logoDataUrl);
       doc.addImage(dataUrl, 'PNG', margin, cursorY, imgW, imgH, undefined, 'FAST');
       cursorY += imgH + sectionGap;
       continue;
@@ -211,7 +214,7 @@ async function generateCvPdf(alumni, namaSekolah, logoUrl) {
       if (srcY < fullImg.height) {
         doc.addPage();
         cursorY = contentStartY;
-        addWatermark(doc, namaSekolah, logoDataUrl);
+        addWatermark(doc, webLink, logoDataUrl);
       }
     }
 
@@ -233,7 +236,8 @@ export default function PublicProfileBar({ alumniData }) {
   async function handleDownloadPdf() {
     try {
       setDownloading(true);
-      await generateCvPdf(alumniData, theme?.namaSekolah || 'SMK Negeri 1 Gondang', theme?.logo);
+      const webLink = window.location.origin;
+      await generateCvPdf(alumniData, webLink, theme?.logo);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
       alert('Gagal membuat PDF. Silakan coba lagi.');
