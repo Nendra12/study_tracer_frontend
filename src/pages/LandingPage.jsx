@@ -278,12 +278,16 @@ export default function LandingPage() {
       {/* Karir & Lowongan - Sleek List */}
       <CareerSection jobList={jobList} />
 
-      <footer className="bg-fourth pt-20 pb-10 px-4 sm:px-6 lg:px-8 border-t border-fourth">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+      {/* PERUBAHAN 1: Menambahkan -mt-8 md:-mt-12 untuk menarik footer ke atas (merapatkan jarak vertikal) */}
+      {/* Mengembalikan jarak atas (pt-16) dan membuang margin negatif agar jaraknya tetap lega */}
+      <footer className="bg-fourth pt-16 pb-6 border-t border-[#e2e8f0]">
+        {/* Padding diletakkan HANYA di container ini agar rata persis dengan kartu di atasnya */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 mb-10">
             
-            {/* Kolom 1: Branding & Kontak Info */}
-            <div className="space-y-6">
+            {/* Kolom 1: Branding & Kontak Info (Lebar: 4 grid) */}
+            <div className="space-y-4 lg:col-span-4 lg:pr-6">
               <Link to="/" className="flex items-center gap-2.5 group">
                 <img
                   src={theme?.logo || "/icon.png"}
@@ -291,22 +295,19 @@ export default function LandingPage() {
                   className="w-12 h-10 object-contain drop-shadow-sm"
                 />
                 <div className='flex flex-col transition-all duration-500 ease-in-out'>
-                  <span className="font-black text-primary text-lg">Alumni Tracer</span>
-                  <span className='text-xs font-semibold'>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>
+                  <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
+                  <span className='text-[11px] font-semibold text-primary/80'>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>
                 </div>
               </Link>
               <p className="text-primary/80 text-sm leading-relaxed font-medium">
                 {theme?.deskripsiFooter || 'Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas yang lebih kuat bersama-sama.'}
               </p>
-              
-              {/* List Kontak Info */}
-              
             </div>
 
-            {/* Kolom 2: Tautan Cepat */}
-            <div>
-              <h3 className="text-primary font-black mb-6">Tautan Cepat</h3>
-              <ul className="space-y-4">
+            {/* Kolom 2: Tautan Cepat (Lebar: 2 grid) */}
+            <div className="lg:col-span-2">
+              <h3 className="text-primary font-black mb-4">Tautan Cepat</h3>
+              <ul className="space-y-2.5">
                 {[
                   { label: "Beranda", href: "#beranda" },
                   { label: "Petunjuk", href: "#petunjuk" },
@@ -327,10 +328,10 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Kolom 3: Untuk Alumni */}
-            <div>
-              <h3 className="text-primary font-black mb-6">Untuk Alumni</h3>
-              <ul className="space-y-4">
+            {/* Kolom 3: Untuk Alumni (Lebar: 2 grid) */}
+            <div className="lg:col-span-2">
+              <h3 className="text-primary font-black mb-4">Untuk Alumni</h3>
+              <ul className="space-y-2.5">
                 {[
                   "Masuk",
                   "Daftar",
@@ -348,31 +349,31 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Kolom 4: Kontak Kami */}
-            <div className="space-y-6">
-              <h3 className="text-primary font-black">
+            {/* Kolom 4: Kontak Kami (Lebar: 4 grid) */}
+            <div className="lg:col-span-4">
+              <h3 className="text-primary font-black mb-4">
                 Kontak Kami
               </h3>
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3">
                 <div className="flex items-center gap-3 group">
-                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                    <Globe size={16} />
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Globe size={14} />
                   </div>
-                  <a href={`https://${(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                  <a href={`https://${(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
                     {(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}
                   </a>
                 </div>
                 <div className="flex items-center gap-3 group">
-                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                    <Mail size={16} />
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Mail size={14} />
                   </div>
-                  <a href={`mailto:${theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                  <a href={`mailto:${theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
                     {theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}
                   </a>
                 </div>
                 <div className="flex items-center gap-3 group">
-                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                    <Phone size={16} />
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Phone size={14} />
                   </div>
                   <a href={`tel:${(theme?.telpKontak || '(0358) 611606').replace(/[^\d+]/g, '')}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
                     {theme?.telpKontak || '(0358) 611606'}
@@ -383,12 +384,12 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-[#f3f4f4] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
+          <div className="pt-6 border-t border-[#e2e8f0] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
             <p className="text-third text-xs font-bold text-center md:text-left">
-              © {currentYear} Alumni Tracer. Hak cipta dilindungi undang-undang.
+              © {currentYear} Alumni Tracer. Hak cipta dilindungi.
             </p>
             
-            <div className="flex flex-wrap justify-center md:justify-end gap-4 sm:gap-6">
+            <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
               <button 
                 onClick={() => openModal('privasi')}
                 className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
