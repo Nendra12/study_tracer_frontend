@@ -65,10 +65,21 @@ export default function NavbarAlumni({ user }) {
 
   const navLinks = [
     { name: 'Beranda', path: '/alumni', locked: false },
-    { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false }, // <-- Rute Baru
+    { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false },
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
   ];
+
+  // --- LOGIKA WARNA DAN UKURAN DIPISAH ---
+  
+  // 1. Cek apakah user sedang berada di halaman profil
+  const isProfilePage = location.pathname.includes('/alumni/profile');
+  
+  // 2. Mode Warna Solid (Putih & Teks Primary): Aktif saat di-scroll ATAU di halaman profil
+  const isSolidMode = scrolled || isProfilePage;
+  
+  // 3. Mode Menciut (Ukuran mengecil): HANYA aktif saat benar-benar di-scroll
+  const isShrunk = scrolled;
 
   return (
     <motion.nav
@@ -76,28 +87,34 @@ export default function NavbarAlumni({ user }) {
       animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-70 transition-all duration-300 ease-in-out"
     >
-      <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${scrolled ? 'px-8 sm:px-12 lg:px-25' : 'px-4 sm:px-6 lg:px-8'
-        }`}>
-        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled ? 'shadow-md bg-white/70 backdrop-blur-xl px-6' : 'bg-transparant'
-          }`}>
+      {/* Container utama Menciut HANYA berdasarkan state `isShrunk` (yaitu: scrolled) */}
+      <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${isShrunk ? 'px-8 sm:px-12 lg:px-32' : 'px-4 sm:px-6 lg:px-8'}`}>
+        
+        {/* Background & Shadow menggunakan `isSolidMode` (warna solid di profil walau belum discroll) */}
+        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${isSolidMode ? 'shadow-md bg-white/90 backdrop-blur-xl px-6' : 'bg-transparent'}`}>
 
           {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-2.5 group">
+          <Link to="/alumni" className="flex items-center gap-2.5 group">
             <img
               src={theme?.logo || "/icon.png"}
               alt="Alumni Tracer Logo"
               className="w-12 h-10 object-contain drop-shadow-sm"
             />
             <div className='flex flex-col transition-all duration-500 ease-in-out'>
-              <span className={`font-black text-lg ${scrolled ? 'text-primary' : 'text-white'}`}>Alumni Tracer</span>
-              {!scrolled && <span className={`text-xs font-semibold ${scrolled ? 'text-primary/80' : 'text-white/80'}`}>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>}
+              <span className={`font-black text-lg ${isSolidMode ? 'text-primary' : 'text-white'}`}>
+                Alumni Tracer
+              </span>
+              {!isSolidMode && (
+                <span className="text-xs font-semibold text-white/80">
+                  {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
+                </span>
+              )}
             </div>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden xl:flex bg-fourth/80 p-1 rounded-md ">
+          <div className={`hidden xl:flex p-1 rounded-md ${isSolidMode ? 'bg-gray-100/80' : 'bg-fourth/80'}`}>
             {navLinks.map((item, i) => {
-              // Cek isActive: Khusus pengumuman, kita buat aktif juga jika sedang di halaman detailnya
               const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
 
               if (item.locked) {
@@ -135,22 +152,18 @@ export default function NavbarAlumni({ user }) {
 
           {/* Action Buttons & Mobile Toggle */}
           <div className="flex items-center gap-3">
-            {/* Desktop Actions - Profile & Notification */}
+            {/* Desktop Actions */}
             <div className="hidden xl:flex items-center gap-2">
-              {/* Notification Button */}
               <button
                 onClick={() => navigate('/alumni/notifikasi')}
-                className="cursor-pointer relative group p-2.5 rounded-md bg-white/80 backdrop-blur-sm border border-white/60 text-primary/80 hover:text-primary hover:bg-fourth  transition-all"
+                className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
               >
                 <Bell size={20} />
-                {/* Notification Badge */}
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
-
-                {/* Tooltip (Muncul saat Hover) */}
                 <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
                     {unreadCount > 0 ? `${unreadCount} Notifikasi Baru` : 'Tidak Ada Notifikasi'}
@@ -162,7 +175,7 @@ export default function NavbarAlumni({ user }) {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="cursor-pointer flex items-center gap-2 p-1 pr-3 rounded-md border border-white/60 bg-white/80 backdrop-blur-sm hover:bg-fourth transition-all"
+                  className={`cursor-pointer flex items-center gap-2 p-1 pr-3 rounded-md border backdrop-blur-sm transition-all ${isSolidMode ? 'bg-white border-gray-200 hover:bg-gray-50' : 'bg-white/80 border-white/60 hover:bg-fourth'}`}
                 >
                   <div className="w-8 h-8 rounded-lg bg-primary overflow-hidden">
                     {fotoUrl ? (
@@ -179,17 +192,15 @@ export default function NavbarAlumni({ user }) {
                   />
                 </button>
 
-                {/* Dropdown Menu */}
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden z-50"
+                      className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden z-50"
                     >
-                      {/* User Info Header */}
-                      <div className="px-5 py-4 bg-fourth/50 border-b border-white/50">
+                      <div className="px-5 py-4 bg-gray-50 border-b border-gray-100">
                         <p className="text-[10px] font-black text-third uppercase tracking-widest">
                           Masuk sebagai
                         </p>
@@ -197,13 +208,11 @@ export default function NavbarAlumni({ user }) {
                           {user?.nama_alumni || 'Alumni'}
                         </p>
                       </div>
-
-                      {/* Menu Items */}
                       <div className="p-2">
                         <Link
                           to="/alumni/profile"
                           onClick={() => setIsDropdownOpen(false)}
-                          className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-primary/80 hover:text-primary hover:bg-fourth rounded-xl transition-all"
+                          className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-primary/80 hover:text-primary hover:bg-gray-50 rounded-xl transition-all"
                         >
                           <User size={18} className="text-third group-hover:text-primary" />
                           Profil Anda
@@ -225,20 +234,11 @@ export default function NavbarAlumni({ user }) {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="xl:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-fourth rounded-full"
+              className={`xl:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-full ${isSolidMode ? 'bg-gray-100' : 'bg-fourth'}`}
             >
-              <motion.span
-                animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-                className="w-5 h-0.5 bg-primary block"
-              />
-              <motion.span
-                animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="w-5 h-0.5 bg-primary block"
-              />
-              <motion.span
-                animate={isOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-                className="w-5 h-0.5 bg-primary block"
-              />
+              <motion.span animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-primary block" />
+              <motion.span animate={isOpen ? { opacity: 0 } : { opacity: 1 }} className="w-5 h-0.5 bg-primary block" />
+              <motion.span animate={isOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-primary block" />
             </button>
           </div>
 
@@ -249,18 +249,14 @@ export default function NavbarAlumni({ user }) {
                 initial={{ opacity: 0, y: -20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
+                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/95 backdrop-blur-2xl border border-gray-100 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
               >
-                {/* Navigation Links */}
                 {navLinks.map((item, i) => {
                   const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
 
                   if (item.locked) {
                     return (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between px-6 py-4 rounded-md bg-fourth/50 text-slate-400 opacity-60"
-                      >
+                      <div key={i} className="flex items-center justify-between px-6 py-4 rounded-md bg-gray-50 text-slate-400 opacity-60">
                         <span className="font-bold">{item.name}</span>
                         <Lock size={16} />
                       </div>
@@ -268,18 +264,11 @@ export default function NavbarAlumni({ user }) {
                   }
 
                   return (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0, transition: { delay: i * 0.1 } }}
-                    >
+                    <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: i * 0.1 } }}>
                       <Link
                         to={item.path}
                         onClick={() => setIsOpen(false)}
-                        className={`block px-6 py-4 rounded-md font-bold transition-all ${isActive
-                          ? 'bg-primary text-white'
-                          : 'text-primary/80 hover:bg-fourth hover:text-primary'
-                          }`}
+                        className={`block px-6 py-4 rounded-md font-bold transition-all ${isActive ? 'bg-primary text-white' : 'text-primary/80 hover:bg-gray-50 hover:text-primary'}`}
                       >
                         {item.name}
                       </Link>
@@ -287,43 +276,18 @@ export default function NavbarAlumni({ user }) {
                   );
                 })}
 
-                <hr className="border-fourth my-2" />
+                <hr className="border-gray-100 my-2" />
 
-                {/* Mobile Profile Actions */}
                 <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      navigate('/alumni/notifikasi');
-                      setIsOpen(false);
-                    }}
-                    className="relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-fourth hover:bg-white transition-all"
-                  >
-                    <Bell size={18} />
-                    Notifikasi
-                    {unreadCount > 0 && (
-                      <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
+                  <button onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
+                    <Bell size={18} /> Notifikasi
+                    {unreadCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                   </button>
-
-                  <button
-                    onClick={() => {
-                      navigate('/alumni/profile');
-                      setIsOpen(false);
-                    }}
-                    className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-fourth hover:bg-white transition-all"
-                  >
-                    <User size={18} />
-                    Profil Anda
+                  <button onClick={() => { navigate('/alumni/profile'); setIsOpen(false); }} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
+                    <User size={18} /> Profil Anda
                   </button>
-
-                  <button
-                    onClick={() => navigate('/logout')}
-                    className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all"
-                  >
-                    <LogOut size={18} />
-                    Keluar Aplikasi
+                  <button onClick={() => navigate('/logout')} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
+                    <LogOut size={18} /> Keluar Aplikasi
                   </button>
                 </div>
               </motion.div>
