@@ -12,38 +12,46 @@ import {
 import { alertSuccess, alertError, alertConfirm, alertWarning } from "../../utilitis/alert"; 
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import Pagination from "../../components/admin/Pagination";
+import { adminApi } from "../../api/admin";
 
 const DATA_PER_PAGE = 7;
 
-// ============================================================================
-// DATA DUMMY
-// ============================================================================
-const DUMMY_KOTA = [
-  { id: 1, nama: "Jakarta" },
-  { id: 2, nama: "Surabaya" },
-  { id: 3, nama: "Malang" },
-  { id: 4, nama: "Bandung" },
-  { id: 5, nama: "Yogyakarta" }
-];
+const extractCollectionData = (response) => {
+  const payload = response?.data?.data;
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
 
-const DUMMY_UNIVERSITAS = [
-  { id: 1, nama: "Universitas Brawijaya", jalan: "Jl. Veteran Malang", image: null },
-  { id: 2, nama: "Universitas Indonesia", jalan: "Kampus UI Depok", image: null },
-  { id: 3, nama: "Institut Teknologi Bandung", jalan: "Jl. Ganesha No. 10, Bandung", image: null },
-  { id: 4, nama: "Universitas Gadjah Mada", jalan: "Bulaksumur, Yogyakarta", image: null },
-];
+const buildKemitraanPayload = ({ tipe, nama, jalan, image, imageFile }) => {
+  const fd = new FormData();
+  fd.append("tipe", tipe);
+  fd.append("nama", nama);
+  fd.append("jalan", jalan || "");
 
-const DUMMY_PERUSAHAAN = [
-  { id: 1, nama: "PT Telkom Indonesia", jalan: "Jl. Japati No. 1, Bandung", image: null },
-  { id: 2, nama: "PT GoTo Gojek Tokopedia", jalan: "Gedung Pasaraya Blok M, Jakarta", image: null },
-  { id: 3, nama: "CV Maju Mundur", jalan: "Jl. Pahlawan No. 12, Surabaya", image: null },
-];
+  if (imageFile) {
+    fd.append("logo", imageFile);
+  } else if (typeof image === "string" && image.startsWith("data:image")) {
+    fd.append("logo", image);
+  }
+
+  return fd;
+};
+
+const downloadBlobFile = (blob, fileName) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
 
 // ============================================================================
 // 1. TABEL MITRA UNIVERSITAS / KAMPUS
 // ============================================================================
-const UniversitasTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
+const UniversitasTable = ({ data = [], loading = false, onCreate, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -75,13 +83,21 @@ const UniversitasTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
     if (isDuplicate(trimmedName)) return alertWarning(`Universitas "${trimmedName}" sudah ada dalam daftar.`);
 
     setSaving(true);
-    setTimeout(() => {
-      onCreate({ nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
+    try {
+      await onCreate({
+        nama: trimmedName,
+        jalan: formData.jalan,
+        image: formData.imagePreview,
+        imageFile: formData.imageFile,
+      });
       alertSuccess("Universitas berhasil ditambahkan");
       resetForm();
       setIsAdding(false);
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal menambahkan universitas");
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const handleUpdate = async (id) => {
@@ -90,20 +106,32 @@ const UniversitasTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
     if (isDuplicate(trimmedName, id)) return alertWarning(`Nama universitas "${trimmedName}" sudah digunakan.`);
 
     setSaving(true);
-    setTimeout(() => {
-      onUpdate(id, { nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
+    try {
+      await onUpdate(id, {
+        nama: trimmedName,
+        jalan: formData.jalan,
+        image: formData.imagePreview,
+        imageFile: formData.imageFile,
+      });
       alertSuccess("Universitas berhasil diperbarui");
       setEditId(null);
       resetForm();
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal memperbarui universitas");
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const handleDelete = async (id, name) => {
     const { isConfirmed } = await alertConfirm(`Apakah Anda yakin ingin menghapus universitas "${name}"?`);
     if (!isConfirmed) return;
-    onDelete(id);
-    alertSuccess("Universitas berhasil dihapus");
+    try {
+      await onDelete(id);
+      alertSuccess("Universitas berhasil dihapus");
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal menghapus universitas");
+    }
   };
 
   const startEdit = (item) => {
@@ -196,7 +224,9 @@ const UniversitasTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
               </tr>
             )}
 
-            {paginatedData.length === 0 && !isAdding ? (
+            {loading ? (
+              <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Memuat data...</td></tr>
+            ) : paginatedData.length === 0 && !isAdding ? (
               <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
             ) : (
               paginatedData.map((item) =>
@@ -274,7 +304,7 @@ const UniversitasTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
 // ============================================================================
 // 2. TABEL MITRA PERUSAHAAN
 // ============================================================================
-const PerusahaanTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
+const PerusahaanTable = ({ data = [], loading = false, onCreate, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -306,13 +336,21 @@ const PerusahaanTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
     if (isDuplicate(trimmedName)) return alertWarning(`Perusahaan "${trimmedName}" sudah ada dalam daftar.`);
 
     setSaving(true);
-    setTimeout(() => {
-      onCreate({ nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
+    try {
+      await onCreate({
+        nama: trimmedName,
+        jalan: formData.jalan,
+        image: formData.imagePreview,
+        imageFile: formData.imageFile,
+      });
       alertSuccess("Perusahaan berhasil ditambahkan");
       resetForm();
       setIsAdding(false);
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal menambahkan perusahaan");
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const handleUpdate = async (id) => {
@@ -321,20 +359,32 @@ const PerusahaanTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
     if (isDuplicate(trimmedName, id)) return alertWarning(`Nama perusahaan "${trimmedName}" sudah digunakan oleh data lain.`);
 
     setSaving(true);
-    setTimeout(() => {
-      onUpdate(id, { nama: trimmedName, jalan: formData.jalan, image: formData.imagePreview });
+    try {
+      await onUpdate(id, {
+        nama: trimmedName,
+        jalan: formData.jalan,
+        image: formData.imagePreview,
+        imageFile: formData.imageFile,
+      });
       alertSuccess("Perusahaan berhasil diperbarui");
       setEditId(null);
       resetForm();
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal memperbarui perusahaan");
+    } finally {
       setSaving(false);
-    }, 500);
+    }
   };
 
   const handleDelete = async (id, name) => {
     const { isConfirmed } = await alertConfirm(`Apakah Anda yakin ingin menghapus perusahaan "${name}"?`);
     if (!isConfirmed) return;
-    onDelete(id);
-    alertSuccess("Perusahaan berhasil dihapus");
+    try {
+      await onDelete(id);
+      alertSuccess("Perusahaan berhasil dihapus");
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal menghapus perusahaan");
+    }
   };
 
   const startEdit = (item) => {
@@ -427,7 +477,9 @@ const PerusahaanTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
               </tr>
             )}
 
-            {paginatedData.length === 0 && !isAdding ? (
+            {loading ? (
+              <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Memuat data...</td></tr>
+            ) : paginatedData.length === 0 && !isAdding ? (
               <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
             ) : (
               paginatedData.map((item) =>
@@ -503,63 +555,94 @@ const PerusahaanTable = ({ data = [], onCreate, onUpdate, onDelete }) => {
 };
 
 // ============================================================================
-// 3. MAIN PAGE COMPONENT: KEMITRAAN (DENGAN DATA DUMMY & IMAGE UPLOAD)
+// 3. MAIN PAGE COMPONENT: KEMITRAAN (API WIRED)
 // ============================================================================
 export default function Kemitraan() {
   const [selectedFormat, setSelectedFormat] = useState("CSV");
   const [selectedReport, setSelectedReport] = useState("Mitra Universitas");
   const [exportingReport, setExportingReport] = useState(false);
-  
-  // Menggunakan DUMMY STATE
-  const [universitasData, setUniversitasData] = useState(DUMMY_UNIVERSITAS);
-  const [perusahaanData, setPerusahaanData] = useState(DUMMY_PERUSAHAAN);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [universitasData, setUniversitasData] = useState([]);
+  const [perusahaanData, setPerusahaanData] = useState([]);
 
-  // --- CRUD UNIVERSITAS (Local State) ---
-  const handleCreateUniv = (formData) => {
-    const newItem = {
-      id: Date.now(),
-      nama: formData.nama,
-      jalan: formData.jalan,
-      image: formData.image
-    };
-    setUniversitasData([newItem, ...universitasData]);
+  const fetchKemitraanData = async () => {
+    setPageLoading(true);
+    try {
+      const [univRes, perusahaanRes] = await Promise.all([
+        adminApi.getKemitraanUniversitas(),
+        adminApi.getKemitraanPerusahaan(),
+      ]);
+
+      setUniversitasData(extractCollectionData(univRes));
+      setPerusahaanData(extractCollectionData(perusahaanRes));
+    } catch (err) {
+      alertError(err?.response?.data?.message || "Gagal memuat data kemitraan");
+    } finally {
+      setPageLoading(false);
+    }
   };
 
-  const handleUpdateUniv = (id, formData) => {
-    setUniversitasData(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, nama: formData.nama, jalan: formData.jalan, image: formData.image };
-      }
-      return item;
-    }));
+  useEffect(() => {
+    fetchKemitraanData();
+  }, []);
+
+  // --- CRUD UNIVERSITAS (Backend API) ---
+  const handleCreateUniv = async (formData) => {
+    const payload = buildKemitraanPayload({ tipe: "universitas", ...formData });
+    const res = await adminApi.createKemitraanUniversitas(payload);
+    const item = res?.data?.data;
+
+    if (item) {
+      setUniversitasData(prev => [item, ...prev]);
+    } else {
+      await fetchKemitraanData();
+    }
   };
 
-  const handleDeleteUniv = (id) => {
+  const handleUpdateUniv = async (id, formData) => {
+    const payload = buildKemitraanPayload({ tipe: "universitas", ...formData });
+    const res = await adminApi.updateKemitraanUniversitas(id, payload);
+    const updated = res?.data?.data;
+
+    if (updated) {
+      setUniversitasData(prev => prev.map(item => (item.id === id ? updated : item)));
+    } else {
+      await fetchKemitraanData();
+    }
+  };
+
+  const handleDeleteUniv = async (id) => {
+    await adminApi.deleteKemitraanUniversitas(id);
     setUniversitasData(prev => prev.filter(item => item.id !== id));
   };
 
+  // --- CRUD PERUSAHAAN (Backend API) ---
+  const handleCreatePerusahaan = async (formData) => {
+    const payload = buildKemitraanPayload({ tipe: "perusahaan", ...formData });
+    const res = await adminApi.createKemitraanPerusahaan(payload);
+    const item = res?.data?.data;
 
-  // --- CRUD PERUSAHAAN (Local State) ---
-  const handleCreatePerusahaan = (formData) => {
-    const newItem = {
-      id: Date.now(),
-      nama: formData.nama,
-      jalan: formData.jalan,
-      image: formData.image
-    };
-    setPerusahaanData([newItem, ...perusahaanData]);
+    if (item) {
+      setPerusahaanData(prev => [item, ...prev]);
+    } else {
+      await fetchKemitraanData();
+    }
   };
 
-  const handleUpdatePerusahaan = (id, formData) => {
-    setPerusahaanData(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, nama: formData.nama, jalan: formData.jalan, image: formData.image };
-      }
-      return item;
-    }));
+  const handleUpdatePerusahaan = async (id, formData) => {
+    const payload = buildKemitraanPayload({ tipe: "perusahaan", ...formData });
+    const res = await adminApi.updateKemitraanPerusahaan(id, payload);
+    const updated = res?.data?.data;
+
+    if (updated) {
+      setPerusahaanData(prev => prev.map(item => (item.id === id ? updated : item)));
+    } else {
+      await fetchKemitraanData();
+    }
   };
 
-  const handleDeletePerusahaan = (id) => {
+  const handleDeletePerusahaan = async (id) => {
+    await adminApi.deleteKemitraanPerusahaan(id);
     setPerusahaanData(prev => prev.filter(item => item.id !== id));
   };
 
@@ -569,6 +652,7 @@ export default function Kemitraan() {
     setExportingReport(true);
     try {
       let headers, rows, fileName, title;
+
       if (selectedReport === 'Mitra Universitas') {
         if (universitasData.length === 0) return alertWarning("Data Universitas kosong");
         headers = ['Nama Kampus/Universitas', 'Alamat Lengkap'];
@@ -583,23 +667,23 @@ export default function Kemitraan() {
         title = 'Laporan Data Mitra Perusahaan';
       }
 
-      if (selectedFormat === 'PDF') {
+      if (selectedFormat === 'CSV') {
+        const type = selectedReport === 'Mitra Universitas' ? 'universitas' : 'perusahaan';
+        const exportRes = await adminApi.exportKemitraan(type);
+        downloadBlobFile(exportRes.data, `${fileName}.csv`);
+      } else {
         const { jsPDF } = await import('jspdf');
         const autoTable = (await import('jspdf-autotable')).default;
         const doc = new jsPDF();
         doc.text(title, 14, 15);
         autoTable(doc, { head: [headers], body: rows, startY: 25, headStyles: { fillColor: [60, 87, 89] } });
         doc.save(`${fileName}.pdf`);
-      } else {
-        const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `${fileName}.csv`; a.click();
-        URL.revokeObjectURL(url);
       }
+
       alertSuccess('Laporan berhasil diunduh');
-    } catch { alertError('Gagal membuat laporan'); }
+    } catch (err) {
+      alertError(err?.response?.data?.message || 'Gagal membuat laporan');
+    }
     finally { setExportingReport(false); }
   };
 
@@ -612,6 +696,7 @@ export default function Kemitraan() {
           {/* TABEL UNIVERSITAS */}
           <UniversitasTable 
             data={universitasData} 
+            loading={pageLoading}
             onCreate={handleCreateUniv}
             onUpdate={handleUpdateUniv}
             onDelete={handleDeleteUniv}
@@ -620,6 +705,7 @@ export default function Kemitraan() {
           {/* TABEL PERUSAHAAN */}
           <PerusahaanTable 
             data={perusahaanData} 
+            loading={pageLoading}
             onCreate={handleCreatePerusahaan}
             onUpdate={handleUpdatePerusahaan}
             onDelete={handleDeletePerusahaan}
