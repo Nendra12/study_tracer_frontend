@@ -12,6 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaImage, setCaptchaImage] = useState("");
+  const [captchaKey, setCaptchaKey] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,11 +38,14 @@ export default function Login() {
         ? await authApi.refreshCaptcha()
         : await authApi.generateCaptcha();
       const image = res?.data?.captcha?.image || "";
+      const key = res?.data?.captcha?.key || "";
       setCaptchaImage(image);
+      setCaptchaKey(key);
       setCaptchaToken("");
     } catch (err) {
       console.error("Failed to load captcha:", err);
       setCaptchaImage("");
+      setCaptchaKey("");
     } finally {
       setCaptchaLoading(false);
     }
@@ -62,7 +66,12 @@ export default function Login() {
 
     try {
       const normalizedCaptcha = captchaToken.trim().toLowerCase();
-      const user = await login({ email, password, captcha_token: normalizedCaptcha });
+      const user = await login({
+        email,
+        password,
+        captcha_token: normalizedCaptcha,
+        captcha_key: captchaKey,
+      });
       // console.log(user.role)
       if (user.role === "admin") {
         navigate("/wb-admin");
