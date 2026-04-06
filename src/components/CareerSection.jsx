@@ -70,8 +70,8 @@ export default function CareerSection({ jobList }) {
     : fallbackJobs;
 
   return (
-    <section id="karir" className="py-15 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="relative">
+    <section id="karir" className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* Header Section */}
         <motion.div

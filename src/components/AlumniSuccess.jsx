@@ -63,7 +63,7 @@ export default function AlumniSuccess({ alumniList }) {
     /* Menggunakan bg-[#f9fafb] (Off-White sedikit hangat) agar beda dengan section sebelumnya */
     <section
       id="alumni"
-      className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8  max-w-7xl mx-auto"
+      className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header dengan Layout Flex yang dinamis */}

@@ -2,13 +2,14 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Eye, X, Image as ImageIcon, ArrowLeft, 
-  ShieldCheck, FileText, Headphones, Globe, Mail, Phone, Check
+  ShieldCheck, FileText, Headphones, Globe, Mail, Phone, Check,
+  Briefcase, GraduationCap, Users, Search
 } from 'lucide-react';
 
 export default function TampilanPreview({ 
   isOpen, 
   onClose, 
-  activeTab = 'landing', // Default tab
+  activeTab = 'landing',
   primaryColor, 
   secondaryColor, 
   thirdColor,
@@ -20,7 +21,14 @@ export default function TampilanPreview({
   metaDescription,
   metaIcon,
   landingTitle,
-  landingDescription
+  landingDescription,
+  deskripsiFooter,
+  emailKontak,
+  webKontak,
+  telpKontak,
+  teksPrivasi,
+  teksLayanan,
+  teksDukungan
 }) {
   if (!isOpen) return null;
 
@@ -28,7 +36,7 @@ export default function TampilanPreview({
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4 md:p-6 backdrop-blur-sm animate-in fade-in duration-300"
+      className="fixed inset-0 bg-black/60 z-99999 flex items-center justify-center p-4 md:p-6 backdrop-blur-sm animate-in fade-in duration-300"
       onClick={onClose}
     >
       <div 
@@ -63,7 +71,7 @@ export default function TampilanPreview({
         <div className="flex-1 overflow-y-auto p-5 md:p-8 space-y-12 bg-gray-100/50 custom-scrollbar">
           
           {/* ========================================================= */}
-          {/* TAB 1: PREVIEW META DATA (GOOGLE SEARCH MOCKUP) */}
+          {/* TAB 1: PREVIEW META DATA */}
           {/* ========================================================= */}
           {activeTab === 'meta' && (
             <div className="flex justify-center items-center h-full min-h-[50vh]">
@@ -105,13 +113,13 @@ export default function TampilanPreview({
           {/* TAB 2: PREVIEW LOGIN */}
           {/* ========================================================= */}
           {activeTab === 'login' && (
-            <div className="space-y-12 animate-in fade-in duration-500">
-               <div>
+            <div className="space-y-12 animate-in fade-in duration-500 flex flex-col items-center">
+               <div className="w-full max-w-4xl">
                  <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>1</span>
                     Simulasi Halaman Login
                  </h4>
-                 <div className="flex h-[360px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                 <div className="flex h-[400px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                     {/* Left: Background Image */}
                     <div className="w-1/2 relative bg-gray-200 overflow-hidden">
                        {loginBg ? (
@@ -119,58 +127,63 @@ export default function TampilanPreview({
                        ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                             <ImageIcon size={32}/>
-                            <span className="text-[10px] mt-2">No Image</span>
+                            <span className="text-xs mt-2 font-medium">Belum ada gambar background</span>
                           </div>
                        )}
                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm">
-                          <ArrowLeft size={10} style={{color: primaryColor}} />
-                          <div className={`text-[7px] font-bold ${blurredText}`} style={{color: primaryColor}}>Kembali Ke Landing Page</div>
+                          <ArrowLeft size={12} style={{color: primaryColor}} />
+                          <div className="text-[10px] font-bold" style={{color: primaryColor}}>Kembali Ke Landing Page</div>
                        </div>
-                       <div className="absolute bottom-6 left-6 right-6 flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white rounded-full p-1.5 shrink-0 flex items-center justify-center overflow-hidden">
+                       
+                       {/* PERBAIKAN LOGO: Ukuran diperkecil dan diposisikan lebih presisi */}
+                       <div className="absolute bottom-10 left-6 right-6 flex items-center gap-2.5">
+                          <div className="w-9 h-9 bg-white rounded-full p-1.5 shrink-0 flex items-center justify-center shadow-md">
                              {logo ? <img src={logo} className="w-full h-full object-contain" /> : <ImageIcon size={16} className="text-gray-400"/>}
                           </div>
                           <div>
-                             <div className={`text-white text-sm font-black ${blurredText}`}>Alumni Tracer Study</div>
+                             <div className="text-white text-[13px] font-black drop-shadow-md">Alumni Tracer Study</div>
                           </div>
                        </div>
-                       <div className={`absolute bottom-2 left-6 right-6 text-white/90 text-[7px] leading-relaxed ${blurredText}`}>
-                          Masuk dan terhubung kembali dengan {namaSekolah}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
+                       
+                       <div className="absolute bottom-4 left-6 right-6 text-white/90 text-[10px] leading-relaxed font-medium drop-shadow-md">
+                          Masuk dan terhubung kembali dengan <span className="font-bold">{namaSekolah || 'Sekolah Anda'}</span>. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
                        </div>
                     </div>
                     {/* Right: Login Form */}
                     <div className="w-1/2 p-8 flex flex-col justify-center">
-                       <div className={`text-2xl font-black ${blurredText}`} style={{color: primaryColor}}>Selamat Datang</div>
-                       <div className={`text-[10px] mb-6 mt-1 ${blurredText}`} style={{color: thirdColor}}>Masukan email dan password untuk mengakses akun anda</div>
+                       <div className="text-2xl font-black mb-1" style={{color: primaryColor}}>Selamat Datang</div>
+                       <div className="text-xs mb-6 text-gray-500 font-medium">Masukan email dan password untuk mengakses akun anda</div>
+                       
                        <div className="space-y-4">
                           <div className="space-y-1.5">
-                             <div className={`text-[9px] font-bold text-gray-700 ${blurredText}`}>Email</div>
-                             <div className="h-9 w-full border border-gray-200 rounded-lg bg-gray-50 px-2 flex items-center">
-                                <div className={`h-2 w-1/2 bg-gray-300 rounded ${blurredText}`}></div>
+                             <div className="text-xs font-bold text-gray-700">Email</div>
+                             <div className="h-10 w-full border border-gray-200 rounded-lg bg-gray-50 px-3 flex items-center">
+                                <span className="text-xs text-gray-400">contoh@email.com</span>
                              </div>
                           </div>
                           <div className="space-y-1.5">
-                             <div className={`text-[9px] font-bold text-gray-700 ${blurredText}`}>Password</div>
-                             <div className="h-9 w-full border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between px-2">
-                                <div className={`h-2 w-1/3 bg-gray-300 rounded ${blurredText}`}></div>
-                                <Eye size={12} className="text-gray-400" />
+                             <div className="text-xs font-bold text-gray-700">Password</div>
+                             <div className="h-10 w-full border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between px-3">
+                                <span className="text-xs text-gray-400">••••••••</span>
+                                <Eye size={14} className="text-gray-400" />
                              </div>
                           </div>
                           <div className="flex justify-between items-center mt-2">
-                             <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded border border-gray-300"></div>
-                                <div className={`text-[8px] text-gray-500 ${blurredText}`}>Ingatkan saya</div>
+                             <div className="flex items-center gap-2">
+                                <div className="w-3.5 h-3.5 rounded border border-gray-300 bg-white"></div>
+                                <div className="text-[10px] text-gray-600 font-medium">Ingatkan saya</div>
                              </div>
-                             <div className={`text-[8px] font-bold ${blurredText}`} style={{color: primaryColor}}>Lupa password?</div>
+                             <div className="text-[10px] font-bold cursor-pointer hover:underline" style={{color: primaryColor}}>Lupa password?</div>
                           </div>
-                          <div className="h-10 w-full rounded-xl mt-4 flex items-center justify-center shadow-sm" style={{ backgroundColor: primaryColor }}>
-                             <span className={`text-white text-[11px] font-bold ${blurredText}`}>Masuk →</span>
+                          <div className="h-10 w-full rounded-xl mt-6 flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity" style={{ backgroundColor: primaryColor }}>
+                             <span className="text-white text-xs font-bold">Masuk →</span>
                           </div>
                        </div>
-                       <div className="mt-8 text-center flex items-center justify-center gap-1">
-                          <span className={`text-[8px] text-gray-500 ${blurredText}`}>Belum punya akun alumni?</span>
-                          <span className={`text-[8px] font-bold text-blue-600 ${blurredText}`}>Daftar</span>
+                       
+                       <div className="mt-8 text-center flex items-center justify-center gap-1.5">
+                          <span className="text-[10px] text-gray-500">Belum punya akun alumni?</span>
+                          <span className="text-[10px] font-bold cursor-pointer hover:underline" style={{color: primaryColor}}>Daftar</span>
                        </div>
                     </div>
                  </div>
@@ -179,131 +192,187 @@ export default function TampilanPreview({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 3: PREVIEW LANDING PAGE (SCROLLABLE & UTUH) */}
+          {/* TAB 3: PREVIEW LANDING PAGE (Disesuaikan Gambar Referensi) */}
           {/* ========================================================= */}
           {activeTab === 'landing' && (
             <div className="space-y-12 animate-in fade-in duration-500">
                <div>
                  <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>1</span>
-                    Simulasi Landing Page (Scrollable)
+                    Simulasi Landing Page
                  </h4>
-                 <div className="h-[450px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm relative flex flex-col">
-                    {/* Navbar Landing (Sticky) */}
-                    <div className="sticky top-0 h-12 bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 z-30 shrink-0">
+                 <div className="h-[550px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm relative flex flex-col">
+                    
+                    {/* Navbar Landing */}
+                    <div className="sticky top-0 h-14 bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 z-30 shrink-0">
                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-gray-50 rounded-full p-1 overflow-hidden">
-                             {logo ? <img src={logo} className="w-full h-full object-contain" /> : <ImageIcon size={12} className="text-gray-400"/>}
+                          <div className="w-8 h-8 bg-gray-50 rounded-full p-1.5 overflow-hidden">
+                             {logo ? <img src={logo} className="w-full h-full object-contain" /> : <ImageIcon size={16} className="text-gray-400"/>}
                           </div>
                           <div className="flex flex-col">
-                             <span className={`text-[9px] font-black leading-tight ${blurredText}`} style={{ color: primaryColor }}>Alumni Tracer</span>
-                             <span className={`text-[6px] font-bold text-gray-500 ${blurredText}`}>{namaSekolah}</span>
+                             <span className="text-[11px] font-black leading-tight" style={{ color: primaryColor }}>Alumni Tracer</span>
+                             <span className="text-[7px] font-bold text-gray-500">{namaSekolah || "SMK Negeri 1 Gondang"}</span>
                           </div>
                        </div>
-                       <div className={`flex gap-4 ${blurredText}`}>
+                       <div className={`flex gap-5 ${blurredText}`}>
+                          <div className="w-8 h-1.5 bg-gray-200 rounded-full"></div>
                           <div className="w-8 h-1.5 bg-gray-200 rounded-full"></div>
                           <div className="w-8 h-1.5 bg-gray-200 rounded-full"></div>
                           <div className="w-8 h-1.5 bg-gray-200 rounded-full"></div>
                        </div>
-                       <div className="w-16 h-5 rounded-md shadow-sm" style={{backgroundColor: primaryColor}}></div>
+                       <div className="w-20 h-7 rounded-lg shadow-sm flex items-center justify-center" style={{backgroundColor: '#f3f4f6'}}>
+                         <span className="text-[8px] font-bold" style={{color: primaryColor}}>→ Masuk</span>
+                       </div>
                     </div>
                     
-                    {/* Scrollable Area Content Landing */}
+                    {/* Scrollable Landing Body */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar relative z-20 pb-0">
                        
                        {/* Hero Section */}
-                       <div className="px-8 py-10 flex flex-row items-center min-h-[250px] bg-gray-50/30 relative">
-                          {landingBg && (
-                             <div className="absolute inset-0 z-0 opacity-15">
-                                <img src={landingBg} className="w-full h-full object-cover" alt="Hero BG" />
-                             </div>
-                          )}
+                       <div className="px-8 py-10 flex flex-row items-center min-h-[300px] bg-white relative">
                           <div className="w-1/2 pr-6 flex flex-col justify-center relative z-10">
-                             <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-orange-50 border border-orange-100 mb-4 w-fit">
-                                <div className={`text-[7px] font-bold text-orange-600 ${blurredText}`}>Selamat datang di Tracer Study</div>
+                             <div className="text-3xl font-black leading-[1.1] mb-3 tracking-tight">
+                               <span style={{ color: primaryColor }}>Tetap Terhubung</span><br/>
+                               <span style={{ color: primaryColor }}>Dengan Alumni</span><br/>
+                               <span style={{ color: thirdColor }}>{namaSekolah || 'SMK Negeri 1 Jakarta'}.</span>
                              </div>
-                             {/* Penggunaan Teks Landing Dinamis! */}
-                             <div className={`text-3xl font-black leading-[1.1] mb-3 ${blurredText}`} style={{ color: primaryColor }}>
-                               {landingTitle ? landingTitle : <>Tetap Terhubung <br/> dengan Alumni <br/> <span style={{ color: thirdColor }}>{namaSekolah}.</span></>}
+                             
+                             <div className="text-[9px] max-w-[90%] leading-relaxed mb-6 text-gray-500 font-medium">
+                               {landingDescription ? landingDescription : "Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni, temukan info lowongan kerja, dan bangun jaringan yang lebih luas dengan study tracer."}
                              </div>
-                             <div className={`text-[8px] max-w-[80%] leading-relaxed mb-6 text-gray-500 ${blurredText}`}>
-                               {landingDescription ? landingDescription : "Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni, temukan info lowongan kerja, dan bangun jaringan yang lebih luas."}
-                             </div>
-                             <div className="px-4 py-2 w-max rounded-lg text-[9px] font-bold text-white flex items-center justify-center gap-2 shadow-md" style={{ backgroundColor: primaryColor }}>
-                               <span className={`${blurredText}`}>Masuk Portal Alumni</span>
+                             
+                             <div className="flex items-center gap-4">
+                               <div className="px-4 py-2.5 rounded-md text-[8px] font-bold text-white shadow-md cursor-pointer" style={{ backgroundColor: primaryColor }}>
+                                 Masuk Portal Alumni →
+                               </div>
+                               <div className="flex items-center gap-1.5">
+                                 <div className="flex -space-x-1.5">
+                                    <div className="w-5 h-5 rounded-full bg-orange-200 border border-white"></div>
+                                    <div className="w-5 h-5 rounded-full bg-green-200 border border-white"></div>
+                                    <div className="w-5 h-5 rounded-full bg-blue-200 border border-white"></div>
+                                 </div>
+                                 <span className="text-[7px] font-bold" style={{ color: primaryColor }}>+109 Bergabung</span>
+                               </div>
                              </div>
                           </div>
-                          <div className="w-1/2 relative h-full min-h-[200px] z-10">
-                             <div className="absolute right-0 top-0 w-[80%] h-48 bg-gray-200 rounded-2xl shadow-inner flex flex-col items-center justify-center border-4 border-white overflow-hidden">
-                                {landingBg ? <img src={landingBg} className="w-full h-full object-cover" alt="Landing visual"/> : <ImageIcon size={24} className="text-gray-400"/>}
+                          
+                          <div className="w-1/2 relative h-full min-h-[250px] z-10 flex items-center justify-center">
+                             <div className="absolute right-0 top-2 w-[85%] h-56 bg-gray-100 rounded-3xl shadow-md border-4 border-white overflow-hidden transform rotate-3">
+                                {landingBg ? <img src={landingBg} className="w-full h-full object-cover" alt="Landing visual"/> : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={40} className="text-gray-300"/></div>}
                              </div>
-                             <div className="absolute left-0 top-10 bg-white p-2 rounded-xl shadow-lg border border-gray-100 flex items-center gap-2 w-28">
-                                <div className="w-6 h-6 bg-gray-100 rounded-md"></div>
-                                <div className="space-y-1">
-                                  <div className={`w-8 h-2 bg-gray-300 rounded-full ${blurredText}`}></div>
-                                  <div className={`w-12 h-1.5 bg-gray-200 rounded-full ${blurredText}`}></div>
+                             {/* Floating Card 1 */}
+                             <div className="absolute top-12 left-0 bg-white/95 backdrop-blur-sm p-2.5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-2">
+                                <div className="w-7 h-7 bg-gray-50 rounded-lg flex items-center justify-center text-gray-700">
+                                   <Briefcase size={12}/>
+                                </div>
+                                <div className="pr-2">
+                                  <div className="text-xs font-black" style={{ color: primaryColor }}>38%</div>
+                                  <div className="text-[5px] font-bold text-gray-500 uppercase tracking-wide">Alumni Aktif Bekerja</div>
+                                </div>
+                             </div>
+                             {/* Floating Card 2 */}
+                             <div className="absolute bottom-8 left-6 p-3 rounded-xl shadow-lg transform -rotate-2 w-44" style={{ backgroundColor: primaryColor, opacity: 0.9 }}>
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="text-[5px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Baru</span>
+                                  <div className="w-4 h-4 bg-orange-100 rounded-full flex items-center justify-center text-[8px]">⭐</div>
+                                </div>
+                                <div className="text-[7px] text-white/90 font-medium leading-relaxed">
+                                  Update data karirmu dan bantu sekolah tingkatkan akreditasi!
                                 </div>
                              </div>
                           </div>
                        </div>
 
                        {/* Petunjuk Section */}
-                       <div className="px-8 py-8 bg-white border-y border-gray-100">
-                          <div className={`text-lg font-black mb-1 ${blurredText}`} style={{color: primaryColor}}>Petunjuk Pendaftaran</div>
-                          <div className={`text-[8px] text-gray-500 mb-6 ${blurredText}`}>Berikut adalah tahapan petunjuk pendaftaran alumni study tracer.</div>
-                          <div className="grid grid-cols-4 gap-4 mt-4">
-                             {[1, 2, 3, 4].map(i => (
-                               <div key={i} className="bg-gray-50/50 p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                                  <div className="h-16 w-full bg-white rounded-xl mb-3 flex items-center justify-center border border-gray-100"><ImageIcon size={16} className="text-gray-300"/></div>
-                                  <div className={`h-2.5 w-2/3 bg-gray-300 rounded-full mb-2 ${blurredText}`}></div>
-                                  <div className={`h-1.5 w-full bg-gray-200 rounded-full mb-1 ${blurredText}`}></div>
-                                  <div className={`h-1.5 w-4/5 bg-gray-200 rounded-full ${blurredText}`}></div>
+                       <div className="px-8 py-10 bg-[#f8f9fa] border-y border-gray-100">
+                          <div className="text-2xl font-black mb-1">
+                             <span style={{ color: primaryColor }}>Petunjuk</span> <span style={{ color: thirdColor }}>Pendaftaran</span>
+                          </div>
+                          <div className="text-[8px] text-gray-500 mb-6 font-medium">Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer {namaSekolah || 'SMK Negeri 1 Gondang'}.</div>
+                          
+                          <div className="grid grid-cols-4 gap-4">
+                             {[
+                               { num: '01', title: 'Registrasi Akun', desc: 'Masuk ke halaman pendaftaran Disini dan lengkapi data diri.' },
+                               { num: '02', title: 'Verifikasi Data', desc: 'Tim admin akan memvalidasi status kelulusan Anda.' },
+                               { num: '03', title: 'Isi Kuesioner', desc: 'Lengkapi formulir tracer study mengenai status karir, kuliah.' },
+                               { num: '04', title: 'Selesai & Update', desc: 'Data Anda tersimpan! Anda kini bisa mengakses portal.' },
+                             ].map((step, i) => (
+                               <div key={i} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative mt-3 flex flex-col">
+                                  <div className="absolute -top-3 left-4 w-6 h-6 rounded flex items-center justify-center text-[8px] font-bold text-white shadow-sm" style={{ backgroundColor: primaryColor }}>{step.num}</div>
+                                  <div className="h-16 w-full bg-gray-50 rounded-lg mb-3 mt-2 flex items-center justify-center border border-gray-100">
+                                     <ImageIcon size={14} className="text-gray-300"/>
+                                  </div>
+                                  <div className="text-[10px] font-black mb-1.5" style={{ color: primaryColor }}>{step.title}</div>
+                                  <div className="text-[6.5px] text-gray-500 leading-relaxed">{step.desc}</div>
                                </div>
                              ))}
                           </div>
                        </div>
 
                        {/* Bagian Statistik dan Manfaat */}
-                       <div className="px-8 py-10 space-y-6 bg-gray-50/30">
-                         <div className={`text-xl font-black mb-1 max-w-[50%] ${blurredText}`} style={{color: primaryColor}}>Satu Platform, Banyak Manfaat.</div>
-                         <div className={`text-[8px] text-gray-500 mb-6 ${blurredText}`}>Memantau perkembangan karir dan pendidikan alumni secara transparan.</div>
+                       <div className="px-8 py-10 space-y-5 bg-white">
+                         <div>
+                            <div className="text-2xl font-black mb-1 leading-tight">
+                               <span style={{ color: primaryColor }}>Satu Platform,</span><br/>
+                               <span style={{ color: thirdColor }}>Banyak Manfaat.</span>
+                            </div>
+                            <div className="text-[8px] text-gray-500 font-medium">Memantau perkembangan karir dan pendidikan alumni {namaSekolah || 'SMK Negeri 1 Gondang'} secara transparan.</div>
+                         </div>
                           
-                         <div className="flex gap-6">
-                           <div className="w-2/3 bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm relative overflow-hidden flex flex-col">
-                             <div className="flex items-center gap-2 mb-6 relative z-10">
-                               <div className="w-5 h-5 rounded-md bg-gray-50 flex items-center justify-center p-0.5 border border-gray-100">
-                                   <div className="w-1 h-3 bg-red-400 rounded-sm mx-[0.5px]"></div>
-                                   <div className="w-1 h-2.5 bg-yellow-400 rounded-sm mx-[0.5px]"></div>
-                                   <div className="w-1 h-4 bg-green-400 rounded-sm mx-[0.5px]"></div>
-                               </div>
-                               <span className={`text-[8px] font-bold uppercase tracking-widest ${blurredText}`} style={{color: primaryColor}}>LIVE DATA STATISTIK</span>
-                             </div>
-                             <div className="grid grid-cols-4 gap-2 relative z-10 flex-1 items-end">
-                               {[
-                                 { value: '109', label: 'TOTAL ALUMNI AKTIF' },
-                                 { value: '38%', label: 'BEKERJA' },
-                                 { value: '37%', label: 'KULIAH' },
-                                 { value: '25%', label: 'WIRAUSAHA' },
-                               ].map((stat, i) => (
-                                 <div key={i} className="text-left">
-                                   <div className={`text-3xl font-black mb-1 ${blurredText}`} style={{color: primaryColor}}>{stat.value}</div>
-                                   <div className={`text-[7px] font-bold uppercase tracking-wider ${blurredText}`} style={{color: thirdColor}}>{stat.label}</div>
+                         <div className="flex flex-col gap-4">
+                           {/* Row 1 */}
+                           <div className="flex gap-4">
+                              <div className="flex-1 bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+                                 <div className="flex items-center gap-2 mb-4 relative z-10">
+                                    <div className="w-4 h-4 rounded bg-gray-50 flex items-center justify-center border border-gray-100">📊</div>
+                                    <span className="text-[7px] font-bold uppercase tracking-widest" style={{color: primaryColor}}>LIVE DATA STATISTIK</span>
                                  </div>
-                               ))}
-                             </div>
+                                 <div className="grid grid-cols-4 gap-2 relative z-10 flex-1 items-end pb-1">
+                                    {[
+                                      { value: '109', label: 'TOTAL ALUMNI AKTIF' },
+                                      { value: '38%', label: 'BEKERJA' },
+                                      { value: '37%', label: 'KULIAH' },
+                                      { value: '25%', label: 'WIRAUSAHA' },
+                                    ].map((stat, i) => (
+                                      <div key={i} className="text-left">
+                                        <div className="text-3xl font-black mb-0.5" style={{color: primaryColor}}>{stat.value}</div>
+                                        <div className="text-[5px] font-bold uppercase tracking-wider" style={{color: thirdColor}}>{stat.label}</div>
+                                      </div>
+                                    ))}
+                                 </div>
+                              </div>
+                              <div className="w-1/3 rounded-[1.5rem] p-5 shadow-sm flex flex-col justify-center relative overflow-hidden h-36" style={{backgroundColor: primaryColor, opacity: 0.95}}>
+                                 <div className="absolute right-[-10px] bottom-[-10px] text-6xl opacity-10">🎓</div>
+                                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white mb-3 relative z-10">
+                                    <GraduationCap size={16} />
+                                 </div>
+                                 <div className="text-[11px] font-black text-white mb-1 relative z-10">Evaluasi Akurat</div>
+                                 <div className="text-[6.5px] text-white/80 leading-relaxed font-medium relative z-10">
+                                   Membantu sekolah menyesuaikan kurikulum dengan kebutuhan industri nyata.
+                                 </div>
+                              </div>
                            </div>
                            
-                           <div className="w-1/3 rounded-[1.5rem] p-6 shadow-sm flex flex-col justify-center" style={{backgroundColor: primaryColor}}>
-                             <div className="flex items-start gap-3 mb-3">
-                               <div className="w-8 h-8 rounded-lg bg-white/20 flex flex-col items-center justify-center">
-                                  <div className="w-4 h-2 border-b-2 border-x-2 border-white rounded-b-sm"></div>
-                                  <div className="w-1 h-2 bg-white mt-0.5"></div>
-                               </div>
-                             </div>
-                             <div className={`text-[12px] font-bold text-white mb-2 ${blurredText}`}>Evaluasi Akurat</div>
-                             <div className={`text-[8px] text-white/80 leading-relaxed ${blurredText}`}>
-                               Membantu sekolah menyesuaikan kurikulum dengan kebutuhan industri nyata.
-                             </div>
+                           {/* Row 2 */}
+                           <div className="flex gap-4">
+                              <div className="w-1/3 bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm flex flex-col justify-center h-32">
+                                 <div className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-600 mb-3 border border-gray-100">
+                                    <Users size={14} />
+                                 </div>
+                                 <div className="text-[11px] font-black mb-1" style={{ color: primaryColor }}>Jejaring Kuat</div>
+                                 <div className="text-[6.5px] text-gray-500 leading-relaxed font-medium">Temukan mentor atau rekan bisnis dari lintas angkatan dengan mudah dan cepat.</div>
+                              </div>
+                              <div className="flex-1 rounded-[1.5rem] p-6 shadow-sm flex items-center justify-between h-32" style={{backgroundColor: primaryColor, opacity: 0.85}}>
+                                 <div className="max-w-[70%]">
+                                    <div className="text-[13px] font-black text-white mb-1.5">Punya Info Lowongan?</div>
+                                    <div className="text-[7px] text-white/90 leading-relaxed font-medium">
+                                       Bantu adik kelasmu mendapatkan karir impian dengan membagikan info lowongan kerja dari perusahaan tempatmu bekerja.
+                                    </div>
+                                 </div>
+                                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white">
+                                    <Search size={20} />
+                                 </div>
+                              </div>
                            </div>
                          </div>
                        </div>
@@ -320,143 +389,159 @@ export default function TampilanPreview({
             <div className="space-y-6 animate-in fade-in duration-500">
                <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>1</span>
-                  Simulasi Footer Landing Page
+                  Simulasi Teks Footer
                </h4>
                <div className="bg-[#f8f9fa] border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="px-6 py-8">
-                     <div className="grid grid-cols-4 gap-6">
+                  <div className="px-8 py-10">
+                     <div className="grid grid-cols-4 gap-8">
                         <div className="space-y-4">
-                           <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-md bg-white shadow-sm flex items-center justify-center overflow-hidden p-1 shrink-0">
-                                 {logo ? <img src={logo} className="w-full h-full object-contain"/> : <ImageIcon size={14} className="text-gray-400"/>}
+                           <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center overflow-hidden p-1.5 shrink-0">
+                                 {logo ? <img src={logo} className="w-full h-full object-contain"/> : <ImageIcon size={18} className="text-gray-400"/>}
                               </div>
                               <div className="flex flex-col">
-                                 <span className="text-[10px] font-black leading-tight" style={{ color: primaryColor }}>Alumni Tracer</span>
-                                 <span className="text-[7px] font-bold text-gray-500">{namaSekolah}</span>
+                                 <span className="text-xs font-black leading-tight" style={{ color: primaryColor }}>Alumni Tracer</span>
+                                 <span className="text-[10px] font-bold text-gray-500">{namaSekolah || "SMK Negeri 1 Gondang"}</span>
                               </div>
                            </div>
-                           <div className="space-y-1.5 pt-1">
-                              <div className={`h-1.5 w-full bg-gray-300 rounded-full ${blurredText}`}></div>
-                              <div className={`h-1.5 w-full bg-gray-300 rounded-full ${blurredText}`}></div>
-                              <div className={`h-1.5 w-4/5 bg-gray-300 rounded-full ${blurredText}`}></div>
-                           </div>
+                           {/* PERBAIKAN FOOTER: Menggunakan deskripsiFooter */}
+                           <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                              {deskripsiFooter || "Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas."}
+                           </p>
                         </div>
 
-                        <div className="space-y-3">
-                           <div className="text-[10px] font-black" style={{color: primaryColor}}>Tautan Cepat</div>
-                           <div className="space-y-2">
-                              <div className={`h-1.5 w-16 bg-gray-300 rounded-full ${blurredText}`}></div>
-                              <div className={`h-1.5 w-20 bg-gray-300 rounded-full ${blurredText}`}></div>
-                           </div>
+                        <div className="space-y-4">
+                           <div className="text-sm font-black" style={{color: primaryColor}}>Tautan Cepat</div>
+                           <ul className="space-y-2.5 text-xs font-bold text-gray-500">
+                              <li className="hover:text-blue-500 cursor-pointer transition-colors">Beranda</li>
+                              <li className="hover:text-blue-500 cursor-pointer transition-colors">Petunjuk</li>
+                              <li className="hover:text-blue-500 cursor-pointer transition-colors">Statistik Publik</li>
+                           </ul>
                         </div>
 
-                        <div className="space-y-3">
-                           <div className="text-[10px] font-black" style={{color: primaryColor}}>Untuk Alumni</div>
-                           <div className="space-y-2">
-                              <div className={`h-1.5 w-12 bg-gray-300 rounded-full ${blurredText}`}></div>
-                              <div className={`h-1.5 w-16 bg-gray-300 rounded-full ${blurredText}`}></div>
-                           </div>
+                        <div className="space-y-4">
+                           <div className="text-sm font-black" style={{color: primaryColor}}>Untuk Alumni</div>
+                           <ul className="space-y-2.5 text-xs font-bold text-gray-500">
+                              <li className="hover:text-blue-500 cursor-pointer transition-colors">Masuk Akun</li>
+                              <li className="hover:text-blue-500 cursor-pointer transition-colors">Daftar Baru</li>
+                              <li className="hover:text-blue-500 cursor-pointer transition-colors">Perbarui Profil</li>
+                           </ul>
                         </div>
 
-                        <div className="space-y-3">
-                           <div className="text-[10px] font-black" style={{color: primaryColor}}>Kontak Kami</div>
-                           <div className="space-y-2.5">
-                              <div className="flex items-center gap-2">
-                                 <div className="w-5 h-5 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400"><Globe size={10} /></div>
-                                 <div className={`h-1.5 w-24 bg-gray-300 rounded-full ${blurredText}`}></div>
+                        <div className="space-y-4">
+                           <div className="text-sm font-black" style={{color: primaryColor}}>Kontak Kami</div>
+                           <div className="space-y-3">
+                              {/* PERBAIKAN KONTAK: Menggunakan webKontak, emailKontak, telpKontak */}
+                              <div className="flex items-center gap-3 group cursor-pointer">
+                                 <div className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors"><Globe size={12} /></div>
+                                 <span className="text-xs font-bold text-gray-500 group-hover:text-blue-500 transition-colors">{webKontak || "alumnitracer.sch.id"}</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                 <div className="w-5 h-5 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400"><Mail size={10} /></div>
-                                 <div className={`h-1.5 w-28 bg-gray-300 rounded-full ${blurredText}`}></div>
+                              <div className="flex items-center gap-3 group cursor-pointer">
+                                 <div className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors"><Mail size={12} /></div>
+                                 <span className="text-xs font-bold text-gray-500 group-hover:text-blue-500 transition-colors">{emailKontak || "info@alumnitracer.com"}</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                 <div className="w-5 h-5 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400"><Phone size={10} /></div>
-                                 <div className={`h-1.5 w-20 bg-gray-300 rounded-full ${blurredText}`}></div>
+                              <div className="flex items-center gap-3 group cursor-pointer">
+                                 <div className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors"><Phone size={12} /></div>
+                                 <span className="text-xs font-bold text-gray-500 group-hover:text-blue-500 transition-colors">{telpKontak || "(0358) 611606"}</span>
                               </div>
                            </div>
                         </div>
                      </div>
                   </div>
-                  <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50/50">
-                     <div className={`h-1.5 w-32 bg-gray-400 rounded-full ${blurredText}`}></div>
-                     <div className="flex gap-4">
-                        <div className={`h-1.5 w-16 bg-gray-400 rounded-full ${blurredText}`}></div>
-                        <div className={`h-1.5 w-20 bg-gray-400 rounded-full ${blurredText}`}></div>
-                        <div className={`h-1.5 w-24 bg-gray-400 rounded-full ${blurredText}`}></div>
+                  <div className="px-8 py-5 border-t border-gray-200 flex justify-between items-center bg-gray-100/50">
+                     <div className="text-[10px] font-bold text-gray-400">© 2026 Alumni Tracer. Hak cipta dilindungi.</div>
+                     <div className="flex gap-4 text-[10px] font-bold text-gray-500">
+                        <span className="hover:text-blue-500 cursor-pointer transition-colors">Kebijakan Privasi</span>
+                        <span className="hover:text-blue-500 cursor-pointer transition-colors">Ketentuan Layanan</span>
+                        <span className="hover:text-blue-500 cursor-pointer transition-colors">Kontak Dukungan</span>
                      </div>
                   </div>
                </div>
 
                <h4 className="text-sm font-bold text-gray-700 mb-3 mt-8 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>2</span>
-                  Simulasi Teks Modal
+                  Simulasi Teks Modal (Jelas)
                </h4>
+               
+               {/* PERBAIKAN MODAL: Tidak blur dan menggunakan variabel teksPrivasi dkk */}
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 bg-gray-200/50 rounded-2xl border border-gray-200">
+                  
+                  {/* MODAL 1: Privasi */}
                   <div className="bg-white rounded-2xl shadow-lg flex flex-col border border-gray-100 overflow-hidden">
-                     <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                     <div className="p-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                         <div className="flex items-center gap-2">
-                           <div className="p-1.5 bg-gray-50 rounded-lg border border-gray-100 text-emerald-500"><ShieldCheck size={14}/></div>
+                           <div className="p-1.5 bg-white rounded-lg border border-gray-100 shadow-sm text-emerald-500"><ShieldCheck size={14}/></div>
                            <span className="text-[10px] font-black text-gray-800">Kebijakan Privasi</span>
                         </div>
-                        <X size={12} className="text-gray-400" />
+                        <X size={12} className="text-gray-400 cursor-pointer" />
                      </div>
-                     <div className="p-4 flex-1 space-y-2">
-                        <div className={`h-1.5 w-full bg-gray-200 rounded-full ${blurredText}`}></div>
-                        <div className={`h-1.5 w-3/4 bg-gray-200 rounded-full ${blurredText}`}></div>
+                     <div className="p-4 flex-1 overflow-y-auto">
+                        {teksPrivasi ? (
+                          <p className="text-[9px] text-gray-600 leading-relaxed font-medium whitespace-pre-wrap">{teksPrivasi}</p>
+                        ) : (
+                          <p className="text-[9px] text-gray-400 italic">Belum ada teks kebijakan privasi yang diisi.</p>
+                        )}
                      </div>
                      <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-end">
-                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[9px] font-bold shadow-sm" style={{backgroundColor: primaryColor}}>
+                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[9px] font-bold shadow-sm cursor-pointer hover:opacity-90" style={{backgroundColor: primaryColor}}>
                            <Check size={10} /> Mengerti
                         </div>
                      </div>
                   </div>
 
+                  {/* MODAL 2: Layanan */}
                   <div className="bg-white rounded-2xl shadow-lg flex flex-col border border-gray-100 overflow-hidden">
-                     <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                     <div className="p-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                         <div className="flex items-center gap-2">
-                           <div className="p-1.5 bg-gray-50 rounded-lg border border-gray-100 text-blue-500"><FileText size={14}/></div>
+                           <div className="p-1.5 bg-white rounded-lg border border-gray-100 shadow-sm text-blue-500"><FileText size={14}/></div>
                            <span className="text-[10px] font-black text-gray-800">Ketentuan Layanan</span>
                         </div>
-                        <X size={12} className="text-gray-400" />
+                        <X size={12} className="text-gray-400 cursor-pointer" />
                      </div>
-                     <div className="p-4 flex-1 space-y-2">
-                        <div className={`h-1.5 w-full bg-gray-200 rounded-full ${blurredText}`}></div>
-                        <div className={`h-1.5 w-5/6 bg-gray-300 rounded-full ${blurredText}`}></div>
+                     <div className="p-4 flex-1 overflow-y-auto">
+                        {teksLayanan ? (
+                          <p className="text-[9px] text-gray-600 leading-relaxed font-medium whitespace-pre-wrap">{teksLayanan}</p>
+                        ) : (
+                          <p className="text-[9px] text-gray-400 italic">Belum ada teks ketentuan layanan yang diisi.</p>
+                        )}
                      </div>
                      <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-end">
-                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[9px] font-bold shadow-sm" style={{backgroundColor: primaryColor}}>
+                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[9px] font-bold shadow-sm cursor-pointer hover:opacity-90" style={{backgroundColor: primaryColor}}>
                            <Check size={10} /> Mengerti
                         </div>
                      </div>
                   </div>
 
+                  {/* MODAL 3: Kontak */}
                   <div className="bg-white rounded-2xl shadow-lg flex flex-col border border-gray-100 overflow-hidden">
-                     <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                     <div className="p-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                         <div className="flex items-center gap-2">
-                           <div className="p-1.5 bg-gray-50 rounded-lg border border-gray-100 text-amber-500"><Headphones size={14}/></div>
+                           <div className="p-1.5 bg-white rounded-lg border border-gray-100 shadow-sm text-amber-500"><Headphones size={14}/></div>
                            <span className="text-[10px] font-black text-gray-800">Kontak Dukungan</span>
                         </div>
-                        <X size={12} className="text-gray-400" />
+                        <X size={12} className="text-gray-400 cursor-pointer" />
                      </div>
-                     <div className="p-4 flex-1">
-                        <div className={`h-1.5 w-full bg-gray-200 rounded-full mb-4 ${blurredText}`}></div>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
+                     <div className="p-4 flex-1 flex flex-col">
+                        <p className="text-[9px] text-gray-600 leading-relaxed font-medium mb-3">
+                           {teksDukungan || "Butuh bantuan atau menemukan masalah teknis? Tim dukungan kami siap membantu Anda."}
+                        </p>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2.5 mt-auto">
                            <div>
-                              <div className="text-[7px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email</div>
-                              <div className={`h-1.5 w-24 bg-gray-300 rounded-full ${blurredText}`}></div>
+                              <div className="text-[7px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Email</div>
+                              <div className="text-[9px] font-bold text-gray-700">{emailKontak || "info@alumnitracer.com"}</div>
                            </div>
                            <div>
-                              <div className="text-[7px] font-bold text-gray-400 uppercase tracking-widest mb-1">Website Resmi</div>
-                              <div className={`h-1.5 w-32 bg-gray-300 rounded-full ${blurredText}`}></div>
+                              <div className="text-[7px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Website Resmi</div>
+                              <div className="text-[9px] font-bold text-gray-700">{webKontak || "alumnitracer.sch.id"}</div>
                            </div>
                            <div>
-                              <div className="text-[7px] font-bold text-gray-400 uppercase tracking-widest mb-1">Telepon</div>
-                              <div className={`h-1.5 w-20 bg-gray-300 rounded-full ${blurredText}`}></div>
+                              <div className="text-[7px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Telepon</div>
+                              <div className="text-[9px] font-bold text-gray-700">{telpKontak || "(0358) 611606"}</div>
                            </div>
                         </div>
                      </div>
                      <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-end">
-                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[9px] font-bold shadow-sm" style={{backgroundColor: primaryColor}}>
+                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[9px] font-bold shadow-sm cursor-pointer hover:opacity-90" style={{backgroundColor: primaryColor}}>
                            <Check size={10} /> Mengerti
                         </div>
                      </div>
