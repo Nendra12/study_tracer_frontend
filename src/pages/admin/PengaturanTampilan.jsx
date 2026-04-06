@@ -1,24 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Image as ImageIcon, Save, RefreshCcw, Eye } from 'lucide-react';
 import { alertSuccess, alertConfirm, alertError } from '../../utilitis/alert';
-
-// Import Hook dari ThemeContext
 import { useThemeSettings } from '../../context/ThemeContext';
-// Import Komponen Preview
-import TampilanPreview from '../../components/admin/TampilanPreview'; // Pastikan path ini benar!
-// Import Admin API
+import TampilanPreview from '../../components/admin/TampilanPreview'; 
 import { adminApi } from '../../api/admin';
 
 export default function PengaturanTampilan() {
   const { theme, updateSettings, refreshFromApi } = useThemeSettings();
 
-  // State Identitas & Warna
   const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMK Negeri 1 Gondang');
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
   const [secondaryColor, setSecondaryColor] = useState(theme?.secondaryColor || '#F3F4F4');
   const [thirdColor, setThirdColor] = useState(theme?.thirdColor || '#9CA3AF');
 
-  // State Teks Footer & Modal Baru
+  const [landingTitle, setLandingTitle] = useState(theme?.landingTitle || '');
+  const [landingDescription, setLandingDescription] = useState(theme?.landingDescription || '');
+
   const [deskripsiFooter, setDeskripsiFooter] = useState(theme?.deskripsiFooter || '');
   const [emailKontak, setEmailKontak] = useState(theme?.emailKontak || '');
   const [webKontak, setWebKontak] = useState(theme?.webKontak || '');
@@ -27,19 +24,16 @@ export default function PengaturanTampilan() {
   const [teksLayanan, setTeksLayanan] = useState(theme?.teksLayanan || '');
   const [teksDukungan, setTeksDukungan] = useState(theme?.teksDukungan || '');
 
-  // State Meta Data
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [metaIconPreview, setMetaIconPreview] = useState(null);
   const [metaIconFile, setMetaIconFile] = useState(null);
   const metaIconInputRef = useRef(null);
 
-  // State Preview Gambar
   const [logoPreview, setLogoPreview] = useState(theme?.logo || null);
   const [loginBgPreview, setLoginBgPreview] = useState(theme?.loginBg || null);
   const [landingBgPreview, setLandingBgPreview] = useState(theme?.landingBg || null);
 
-  // File untuk diupload
   const [logoFile, setLogoFile] = useState(null);
   const [loginBgFile, setLoginBgFile] = useState(null);
   const [landingBgFile, setLandingBgFile] = useState(null);
@@ -62,6 +56,10 @@ export default function PengaturanTampilan() {
       setPrimaryColor(theme.primaryColor);
       setSecondaryColor(theme.secondaryColor);
       setThirdColor(theme.thirdColor);
+      
+      setLandingTitle(theme.landingTitle || '');
+      setLandingDescription(theme.landingDescription || '');
+      
       setDeskripsiFooter(theme.deskripsiFooter || '');
       setEmailKontak(theme.emailKontak || '');
       setWebKontak(theme.webKontak || '');
@@ -76,7 +74,6 @@ export default function PengaturanTampilan() {
     }
   }, [theme]);
 
-  // Fetch Meta Data secara terpisah
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -125,8 +122,8 @@ export default function PengaturanTampilan() {
       formData.append('primary_color', primaryColor);
       formData.append('secondary_color', secondaryColor);
       formData.append('third_color', thirdColor);
-
-      // Append data Footer & Modal baru
+      formData.append('landing_title', landingTitle);
+      formData.append('landing_description', landingDescription);
       formData.append('deskripsi_footer', deskripsiFooter);
       formData.append('email_kontak', emailKontak);
       formData.append('web_kontak', webKontak);
@@ -139,13 +136,11 @@ export default function PengaturanTampilan() {
       if (loginBgFile) formData.append('login_bg', loginBgFile);
       if (landingBgFile) formData.append('landing_bg', landingBgFile);
 
-      // --- Meta Data Request ---
       const metaDataForm = new FormData();
       if (metaTitle) metaDataForm.append('title', metaTitle);
       if (metaDescription) metaDataForm.append('description', metaDescription);
       if (metaIconFile) metaDataForm.append('icon', metaIconFile);
 
-      // Jalankan keduanya secara bersamaan (atau berurutan)
       await adminApi.updatePengaturanTampilan(formData);
       await adminApi.updateMetaData(metaDataForm);
 
@@ -169,6 +164,8 @@ export default function PengaturanTampilan() {
     setPrimaryColor(theme?.primaryColor || '#3C5759');
     setSecondaryColor(theme?.secondaryColor || '#F3F4F4');
     setThirdColor(theme?.thirdColor || '#9CA3AF');
+    setLandingTitle(theme?.landingTitle || '');
+    setLandingDescription(theme?.landingDescription || '');
     setDeskripsiFooter(theme?.deskripsiFooter || '');
     setEmailKontak(theme?.emailKontak || '');
     setWebKontak(theme?.webKontak || '');
@@ -246,12 +243,12 @@ export default function PengaturanTampilan() {
             </div>
           </section>
 
-          {/* SECTION 2: TEKS & GAMBAR */}
+          {/* SECTION 2: IDENTITAS SEKOLAH & MEDIA LOGIN */}
           <section>
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
-              <h3 className="text-lg font-bold text-primary">Identitas & Media</h3>
+              <h3 className="text-lg font-bold text-primary">Identitas Sekolah & Media Login</h3>
               <button
-                onClick={() => openPreview('landing')}
+                onClick={() => openPreview('login')} // PERUBAHAN: Menjadi 'login'
                 className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
               >
                 <Eye size={14} className='text-primary' /> Preview Tampilan
@@ -259,20 +256,90 @@ export default function PengaturanTampilan() {
             </div>
 
             <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-8">
-                  <div className="space-y-3">
-                    <label className="block text-sm font-bold text-gray-700">Nama Sekolah / Organisasi</label>
-                    <input
-                      type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
-                      placeholder="Contoh: SMK Negeri 1 Gondang"
-                    />
+              {/* Nama Sekolah (Full Width/Baris Sendiri) */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-3">Nama Sekolah / Organisasi</label>
+                <input
+                  type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
+                  className="w-full lg:w-1/2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
+                  placeholder="Contoh: SMK Negeri 1 Gondang"
+                />
+              </div>
+
+              {/* PERUBAHAN: Grid 2 Kolom untuk Logo dan BG Login sejajar */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-6">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {logoPreview ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
+                      <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                        <Upload size={14} /> Ganti Logo
+                      </button>
+                    </div>
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-gray-700">Gambar Background Halaman Login</label>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {loginBgPreview ? <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
+                      <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                        <Upload size={14} /> Ganti Gambar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 3: KONTEN LANDING PAGE */}
+          <section>
+            <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
+              <h3 className="text-lg font-bold text-primary">Konten Landing Page</h3>
+              <button
+                onClick={() => openPreview('landing')} // PERUBAHAN: Tetap 'landing'
+                className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <Eye size={14} className='text-primary' /> Preview Tampilan
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Kolom Kiri: Judul & Deskripsi */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Judul Utama Landing Page</label>
+                  <input
+                    type="text" value={landingTitle} onChange={(e) => setLandingTitle(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
+                    placeholder="Contoh: Tetap Terhubung dengan Alumni"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Deskripsi Utama Landing Page</label>
+                  <textarea
+                    value={landingDescription} onChange={(e) => setLandingDescription(e.target.value)} rows="4"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"
+                    placeholder="Masukkan deskripsi untuk landing page..."
+                  ></textarea>
+                </div>
+              </div>
+              
+              {/* Kolom Kanan: BG Landing */}
+              <div className="space-y-6">
                   <div className="space-y-3">
                     <label className="block text-sm font-bold text-gray-700">Gambar Background Landing Page</label>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-32 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {landingBgPreview ? <img src={landingBgPreview} alt="Landing BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
                       </div>
                       <div className="space-y-2 flex-1">
@@ -283,43 +350,11 @@ export default function PengaturanTampilan() {
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="space-y-3">
-                    <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {logoPreview ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
-                      </div>
-                      <div className="space-y-2 flex-1">
-                        <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
-                        <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
-                          <Upload size={14} /> Ganti Logo
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="block text-sm font-bold text-gray-700">Gambar Background Halaman Login</label>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-32 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {loginBgPreview ? <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
-                      </div>
-                      <div className="space-y-2 flex-1">
-                        <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
-                        <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
-                          <Upload size={14} /> Ganti Gambar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </section>
 
-          {/* SECTION 3: WARNA TEMA */}
+          {/* SECTION 4: WARNA TEMA */}
           <section>
             <h3 className="text-lg font-bold text-primary mb-6 border-b border-gray-100 pb-2">Palet Warna Aplikasi</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -345,7 +380,7 @@ export default function PengaturanTampilan() {
             </div>
           </section>
 
-          {/* SECTION 4: KONTEN FOOTER & TEKS MODAL */}
+          {/* SECTION 5: KONTEN FOOTER & TEKS MODAL */}
           <section>
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold text-primary">Konten Footer & Teks Modal</h3>
@@ -358,7 +393,6 @@ export default function PengaturanTampilan() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-              {/* Kolom Kiri: Informasi Kontak Footer */}
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Deskripsi Footer</label>
@@ -385,7 +419,6 @@ export default function PengaturanTampilan() {
                 </div>
               </div>
 
-              {/* Kolom Kanan: Teks Modal */}
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Teks Modal Kebijakan Privasi</label>
@@ -443,6 +476,8 @@ export default function PengaturanTampilan() {
         metaTitle={metaTitle}
         metaDescription={metaDescription}
         metaIcon={metaIconPreview}
+        landingTitle={landingTitle} 
+        landingDescription={landingDescription} 
       />
     </div>
   );

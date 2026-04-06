@@ -7,6 +7,7 @@ import { alumniApi } from '../../api/alumni';
 import { id as idLocale } from 'date-fns/locale';
 import { alertSuccess } from '../../utilitis/alert';
 import { useAuth } from '../../context/AuthContext';
+import { KuesionerSkeleton } from '../../components/alumni/skeleton';
 
 function KuesionerModal() {
     const { refreshUser } = useAuth();
@@ -131,8 +132,8 @@ function KuesionerModal() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <Loader2 className="animate-spin text-primary" size={40} />
+            <div className="min-h-screen bg-slate-50">
+                <KuesionerSkeleton />
             </div>
         );
     }
@@ -174,9 +175,7 @@ function KuesionerModal() {
                                     {index + 1}
                                 </div>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 self-center">
-                                {q.question}
-                            </h3>
+                            <h3 className="text-lg font-bold text-slate-800 self-center" dangerouslySetInnerHTML={{__html:q.question}}/>
                         </div>
 
                         <div className="space-y-3">
@@ -195,10 +194,7 @@ function KuesionerModal() {
                                         onChange={() => handleSelectOption(q.id, opt.id)}
                                         className="w-5 h-5 border-slate-300 text-primary focus:ring-primary"
                                     />
-                                    <span className={`ml-4 transition-colors ${answers[q.id] === opt.id ? 'text-primary font-semibold' : 'text-slate-600'
-                                        }`}>
-                                        {opt.opsi}
-                                    </span>
+                                    <span className={`ml-4 transition-colors ${answers[q.id] === opt.id ? 'text-primary font-semibold' : 'text-slate-600'}`}dangerouslySetInnerHTML={{__html:opt.opsi}}/>
                                 </label>
                             ))}
                         </div>
