@@ -147,6 +147,15 @@ export default function LandingPage() {
             animate="visible"
           >
 
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-sm"
+            >
+              <span className="text-[12px] font-bold text-primary">
+                Selamat datang di Tracer Study {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
+              </span>
+            </motion.div>
+
             <motion.h1
               variants={itemVariants}
               className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight whitespace-pre-line"
@@ -190,7 +199,7 @@ export default function LandingPage() {
                 onClick={() => user ? navigate("/alumni") : navigate("/login")}
                 className="bg-primary text-white px-8 py-4 rounded-md font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2 transition-all duration-300 ease-in-out"
               >
-                Masuk Portal {user ? user.role == 'alumni' ? 'Alumni': 'Admin' : 'Alumni'} <span className="text-xl">→</span>
+                Masuk Portal {user ? user.role == 'alumni' ? 'Alumni' : 'Admin' : 'Alumni'} <span className="text-xl">→</span>
               </button>
               <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
                 <div className="flex -space-x-3">
@@ -288,143 +297,149 @@ export default function LandingPage() {
       {/* PERUBAHAN 1: Menambahkan -mt-8 md:-mt-12 untuk menarik footer ke atas (merapatkan jarak vertikal) */}
       {/* Mengembalikan jarak atas (pt-16) dan membuang margin negatif agar jaraknya tetap lega */}
       <footer className="bg-fourth pt-16 pb-6 border-t border-[#e2e8f0]">
-        {/* Padding diletakkan HANYA di container ini agar rata persis dengan kartu di atasnya */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 mb-10">
-            
-            {/* Kolom 1: Branding & Kontak Info (Lebar: 4 grid) */}
-            <div className="space-y-4 lg:col-span-4 lg:pr-6">
-              <Link to="/" className="flex items-center gap-2.5 group">
-                <img
-                  src={theme?.logo || "/icon.png"}
-                  alt="Alumni Tracer Logo"
-                  className="w-12 h-10 object-contain drop-shadow-sm"
-                />
-                <div className='flex flex-col transition-all duration-500 ease-in-out'>
-                  <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
-                  <span className='text-[11px] font-semibold text-primary/80'>{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</span>
-                </div>
-              </Link>
-              <p className="text-primary/80 text-sm leading-relaxed font-medium">
-                {theme?.deskripsiFooter || 'Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas yang lebih kuat bersama-sama.'}
-              </p>
-            </div>
+        {/* Pembungkus utama (Hanya perlu satu max-w-7xl) */}
+        <div className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Kolom 2: Tautan Cepat (Lebar: 2 grid) */}
-            <div className="lg:col-span-2">
-              <h3 className="text-primary font-black mb-4">Tautan Cepat</h3>
-              <ul className="space-y-2.5">
-                {[
-                  { label: "Beranda", href: "#beranda" },
-                  { label: "Petunjuk", href: "#petunjuk" },
-                  { label: "Statistik Publik", href: "#fitur" },
-                  { label: "Alumni", href: "#alumni" },
-                  { label: "Bursa Kerja", href: "#karir" }
-                ].map((item) => (
-                  <li key={item.label}>
-                    <a
-                      href={item.href}
-                      onClick={(e) => handleSmoothScroll(e, item.href)}
-                      className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
-                    >
-                      {item.label}
+            {/* Ubah ke 12 Kolom agar lebih mudah mengatur presisi lebar dan jarak */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 mb-10">
+
+              {/* Kolom 1: Branding & Kontak Info (Mengambil 4 dari 12 kolom) */}
+              <div className="space-y-4 lg:col-span-4 lg:pr-8">
+                <Link to="/" className="flex items-center gap-2.5 group">
+                  <img
+                    src={theme?.logo || "/icon.png"}
+                    alt="Alumni Tracer Logo"
+                    className="w-12 h-10 object-contain drop-shadow-sm"
+                  />
+                  <div className='flex flex-col transition-all duration-500 ease-in-out'>
+                    <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
+                    <span className='text-[11px] font-semibold text-primary/80'>
+                      {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
+                    </span>
+                  </div>
+                </Link>
+                <p className="text-primary/80 text-sm leading-relaxed font-medium">
+                  {theme?.deskripsiFooter || 'Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas yang lebih kuat bersama-sama.'}
+                </p>
+              </div>
+
+              {/* Kolom 2: Tautan Cepat (Mengambil 2 dari 12 kolom, posisikan agak ke tengah) */}
+              <div className="lg:col-span-2 lg:justify-self-center">
+                <h3 className="text-primary font-black mb-4">Tautan Cepat</h3>
+                <ul className="space-y-2.5">
+                  {[
+                    { label: "Beranda", href: "#beranda" },
+                    { label: "Petunjuk", href: "#petunjuk" },
+                    { label: "Statistik Publik", href: "#fitur" },
+                    { label: "Alumni", href: "#alumni" },
+                    { label: "Bursa Kerja", href: "#karir" }
+                  ].map((item) => (
+                    <li key={item.label}>
+                      <a
+                        href={item.href}
+                        onClick={(e) => handleSmoothScroll(e, item.href)}
+                        className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Kolom 3: Untuk Alumni (Mengambil 2 dari 12 kolom) */}
+              <div className="lg:col-span-2 lg:justify-self-center">
+                <h3 className="text-primary font-black mb-4">Untuk Alumni</h3>
+                <ul className="space-y-2.5">
+                  {[
+                    "Masuk",
+                    "Daftar",
+                    "Perbarui Profil"
+                  ].map((item) => (
+                    <li key={item}>
+                      <a
+                        href="#"
+                        className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
+                      >
+                        {item}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Kolom 4: Kontak Kami (Mengambil 4 dari 12 kolom, diratakan ke ujung paling kanan) */}
+              <div className="lg:col-span-4 lg:justify-self-end flex flex-col">
+                <h3 className="text-primary font-black mb-4">
+                  Kontak Kami
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 group">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                      <Globe size={14} />
+                    </div>
+                    <a href={`https://${(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
+                      {(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}
                     </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Kolom 3: Untuk Alumni (Lebar: 2 grid) */}
-            <div className="lg:col-span-2">
-              <h3 className="text-primary font-black mb-4">Untuk Alumni</h3>
-              <ul className="space-y-2.5">
-                {[
-                  "Masuk",
-                  "Daftar",
-                  "Perbarui Profil"
-                ].map((item) => (
-                  <li key={item}>
-                    <a
-                      href="#"
-                      className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
-                    >
-                      {item}
+                  </div>
+                  <div className="flex items-center gap-3 group">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                      <Mail size={14} />
+                    </div>
+                    <a href={`mailto:${theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
+                      {theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}
                     </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Kolom 4: Kontak Kami (Lebar: 4 grid) */}
-            <div className="lg:col-span-4">
-              <h3 className="text-primary font-black mb-4">
-                Kontak Kami
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 group">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                    <Globe size={14} />
                   </div>
-                  <a href={`https://${(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
-                    {(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-                <div className="flex items-center gap-3 group">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                    <Mail size={14} />
+                  <div className="flex items-center gap-3 group">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                      <Phone size={14} />
+                    </div>
+                    <a href={`tel:${(theme?.telpKontak || '(0358) 611606').replace(/[^\d+]/g, '')}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                      {theme?.telpKontak || '(0358) 611606'}
+                    </a>
                   </div>
-                  <a href={`mailto:${theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
-                    {theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}
-                  </a>
-                </div>
-                <div className="flex items-center gap-3 group">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                    <Phone size={14} />
-                  </div>
-                  <a href={`tel:${(theme?.telpKontak || '(0358) 611606').replace(/[^\d+]/g, '')}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
-                    {theme?.telpKontak || '(0358) 611606'}
-                  </a>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-6 border-t border-[#e2e8f0] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
-            <p className="text-third text-xs font-bold text-center md:text-left">
-              © {currentYear} Alumni Tracer. Hak cipta dilindungi.
-            </p>
-            
-            <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
-              <button 
-                onClick={() => openModal('privasi')}
-                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
-              >
-                Kebijakan Privasi
-              </button>
-              <button 
-                onClick={() => openModal('layanan')}
-                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
-              >
-                Ketentuan Layanan
-              </button>
-              <button 
-                onClick={() => openModal('kontak')}
-                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
-              >
-                Kontak Dukungan
-              </button>
+            </div>
+
+            {/* Bottom Bar (Tidak ada perubahan) */}
+            <div className="pt-6 border-t border-[#e2e8f0] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
+              <p className="text-third text-xs font-bold text-center md:text-left">
+                © {currentYear} Alumni Tracer. Hak cipta dilindungi.
+              </p>
+
+              <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
+                <button
+                  onClick={() => openModal('privasi')}
+                  className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Kebijakan Privasi
+                </button>
+                <button
+                  onClick={() => openModal('layanan')}
+                  className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Ketentuan Layanan
+                </button>
+                <button
+                  onClick={() => openModal('kontak')}
+                  className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Kontak Dukungan
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </footer>
 
       {/* Render Modal Footer di paling bawah setelah tag </footer> */}
-      <FooterModals  
-        isOpen={!!modalType} 
-        type={modalType} 
-        onClose={closeModal} 
+      <FooterModals
+        isOpen={!!modalType}
+        type={modalType}
+        onClose={closeModal}
       />
     </div>
   );
