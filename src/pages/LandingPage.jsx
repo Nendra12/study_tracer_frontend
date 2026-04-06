@@ -146,21 +146,20 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
           >
-            <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-sm"
-            >
-              <img src={Alumni} alt="" className="w-7" />
-              <span className="text-[12px] font-bold text-primary">
-                Selamat datang di Tracer Study {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
-              </span>
-            </motion.div>
 
             <motion.h1
               variants={itemVariants}
               className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight whitespace-pre-line"
             >
-              {theme?.landingTitle || (
+              {/* Jika ada landingTitle dari admin, pakai itu. Jika tidak, pakai teks default */}
+              {theme?.landingTitle ? (
+                <>
+                  {theme.landingTitle} <br />
+                  <span className="text-transparent bg-clip-text bg-third">
+                    {theme?.namaSekolah || 'SMKN 1 Gondang'}.
+                  </span>
+                </>
+              ) : (
                 <>
                   Tetap Terhubung <br />
                   <span>dengan Alumni </span> <br />
