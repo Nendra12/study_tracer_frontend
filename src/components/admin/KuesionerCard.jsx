@@ -23,6 +23,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
         aktif: "bg-green-100 text-green-700 border-green-200",
         draft: "bg-orange-100 text-orange-700 border-orange-200",
         nonaktif: "bg-red-100 text-red-700 border-red-200",
+        pending: "bg-blue-100 text-blue-700 border-blue-200",
     };
 
     const navigate = useNavigate()
@@ -53,13 +54,6 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
     if (new Date(tanggal_selesai) <= new Date()) {
         if (tanggal_selesai != null) {
             durasi = "selesai"
-            const action = async () => {
-                let bodyPas = {
-                    "status": 'hidden'
-                }
-                await adminApi.updateStatusKuesioner(id, bodyPas)
-            }
-            action()
         } else {
             durasi = '-'
         }
@@ -135,7 +129,7 @@ export const KuesionerCard = ({ kuesioner, update, loadingUpdate, hapus, loading
                         }
                     </button>
                 )}
-                {status === 'aktif' && (
+                {(status === 'aktif' || status === 'pending') && (
                     <>
                         <button onClick={() => handleStatus(id, "hidden")} title="Hidden" className="flex items-center justify-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors cursor-pointer">
                             {
