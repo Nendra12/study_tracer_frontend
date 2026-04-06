@@ -484,6 +484,13 @@ export default function PengaturanTampilan() {
         metaIcon={metaIconPreview}
         landingTitle={landingTitle} 
         landingDescription={landingDescription} 
+        deskripsiFooter={deskripsiFooter}
+        emailKontak={emailKontak}
+        webKontak={webKontak}
+        telpKontak={telpKontak}
+        teksPrivasi={teksPrivasi}
+        teksLayanan={teksLayanan}
+        teksDukungan={teksDukungan}
       />
     </div>
   );
