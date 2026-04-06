@@ -162,7 +162,7 @@ export default function Alumni() {
 
       {/* --- FLOATING FILTER & SEARCH SECTION --- */}
       <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
-        <div className="bg-white p-4 md:px-4 md:pt-4 md:pb-7 rounded-2xl shadow-xl border border-slate-100">
+        <div className="bg-white p-4 md:px-4 md:pt-4 md:pb-7 rounded-md shadow-xl border border-slate-100">
           
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
             
@@ -228,7 +228,7 @@ export default function Alumni() {
             </div>
           </div>
         ) : alumniData.length === 0 ? (
-          <div className="flex items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex items-center justify-center py-20 bg-white rounded-md shadow-sm border border-slate-100">
             <div className="text-center">
               <Users size={48} className="text-slate-300 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Tidak Ada Alumni Ditemukan</h2>

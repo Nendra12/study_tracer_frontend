@@ -7,6 +7,7 @@ import {
     FileQuestionMark,
     Archive,
     EyeOff,
+    Clock,
     Eye
 } from 'lucide-react';
 import { KuesionerCard } from '../../components/admin/KuesionerCard';
@@ -145,6 +146,7 @@ export default function Kuesioner() {
                                 {[
                                     { label: 'Total Kuesioner', val: `${dataKuesioner?.length}`, icon: FileQuestionMark },
                                     { label: 'Aktif', val: `${dataKuesioner?.filter(i => i.status === "aktif").length}`, icon: Eye },
+                                    { label: 'Terjadwal', val: `${dataKuesioner?.filter(i => i.status === "pending").length}`, icon: Clock },
                                     { label: 'Draft', val: `${dataKuesioner?.filter(i => i.status === "draft").length}`, icon: Archive },
                                     { label: 'Nonaktif', val: `${dataKuesioner?.filter(i => i.status === "hidden").length}`, icon: EyeOff },
                                 ].map((item, i) => (
@@ -171,14 +173,14 @@ export default function Kuesioner() {
                                 </button>
                                 <div className="flex flex-col md:flex-row bg-slate-200/50 p-1 rounded-xl gap-1 relative">
                                     <div className="flex bg-white/50 p-1 rounded-lg w-full md:w-auto overflow-x-auto">
-                                        {['semua', 'aktif', 'nonaktif', 'draft'].map((tab) => (
+                                        {['semua', 'aktif', 'pending', 'nonaktif', 'draft'].map((tab) => (
                                             <button
                                                 key={tab}
                                                 onClick={() => setActiveTab(tab == 'nonaktif' ? 'hidden' : tab)}
                                                 className={`text-[10px] md:text-xs flex-1 md:flex-none cursor-pointer px-4 py-2 font-bold rounded-lg transition-all capitalize whitespace-nowrap ${(activeTab === tab) || (tab === "nonaktif" && activeTab === "hidden") ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:primary"
                                                     }`}
                                             >
-                                                {tab}
+                                                {tab === 'pending' ? 'Terjadwal' : tab}
                                             </button>
                                         ))}
                                     </div>

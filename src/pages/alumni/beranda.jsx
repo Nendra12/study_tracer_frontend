@@ -300,6 +300,8 @@ export default function Beranda() {
     }
   }, [hasCompletedKuesioner, loading, refreshUser]);
 
+  // console.log(alumniTerbaru.locked)
+
   return (
     <div className="w-full bg-[#f8f9fa] min-h-screen selection:bg-primary/20 overflow-x-hidden">
 

@@ -85,7 +85,7 @@ export default function MyLowonganCard({ data }) {
   const perusahaanNama = data.perusahaan?.nama || '-';
 
   return (
-    <div className="bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="bg-white rounded-md border border-primary/5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
       <div className="flex flex-col sm:flex-row">
         <div className="sm:w-32 sm:h-auto h-40 bg-slate-100 shrink-0 overflow-hidden">
           <img

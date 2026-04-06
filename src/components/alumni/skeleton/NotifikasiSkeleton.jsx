@@ -9,7 +9,7 @@ export default function NotifikasiSkeleton() {
       {skeletonItems.map((_, index) => (
         <div
           key={index}
-          className="flex items-start gap-4 p-4 md:p-5 rounded-2xl border border-slate-100 bg-white shadow-sm animate-pulse"
+          className="flex items-start gap-4 p-4 md:p-5 rounded-md border border-slate-100 bg-white shadow-sm animate-pulse"
         >
           {/* Box Ikon Skeleton */}
           <div className="w-12 h-12 rounded-xl bg-slate-200 shrink-0"></div>
