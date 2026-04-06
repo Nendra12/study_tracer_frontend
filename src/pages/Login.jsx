@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
 import DefaultLoginImage from "../assets/login_image.webp";
 import DefaultLogo from "../assets/icon.png";
-import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock } from "lucide-react";
+import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useThemeSettings } from "../context/ThemeContext";
+import { authApi } from "../api/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaImage, setCaptchaImage] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaLoading, setCaptchaLoading] = useState(false);
   const [sessionExpiredMsg, setSessionExpiredMsg] = useState('');
   const { login } = useAuth();
   const { theme } = useThemeSettings();
@@ -26,6 +30,27 @@ export default function Login() {
     }
   }, []);
 
+  const loadCaptcha = async (isRefresh = false) => {
+    setCaptchaLoading(true);
+    try {
+      const res = isRefresh
+        ? await authApi.refreshCaptcha()
+        : await authApi.generateCaptcha();
+      const image = res?.data?.captcha?.image || "";
+      setCaptchaImage(image);
+      setCaptchaToken("");
+    } catch (err) {
+      console.error("Failed to load captcha:", err);
+      setCaptchaImage("");
+    } finally {
+      setCaptchaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCaptcha(false);
+  }, []);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -36,7 +61,8 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const user = await login({ email, password });
+      const normalizedCaptcha = captchaToken.trim().toLowerCase();
+      const user = await login({ email, password, captcha_token: normalizedCaptcha });
       // console.log(user.role)
       if (user.role === "admin") {
         navigate("/wb-admin");
@@ -44,10 +70,14 @@ export default function Login() {
         navigate("/alumni");
       }
     } catch (err) {
+      const fieldErrors = err.response?.data?.errors || {};
       const msg =
+        fieldErrors?.captcha_token?.[0] ||
+        fieldErrors?.email?.[0] ||
         err.response?.data?.message ||
-        "Login gagal. Periksa email dan password Anda.";
+        "Login gagal. Periksa email, password, dan captcha Anda.";
       setError(msg);
+      await loadCaptcha(true);
     } finally {
       setLoading(false);
     }
@@ -178,6 +208,54 @@ export default function Login() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Captcha
+                </label>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-[150px] rounded-md bg-white border border-gray-200 overflow-hidden flex items-center justify-center">
+                      {captchaLoading ? (
+                        <Loader2 size={18} className="animate-spin text-gray-400" />
+                      ) : captchaImage ? (
+                        <img src={captchaImage} alt="Captcha" className="h-full w-full object-contain" />
+                      ) : (
+                        <span className="text-xs text-gray-400">Captcha gagal dimuat</span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => loadCaptcha(true)}
+                      disabled={loading || captchaLoading}
+                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCcw size={14} className={captchaLoading ? "animate-spin" : ""} />
+                      Muat Ulang
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
+                      <ShieldCheck size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Masukkan kode captcha"
+                      value={captchaToken}
+                      onChange={(e) => setCaptchaToken(e.target.value)}
+                      className="w-full pl-10 p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      required
+                      disabled={loading || captchaLoading}
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-gray-500">
+                    Captcha hanya berlaku sekali percobaan login. Jika gagal, gunakan captcha yang baru.
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2 text-gray-600 cursor-pointer">
                   <input
@@ -196,7 +274,7 @@ export default function Login() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || captchaLoading || !captchaImage || !captchaToken.trim()}
                 className="flex items-center justify-center gap-2 w-full bg-primary hover:opacity-90 active:scale-[0.98] text-white font-bold py-3 rounded-lg transition-all mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"              >
                 {loading ? (
                   <>

@@ -2,6 +2,20 @@ import api from './axios';
 
 export const authApi = {
   /**
+   * GET /captcha/generate
+   */
+  generateCaptcha() {
+    return api.get('/captcha/generate');
+  },
+
+  /**
+   * GET /captcha/refresh
+   */
+  refreshCaptcha() {
+    return api.get('/captcha/refresh');
+  },
+
+  /**
    * POST /register
    * Sends all registration data (account + profile + career status) in one request
    */
@@ -13,7 +27,7 @@ export const authApi = {
 
   /**
    * POST /login
-   * @param {{ email: string, password: string }} credentials
+   * @param {{ email: string, password: string, captcha_token: string }} credentials
    */
   async login(credentials) {
     return api.post('/login', credentials);
