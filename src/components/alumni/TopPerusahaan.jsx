@@ -1,9 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import LockOverlay from './LockOverlay';
-import telkomLogo from '../../assets/telkom.png';
-import ugmLogo from '../../assets/ugm.png';
-import itbLogo from '../../assets/itb.png';
 
 // --- DATA DUMMY ---
 const dummyUniversitas = [
@@ -14,27 +11,16 @@ const dummyUniversitas = [
   { id: 5, name: "Universitas Airlangga", location: "Surabaya", alumniCount: 45, color: "#10B981" },
 ];
 
-const runningLogos = [
-  { name: "Google", domain: "google.com" },
-  { name: "Microsoft", domain: "microsoft.com" },
-  { name: "Apple", domain: "apple.com" },
-  { name: "Oracle", domain: "oracle.com" },
-  { name: "Telkom Indonesia", domain: "telkom.co.id", customLogo: telkomLogo },
-  { name: "Universitas Indonesia", domain: "ui.ac.id" },
-  { name: "Institut Teknologi Bandung", domain: "itb.ac.id", customLogo: itbLogo },
-  { name: "Universitas Gadjah Mada", domain: "ugm.ac.id", customLogo: ugmLogo },
-  { name: "Universitas Brawijaya", domain: "ub.ac.id" },
-  { name: "Institut Teknologi Sepuluh Nopember", domain: "its.ac.id" },
-];
-
 export default function TopPerusahaan({
   data,
   dataUniversitas,
+  partnerLogos,
   locked
 }) {
   const univList = dataUniversitas?.length > 0 ? dataUniversitas : dummyUniversitas;
   const topCompanies = data?.length > 0 ? data.slice(0, 5) : [];
   const topUnivs = univList.slice(0, 5);
+  const runningLogos = Array.isArray(partnerLogos) ? partnerLogos : [];
 
   const maxCompAlumni = Math.max(...(topCompanies.map(c => c.alumniCount) || [1]));
   const maxUnivAlumni = Math.max(...(topUnivs.map(u => u.alumniCount) || [1]));
@@ -67,27 +53,30 @@ export default function TopPerusahaan({
           <div className="absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-[#FAFAFB] via-[#FAFAFB]/50 to-transparent pointer-events-none"></div>
           <div className="absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-[#FAFAFB] via-[#FAFAFB]/50 to-transparent pointer-events-none"></div>
 
-          {/* Scrolling content - dibuat 2 set identik untuk seamless loop */}
-          <div className="flex">
-            <div className="flex gap-12 items-center animate-scroll">
-              {[...runningLogos, ...runningLogos].map((item, idx) => (
-                <div
-                  key={`set1-${idx}`}
-                  className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center hover:scale-110 transition-transform duration-300"
-                  title={item.name}
-                >
-                  <img
-                    src={item.customLogo || `https://s2.googleusercontent.com/s2/favicons?domain=${item.domain}&sz=256`}
-                    alt={`${item.name} logo`}
-                    className="w-full h-full object-contain drop-shadow-md filter hover:drop-shadow-lg"
-                    onError={(e) => {
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=3c5759&color=fff&rounded=true&bold=true&size=128`;
-                    }}
-                  />
-                </div>
-              ))}
+          {/* Scrolling content */}
+          {runningLogos.length === 0 ? (
+            <div className="py-8 text-center text-sm text-slate-400 font-medium">
+              Data logo mitra belum tersedia.
             </div>
-          </div>
+          ) : (
+            <div className="flex">
+              <div className="flex gap-12 items-center animate-scroll">
+                {[...runningLogos, ...runningLogos].map((item, idx) => (
+                  <div
+                    key={`set1-${idx}`}
+                    className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center hover:scale-110 transition-transform duration-300"
+                    title={item.name || 'Mitra'}
+                  >
+                    <img
+                      src={item.image}
+                      alt={`${item.name || 'Mitra'} logo`}
+                      className="w-full h-full object-contain drop-shadow-md filter hover:drop-shadow-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       

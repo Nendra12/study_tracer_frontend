@@ -339,6 +339,62 @@ export const adminApi = {
     });
   },
 
+  // ── Kemitraan Management ─────────────────────
+  getKemitraanUniversitas(params = {}) {
+    return api.get('/admin/kemitraan/universitas', { params });
+  },
+
+  createKemitraanUniversitas(data) {
+    return api.post('/admin/kemitraan/universitas', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  updateKemitraanUniversitas(id, data) {
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+    }
+
+    return api.post(`/admin/kemitraan/universitas/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deleteKemitraanUniversitas(id) {
+    return api.delete(`/admin/kemitraan/universitas/${id}`);
+  },
+
+  getKemitraanPerusahaan(params = {}) {
+    return api.get('/admin/kemitraan/perusahaan', { params });
+  },
+
+  createKemitraanPerusahaan(data) {
+    return api.post('/admin/kemitraan/perusahaan', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  updateKemitraanPerusahaan(id, data) {
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+    }
+
+    return api.post(`/admin/kemitraan/perusahaan/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deleteKemitraanPerusahaan(id) {
+    return api.delete(`/admin/kemitraan/perusahaan/${id}`);
+  },
+
+  exportKemitraan(type = 'universitas') {
+    return api.get('/admin/kemitraan/export', {
+      params: { type },
+      responseType: 'blob',
+    });
+  },
+
   // ── Meta Data Management ──────────────────────
   getMetaData() {
     return api.get('/metadata'); 
