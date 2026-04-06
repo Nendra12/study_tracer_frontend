@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Eye, X, Image as ImageIcon, ArrowLeft, 
-  ShieldCheck, FileText, Headphones, Globe, Mail, Phone, Check, Search
+  ShieldCheck, FileText, Headphones, Globe, Mail, Phone, Check
 } from 'lucide-react';
 
 export default function TampilanPreview({ 
@@ -18,7 +18,9 @@ export default function TampilanPreview({
   namaSekolah,
   metaTitle,
   metaDescription,
-  metaIcon
+  metaIcon,
+  landingTitle,
+  landingDescription
 }) {
   if (!isOpen) return null;
 
@@ -43,7 +45,8 @@ export default function TampilanPreview({
                 <h3 className="text-lg font-black tracking-tight" style={{color: `${primaryColor}`}}>Preview Tampilan Aplikasi</h3>
                 <p className='text-xs font-medium' style={{color: `${thirdColor}`}}>
                   {activeTab === 'meta' && "Simulasi hasil pencarian di Google Search."}
-                  {activeTab === 'landing' && "Simulasi struktur Halaman Login dan Landing Page."}
+                  {activeTab === 'login' && "Simulasi struktur Halaman Login."}
+                  {activeTab === 'landing' && "Simulasi struktur Landing Page."}
                   {activeTab === 'footer' && "Simulasi struktur Footer dan Modal Informasi."}
                 </p>
               </div>
@@ -99,12 +102,10 @@ export default function TampilanPreview({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 2: PREVIEW LANDING & LOGIN (100% UTUH TIDAK DIPOTONG) */}
+          {/* TAB 2: PREVIEW LOGIN */}
           {/* ========================================================= */}
-          {activeTab === 'landing' && (
+          {activeTab === 'login' && (
             <div className="space-y-12 animate-in fade-in duration-500">
-               
-               {/* 2A: SIMULASI HALAMAN LOGIN */}
                <div>
                  <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>1</span>
@@ -174,11 +175,17 @@ export default function TampilanPreview({
                     </div>
                  </div>
                </div>
+            </div>
+          )}
 
-               {/* 2B: SIMULASI LANDING PAGE (SCROLLABLE & UTUH) */}
+          {/* ========================================================= */}
+          {/* TAB 3: PREVIEW LANDING PAGE (SCROLLABLE & UTUH) */}
+          {/* ========================================================= */}
+          {activeTab === 'landing' && (
+            <div className="space-y-12 animate-in fade-in duration-500">
                <div>
                  <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>2</span>
+                    <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs shadow-sm" style={{backgroundColor: primaryColor}}>1</span>
                     Simulasi Landing Page (Scrollable)
                  </h4>
                  <div className="h-[450px] bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm relative flex flex-col">
@@ -215,11 +222,12 @@ export default function TampilanPreview({
                              <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-orange-50 border border-orange-100 mb-4 w-fit">
                                 <div className={`text-[7px] font-bold text-orange-600 ${blurredText}`}>Selamat datang di Tracer Study</div>
                              </div>
+                             {/* Penggunaan Teks Landing Dinamis! */}
                              <div className={`text-3xl font-black leading-[1.1] mb-3 ${blurredText}`} style={{ color: primaryColor }}>
-                               Tetap Terhubung <br/> dengan Alumni <br/> <span style={{ color: thirdColor }}>{namaSekolah}.</span>
+                               {landingTitle ? landingTitle : <>Tetap Terhubung <br/> dengan Alumni <br/> <span style={{ color: thirdColor }}>{namaSekolah}.</span></>}
                              </div>
                              <div className={`text-[8px] max-w-[80%] leading-relaxed mb-6 text-gray-500 ${blurredText}`}>
-                               Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni, temukan info lowongan kerja, dan bangun jaringan yang lebih luas.
+                               {landingDescription ? landingDescription : "Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni, temukan info lowongan kerja, dan bangun jaringan yang lebih luas."}
                              </div>
                              <div className="px-4 py-2 w-max rounded-lg text-[9px] font-bold text-white flex items-center justify-center gap-2 shadow-md" style={{ backgroundColor: primaryColor }}>
                                <span className={`${blurredText}`}>Masuk Portal Alumni</span>
@@ -298,93 +306,6 @@ export default function TampilanPreview({
                              </div>
                            </div>
                          </div>
-                         
-                         <div className="flex gap-6">
-                           <div className="w-1/3 bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm flex flex-col justify-center">
-                             <div className="flex items-start gap-3 mb-3">
-                               <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                   <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-                               </div>
-                             </div>
-                             <div className={`text-[12px] font-bold mb-2 ${blurredText}`} style={{color: primaryColor}}>Jejaring Kuat</div>
-                             <div className={`text-[8px] leading-relaxed ${blurredText}`} style={{color: thirdColor}}>
-                               Temukan mentor atau rekan bisnis dari lintas angkatan dengan mudah dan cepat.
-                             </div>
-                           </div>
-                           
-                           <div className="w-2/3 rounded-[1.5rem] p-6 shadow-sm flex flex-col justify-center relative overflow-hidden" style={{backgroundColor: primaryColor}}>
-                             <div className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                                  <div className="w-6 h-4 border-2 border-white rounded-sm"></div>
-                             </div>
-                             <div className="space-y-2 relative z-10 pr-16">
-                                 <div className={`text-[14px] font-bold text-white ${blurredText}`}>Punya Info Lowongan?</div>
-                                 <div className={`text-[8px] text-white/80 leading-relaxed max-w-[90%] ${blurredText}`}>
-                                   Bantu adik kelasmu mendapatkan karir impian dengan membagikan info lowongan kerja dari perusahaan tempatmu bekerja.
-                                 </div>
-                             </div>
-                           </div>
-                         </div>
-                       </div>
-
-                       {/* Alumni Kita Section */}
-                       <div className="px-8 py-8 bg-white border-t border-gray-100">
-                          <div className={`text-lg font-black mb-1 ${blurredText}`} style={{color: primaryColor}}>Tetap terhubung dengan Alumni Kita.</div>
-                          <div className="grid grid-cols-4 gap-4 mt-6">
-                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="bg-gray-50/50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                                   <div className="w-full h-20 flex items-center justify-center m-2 rounded-xl" style={{backgroundColor: primaryColor}}>
-                                     <span className={`text-white text-2xl font-black opacity-50 ${blurredText}`}>
-                                       {i===1 ? 'NC' : i===2 ? 'PB' : i===3 ? 'DI' : 'JI'}
-                                     </span>
-                                   </div>
-                                   <div className="p-3 pt-1 space-y-1.5">
-                                      <div className={`h-2.5 w-3/4 bg-gray-300 rounded-full ${blurredText}`}></div>
-                                      <div className={`h-1.5 w-1/2 bg-gray-200 rounded-full ${blurredText}`}></div>
-                                   </div>
-                                </div>
-                             ))}
-                          </div>
-                       </div>
-
-                       {/* Lowongan Pekerjaan Section */}
-                       <div className="px-8 py-8 bg-gray-50/30 border-t border-gray-100">
-                          <div className={`text-lg font-black mb-1 ${blurredText}`} style={{color: primaryColor}}>Lowongan Pekerjaan</div>
-                          <div className="grid grid-cols-4 gap-4 mt-6">
-                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex flex-col">
-                                   <div className="w-full h-16 bg-gray-200 rounded-xl mb-3"></div>
-                                   <div className={`h-2.5 w-3/4 bg-gray-300 rounded-full mb-1 ${blurredText}`}></div>
-                                   <div className={`h-1.5 w-1/2 bg-gray-200 rounded-full mb-4 ${blurredText}`}></div>
-                                   <div className="w-full h-4 bg-gray-50 border border-gray-100 rounded-lg mt-auto"></div>
-                                </div>
-                             ))}
-                          </div>
-                       </div>
-
-                       {/* Mock Footer Landing */}
-                       <div className="bg-white px-8 py-10 border-t border-gray-200 grid grid-cols-4 gap-6 mt-8">
-                          <div className="space-y-3">
-                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-md bg-gray-100"></div>
-                                <div className="flex flex-col space-y-1">
-                                  <div className={`h-2 w-16 bg-gray-300 rounded-full ${blurredText}`}></div>
-                                  <div className={`h-1.5 w-10 bg-gray-200 rounded-full ${blurredText}`}></div>
-                                </div>
-                             </div>
-                             <div className={`h-1.5 w-full bg-gray-200 rounded-full ${blurredText}`}></div>
-                          </div>
-                          <div className="space-y-2">
-                             <div className={`h-2 w-16 bg-gray-300 rounded-full mb-2 ${blurredText}`}></div>
-                             <div className={`h-1.5 w-20 bg-gray-200 rounded-full ${blurredText}`}></div>
-                          </div>
-                          <div className="space-y-2">
-                             <div className={`h-2 w-20 bg-gray-300 rounded-full mb-2 ${blurredText}`}></div>
-                             <div className={`h-1.5 w-16 bg-gray-200 rounded-full ${blurredText}`}></div>
-                          </div>
-                          <div className="space-y-2">
-                             <div className={`h-2 w-24 bg-gray-300 rounded-full mb-2 ${blurredText}`}></div>
-                             <div className="w-full h-6 rounded-lg" style={{backgroundColor: thirdColor}}></div>
-                          </div>
                        </div>
                     </div>
                  </div>
@@ -393,7 +314,7 @@ export default function TampilanPreview({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 3: PREVIEW FOOTER & MODAL */}
+          {/* TAB 4: PREVIEW FOOTER & MODAL */}
           {/* ========================================================= */}
           {activeTab === 'footer' && (
             <div className="space-y-6 animate-in fade-in duration-500">
