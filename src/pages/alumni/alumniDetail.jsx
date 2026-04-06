@@ -173,7 +173,7 @@ export default function AlumniDetail() {
         )}
 
         {/* PROFILE HEADER CARD */}
-        <div data-pdf-section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
+        <div data-pdf-section className="bg-white rounded-md shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative shrink-0">
               <div className="w-32 h-32 md:w-44 md:h-44 rounded-3xl border-8 border-white shadow-2xl overflow-hidden bg-slate-50">
@@ -227,7 +227,7 @@ export default function AlumniDetail() {
           <div className="lg:col-span-4 space-y-8">
             {/* Status Karier Card */}
             {currentCareer && (
-              <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
                 <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   {getStatusIcon(currentStatus)} Status Karier Saat Ini
                 </h2>
@@ -267,7 +267,7 @@ export default function AlumniDetail() {
             )}
 
             {/* Info Akademik */}
-            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
               <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                 <GraduationCap size={14} /> Informasi Akademik
               </h2>
@@ -316,7 +316,7 @@ export default function AlumniDetail() {
 
             {/* Skills */}
             {skills.length > 0 && (
-              <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
                 <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   <Award size={14} /> Keahlian
                 </h2>
@@ -332,7 +332,7 @@ export default function AlumniDetail() {
 
             {/* Social Media */}
             {(alumni.instagram || alumni.linkedin || alumni.github || alumni.facebook || alumni.website) && (
-              <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
                 <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   <Globe size={14} /> Media Sosial
                 </h2>
@@ -372,7 +372,7 @@ export default function AlumniDetail() {
 
             {/* --- SEKSI: RIWAYAT KARIER --- */}
             {riwayat.length > 0 && (
-              <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-8 md:p-10 border border-slate-100 shadow-sm">
                 <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-10">
                   <Briefcase size={22} /> Riwayat Karier
                 </h2>
@@ -441,7 +441,7 @@ export default function AlumniDetail() {
 
             {/* --- SEKSI: PORTOFOLIO / PENGALAMAN --- */}
             {portofolioList.length > 0 && (
-              <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-8 md:p-10 border border-slate-100 shadow-sm">
                 <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-8">
                   <Layout size={22} /> Portofolio & Pengalaman
                 </h2>
@@ -487,7 +487,7 @@ export default function AlumniDetail() {
             )}
 
             {/* Privacy Note */}
-            <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
+            <div className="bg-primary/5 rounded-md p-6 border border-primary/10">
               <p className="text-sm text-primary/60 font-medium text-center">
                 Informasi sensitif seperti email, nomor telepon, dan alamat tidak ditampilkan untuk menjaga privasi alumni.
               </p>

@@ -200,7 +200,7 @@ export default function PengumumanAlumni() {
                   <div 
                     key={item.id}
                     onClick={() => navigate(`/alumni/pengumuman/${item.id}`)}
-                    className={`bg-white rounded-2xl border ${item.is_pinned ? 'border-primary/30 bg-primary/5' : 'border-slate-100'} shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col group`}
+                    className={`bg-white rounded-md border ${item.is_pinned ? 'border-primary/30 bg-primary/5' : 'border-slate-100'} shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col group`}
                   >
                     {/* Area Gambar (Klik untuk Zoom) */}
                     <div 
