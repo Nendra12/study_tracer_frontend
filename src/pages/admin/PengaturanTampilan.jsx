@@ -111,6 +111,10 @@ export default function PengaturanTampilan() {
   };
 
   const handleSave = async () => {
+    if (!metaDescription || metaDescription.trim() === '') {
+      alertError('Meta deskripsi wajib diisi.');
+      return; // Menghentikan proses simpan
+    }
     const confirm = await alertConfirm("Terapkan perubahan tampilan ini ke seluruh sistem?");
     if (!confirm.isConfirmed) return;
 
@@ -216,7 +220,9 @@ export default function PengaturanTampilan() {
                   <p className="text-[11px] text-gray-400 font-medium mt-1">Muncul di tab browser hasil pencarian mesin telusur.</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Meta Deskripsi</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Meta Deskripsi <span className="text-red-500 text-xs font-normal">(Wajib terisi)</span>
+                  </label>
                   <textarea
                     value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows="3"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white resize-none"

@@ -39,8 +39,11 @@ function App() {
           }
         }
       } catch (error) {
-        // Jika API error (misal jaringan down atau 404)
-        console.error('Error fetching meta_data:', error);
+        // Endpoint metadata opsional pada beberapa backend.
+        // Saat 404, gunakan fallback tanpa menampilkan error di console.
+        if (error?.response?.status !== 404) {
+          console.error('Error fetching meta_data:', error);
+        }
         const linkIcon = document.querySelector('link[rel="icon"]');
         if (linkIcon && theme?.logo) {
           linkIcon.setAttribute('href', theme.logo);

@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
 import UniversitySelector from '../../components/UniversitasSelector';
 import { masterDataApi } from '../../api/masterData';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { authApi } from '../../api/auth';
 
 export default function Step3Status({ onBack, formData, updateFormData, onSubmit, loading }) {
   // State untuk modal CAPTCHA
   const [showCaptchaModal, setShowCaptchaModal] = useState(false);
-  const recaptchaRef = useRef(null);
+  const [captchaImage, setCaptchaImage] = useState('');
+  const [captchaLoading, setCaptchaLoading] = useState(false);
 
   // 1. Sinkronisasi Status Awal dari formData
   const getInitialStatus = () => {
@@ -43,6 +44,34 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   
   // State untuk mengecek apakah masih berlangsung (Saat ini)
   const [isSaatIni, setIsSaatIni] = useState(!formData.tahun_selesai);
+
+  const loadCaptcha = async (isRefresh = false) => {
+    setCaptchaLoading(true);
+    try {
+      const res = isRefresh
+        ? await authApi.refreshCaptcha()
+        : await authApi.generateCaptcha();
+
+      setCaptchaImage(res?.data?.captcha?.image || '');
+      updateFormData({
+        captcha_token: '',
+        captcha_key: res?.data?.captcha?.key || '',
+      });
+    } catch (err) {
+      console.error('Gagal memuat captcha register:', err);
+      setCaptchaImage('');
+      updateFormData({ captcha_token: '', captcha_key: '' });
+    } finally {
+      setCaptchaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showCaptchaModal) {
+      loadCaptcha(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCaptchaModal]);
 
   // 2. Fetch data master (Status, Bidang Usaha, Perusahaan, & Provinsi)
   useEffect(() => {
@@ -364,10 +393,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             <button
               onClick={() => {
                 setShowCaptchaModal(false);
-                updateFormData({ captcha_token: '' });
-                if (recaptchaRef.current) {
-                  recaptchaRef.current.reset();
-                }
+                updateFormData({ captcha_token: '', captcha_key: '' });
               }}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
@@ -377,29 +403,57 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             {/* Modal Header */}
             <div className="mb-6 text-center">
               <h3 className="text-xl font-bold text-primary mb-2">Verifikasi CAPTCHA</h3>
-              <p className="text-sm text-gray-600">Silakan selesaikan verifikasi keamanan sebelum melanjutkan pendaftaran</p>
+              <p className="text-sm text-gray-600">Silakan masukkan kode captcha sebelum melanjutkan pendaftaran</p>
             </div>
 
-            {/* reCAPTCHA */}
-            <div className="flex justify-center mb-6 min-h-[100px] w-full overflow-hidden items-center rounded-lg">
-              <div className="scale-95 md:scale-100 origin-center"> {/* Sedikit di-scale agar muat di HP */}
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}
-                  onChange={(token) => {
-                    updateFormData({ captcha_token: token });
-                  }}
-                  onExpired={() => {
-                    updateFormData({ captcha_token: '' });
-                  }}
+            {/* Image Captcha */}
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-[150px] rounded-md bg-white border border-gray-200 overflow-hidden flex items-center justify-center">
+                  {captchaLoading ? (
+                    <Loader2 size={18} className="animate-spin text-gray-400" />
+                  ) : captchaImage ? (
+                    <img src={captchaImage} alt="Captcha" className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="text-xs text-gray-400">Captcha gagal dimuat</span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => loadCaptcha(true)}
+                  disabled={loading || captchaLoading}
+                  className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <RefreshCcw size={14} className={captchaLoading ? "animate-spin" : ""} />
+                  Muat Ulang
+                </button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
+                  <ShieldCheck size={16} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Masukkan kode captcha"
+                  value={formData.captcha_token || ''}
+                  onChange={(e) => updateFormData({ captcha_token: e.target.value })}
+                  className="w-full pl-10 p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  required
+                  disabled={loading || captchaLoading}
                 />
               </div>
+
+              <p className="text-[11px] text-gray-500">
+                Captcha hanya berlaku sekali percobaan. Jika gagal, gunakan captcha yang baru.
+              </p>
             </div>
 
             {/* Submit Button */}
             <button
               type="button"
-              disabled={!formData.captcha_token || loading}
+              disabled={!formData.captcha_token || !formData.captcha_key || loading || captchaLoading || !captchaImage}
               onClick={() => {
                 setShowCaptchaModal(false);
                 onSubmit();
@@ -417,7 +471,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             {!formData.captcha_token && (
               <p className="text-center text-xs text-gray-500 mt-3">
-                Centang kotak "I'm not a robot" terlebih dahulu
+                Masukkan kode captcha terlebih dahulu
               </p>
             )}
           </div>

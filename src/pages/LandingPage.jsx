@@ -158,21 +158,29 @@ export default function LandingPage() {
 
             <motion.h1
               variants={itemVariants}
-              className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight"
+              className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight whitespace-pre-line"
             >
-              Tetap Terhubung <br />
-              <span>dengan Alumni </span> <br />
-              <span className="text-transparent bg-clip-text bg-third">
-                {theme?.namaSekolah || 'SMKN 1 Gondang'}.
-              </span>
+              {theme?.landingTitle || (
+                <>
+                  Tetap Terhubung <br />
+                  <span>dengan Alumni </span> <br />
+                  <span className="text-transparent bg-clip-text bg-third">
+                    {theme?.namaSekolah || 'SMKN 1 Gondang'}.
+                  </span>
+                </>
+              )}
             </motion.h1>
 
             <motion.p
               variants={itemVariants}
               className="text-lg text-primary/80 leading-relaxed max-w-md font-medium"
             >
-              Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni,
-              temukan info lowongan kerja, dan bangun jaringan yang lebih luas
+              {theme?.landingDescription || (
+                <>
+                  Bagikan perjalanan karirmu, lihat perkembangan teman-teman alumni,
+                  temukan info lowongan kerja, dan bangun jaringan yang lebih luas
+                </>
+              )}
             </motion.p>
 
             <motion.div
