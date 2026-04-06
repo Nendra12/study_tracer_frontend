@@ -404,7 +404,7 @@ export default function Lowongan() {
 
       {/* --- FLOATING CARD (TABS & FILTER) --- */}
       <section className="relative z-40 w-full max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100">
+        <div className="bg-white p-4 md:p-6 rounded-md shadow-xl border border-slate-100">
 
           {/* TABS & ACTION BUTTON */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">

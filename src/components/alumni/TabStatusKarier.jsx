@@ -216,7 +216,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
     <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3 text-primary">
-          <Briefcase size={20} />
           <h2 className="text-lg font-black">Status Karier Saat Ini</h2>
         </div>
         {!showForm && (

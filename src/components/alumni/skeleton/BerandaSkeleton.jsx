@@ -5,19 +5,21 @@ export default function BerandaSkeleton({ canAccsess }) {
     <div className="w-full flex flex-col gap-6 animate-in fade-in duration-500">
 
       {/* 1. Quick Summary Cards Skeleton (4 Kotak Kecil di Atas) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-slate-200/60 animate-pulse mb-3" />
-            <div className="h-3 bg-slate-200/60 rounded-full w-20 animate-pulse mb-2" />
-            <div className="h-4 bg-slate-200/80 rounded-full w-28 animate-pulse" />
+          <div key={i} className="bg-white p-4 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-slate-200/60 animate-pulse shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-2.5 bg-slate-200/60 rounded-full w-20 animate-pulse" />
+              <div className="h-4 bg-slate-300/60 rounded-full w-28 animate-pulse" />
+            </div>
           </div>
         ))}
       </div>
 
       {/* 2. Notifikasi Skeleton (Hanya muncul jika belum akses penuh) */}
       {!canAccsess && (
-        <div className="bg-white rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center gap-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+        <div className="bg-white rounded-md p-6 flex flex-col md:flex-row items-start md:items-center gap-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-slate-200 animate-pulse"></div>
           <div className="w-14 h-14 bg-slate-200/60 rounded-2xl animate-pulse shrink-0" />
           <div className="space-y-3 flex-1 w-full">
@@ -30,7 +32,7 @@ export default function BerandaSkeleton({ canAccsess }) {
       )}
 
       {/* 3. Jejaring Alumni Terbaru Skeleton */}
-      <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+      <div className="bg-white p-6 sm:p-8 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
         <div className="flex justify-between items-end mb-8">
           <div className="space-y-2">
             <div className="h-8 bg-slate-200/70 rounded-lg w-56 animate-pulse" />
@@ -41,7 +43,7 @@ export default function BerandaSkeleton({ canAccsess }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-45">
+            <div key={i} className="bg-white p-5 rounded-md border border-slate-100 shadow-sm flex flex-col h-45">
               <div className="flex gap-4 mb-5">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-200/60 animate-pulse shrink-0" />
                 <div className="flex-1 flex flex-col justify-start pt-1 space-y-2.5">
@@ -64,7 +66,7 @@ export default function BerandaSkeleton({ canAccsess }) {
       <div className="grid lg:grid-cols-3 gap-6">
         
         {/* Bagian Kiri: Pengumuman Sekolah (2 Kolom) */}
-        <div className="bg-white rounded-[2rem] lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+        <div className="bg-white rounded-md lg:col-span-2 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
           <div className="flex justify-between items-end mb-6">
             <div className="space-y-2">
               <div className="h-8 bg-slate-200/80 rounded-lg w-64 animate-pulse" />
@@ -74,7 +76,7 @@ export default function BerandaSkeleton({ canAccsess }) {
           </div>
           <div className="space-y-4">
             {[1, 2].map(i => (
-              <div key={i} className="p-5 rounded-2xl border border-slate-100 flex flex-col sm:flex-row items-start gap-4">
+              <div key={i} className="p-5 rounded-md border border-slate-100 flex flex-col sm:flex-row items-start gap-4">
                 <div className="w-16 h-16 rounded-xl bg-slate-200/60 animate-pulse shrink-0 hidden sm:block" />
                 <div className="flex-1 space-y-2.5 w-full">
                   <div className="flex justify-between items-start">
@@ -90,7 +92,7 @@ export default function BerandaSkeleton({ canAccsess }) {
         </div>
 
         {/* Bagian Kanan: Statistik Lulusan (1 Kolom) */}
-        <div className="bg-slate-200/50 rounded-[2rem] p-6 sm:p-8 flex flex-col justify-center animate-pulse">
+        <div className="bg-slate-200/50 rounded-md p-6 sm:p-8 flex flex-col justify-center animate-pulse">
           <div className="h-6 bg-slate-300/60 rounded-lg w-40 mb-2" />
           <div className="h-3 bg-slate-300/40 rounded-full w-48 mb-8" />
           <div className="space-y-6">
@@ -109,7 +111,7 @@ export default function BerandaSkeleton({ canAccsess }) {
       </div>
 
       {/* 5. Lowongan Pekerjaan Skeleton */}
-      <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+      <div className="bg-white p-6 sm:p-8 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
         <div className="flex justify-between items-end mb-8">
           <div className="space-y-2">
             <div className="h-8 bg-slate-200/70 rounded-lg w-48 animate-pulse" />
@@ -120,7 +122,7 @@ export default function BerandaSkeleton({ canAccsess }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-115">
+            <div key={i} className="bg-white rounded-md overflow-hidden border border-slate-100 shadow-sm flex flex-col h-115">
               <div className="h-48 sm:h-56 bg-slate-200/50 animate-pulse w-full shrink-0" />
               <div className="p-5 pt-4 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-2">
@@ -156,7 +158,7 @@ export default function BerandaSkeleton({ canAccsess }) {
       </div>
 
       {/* 6. Top Perusahaan Skeleton */}
-      <div className="bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="bg-white rounded-md border border-slate-100 p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="flex items-center justify-between mb-8">
           <div className="space-y-2">
             <div className="h-8 bg-slate-200/70 rounded-lg w-64 animate-pulse" />
@@ -167,7 +169,7 @@ export default function BerandaSkeleton({ canAccsess }) {
 
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-slate-50/50 border border-slate-100 gap-4">
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-md bg-slate-50/50 border border-slate-100 gap-4">
               <div className="flex items-center gap-4 sm:gap-5 w-full">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-200/60 animate-pulse shrink-0" />
                 <div className="space-y-2 w-full">

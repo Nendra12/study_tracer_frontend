@@ -285,7 +285,6 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
       {/* --- HEADER KEAHLIAN --- */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 text-primary">
-          <Award size={22} className="stroke-[2.5]" />
           <h2 className="text-xl font-black tracking-tight">Keahlian Profil</h2>
         </div>
 
