@@ -29,7 +29,7 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick }) {
   return (
     <motion.div
       onClick={onClick}
-      className="bg-white rounded-3xl flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
+      className="bg-white rounded-md flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
     >
       {/* AREA GAMBAR */}
       <div

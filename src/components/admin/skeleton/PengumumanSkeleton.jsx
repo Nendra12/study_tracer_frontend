@@ -1,7 +1,7 @@
 import React from "react";
 
 export const PengumumanCardSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden h-[360px] animate-pulse">
+  <div className="bg-white rounded-md border border-gray-100 shadow-sm flex flex-col overflow-hidden h-[360px] animate-pulse">
     {/* Area Gambar Banner */}
     <div className="w-full h-32 sm:h-40 bg-gray-200 flex-shrink-0"></div>
 

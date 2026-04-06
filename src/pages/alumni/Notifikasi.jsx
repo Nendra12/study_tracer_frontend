@@ -199,7 +199,7 @@ export default function Notifikasi() {
       {/* PERUBAHAN: max-w-5xl diubah menjadi max-w-7xl */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12 flex flex-col">
 
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-125">
+        <div className="bg-white rounded-md shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-125">
 
           {/* TOOLBAR FILTER & AKSI */}
           <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white shrink-0">

@@ -119,7 +119,7 @@ export default function PengumumanAlumni() {
 
       {/* --- FLOATING FILTER & SEARCH SECTION --- */}
       <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8 w-full">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100">
+        <div className="bg-white p-4 md:p-6 rounded-md shadow-xl border border-slate-100">
           
           <div className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
             
@@ -180,7 +180,7 @@ export default function PengumumanAlumni() {
             </div>
           </div>
         ) : pengumuman.length === 0 ? (
-          <div className="flex items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+          <div className="flex items-center justify-center py-20 bg-white rounded-md shadow-sm border border-slate-100">
             <div className="text-center">
               <Megaphone size={56} className="text-slate-300 mx-auto mb-4 opacity-50" />
               <h2 className="text-lg font-black text-primary mb-2">Tidak Ada Pengumuman</h2>

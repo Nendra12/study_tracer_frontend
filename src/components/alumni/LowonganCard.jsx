@@ -33,13 +33,13 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
       <motion.div
         whileHover={locked ? {} : { y: -6 }}
         onClick={() => !locked && navigate(`/alumni/lowongan/${data.id}`)}
-        className={`bg-white rounded-[1.6rem] overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer h-full
+        className={`bg-white rounded-md overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer h-full
           ${locked ? '' : 'hover:shadow-xl hover:border-primary/20'}`}
       >
 
         {/* poster image */}
         <div
-          className={`relative h-[200px] shrink-0 w-full bg-slate-100 overflow-hidden rounded-t-[1.6rem]
+          className={`relative h-[200px] shrink-0 w-full bg-slate-100 overflow-hidden rounded-t-md
             ${locked ? '' : 'cursor-pointer'}`}
           onClick={(e) => {
             if (locked || !onImageClick) return;
