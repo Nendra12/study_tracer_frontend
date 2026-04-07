@@ -146,16 +146,6 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
           >
-
-            <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-sm"
-            >
-              <span className="text-[12px] font-bold text-primary">
-                Selamat datang di Tracer Study {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
-              </span>
-            </motion.div>
-
             <motion.h1
               variants={itemVariants}
               className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight whitespace-pre-line"

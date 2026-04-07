@@ -16,6 +16,7 @@ import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 import Pagination from "../../components/admin/Pagination";
+import SmoothKota from "../../components/admin/SmoothKota"; 
 
 const PERUSAHAAN_PER_PAGE = 7;
 
@@ -147,10 +148,15 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                   <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} placeholder="Nama Perusahaan" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
                 </td>
                 <td className="py-2 px-3">
-                  <select value={formData.id_kota} onChange={(e) => setFormData(p => ({ ...p, id_kota: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none bg-white">
-                    <option value="">-- Kota --</option>
-                    {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                  </select>
+                  <td className="py-2 px-3">
+                  <SmoothKota
+                    isSearchable={true}
+                    placeholder="-- Pilih Kota --"
+                    value={formData.id_kota}
+                    options={kotaList.map(k => ({ value: k.id, label: k.nama }))}
+                    onSelect={(val) => setFormData(p => ({ ...p, id_kota: val }))}
+                  />
+                </td>
                 </td>
                 <td className="py-2 px-3">
                   <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
@@ -176,13 +182,21 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                       <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
                     </td>
                     <td className="py-2 px-3">
-                      <select value={formData.id_kota} onChange={(e) => setFormData(p => ({ ...p, id_kota: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none bg-white">
-                        <option value="">-- Kota --</option>
-                        {kotaList.map(k => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                      </select>
+                      <SmoothKota
+                        isSearchable={true}
+                        placeholder="-- Pilih Kota --"
+                        value={formData.id_kota}
+                        options={kotaList.map(k => ({ value: k.id, label: k.nama }))}
+                        onSelect={(val) => setFormData(p => ({ ...p, id_kota: val }))}
+                      />
                     </td>
                     <td className="py-2 px-3">
-                      <input type="text" value={formData.alamat_perusahaan} onChange={(e) => setFormData(p => ({ ...p, alamat_perusahaan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
+                      <input 
+                        type="text" 
+                        value={formData.jalan} 
+                        onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} 
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" 
+                      />
                     </td>
                     <td className="py-2 px-3">
                       <div className="flex justify-end gap-2">
