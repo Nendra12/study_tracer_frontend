@@ -17,6 +17,7 @@ import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 import Pagination from "../../components/admin/Pagination";
 import SmoothKota from "../../components/admin/SmoothKota"; 
+import { downloadCsv, createExportFileName } from "../../utilitis/export";
 
 const PERUSAHAAN_PER_PAGE = 7;
 
@@ -292,15 +293,15 @@ export default function MasterTable() {
       let headers, rows, fileName, title;
       if (selectedReport === 'Data Jurusan') {
         if (jurusanData.length === 0) return alertWarning("Data Jurusan kosong");
-        headers = ['Nama Jurusan'];
-        rows = jurusanData.map(j => [j.nama]);
-        fileName = `laporan_jurusan_${new Date().toISOString().slice(0,10)}`;
+        headers = ['No', 'Nama Jurusan'];
+        rows = jurusanData.map((j, index) => [index + 1, j.nama || '-']);
+        fileName = 'laporan_jurusan';
         title = 'Laporan Data Jurusan';
       } else {
         if (perusahaanData.length === 0) return alertWarning("Data Perusahaan kosong");
-        headers = ['Nama Perusahaan', 'Kota', 'Alamat'];
-        rows = perusahaanData.map(p => [p.nama, p.kota?.nama || '', p.jalan || '']);
-        fileName = `laporan_perusahaan_${new Date().toISOString().slice(0,10)}`;
+        headers = ['No', 'Nama Perusahaan', 'Kota', 'Alamat'];
+        rows = perusahaanData.map((p, index) => [index + 1, p.nama || '-', p.kota?.nama || '-', p.jalan || '-']);
+        fileName = 'laporan_perusahaan';
         title = 'Laporan Data Perusahaan';
       }
 
@@ -310,14 +311,9 @@ export default function MasterTable() {
         const doc = new jsPDF();
         doc.text(title, 14, 15);
         autoTable(doc, { head: [headers], body: rows, startY: 25, headStyles: { fillColor: [60, 87, 89] } });
-        doc.save(`${fileName}.pdf`);
+        doc.save(createExportFileName(fileName, 'pdf'));
       } else {
-        const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `${fileName}.csv`; a.click();
-        URL.revokeObjectURL(url);
+        downloadCsv({ headers, rows, prefix: fileName });
       }
       alertSuccess('Laporan berhasil diunduh');
     } catch { alertError('Gagal membuat laporan'); }

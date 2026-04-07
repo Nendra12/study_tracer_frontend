@@ -73,6 +73,18 @@ export default function PengumumanAlumni() {
     fetchPengumuman(1);
   }, [fetchPengumuman]);
 
+  // Realtime refresh saat ada pengumuman baru
+  useEffect(() => {
+    const handlePengumumanCreated = () => {
+      fetchPengumuman(1);
+    };
+
+    window.addEventListener('reverb:pengumuman.created', handlePengumumanCreated);
+    return () => {
+      window.removeEventListener('reverb:pengumuman.created', handlePengumumanCreated);
+    };
+  }, [fetchPengumuman]);
+
   // Kunci scroll saat modal gambar terbuka
   useEffect(() => {
     document.body.style.overflow = selectedImage ? 'hidden' : 'unset';

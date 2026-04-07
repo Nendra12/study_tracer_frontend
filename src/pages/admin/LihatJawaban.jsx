@@ -23,6 +23,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import JawabanSkeleton from "../../components/admin/skeleton/JawabanSkeleton";
 import { STORAGE_BASE_URL } from "../../api/axios";
+import { createExportFileName } from "../../utilitis/export";
 
 // Sub-komponen StatCard
 function StatCard({ icon, label, value, bgColor, iconColor, className = "" }) {
@@ -250,7 +251,7 @@ export default function LihatJawaban() {
     XLSX.utils.book_append_sheet(wb, ws, activeTab);
 
     // Save Excel file
-    XLSX.writeFile(wb, `Jawaban_Kuesioner_${activeTab}_${new Date().getTime()}.xlsx`);
+    XLSX.writeFile(wb, createExportFileName(`jawaban_kuesioner_${activeTab}`, 'xlsx'));
   };
 
   const handleViewDetail = (id) => {

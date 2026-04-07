@@ -52,6 +52,18 @@ export default function NavbarAlumni({ user }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Realtime badge update from AuthContext Echo events
+  useEffect(() => {
+    const handleRealtimeNotification = () => {
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    window.addEventListener('reverb:notification.received', handleRealtimeNotification);
+    return () => {
+      window.removeEventListener('reverb:notification.received', handleRealtimeNotification);
+    };
+  }, []);
+
   const fetchUnreadCount = async () => {
     try {
       const response = await alumniApi.getNotificationUnreadCount();
