@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-// const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api-tracer.primaesemkrada.com";
+// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api-tracer.primaesemkrada.com";
 
 
 export const STORAGE_BASE_URL = API_BASE_URL.replace('/api', '') + '/storage';
@@ -61,10 +61,10 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       const errorCode = error.response?.data?.error_code;
-      
+
       // Handle session expired karena inaktif (dari CheckTokenExpiration middleware)
       if (errorCode === 'TOKEN_EXPIRED_INACTIVE') {
-        localStorage.setItem('session_expired_reason', 
+        localStorage.setItem('session_expired_reason',
           error.response?.data?.message || 'Sesi Anda telah berakhir karena tidak aktif selama lebih dari 5 jam. Silakan login kembali.'
         );
       }
@@ -72,7 +72,7 @@ api.interceptors.response.use(
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       localStorage.removeItem('last_activity');
-      
+
       // Redirect to login page if not already there
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/logout' && currentPath !== '/') {
