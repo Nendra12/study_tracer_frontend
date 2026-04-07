@@ -24,6 +24,7 @@ export default function PengumumanAlumni() {
   // State Filter & Pencarian
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWaktu, setSelectedWaktu] = useState('Terbaru');
+  const [selectedPinned, setSelectedPinned] = useState('Semua Tipe (Pin)');
 
   // State Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +35,7 @@ export default function PengumumanAlumni() {
 
   // Opsi Dropdown
   const waktuOptions = ['Terbaru', 'Terlama'];
+  const pinnedOptions = ['Semua Tipe (Pin)', 'Hanya Di-pin', 'Tidak Di-pin'];
 
   // Fungsi Fetch Data
   const fetchPengumuman = useCallback(async (page = 1) => {
@@ -45,7 +47,9 @@ export default function PengumumanAlumni() {
       const params = { page, per_page: 8, status: 'aktif' };
       
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      if (selectedWaktu) params.sort = selectedWaktu === 'Terbaru' ? 'desc' : 'asc';
+      if (selectedWaktu) params.sort = selectedWaktu === 'Terbaru' ? 'terbaru' : 'terlama';
+      if (selectedPinned === 'Hanya Di-pin') params.pinned = true;
+      if (selectedPinned === 'Tidak Di-pin') params.pinned = false;
 
       const res = await alumniApi.getPengumuman(params);
       const responseData = res.data?.data;
@@ -66,7 +70,7 @@ export default function PengumumanAlumni() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedWaktu]);
+  }, [searchQuery, selectedWaktu, selectedPinned]);
 
   // Efek memuat data saat filter berubah
   useEffect(() => {
@@ -154,6 +158,14 @@ export default function PengumumanAlumni() {
                   value={selectedWaktu} 
                   onSelect={(val) => setSelectedWaktu(val)} 
                   placeholder="Urutkan Berdasarkan" 
+                />
+              </div>
+              <div className="w-full lg:w-48 relative z-40">
+                <SmoothDropdown 
+                  options={pinnedOptions} 
+                  value={selectedPinned} 
+                  onSelect={(val) => setSelectedPinned(val)} 
+                  placeholder="Filter Pin" 
                 />
               </div>
             </div>

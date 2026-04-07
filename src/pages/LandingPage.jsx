@@ -27,7 +27,8 @@ export default function LandingPage() {
   const [alumniList, setAlumniList] = useState([]);
   const [jobList, setJobList] = useState([]);
   const [activeSection, setActiveSection] = useState("beranda");
-  const [loading, setLoading] = useState(false)
+  const [apiLoading, setApiLoading] = useState(true);
+  const [imgLoading, setImgLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
 
   const openModal = (type) => setModalType(type);
@@ -37,7 +38,7 @@ export default function LandingPage() {
   useEffect(() => {
     async function fetchLandingData() {
       try {
-        setLoading(true)
+        setApiLoading(true);
         const [statsRes, alumniRes, jobsRes] = await Promise.all([
           publicApi.getLandingStats(),
           publicApi.getFeaturedAlumni(),
@@ -49,11 +50,28 @@ export default function LandingPage() {
       } catch (err) {
         console.error('Failed to fetch landing data:', err);
       } finally {
-        setLoading(false)
+        setApiLoading(false);
       }
     }
     fetchLandingData();
   }, []);
+
+  // Preload gambar utama (hero image) untuk menghindari visual glich (putih)
+  useEffect(() => {
+    const heroImgSrc = theme?.landingBg || "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop";
+    setImgLoading(true); // reset
+    const img = new Image();
+    img.src = heroImgSrc;
+    img.onload = () => setImgLoading(false);
+    img.onerror = () => setImgLoading(false);
+
+    // Fallback timer: kalau gambar terlalu besar/lama, paksa buka halaman dalam maksimal 3 detik
+    const timer = setTimeout(() => {
+      setImgLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [theme?.landingBg]);
 
   const handleSmoothScroll = (e, targetId) => {
     e.preventDefault();
@@ -117,9 +135,11 @@ export default function LandingPage() {
   }
 
   // console.log(alumniList)
-  if (loading) {
+  const isPageReady = !apiLoading && !imgLoading;
+
+  if (!isPageReady) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-white">
         <Loader />
       </div>
     );

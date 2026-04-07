@@ -17,6 +17,7 @@ import { LowonganSkeleton, MyLowonganSkeleton } from '../../components/alumni/sk
 
 // Konfigurasi & API
 import { alumniApi } from '../../api/alumni';
+import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 
 import JobsImg from '../../assets/svg/job-search-svgrepo-com.svg'
@@ -88,9 +89,7 @@ function prioritizeBySkillMatch(items, authUser) {
 
 // --- OPSI DROPDOWN FILTER ---
 const tipeOptions = ['Semua Tipe', 'Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship'];
-const provinsiOptions = ['Semua Provinsi', 'Jawa Timur', 'Jawa Tengah', 'Jawa Barat', 'DKI Jakarta', 'Banten', 'DI Yogyakarta'];
-const kotaOptions = ['Semua Kota', 'Surabaya', 'Malang', 'Sidoarjo', 'Bandung', 'Jakarta Selatan', 'Semarang'];
-const waktuOptions = ['Terbaru', 'Terlama', 'Mendekati Deadline'];
+const waktuOptions = ['Terbaru', 'Mendekati Deadline'];
 
 export default function Lowongan() {
   const { user: authUser } = useAuth();
@@ -120,6 +119,63 @@ export default function Lowongan() {
   const [selectedProvinsi, setSelectedProvinsi] = useState('');
   const [selectedKota, setSelectedKota] = useState('');
   const [selectedWaktu, setSelectedWaktu] = useState('Terbaru');
+
+  // Dynamic Options Map
+  const [provinsiOptions, setProvinsiOptions] = useState(['Semua Provinsi']);
+  const [kotaOptions, setKotaOptions] = useState(['Semua Kota']);
+  const [rawProvinsiData, setRawProvinsiData] = useState([]);
+
+  // Fetch Master Data untuk Filter
+  useEffect(() => {
+    async function fetchMasterData() {
+      try {
+        const provRes = await masterDataApi.getProvinsi();
+        if (provRes.data?.data) {
+          setRawProvinsiData(provRes.data.data);
+          const provNames = provRes.data.data.map(p => p.nama || p.nama_provinsi);
+          setProvinsiOptions(['Semua Provinsi', ...provNames]);
+        }
+        
+        // Load initial kota
+        const kotaRes = await masterDataApi.getKota();
+        if (kotaRes.data?.data) {
+          const kotaNames = kotaRes.data.data.map(k => k.nama || k.nama_kota);
+          setKotaOptions(['Semua Kota', ...kotaNames]);
+        }
+      } catch (err) {
+        console.error('Failed to load filter options:', err);
+      }
+    }
+    fetchMasterData();
+  }, []);
+
+  // Filter Kota berdasarkan Provinsi yang dipilih
+  useEffect(() => {
+    async function filterKota() {
+      try {
+        if (!selectedProvinsi || selectedProvinsi === 'Semua Provinsi') {
+          const kotaRes = await masterDataApi.getKota();
+          if (kotaRes.data?.data) {
+             setKotaOptions(['Semua Kota', ...kotaRes.data.data.map(k => k.nama || k.nama_kota)]);
+          }
+        } else {
+          const prov = rawProvinsiData.find(p => (p.nama || p.nama_provinsi) === selectedProvinsi);
+          if (prov) {
+             const kotaRes = await masterDataApi.getKota(prov.id || prov.id_provinsi);
+             if (kotaRes.data?.data) {
+               setKotaOptions(['Semua Kota', ...kotaRes.data.data.map(k => k.nama || k.nama_kota)]);
+             }
+          }
+        }
+        setSelectedKota(''); // reset kota saat provinsi berubah
+      } catch (err) {
+        console.error('Failed to filter kota:', err);
+      }
+    }
+    if (rawProvinsiData.length > 0) {
+      filterKota();
+    }
+  }, [selectedProvinsi, rawProvinsiData]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);

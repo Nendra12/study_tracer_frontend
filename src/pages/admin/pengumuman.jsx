@@ -21,6 +21,10 @@ export default function Pengumuman() {
   const [pengumumanData, setPengumumanData] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  // Filter tambahan
+  const [selectedSort, setSelectedSort] = useState("Terbaru");
+  const [selectedPinned, setSelectedPinned] = useState("Semua Tipe (Pin)");
   
   // State untuk Statistik Sidebar
   const [stats, setStats] = useState({ total: 0, aktif: 0, draft: 0, berakhir: 0 });
@@ -39,6 +43,9 @@ export default function Pengumuman() {
       const filters = {};
       if (searchQuery) filters.search = searchQuery;
       if (activeTab !== "Semua") filters.status = activeTab.toLowerCase();
+      if (selectedSort !== "Terbaru") filters.sort = selectedSort.toLowerCase();
+      if (selectedPinned === "Di-pin") filters.pinned = true;
+      if (selectedPinned === "Tidak Di-pin") filters.pinned = false;
 
       const response = await adminApi.getPengumuman(filters, ITEMS_PER_PAGE);
       const responseData = response.data?.data;
@@ -60,7 +67,7 @@ export default function Pengumuman() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, activeTab, currentPage]);
+  }, [searchQuery, activeTab, currentPage, selectedSort, selectedPinned]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -90,7 +97,7 @@ export default function Pengumuman() {
   // Reset pagination ke halaman 1 setiap kali filter/search berubah
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, selectedSort, selectedPinned]);
 
   // --- HANDLERS MODAL FORM ---
   const handleOpenCreate = () => {
@@ -206,19 +213,44 @@ export default function Pengumuman() {
                 </div>
               )}
 
-              {/* 2. SEARCH BAR SKELETON / REAL */}
+              {/* 2. SEARCH BAR SKELETON / REAL & DROPDOWNS */}
               {loading ? (
-                <div className="flex-1 w-full h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div className="flex w-full sm:w-auto flex-1 gap-2">
+                  <div className="flex-1 min-w-[150px] h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
+                  <div className="hidden sm:block w-28 h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
+                  <div className="hidden sm:block w-36 h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
+                </div>
               ) : (
-                <div className="relative flex-1 group w-full">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={16} />
-                  <input
-                    type="text"
-                    placeholder="Cari pengumuman..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20"
-                  />
+                <div className="flex flex-col sm:flex-row w-full sm:w-auto flex-1 gap-2">
+                  <div className="relative flex-1 min-w-[150px] group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={16} />
+                    <input
+                      type="text"
+                      placeholder="Cari pengumuman..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+
+                  <select
+                    value={selectedSort}
+                    onChange={(e) => setSelectedSort(e.target.value)}
+                    className="cursor-pointer bg-white border border-gray-200 rounded-xl text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 shadow-sm w-full sm:w-auto"
+                  >
+                    <option value="Terbaru">Terbaru</option>
+                    <option value="Terlama">Terlama</option>
+                  </select>
+
+                  <select
+                    value={selectedPinned}
+                    onChange={(e) => setSelectedPinned(e.target.value)}
+                    className="cursor-pointer bg-white border border-gray-200 rounded-xl text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 shadow-sm w-full sm:w-auto"
+                  >
+                    <option value="Semua Tipe (Pin)">Semua Pin</option>
+                    <option value="Di-pin">Hanya Di-pin</option>
+                    <option value="Tidak Di-pin">Tidak Di-pin</option>
+                  </select>
                 </div>
               )}
               
