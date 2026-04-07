@@ -300,7 +300,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                         x: 0,
                         transition: { delay: i * 0.1 },
                       }}
-                      className={`px-6 py-4 rounded-md font-bold transition-all ${isActive
+                      className={`px-6 py-4 rounded-lg font-bold transition-all ${isActive
                         ? "bg-primary text-white"
                         : "text-primary/80 hover:bg-fourth hover:text-primary"
                         }`}
