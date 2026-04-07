@@ -259,7 +259,7 @@ export default function LihatJawabanDetail() {
                     src={alumni.foto ? `${STORAGE_BASE_URL}/${alumni.foto_thumbnail || alumni.foto}` : `https://i.pravatar.cc/150?u=${alumni.id}`}
                     alt={alumni.nama}
                     className="w-full h-full object-cover"
-                    onError={(e) => { 
+                    onError={(e) => {
                       const original = alumni.foto ? `${STORAGE_BASE_URL}/${alumni.foto}` : null;
                       if (original && e.target.src !== original) e.target.src = original;
                       else { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }

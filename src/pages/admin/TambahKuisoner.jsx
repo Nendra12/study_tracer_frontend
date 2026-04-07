@@ -171,7 +171,7 @@ const TambahKuisioner = () => {
     };
 
     return (
-        <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
+        <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
 
                 {/* Responsive Header */}
@@ -217,16 +217,19 @@ const TambahKuisioner = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative items-start">
 
                     {/* LEFT: Config (Static on mobile, Sticky on desktop) */}
-                    <div className="lg:col-span-4 space-y-6 lg:sticky h-fit">
+                    {/* Tambahkan lg:top-6 atau lg:top-24 tergantung seberapa jauh dari atas layar */}
+                    <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 h-fit">
                         <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
                             <h2 className="text-base md:text-lg font-bold text-primary mb-3 pb-3">Data Kuesioner</h2>
 
                             <div className="space-y-5">
                                 <div data-error={!!errors.title}>
-                                    <label className="text-[10px] md:text-[11px] font-bold text-primary/80 uppercase tracking-wider">Judul Kuesioner</label>
+                                    <label className="text-[10px] md:text-[11px] font-bold text-primary/80 uppercase tracking-wider">
+                                        Judul Kuesioner <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         className={`w-full mt-2 p-3 bg-slate-50 border ${errors.title ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all`}
@@ -237,7 +240,7 @@ const TambahKuisioner = () => {
                                 </div>
 
                                 <SmoothDropdown
-                                    label="Target Karier"
+                                    label={<>Target Karier <span className="text-red-500">*</span></>}
                                     options={statusKarirData}
                                     value={formData.id_status}
                                     onSelect={(val) => setFormData({ ...formData, id_status: val })}
@@ -250,7 +253,9 @@ const TambahKuisioner = () => {
                                 />
 
                                 <div>
-                                    <label className="text-[11px] font-bold text-primary/80 uppercase">Deskripsi (Opsional)</label>
+                                    <label className="text-[11px] font-bold text-primary/80 uppercase">
+                                        Deskripsi <span className="text-[10px] text-third italic">(Opsional)</span>
+                                    </label>
                                     <textarea
                                         rows="3"
                                         className="w-full mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -293,7 +298,7 @@ const TambahKuisioner = () => {
                                                     content={q.text}
                                                     onChange={(html) => updateQuestionText(q.id, html)}
                                                     placeholder="Ketik pertanyaan Anda..."
-                                                    minHeight="60px"
+                                                    minHeight="120px md:80px"
                                                 />
                                             </div>
                                             <button
@@ -314,7 +319,7 @@ const TambahKuisioner = () => {
                                                             content={opt}
                                                             onChange={(html) => updateOptionText(q.id, optIndex, html)}
                                                             placeholder={`Opsi ${optIndex + 1}`}
-                                                            minHeight="40px"
+                                                            minHeight="40px "
                                                         />
                                                     </div>
                                                     {q.options.length > 1 && (
