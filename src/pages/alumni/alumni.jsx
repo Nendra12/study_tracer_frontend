@@ -139,11 +139,11 @@ export default function Alumni() {
   return (
     <div className='w-full min-h-screen bg-[#f8f9fa]'>
       {/* --- HEADER SECTION DENGAN BACKGROUND GELAP (KONSISTEN DENGAN BERANDA) --- */}
-      <section className=" relative pt-20 pb-8 w-full z-30 bg-primary rounded-b-[2.5rem]">
+      <section className=" relative pt-20 pb-20 lg:pb-8 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className=" relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center md:items-center gap-8">
           
           <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
+            <h1 className="text-3xl mt-5 md:mt-0 md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
               Direktori Alumni
             </h1>
             <p className="text-white/80 text-sm md:text-base font-medium leading-relaxed">
@@ -164,47 +164,50 @@ export default function Alumni() {
       <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-8">
         <div className="bg-white p-4 md:px-4 md:pt-4 md:pb-7 rounded-md shadow-xl border border-slate-100">
           
+          {/* SEARCH & FILTER FORM - Dibuat sejajar mengikuti referensi Lowongan */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
-            
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full">
-              
-              <form 
-                onSubmit={handleSearch} 
-                className="mt-3 flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
-              >
-                <div className="relative flex-1 flex items-center">
-                  <Search className="absolute left-3 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Cari berdasarkan nama, perusahaan..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
-                >
-                  Cari
-                </button>
-              </form>
 
-              <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-                <div className="w-[calc(50%-6px)] lg:w-40 relative z-60">
-                  {/* PERUBAHAN: Placeholder dan handler disesuaikan dengan 'Semua Angkatan' */}
-                  <SmoothDropdown 
-                    options={tahunOptions} 
-                    value={selectedTahun} 
-                    onSelect={(val) => setSelectedTahun(val === 'Semua Angkatan' ? '' : val)} 
-                    placeholder="Tahun Angkatan" 
-                  />
-                </div>
-                <div className="w-[calc(50%-6px)] lg:w-44 relative z-50">
-                  <SmoothDropdown options={statusOptions} value={selectedStatus} onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} placeholder="Status Pekerjaan" />
-                </div>
+            {/* FORM PENCARIAN - Menggunakan flex-1 agar mengambil sisa ruang */}
+            <form 
+              onSubmit={handleSearch} 
+              className="mt-3 flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+            >
+              <div className="relative flex-1 flex items-center">
+                <Search className="absolute left-3 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan nama, perusahaan..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
+                />
               </div>
+              <button 
+                type="submit" 
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+              >
+                Cari
+              </button>
+            </form>
 
+            {/* DROPDOWN FILTERS - Tetap sejajar di kanan */}
+            <div className="flex flex-wrap lg:flex-nowrap gap-3 mt-3 lg:mt-0 w-full lg:w-auto shrink-0">
+              <div className="w-[calc(50%-6px)] lg:w-40 relative z-60">
+                <SmoothDropdown 
+                  options={tahunOptions} 
+                  value={selectedTahun} 
+                  onSelect={(val) => setSelectedTahun(val === 'Semua Angkatan' ? '' : val)} 
+                  placeholder="Tahun Angkatan" 
+                />
+              </div>
+              <div className="w-[calc(50%-6px)] lg:w-44 relative z-50">
+                <SmoothDropdown 
+                  options={statusOptions} 
+                  value={selectedStatus} 
+                  onSelect={(val) => setSelectedStatus(val === 'Semua Status' ? '' : val)} 
+                  placeholder="Status Pekerjaan" 
+                />
+              </div>
             </div>
 
           </div>

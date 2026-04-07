@@ -79,20 +79,20 @@ export default function SideBar({ active, setActive }) {
     <>
       {active && (
         <div
-          className="fixed inset-0 bg-black/40 z-21 lg:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/40 z-21 xl:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setActive(false)}
         />
       )}
 
       {/* Sidebar Container */}
       <div className={`
-        fixed lg:relative z-30
+        fixed xl:relative z-30
         w-72 md:w-65
         h-dvh
         bg-white border-r border-fourth
         flex flex-col
         transition-all duration-300 ease-in-out
-        ${active ? 'translate-x-0' : '-translate-x-full lg:hidden'}
+        ${active ? 'translate-x-0' : '-translate-x-full xl:hidden'}
       `}>
 
         {/* Header Sidebar + Tombol Close */}
@@ -107,7 +107,7 @@ export default function SideBar({ active, setActive }) {
 
           <button
             onClick={() => setActive(false)}
-            className="lg:hidden p-2 text-third hover:bg-fourth rounded-xl transition-colors cursor-pointer"
+            className="xl:hidden p-2 text-third hover:bg-fourth rounded-xl transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -123,7 +123,7 @@ export default function SideBar({ active, setActive }) {
                 to={item.path}
                 onClick={() => {
                   setActiveMenu(item.name);
-                  if(window.innerWidth < 1024) setActive(false);
+                  if(window.innerWidth < 1280) setActive(false);
                 }}
                 className={`
                   w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
@@ -150,7 +150,7 @@ export default function SideBar({ active, setActive }) {
             <LogOut size={18} />
             <span className="text-sm font-semibold">Keluar Aplikasi</span>
           </button>
-          <div className="h-2 lg:hidden"></div>
+          <div className="h-2 xl:hidden"></div>
         </div>
       </div>
 

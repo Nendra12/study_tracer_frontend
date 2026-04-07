@@ -142,7 +142,7 @@ export default function Kuesioner() {
                         </>
                     ) : (
                         <>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                                 {[
                                     { label: 'Total Kuesioner', val: `${dataKuesioner?.length}`, icon: FileQuestionMark },
                                     { label: 'Aktif', val: `${dataKuesioner?.filter(i => i.status === "aktif").length}`, icon: Eye },
@@ -150,18 +150,23 @@ export default function Kuesioner() {
                                     { label: 'Draft', val: `${dataKuesioner?.filter(i => i.status === "draft").length}`, icon: Archive },
                                     { label: 'Nonaktif', val: `${dataKuesioner?.filter(i => i.status === "hidden").length}`, icon: EyeOff },
                                 ].map((item, i) => (
-                                    <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-                                        <div>
+                                    <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 group">
+
+                                        {/* Konten Teks: Urutan ke-2 di Mobile (Bawah), Urutan ke-1 di Desktop (Kiri) */}
+                                        <div className="order-2 md:order-1">
                                             <p className="text-third text-xs md:text-sm font-medium">{item.label}</p>
                                             <h3 className="text-xl md:text-2xl font-bold text-primary mt-1">
                                                 {item.val}
                                             </h3>
                                         </div>
-                                        <div className="flex flex-col gap-2 xl:flex-row md:justify-between items-start">
+
+                                        {/* Konten Ikon: Urutan ke-1 di Mobile (Atas), Urutan ke-2 di Desktop (Kanan) */}
+                                        <div className="order-1 md:order-2 flex flex-col gap-2 xl:flex-row md:justify-between items-start">
                                             <div className="p-3 bg-fourth rounded-xl text-primary flex-shrink-0">
                                                 <item.icon size={24} />
                                             </div>
                                         </div>
+
                                     </div>
                                 ))}
                             </div>
