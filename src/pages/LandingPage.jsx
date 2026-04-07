@@ -68,7 +68,7 @@ export default function LandingPage() {
     // Fallback timer: kalau gambar terlalu besar/lama, paksa buka halaman dalam maksimal 3 detik
     const timer = setTimeout(() => {
       setImgLoading(false);
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [theme?.landingBg]);
