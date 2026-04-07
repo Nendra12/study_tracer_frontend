@@ -147,7 +147,7 @@ export default function TampilanPreview({
                        </div>
                        
                        <div className="absolute bottom-4 left-6 right-6 text-white/90 text-[10px] leading-relaxed font-medium drop-shadow-md">
-                          Masuk dan terhubung kembali dengan <span className="font-bold">{namaSekolah || 'Sekolah Anda'}</span>. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
+                          Masuk dan terhubung kembali dengan <span className="font-bold">{namaSekolah || 'SMKN 1 Kraksaan'}</span>. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
                        </div>
                     </div>
                     {/* Right: Login Form */}
@@ -213,7 +213,7 @@ export default function TampilanPreview({
                           </div>
                           <div className="flex flex-col">
                              <span className="text-[11px] font-black leading-tight" style={{ color: primaryColor }}>Alumni Tracer</span>
-                             <span className="text-[7px] font-bold text-gray-500">{namaSekolah || "SMK Negeri 1 Gondang"}</span>
+                             <span className="text-[7px] font-bold text-gray-500">{namaSekolah || "SMKN 1 Kraksaan"}</span>
                           </div>
                        </div>
                        
@@ -309,7 +309,7 @@ export default function TampilanPreview({
                           <div className="text-2xl font-black mb-1">
                              <span style={{ color: primaryColor }}>Petunjuk</span> <span style={{ color: thirdColor }}>Pendaftaran</span>
                           </div>
-                          <div className="text-[8px] text-gray-500 mb-6 font-medium">Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer {namaSekolah || 'SMK Negeri 1 Gondang'}.</div>
+                          <div className="text-[8px] text-gray-500 mb-6 font-medium">Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer {namaSekolah || 'SMKN 1 Kraksaan'}.</div>
                           
                           <div className="grid grid-cols-4 gap-4">
                              {[
@@ -337,7 +337,7 @@ export default function TampilanPreview({
                                <span style={{ color: primaryColor }}>Satu Platform,</span><br/>
                                <span style={{ color: thirdColor }}>Banyak Manfaat.</span>
                             </div>
-                            <div className="text-[8px] text-gray-500 font-medium">Memantau perkembangan karir dan pendidikan alumni {namaSekolah || 'SMK Negeri 1 Gondang'} secara transparan.</div>
+                            <div className="text-[8px] text-gray-500 font-medium">Memantau perkembangan karir dan pendidikan alumni {namaSekolah || 'SMKN 1 Kraksaan'} secara transparan.</div>
                          </div>
                           
                          <div className="flex flex-col gap-4">
@@ -422,7 +422,7 @@ export default function TampilanPreview({
                               </div>
                               <div className="flex flex-col">
                                  <span className="text-xs font-black leading-tight" style={{ color: primaryColor }}>Alumni Tracer</span>
-                                 <span className="text-[10px] font-bold text-gray-500">{namaSekolah || "SMK Negeri 1 Gondang"}</span>
+                                 <span className="text-[10px] font-bold text-gray-500">{namaSekolah || "SMKN 1 Kraksaan"}</span>
                               </div>
                            </div>
                            {/* PERBAIKAN FOOTER: Menggunakan deskripsiFooter */}

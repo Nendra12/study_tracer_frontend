@@ -77,7 +77,7 @@ export default function GuideSection() {
             transition={{ delay: 0.2 }}
             className="text-primary text-md font-medium opacity-80"
           >
-            Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer SMK Negeri 1 Gondang.
+            Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer SMKN 1 Kraksaan.
           </motion.p>
         </div>
 

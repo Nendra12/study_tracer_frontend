@@ -146,6 +146,19 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
           >
+<<<<<<< HEAD
+=======
+
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-sm"
+            >
+              <span className="text-[12px] font-bold text-primary">
+                Selamat datang di Tracer Study {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
+              </span>
+            </motion.div>
+
+>>>>>>> edb4fde1ddee535dcbd358794ee9b897e0e25c3a
             <motion.h1
               variants={itemVariants}
               className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight whitespace-pre-line"
@@ -155,7 +168,7 @@ export default function LandingPage() {
                 <>
                   {theme.landingTitle} <br />
                   <span className="text-transparent bg-clip-text bg-third">
-                    {theme?.namaSekolah || 'SMKN 1 Gondang'}.
+                    {theme?.namaSekolah || 'SMKN 1 Kraksaan'}.
                   </span>
                 </>
               ) : (
@@ -163,7 +176,7 @@ export default function LandingPage() {
                   Tetap Terhubung <br />
                   <span>dengan Alumni </span> <br />
                   <span className="text-transparent bg-clip-text bg-third">
-                    {theme?.namaSekolah || 'SMKN 1 Gondang'}.
+                    {theme?.namaSekolah || 'SMKN 1 Kraksaan'}.
                   </span>
                 </>
               )}
@@ -305,7 +318,7 @@ export default function LandingPage() {
                   <div className='flex flex-col transition-all duration-500 ease-in-out'>
                     <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
                     <span className='text-[11px] font-semibold text-primary/80'>
-                      {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
+                      {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
                     </span>
                   </div>
                 </Link>
@@ -369,16 +382,16 @@ export default function LandingPage() {
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                       <Globe size={14} />
                     </div>
-                    <a href={`https://${(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
-                      {(theme?.webKontak || 'smkn1gondang-nganjuk.sch.id').replace(/^https?:\/\//, '')}
+                    <a href={`https://${(theme?.webKontak || 'website-sekolah.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
+                      {(theme?.webKontak || 'website-sekolah.sch.id').replace(/^https?:\/\//, '')}
                     </a>
                   </div>
                   <div className="flex items-center gap-3 group">
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                       <Mail size={14} />
                     </div>
-                    <a href={`mailto:${theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
-                      {theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}
+                    <a href={`mailto:${theme?.emailKontak || 'info@sekolah.sch.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
+                      {theme?.emailKontak || 'info@sekolah.sch.id'}
                     </a>
                   </div>
                   <div className="flex items-center gap-3 group">
