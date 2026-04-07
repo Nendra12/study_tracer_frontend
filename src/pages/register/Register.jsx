@@ -232,7 +232,7 @@ export default function Register() {
           <img src={theme?.logo || DefaultLogo} alt="Logo" className="w-10" />
           <div>
             <h1 className="text-primary font-bold text-sm leading-tight">Alumni Tracer Study</h1>
-            <p className="text-[10px] text-third">{theme?.namaSekolah || 'SMK Negeri 1 Gondang'}</p>
+            <p className="text-[10px] text-third">{theme?.namaSekolah || 'SMKN 1 Kraksaan'}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">

@@ -84,7 +84,7 @@ export default function CareerSection({ jobList }) {
             Lowongan <span className="text-third">Pekerjaan</span>
           </h2>
           <p className="text-primary/80 font-medium">
-            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis SMKN 1 Gondang.
+            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis SMKN 1 Kraksaan.
           </p>
         </motion.div>
 

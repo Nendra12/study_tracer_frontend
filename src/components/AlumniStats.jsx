@@ -45,8 +45,7 @@ export default function AlumniStats({ stats }) {
             <span className="text-third">Banyak Manfaat.</span>
           </h2>
           <p className="text-primary text-lg font-medium opacity-80">
-            Memantau perkembangan karir dan pendidikan alumni SMK Negeri 1
-            Gondang secara transparan.
+            Memantau perkembangan karir dan pendidikan alumni secara transparan.
           </p>
         </motion.div>
 

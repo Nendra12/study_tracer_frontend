@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-// const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api-tracer.primaesemkrada.com";
-// const API_BASE_URL = import.meta.env.VITE_API_URL || "https://f578-139-228-40-7.ngrok-free.app/api";
+// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api-tracer.primaesemkrada.com";
+;
 
 
 export const STORAGE_BASE_URL = API_BASE_URL.replace('/api', '') + '/storage';
