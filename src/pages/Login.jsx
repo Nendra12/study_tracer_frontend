@@ -286,35 +286,34 @@ export default function Login() {
                 </Link>
               </div>
 
-              {/* Tombol Action - Proporsi 30:70 Kembali untuk HP */}
+              {/* Tombol Action - Diperbaiki Flexbox-nya agar tidak tercepit */}
               <div className="flex gap-3 mt-4 lg:mt-3">
                 
-                {/* Tombol Kembali (Hanya Mobile - 30% width) */}
+                {/* Tombol Kembali (Menyesuaikan lebar konten + padding) */}
                 <Link
                   to="/"
-                  className="flex lg:hidden items-center justify-center w-[30%] shrink-0 bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm"
+                  className="flex lg:hidden items-center justify-center gap-1.5 px-4 shrink-0 bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm"
                   title="Kembali ke Landing Page"
                 >
-                  <ArrowLeft size={18} />
-                  <span className="text-sm lg:text-xs font-black gap-3-">Kembali</span>
+                  <ArrowLeft size={16} className="shrink-0" />
+                  <span className="text-xs font-bold whitespace-nowrap">Kembali</span>
                 </Link>
 
-                {/* Tombol Masuk (70% Mobile, 100% Laptop) */}
-                {/* lg:py-3 agar lebih tipis di laptop */}
+                {/* Tombol Masuk (Mengisi sisa ruang sepenuhnya dengan flex-1) */}
                 <button
                   type="submit"
                   disabled={loading || captchaLoading || !captchaImage || !captchaToken.trim()}
-                  className="w-[70%] lg:w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3.5 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3.5 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
                 >
                   {loading ? (
                     <>
-                      <Loader2 size={16} lg:size={14} className="animate-spin" />
-                      <span className="text-sm lg:text-xs">Memproses...</span>
+                      <Loader2 size={16} lg:size={14} className="animate-spin shrink-0" />
+                      <span className="text-sm lg:text-xs whitespace-nowrap">Memproses...</span>
                     </>
                   ) : (
                     <>
-                      <span className="text-sm lg:text-xs font-black">Masuk</span>
-                      <MoveRight size={16} />
+                      <span className="text-sm lg:text-xs font-black whitespace-nowrap">Masuk</span>
+                      <MoveRight size={16} className="shrink-0" />
                     </>
                   )}
                 </button>
