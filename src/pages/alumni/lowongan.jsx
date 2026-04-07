@@ -87,7 +87,7 @@ function prioritizeBySkillMatch(items, authUser) {
 }
 
 // --- OPSI DROPDOWN FILTER ---
-const tipeOptions = ['Semua Tipe', 'Full-time', 'Part-time', 'Kontrak', 'Freelance', 'Magang'];
+const tipeOptions = ['Semua Tipe', 'Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship'];
 const provinsiOptions = ['Semua Provinsi', 'Jawa Timur', 'Jawa Tengah', 'Jawa Barat', 'DKI Jakarta', 'Banten', 'DI Yogyakarta'];
 const kotaOptions = ['Semua Kota', 'Surabaya', 'Malang', 'Sidoarjo', 'Bandung', 'Jakarta Selatan', 'Semarang'];
 const waktuOptions = ['Terbaru', 'Terlama', 'Mendekati Deadline'];
@@ -104,7 +104,11 @@ export default function Lowongan() {
   const [lowongan, setLowongan] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  
+  // PERBAIKAN STATE PENCARIAN
+  const [searchQuery, setSearchQuery] = useState(''); // Untuk ngetik di input
+  const [appliedSearch, setAppliedSearch] = useState(''); // Untuk query ke API
+  
   const [selectedImage, setSelectedImage] = useState(null);
   const [savingId, setSavingId] = useState(null);
 
@@ -131,15 +135,19 @@ export default function Lowongan() {
   const [myError, setMyError] = useState(null);
   const [myPage, setMyPage] = useState(1);
   const [myTotalPages, setMyTotalPages] = useState(1);
+  
+  // PERBAIKAN STATE PENCARIAN MY LOWONGAN
   const [mySearch, setMySearch] = useState('');
+  const [myAppliedSearch, setMyAppliedSearch] = useState('');
 
+  // PERBAIKAN LOGIKA FETCH: Menggunakan appliedSearch agar tidak lag/nabrak saat mengetik
   const fetchLowongan = useCallback(async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
 
       const params = { page, per_page: 6 };
-      if (searchQuery.trim()) params.search = searchQuery.trim();
+      if (appliedSearch.trim()) params.search = appliedSearch.trim();
 
       if (selectedTipe && selectedTipe !== 'Semua Tipe') params.tipe_pekerjaan = selectedTipe;
       if (selectedProvinsi && selectedProvinsi !== 'Semua Provinsi') params.provinsi = selectedProvinsi;
@@ -186,15 +194,16 @@ export default function Lowongan() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, activeTab, selectedTipe, selectedProvinsi, selectedKota, selectedWaktu]);
+  }, [appliedSearch, activeTab, selectedTipe, selectedProvinsi, selectedKota, selectedWaktu, authUser]);
 
+  // PERBAIKAN LOGIKA FETCH MY LOWONGAN
   const fetchMyLowongan = useCallback(async (page = 1) => {
     try {
       setMyLoading(true);
       setMyError(null);
 
       const params = { page, per_page: 10 };
-      if (mySearch.trim()) params.search = mySearch.trim();
+      if (myAppliedSearch.trim()) params.search = myAppliedSearch.trim();
 
       const res = await alumniApi.getMyLowongan(params);
       const responseData = res.data?.data || res.data;
@@ -215,7 +224,7 @@ export default function Lowongan() {
     } finally {
       setMyLoading(false);
     }
-  }, [mySearch]);
+  }, [myAppliedSearch]);
 
   useEffect(() => {
     if (activeTab === 'saya') {
@@ -230,16 +239,17 @@ export default function Lowongan() {
     return () => { document.body.style.overflow = 'unset'; };
   }, [selectedImage, isModalOpen]);
 
+  // PERBAIKAN FUNGSI SEARCH: Memasukkan value inputan ke appliedSearch untuk query
   const handleSearch = (e) => {
     if (e) e.preventDefault();
+    setAppliedSearch(searchQuery);
     setCurrentPage(1);
-    fetchLowongan(1);
   };
 
   const handleMySearch = (e) => {
     if (e) e.preventDefault();
+    setMyAppliedSearch(mySearch);
     setMyPage(1);
-    fetchMyLowongan(1);
   };
 
   const handleToggleSave = async (id) => {
@@ -410,19 +420,19 @@ export default function Lowongan() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
             <div className="flex gap-2 flex-wrap">
               <button
-                onClick={() => { setActiveTab('semua'); setCurrentPage(1); }}
+                onClick={() => { setActiveTab('semua'); setCurrentPage(1); setAppliedSearch(''); setSearchQuery(''); }}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 Semua Lowongan
               </button>
               <button
-                onClick={() => { setActiveTab('disimpan'); setCurrentPage(1); }}
+                onClick={() => { setActiveTab('disimpan'); setCurrentPage(1); setAppliedSearch(''); setSearchQuery(''); }}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'disimpan' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 <Bookmark size={14} fill={activeTab === 'disimpan' ? 'currentColor' : 'none'} /> Disimpan
               </button>
               <button
-                onClick={() => { setActiveTab('saya'); setMyPage(1); }}
+                onClick={() => { setActiveTab('saya'); setMyPage(1); setMyAppliedSearch(''); setMySearch(''); }}
                 className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'saya' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 <FileText size={14} /> Lowongan Saya
@@ -464,17 +474,17 @@ export default function Lowongan() {
               </button>
             </form>
 
-            {/* DROPDOWN FILTERS */}
+            {/* DROPDOWN FILTERS (Sudah diperbaiki pemanggilan prop value-nya) */}
             {activeTab !== 'saya' && (
               <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
                 <div className="w-[calc(50%-6px)] lg:w-36 relative z-60">
-                  <SmoothDropdown options={tipeOptions} value={selectedTipe} onSelect={(val) => setSelectedTipe(val === 'Semua Tipe' ? '' : val)} placeholder="Tipe Pekerjaan" />
+                  <SmoothDropdown options={tipeOptions} value={selectedTipe} onSelect={(val) => setSelectedTipe(val)} placeholder="Tipe Pekerjaan" />
                 </div>
                 <div className="w-[calc(50%-6px)] lg:w-40 relative z-50">
-                  <SmoothDropdown options={provinsiOptions} value={selectedProvinsi} onSelect={(val) => setSelectedProvinsi(val === 'Semua Provinsi' ? '' : val)} placeholder="Provinsi" isSearchable={true} />
+                  <SmoothDropdown options={provinsiOptions} value={selectedProvinsi} onSelect={(val) => setSelectedProvinsi(val)} placeholder="Provinsi" isSearchable={true} />
                 </div>
                 <div className="w-[calc(50%-6px)] lg:w-40 relative z-40">
-                  <SmoothDropdown options={kotaOptions} value={selectedKota} onSelect={(val) => setSelectedKota(val === 'Semua Kota' ? '' : val)} placeholder="Kota" isSearchable={true} />
+                  <SmoothDropdown options={kotaOptions} value={selectedKota} onSelect={(val) => setSelectedKota(val)} placeholder="Kota" isSearchable={true} />
                 </div>
                 <div className="w-[calc(50%-6px)] lg:w-36 relative z-30">
                   <SmoothDropdown options={waktuOptions} value={selectedWaktu} onSelect={(val) => setSelectedWaktu(val)} placeholder="Terbaru" />

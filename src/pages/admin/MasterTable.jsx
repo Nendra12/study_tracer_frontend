@@ -16,7 +16,7 @@ import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 import Pagination from "../../components/admin/Pagination";
-import SmoothDropdown from "../../components/admin/SmoothDropdown"; // Sesuaikan path-nya
+import SmoothKota from "../../components/admin/SmoothKota"; 
 
 const PERUSAHAAN_PER_PAGE = 7;
 
@@ -149,7 +149,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                 </td>
                 <td className="py-2 px-3">
                   <td className="py-2 px-3">
-                  <SmoothDropdown
+                  <SmoothKota
                     isSearchable={true}
                     placeholder="-- Pilih Kota --"
                     value={formData.id_kota}
@@ -182,7 +182,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                       <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
                     </td>
                     <td className="py-2 px-3">
-                      <SmoothDropdown
+                      <SmoothKota
                         isSearchable={true}
                         placeholder="-- Pilih Kota --"
                         value={formData.id_kota}
