@@ -91,29 +91,41 @@ export default function Dashboard() {
   const [geographicDist, setGeographicDist] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const [dashRes, lowRes, compRes, geoRes] = await Promise.all([
-          adminApi.getDashboardStats().catch(() => null),
-          adminApi.getLowonganStats().catch(() => null),
-          adminApi.getTopCompanies().catch(() => null),
-          adminApi.getGeographicDistribution().catch(() => null),
-        ]);
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [dashRes, lowRes, compRes, geoRes] = await Promise.all([
+        adminApi.getDashboardStats().catch(() => null),
+        adminApi.getLowonganStats().catch(() => null),
+        adminApi.getTopCompanies().catch(() => null),
+        adminApi.getGeographicDistribution().catch(() => null),
+      ]);
 
-        setDashData(dashRes?.data?.data || dashRes?.data || null);
-        setLowonganStats(lowRes?.data?.data || lowRes?.data || null);
-        setTopCompanies(compRes?.data?.data || compRes?.data || []);
-        setGeographicDist(geoRes?.data?.data || geoRes?.data || []);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
+      setDashData(dashRes?.data?.data || dashRes?.data || null);
+      setLowonganStats(lowRes?.data?.data || lowRes?.data || null);
+      setTopCompanies(compRes?.data?.data || compRes?.data || []);
+      setGeographicDist(geoRes?.data?.data || geoRes?.data || []);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => {
+    const handleDashboardUpdate = () => {
+      fetchAll();
+    };
+
+    window.addEventListener('reverb:dashboard.stats-updated', handleDashboardUpdate);
+    return () => {
+      window.removeEventListener('reverb:dashboard.stats-updated', handleDashboardUpdate);
+    };
+  }, [fetchAll]);
 
   const companyIcons = [Building2, Building2, Store, Factory, Landmark];
 
