@@ -10,7 +10,7 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      if (window.innerWidth < 1280) {
         setSidebar(false);
       } else {
         setSidebar(true);

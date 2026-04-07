@@ -172,9 +172,9 @@ const UpdateKuesioner = () => {
             } else {
                 // Validasi waktu mulai tidak boleh kurang dari sekarang
                 const startDate = parseISO(formData.tanggalMulai);
-                if (isBefore(startDate, now)) {
-                    newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
-                }
+                // if (isBefore(startDate, now)) {
+                //     newErrors.tanggalMulai = 'Waktu mulai tidak boleh kurang dari sekarang';
+                // }
             }
 
             if (!formData.tanggalSelesai) {
@@ -288,7 +288,7 @@ const UpdateKuesioner = () => {
     }
     // console.log(statusKarir)
     return (
-        <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
+        <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -331,7 +331,7 @@ const UpdateKuesioner = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
 
                     {/* LEFT BOX: Konfigurasi Kuesioner (Sesuai Sketsa) */}
-                    <div className="lg:col-span-4 space-y-4 sm:space-y-6 lg:sticky">
+                    <div className="lg:col-span-4 space-y-4 sm:space-y-6 lg:sticky lg:top-6">
                         <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
                             <h2 className="text-base sm:text-lg font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2">
                                 Data Kuesioner
@@ -418,7 +418,7 @@ const UpdateKuesioner = () => {
 
                                 {/* Deskripsi */}
                                 <div>
-                                    <label className="text-[10px] sm:text-[11px] font-bold text-primary/80 uppercase">Deskripsi Singkat</label>
+                                    <label className="text-[10px] sm:text-[11px] font-bold text-primary/80 uppercase">Deskripsi Singkat <span className="text-[10px] text-third italic">(Opsional)</span></label>
                                     <div className="relative mt-2 sm:mt-3">
                                         <textarea
                                             rows="4"

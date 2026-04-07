@@ -88,7 +88,7 @@ export default function Header({ toggleSidebar, user }) {
           h-20 bg-white/80 backdrop-blur-md border-b border-fourth
           flex items-center justify-between
           px-6 md:px-8
-          w-full lg:w-[calc(100%-16.25rem)]
+          w-full xl:w-[calc(100%-16.25rem)]
           transition-all duration-300
         "
     >
@@ -102,7 +102,7 @@ export default function Header({ toggleSidebar, user }) {
       </div>
 
       <button
-        className="lg:hidden p-2 hover:bg-fourth rounded-xl transition-colors cursor-pointer"
+        className="xl:hidden p-2 hover:bg-fourth rounded-xl transition-colors cursor-pointer"
         onClick={toggleSidebar}
       >
         <Menu size={24} className="text-primary" />
