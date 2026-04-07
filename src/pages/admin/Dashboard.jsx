@@ -167,7 +167,7 @@ export default function Dashboard() {
       value: `${presentaseKerja}%`,
       icon: ShieldCheck,
       badge: `${badgePresentaseKerja()}`,
-      badgeColor: "bg-fourth text-secondary",
+      badgeColor: "bg-fourth text-primary/80",
     },
     {
       label: "Kuesioner Aktif",
