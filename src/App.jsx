@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
+import { Toaster } from 'react-hot-toast'
 import AppRouter from "./router/AppRouter"
 import { useThemeSettings } from './context/ThemeContext'
 import api from './api/axios'
+import ReverbEventBridge from './components/ReverbEventBridge'
 
 function App() {
   const { theme } = useThemeSettings();
@@ -56,6 +58,17 @@ function App() {
 
   return (
     <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3500,
+          style: {
+            borderRadius: '12px',
+            fontWeight: 600,
+          },
+        }}
+      />
+      <ReverbEventBridge />
       <AppRouter />
     </>
   )

@@ -72,7 +72,6 @@ export default function Login() {
         captcha_token: normalizedCaptcha,
         captcha_key: captchaKey,
       });
-      // console.log(user.role)
       if (user.role === "admin") {
         navigate("/wb-admin");
       } else {
@@ -93,143 +92,150 @@ export default function Login() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-fourtd items-center justify-center p-4 overflow-hidden">
-      <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden h-[75vh] lg:h-[85vh] lg:min-h-[85vh]">
+    // Padding Y dikurangi untuk mobile agar tidak memakan ruang atas-bawah
+    <div className="min-h-screen w-full bg-fourtd flex items-center justify-center p-4 py-4 sm:p-6 lg:p-8">
+      
+      <div className="flex flex-col lg:flex-row w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        
         {/* Bagian Kiri: Banner Gambar */}
-        <div className="hidden lg:block lg:w-1/2 h-full relative">
+        <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-8 overflow-hidden">
           <img
             src={theme?.loginBg || DefaultLoginImage}
             alt="Login Visual"
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="bg-black/30 absolute top-0 w-full h-full"></div>
-          <Link
-            to="/"
-            className="group absolute top-6 left-6 flex items-center gap-2.5 px-5 py-2.5 text-sm font-bold text-primary transition-all duration-300 bg-white/90 backdrop-blur-md rounded-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/20 hover:bg-primary hover:text-white"
-          >
-            <ArrowLeft size={18} className="transition-transform duration-300 group-hover:-translate-x-1" />
-            <span>Kembali Ke Landing Page</span>
-          </Link>
-          <div className="absolute bottom-0 z-10 p-5">
-            <div className="flex items-center gap-3">
-              <img src={theme?.logo} alt="" className="w-15" />
-              <h1 className="font-extrabold text-fourth">
+          <div className="absolute inset-0 bg-black/40"></div>
+          
+          <div className="relative z-10">
+            <Link
+              to="/"
+              className="group inline-flex items-center gap-2.5 px-5 py-2.5 text-sm font-bold text-primary transition-all duration-300 bg-white/90 backdrop-blur-md rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-primary/20 hover:bg-primary hover:text-white"
+            >
+              <ArrowLeft size={18} className="transition-transform duration-300 group-hover:-translate-x-1" />
+              <span>Kembali Ke Landing Page</span>
+            </Link>
+          </div>
+
+          <div className="relative z-10 mt-12">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-white p-2 rounded-xl shadow-sm">
+                <img src={theme?.logo || DefaultLogo} alt="" className="w-10 h-10 object-contain" />
+              </div>
+              <h1 className="font-extrabold text-2xl text-white drop-shadow-md">
                 Alumni Tracer Study
               </h1>
             </div>
-            <p className="text-fourth text-medium">
-              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Kraksaan'}. Pantau peluang
-              kerja dan tetap dekat dengan sesama alumni.
+            <p className="text-white/90 font-medium leading-relaxed drop-shadow-md">
+              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Kraksaan'}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
             </p>
           </div>
         </div>
 
         {/* Bagian Kanan: Form Login */}
-        <div className="w-full lg:w-1/2 py-3 px-8 md:p-12 flex flex-col justify-center bg-white max-h-dvh">
+        <div className="w-full lg:w-1/2 p-5 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md mx-auto w-full">
-            <div className="flex items-center gap-3 mb-6 lg:hidden">
-              <img src={theme?.logo} alt="logo" className="w-15" />
+            
+            {/* Header Mobile - Margin dikurangi */}
+            <div className="flex items-center gap-2.5 mb-5 lg:hidden">
+              <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
+                <img src={theme?.logo || DefaultLogo} alt="logo" className="w-8 h-8 object-contain" />
+              </div>
               <div>
-                <h1 className="font-extrabold text-secondary">
+                <h1 className="font-extrabold text-primary text-base sm:text-lg leading-tight">
                   Alumni Tracer Study
                 </h1>
-                <p className="font-light text-xs text-third">
+                <p className="font-medium text-[10px] sm:text-xs text-gray-500">
                   {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
                 </p>
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-primary mb-3"> {/* Ubah text-secondary jadi text-primary */}
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">
               Selamat Datang
             </h2>
-
-            {/* Social Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <p className="text-gray-500 text-sm"> {/* Ubah text-secondary jadi text-gray-500 atau text-third */}
-                Masukan email dan password untuk mengakses akun anda
-              </p>
-            </div>
+            <p className="text-gray-500 text-xs sm:text-sm mb-5 sm:mb-8 font-medium">
+              Masukan email dan password untuk mengakses akun anda
+            </p>
 
             {/* Session Expired Warning */}
             {sessionExpiredMsg && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-                <Clock size={20} className="text-amber-500 mt-0.5 shrink-0" />
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
+                <Clock size={18} className="text-amber-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-bold text-amber-800">Sesi Berakhir</p>
-                  <p className="text-xs text-amber-600 mt-0.5">{sessionExpiredMsg}</p>
+                  <p className="text-xs sm:text-sm font-bold text-amber-800">Sesi Berakhir</p>
+                  <p className="text-[10px] sm:text-xs text-amber-600 mt-0.5 font-medium">{sessionExpiredMsg}</p>
                 </div>
               </div>
             )}
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                {error}
+              <div className="mb-4 sm:mb-6 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs sm:text-sm font-medium flex items-start gap-2">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <span>{error}</span>
               </div>
             )}
 
-            {/* Form */}
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Form - Space-y dikurangi untuk mobile */}
+            <form className="space-y-3 sm:space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-1.5">
                   Email
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
-                    <Mail size={18} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Mail size={16} />
                   </div>
                   <input
                     type="email"
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 p-3 bg-fourth border border-third rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    className="w-full pl-10 p-2.5 sm:p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm"
                     required
                     disabled={loading}
                   />
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-1.5">
                   Password
                 </label>
                 <div className="relative w-full">
                   <input
-                    type={showPassword ? "text" : "password"} // Logic perubahan type
+                    type={showPassword ? "text" : "password"}
                     placeholder="Masukkan Password Anda"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all pr-12" // Tambah padding kanan (pr-12) agar teks tidak tertutup icon
+                    className="w-full p-2.5 sm:p-3 pl-4 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-sm"
                     disabled={loading}
                   />
-
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
                     disabled={loading}
-                    className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-1"
                   >
-                    {showPassword ? (
-                      <EyeOff size={20} /> // Icon mata dicoret
-                    ) : (
-                      <Eye size={20} /> // Icon mata terbuka
-                    )}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-1.5">
                   Captcha
                 </label>
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-[150px] rounded-md bg-white border border-gray-200 overflow-hidden flex items-center justify-center">
+                {/* Padding captcha dikurangi untuk mobile */}
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4 space-y-3 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <div className="h-10 sm:h-12 w-full sm:w-[150px] rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
                       {captchaLoading ? (
-                        <Loader2 size={18} className="animate-spin text-gray-400" />
+                        <Loader2 size={16} className="animate-spin text-gray-400" />
                       ) : captchaImage ? (
                         <img src={captchaImage} alt="Captcha" className="h-full w-full object-contain" />
                       ) : (
-                        <span className="text-xs text-gray-400">Captcha gagal dimuat</span>
+                        <span className="text-[10px] sm:text-xs text-gray-400 font-medium">Gagal dimuat</span>
                       )}
                     </div>
 
@@ -237,75 +243,91 @@ export default function Login() {
                       type="button"
                       onClick={() => loadCaptcha(true)}
                       disabled={loading || captchaLoading}
-                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="cursor-pointer w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
-                      <RefreshCcw size={14} className={captchaLoading ? "animate-spin" : ""} />
+                      <RefreshCcw size={12} className={captchaLoading ? "animate-spin" : ""} />
                       Muat Ulang
                     </button>
                   </div>
 
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-third">
-                      <ShieldCheck size={16} />
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                      <ShieldCheck size={14} />
                     </div>
                     <input
                       type="text"
                       placeholder="Masukkan kode captcha"
                       value={captchaToken}
                       onChange={(e) => setCaptchaToken(e.target.value)}
-                      className="w-full pl-10 p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      className="w-full pl-9 p-2.5 sm:p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs sm:text-sm font-medium"
                       required
                       disabled={loading || captchaLoading}
                     />
                   </div>
-
-                  <p className="text-[11px] text-gray-500">
-                    Captcha hanya berlaku sekali percobaan login. Jika gagal, gunakan captcha yang baru.
+                  <p className="text-[9px] sm:text-[11px] text-gray-500 font-medium leading-relaxed">
+                    *Captcha hanya berlaku satu kali. Jika gagal, silakan muat ulang.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-gray-600 cursor-pointer">
+              <div className="flex items-center justify-between text-[11px] sm:text-sm pt-1 sm:pt-2">
+                <label className="flex items-center gap-1.5 sm:gap-2 text-gray-600 cursor-pointer font-medium">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-secondary"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   Ingatkan saya
                 </label>
                 <Link
                   to={"/reset-password"}
-                  className="text-blue-600 hover:underline font-semibold"
+                  className="text-primary hover:text-primary/80 hover:underline font-bold transition-colors"
                 >
                   Lupa password?
                 </Link>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading || captchaLoading || !captchaImage || !captchaToken.trim()}
-                className="flex items-center justify-center gap-2 w-full bg-primary hover:opacity-90 active:scale-[0.98] text-white font-bold py-3 rounded-lg transition-all mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"              >
-                {loading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Masuk</span>
-                    <MoveRight width={20} />
-                  </>
-                )}
-              </button>
+              {/* Tombol Action - Proporsi 30:70 */}
+              <div className="flex gap-3 mt-4 sm:mt-6">
+                
+                {/* Tombol Kembali (30% Width di Mobile) */}
+                <Link
+                  to="/"
+                  className="flex lg:hidden items-center justify-center w-[30%] shrink-0 bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm"
+                  title="Kembali ke Landing Page"
+                >
+                  <ArrowLeft size={16} />
+                  <span className="text-sm font-black gap-3"> Kembali</span>
+                </Link>
+
+                {/* Tombol Masuk (70% Width di Mobile) */}
+                <button
+                  type="submit"
+                  disabled={loading || captchaLoading || !captchaImage || !captchaToken.trim()}
+                  className="w-[70%] lg:w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span className="text-sm">Memproses...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm font-black">Masuk</span>
+                      <MoveRight size={16} />
+                    </>
+                  )}
+                </button>
+              </div>
+
             </form>
 
-            <p className="mt-8 text-sm text-gray-500 text-center">
+            <p className="mt-5 sm:mt-8 text-xs sm:text-sm text-gray-500 font-medium text-center">
               Belum punya akun alumni?{" "}
               <Link
                 to={"/register"}
-                className="text-blue-600 hover:underline font-bold"
+                className="text-primary hover:text-primary/80 hover:underline font-black transition-colors"
               >
-                Daftar
+                Daftar Sekarang
               </Link>
             </p>
           </div>

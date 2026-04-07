@@ -92,6 +92,19 @@ export default function Notifikasi() {
     return () => clearInterval(interval);
   }, []);
 
+  // Realtime update notifikasi via Reverb events
+  useEffect(() => {
+    const handleRealtimeNotification = () => {
+      fetchNotifications();
+      fetchUnreadCount();
+    };
+
+    window.addEventListener('reverb:notification.received', handleRealtimeNotification);
+    return () => {
+      window.removeEventListener('reverb:notification.received', handleRealtimeNotification);
+    };
+  }, [activeFilter, currentPage]);
+
   const fetchNotifications = async () => {
     setLoading(true);
     setError('');
