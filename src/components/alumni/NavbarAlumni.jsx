@@ -94,7 +94,7 @@ export default function NavbarAlumni({ user }) {
         <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${isSolidMode ? 'shadow-md bg-white/90 backdrop-blur-xl px-6' : 'bg-transparent'}`}>
 
           {/* Logo Section */}
-          <Link to="/alumni" className="flex items-center gap-2.5 group">
+          <Link to="/" className="flex items-center gap-2.5 group">
             <img
               src={theme?.logo || "/icon.png"}
               alt="Alumni Tracer Logo"

@@ -86,7 +86,7 @@ export default function LowonganDetail() {
           <AlertCircle size={56} className="text-primary/30" />
           <h2 className="text-xl font-black text-primary">Lowongan Tidak Tersedia</h2>
           <p className="text-sm font-medium text-slate-500">{error || 'Data lowongan mungkin telah dihapus.'}</p>
-          <button onClick={() => navigate('/lowongan')} className="mt-4 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-[#2c4042] transition-all cursor-pointer">
+          <button onClick={() => navigate('/lowongan')} className="mt-4 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-md hover:bg-[#2c4042] transition-all cursor-pointer">
             Kembali ke Bursa Kerja
           </button>
         </div>
@@ -118,7 +118,7 @@ export default function LowonganDetail() {
           <div className="lg:col-span-8 space-y-6">
 
             {/* AREA HEADER BARU */}
-            <div className="bg-white rounded-4xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
+            <div className="bg-white rounded-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
 
               {/* --- BAGIAN POSTER HEADER (Bisa Diklik Untuk Pratinjau) --- */}
               <div
@@ -203,7 +203,7 @@ export default function LowonganDetail() {
             </div>
 
             {/* Kartu Deskripsi */}
-            <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
                 <div className="p-2 bg-fourth rounded-xl text-primary">
                   <FileText size={20} strokeWidth={2.5} />
@@ -222,7 +222,7 @@ export default function LowonganDetail() {
             <div className="lg:sticky lg:top-28 space-y-6">
 
               {/* Card Ringkasan Info */}
-              <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
                 <h3 className="font-black text-primary uppercase tracking-widest text-[11px] border-b border-slate-100 pb-4">
                   Ringkasan Posisi
                 </h3>
@@ -266,7 +266,7 @@ export default function LowonganDetail() {
               </div>
 
               {/* TIPS MELAMAR */}
-              <div className="bg-primary rounded-4xl p-7 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
+              <div className="bg-primary rounded-md p-7 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
                 <div className="relative z-10 space-y-4">
 
                   <div className="flex items-center gap-3 mb-2">
@@ -320,7 +320,7 @@ export default function LowonganDetail() {
               exit={{ scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()} // Mencegah modal tutup saat gambar diklik
-              className="relative max-w-4xl w-auto max-h-[90vh] bg-white rounded-4xl overflow-hidden shadow-2xl p-2 flex flex-col items-center justify-center min-h-75"
+              className="relative max-w-4xl w-auto max-h-[90vh] bg-white rounded-md overflow-hidden shadow-2xl p-2 flex flex-col items-center justify-center min-h-75"
             >
               {/* Tombol Tutup Modal */}
               <button

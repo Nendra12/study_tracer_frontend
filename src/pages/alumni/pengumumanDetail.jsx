@@ -79,14 +79,14 @@ export default function PengumumanDetailAlumni() {
         {/* Tombol Kembali */}
         <button 
           onClick={() => navigate('/alumni/pengumuman')} 
-          className="group cursor-pointer flex items-center gap-2 text-slate-500 hover:text-[#425A5C] transition-all font-bold text-sm bg-white px-5 py-2.5 rounded-full shadow-sm border border-slate-200 hover:shadow-md w-fit hover:-translate-x-1"
+          className="group cursor-pointer flex items-center gap-2 text-slate-500 hover:text-[#425A5C] transition-all font-bold text-sm bg-white px-5 py-2.5 rounded-md shadow-sm border border-slate-200 hover:shadow-md w-fit hover:-translate-x-1"
         >
           <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> 
           Kembali ke Daftar Pengumuman
         </button>
 
         {/* Card Detail Utama */}
-        <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-md  shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
           
           {/* Banner Image (Bisa di-klik untuk Pop-up) */}
           <div 
