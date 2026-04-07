@@ -6,10 +6,10 @@ export default function PengumumanDetailSkeleton() {
       <div className="max-w-4xl mx-auto space-y-6 relative z-10">
         
         {/* Tombol Kembali Skeleton */}
-        <div className="w-56 h-10 bg-slate-200/70 rounded-full animate-pulse"></div>
+        <div className="w-56 h-10 bg-slate-200/70 rounded-md animate-pulse"></div>
 
         {/* Card Detail Utama Skeleton */}
-        <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
           
           {/* Banner Image Skeleton */}
           <div className="w-full h-56 md:h-80 bg-slate-200 animate-pulse"></div>

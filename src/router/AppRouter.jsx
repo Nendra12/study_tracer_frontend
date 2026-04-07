@@ -9,7 +9,7 @@ import AlumniPortal from "../pages/alumni/PortalAlumni";
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
-const Pengumuman = lazy(() => import("../pages/admin/Pengumuman"));
+const Pengumuman = lazy(() => import("../pages/admin/pengumuman"));
 const PengumumanDetail = lazy(() => import("../pages/admin/PengumumanDetail"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
 const JobsManagement = lazy(() => import("../pages/admin/JobsManagement"));
@@ -31,7 +31,7 @@ const Register = lazy(() => import("../pages/register/Register"));
 const Logout = lazy(() => import("../pages/Logout"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Beranda = lazy(() => import("../pages/alumni/beranda"));
-const PengumumanAlumni = lazy(() => import("../pages/alumni/pengumuman")); 
+const PengumumanAlumni = lazy(() => import("../pages/alumni/pengumuman"));
 const PengumumanDetailAlumni = lazy(() => import("../pages/alumni/pengumumanDetail"));
 const Alumni = lazy(() => import("../pages/alumni/alumni"));
 const AlumniDetail = lazy(() => import("../pages/alumni/alumniDetail"));
@@ -97,7 +97,7 @@ export default function AppRouter() {
         </Route>
       </Route>
 
-      <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} /> }>
+      <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} />}>
         <Route element={<AlumniLayout />} >
           <Route index element={<Beranda />} />
           <Route path="pengumuman" element={<PengumumanAlumni />} />

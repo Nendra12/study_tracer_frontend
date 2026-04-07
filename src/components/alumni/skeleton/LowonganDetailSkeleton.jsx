@@ -16,7 +16,7 @@ export default function LowonganDetailSkeleton() {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Kartu Header Utama Skeleton */}
-          <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden relative">
+          <div className="bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden relative">
             {/* Banner Area */}
             <div className="w-full h-70 bg-slate-200/50 animate-pulse" />
 
@@ -57,7 +57,7 @@ export default function LowonganDetailSkeleton() {
           </div>
 
           {/* Kartu Deskripsi Skeleton */}
-          <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm">
+          <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
               <div className="w-10 h-10 bg-slate-100 rounded-xl animate-pulse" />
               <div className="h-6 bg-slate-200/70 rounded-full w-48 animate-pulse" />
@@ -80,7 +80,7 @@ export default function LowonganDetailSkeleton() {
           <div className="lg:sticky lg:top-28 space-y-6">
 
             {/* Card Ringkasan Info Skeleton */}
-            <div className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
+            <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
               <div className="h-4 bg-slate-200/70 rounded-full w-32 animate-pulse mb-2 border-b border-slate-100 pb-4" />
 
               <div className="space-y-6 pt-2">
@@ -111,7 +111,7 @@ export default function LowonganDetailSkeleton() {
             </div>
 
             {/* TIPS MELAMAR Skeleton */}
-            <div className="bg-primary/10 rounded-4xl p-7 border border-primary/20">
+            <div className="bg-primary/10 rounded-md p-7 border border-primary/20">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-primary/20 rounded-xl animate-pulse" />
                 <div className="h-6 bg-primary/20 rounded-full w-32 animate-pulse" />

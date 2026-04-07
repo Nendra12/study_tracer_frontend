@@ -33,17 +33,17 @@ function loadImageAsDataUrl(url) {
 }
 
 function addWatermark(doc, webLink, logoDataUrl) {
-  const x = 14, y = 8, logoSize = 8;
+  const x = 5, y = 5.5, logoSize = 5.2;
   const displayText = webLink.replace(/^https?:\/\//i, '');
 
   if (logoDataUrl) {
     doc.addImage(logoDataUrl, 'PNG', x, y - 1, logoSize, logoSize, undefined, 'FAST');
   }
 
-  const textX = logoDataUrl ? x + logoSize + 3 : x;
-  doc.setFontSize(13);
+  const textX = logoDataUrl ? x + logoSize + 2.2 : x;
+  doc.setFontSize(9.5);
   doc.setTextColor(160, 160, 160);
-  doc.textWithLink(displayText, textX, y + 5, { url: webLink });
+  doc.textWithLink(displayText, textX, y + 3.8, { url: webLink });
 }
 
 function proxyStorageImages(container) {
@@ -106,36 +106,45 @@ function loadImage(dataUrl) {
 async function generateCvPdf(alumni, webLink, logoUrl) {
   const logoDataUrl = await loadImageAsDataUrl(logoUrl || DefaultLogo);
 
-  const captureRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
-  if (!captureRoot) throw new Error('Area profil tidak ditemukan');
+  const sourceRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
+  if (!sourceRoot) throw new Error('Area profil tidak ditemukan');
 
-  // Sembunyikan bar aksi
-  const barEl = document.querySelector('[data-public-profile-bar]');
-  const prevBarDisplay = barEl ? barEl.style.display : null;
-  if (barEl) barEl.style.display = 'none';
+  // Capture dari clone offscreen agar UI asli tidak flicker saat bar disembunyikan
+  const cloneRoot = sourceRoot.cloneNode(true);
+  cloneRoot.style.position = 'fixed';
+  cloneRoot.style.left = '-10000px';
+  cloneRoot.style.top = '0';
+  cloneRoot.style.width = `${sourceRoot.getBoundingClientRect().width || sourceRoot.offsetWidth}px`;
+  cloneRoot.style.zIndex = '-1';
+  cloneRoot.style.pointerEvents = 'none';
+  cloneRoot.style.opacity = '1';
+  document.body.appendChild(cloneRoot);
 
-  // Proxy gambar untuk CORS
-  const rewrittenImgs = proxyStorageImages(captureRoot);
+  const cloneBarEl = cloneRoot.querySelector('[data-public-profile-bar]');
+  if (cloneBarEl) cloneBarEl.style.display = 'none';
+
+  // Proxy gambar untuk CORS hanya di clone
+  const rewrittenImgs = proxyStorageImages(cloneRoot);
   await new Promise((r) => requestAnimationFrame(r));
   await new Promise((r) => setTimeout(r, 150));
 
-  // Capture setiap section (layout 2-kolom tetap dipertahankan)
-  const sections = captureRoot.querySelectorAll('[data-pdf-section]');
+  const sections = cloneRoot.querySelectorAll('[data-pdf-section]');
   const sectionImages = [];
 
-  for (const section of sections) {
-    try {
-      const dataUrl = await captureElement(section);
-      const img = await loadImage(dataUrl);
-      sectionImages.push({ dataUrl, width: img.width, height: img.height });
-    } catch (err) {
-      console.warn('Gagal capture section, skip:', err);
+  try {
+    for (const section of sections) {
+      try {
+        const dataUrl = await captureElement(section);
+        const img = await loadImage(dataUrl);
+        sectionImages.push({ dataUrl, width: img.width, height: img.height });
+      } catch (err) {
+        console.warn('Gagal capture section, skip:', err);
+      }
     }
+  } finally {
+    restoreProxiedImages(rewrittenImgs);
+    cloneRoot.remove();
   }
-
-  // Kembalikan semua perubahan
-  restoreProxiedImages(rewrittenImgs);
-  if (barEl) barEl.style.display = prevBarDisplay;
 
   if (sectionImages.length === 0) throw new Error('Tidak ada section yang bisa di-capture');
 
@@ -146,8 +155,8 @@ async function generateCvPdf(alumni, webLink, logoUrl) {
   const pw = doc.internal.pageSize.getWidth();  // ~210mm
   const ph = doc.internal.pageSize.getHeight(); // ~297mm
 
-  const margin = 12;
-  const watermarkH = 18;
+  const margin = 8;
+  const watermarkH = 6;
   const sectionGap = 6;
   const availableW = pw - margin * 2;
   const contentStartY = margin + watermarkH;
