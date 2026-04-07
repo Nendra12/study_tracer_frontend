@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { alertSuccess, alertError, alertConfirm } from '../../utilitis/alert';
+import { downloadCsvFromPayload } from '../../utilitis/export';
 
 import ManagementStatCard from '../../components/admin/ManagementStatCard';
 import UserManagementTabs from '../../components/admin/UserManagementTabs';
@@ -259,15 +260,7 @@ export default function UserManagement() {
     try {
       const filters = getFilters();
       const res = await adminApi.exportAlumniCsv(filters);
-      const blob = new Blob([res.data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Data_Alumni_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      await downloadCsvFromPayload({ payload: res.data, prefix: 'data_alumni' });
       alertSuccess('Ekspor Berhasil', 'Data alumni telah diunduh dalam format CSV.');
     } catch {
       alertError('Ekspor Gagal', 'Sistem gagal mengekspor data.');

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { School, BookOpen, Store } from "lucide-react";
 import { alertSuccess, alertError, alertWarning } from "../../utilitis/alert";
 import { adminApi } from "../../api/admin";
+import { createExportFileName, downloadCsv } from "../../utilitis/export";
 
 // --- IMPORT KOMPONEN REUSABLE ---
 import ManagedTable from "../../components/admin/ManagedTable";
@@ -194,21 +195,55 @@ export default function StatusKarir() {
   const handleBuatLaporan = async () => {
     setExportingReport(true);
     try {
-      const typeMap = { "Data Universitas": "universitas", "Data Program Studi": "prodi", "Bidang Wirausaha": "wirausaha" };
-      const type = typeMap[selectedReport] || "universitas";
-      const format = selectedFormat.toLowerCase();
-      
-      const res = await adminApi.exportStatusKarierReport({ type, format });
-      const blob = new Blob([res.data], { type: format === "pdf" ? "application/pdf" : "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement("a");
-      link.href = url; 
-      link.download = `status_karier_${type}.${format}`;
-      document.body.appendChild(link); 
-      link.click(); 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      let headers = [];
+      let rows = [];
+      let reportSlug = 'status_karier_universitas';
+      let reportTitle = 'Laporan Status Karier - Data Universitas';
+
+      if (selectedReport === "Data Program Studi") {
+        reportSlug = 'status_karier_prodi';
+        reportTitle = 'Laporan Status Karier - Data Program Studi';
+        headers = ["No", "Nama Program Studi"];
+        rows = prodiData.map((item, index) => [
+          index + 1,
+          item?.nama || "-",
+        ]);
+      } else if (selectedReport === "Bidang Wirausaha") {
+        reportSlug = 'status_karier_wirausaha';
+        reportTitle = 'Laporan Status Karier - Bidang Wirausaha';
+        headers = ["No", "Nama Bidang Wirausaha"];
+        rows = wirausahaData.map((item, index) => [
+          index + 1,
+          item?.nama || "-",
+        ]);
+      } else {
+        headers = ["No", "Nama Universitas", "Program Studi"];
+        rows = univData.map((item, index) => [
+          index + 1,
+          item?.nama || "-",
+          (item?.jurusan && item.jurusan.length > 0) ? item.jurusan.join('; ') : "-",
+        ]);
+      }
+
+      if (rows.length === 0) {
+        return alertWarning("Data laporan kosong");
+      }
+
+      if (selectedFormat === "CSV") {
+        downloadCsv({ headers, rows, prefix: reportSlug });
+      } else {
+        const { jsPDF } = await import('jspdf');
+        const autoTable = (await import('jspdf-autotable')).default;
+        const doc = new jsPDF();
+        doc.text(reportTitle, 14, 15);
+        autoTable(doc, {
+          head: [headers],
+          body: rows,
+          startY: 25,
+          headStyles: { fillColor: [60, 87, 89] },
+        });
+        doc.save(createExportFileName(reportSlug, 'pdf'));
+      }
       
       alertSuccess("Laporan berhasil diunduh!");
     } catch (err) { 

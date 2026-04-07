@@ -22,6 +22,7 @@ import { STORAGE_BASE_URL } from "../../api/axios";
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import JawabanDetailSkeleton from "../../components/admin/DetailJawaban";
+import { createExportFileName } from "../../utilitis/export";
 
 const htmlContentStyles = `
   .html-content {
@@ -289,8 +290,7 @@ export default function LihatJawabanDetail() {
     XLSX.utils.book_append_sheet(wb, ws, 'Jawaban');
 
     // Save Excel file
-    const timestamp = new Date().getTime();
-    XLSX.writeFile(wb, `Detail_Jawaban_${alumni.nama}_${timestamp}.xlsx`);
+    XLSX.writeFile(wb, createExportFileName(`detail_jawaban_${alumni.nama || 'alumni'}`, 'xlsx'));
   };
 
   // Helper function to create HTML markup object for dangerouslySetInnerHTML

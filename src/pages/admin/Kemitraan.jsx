@@ -14,6 +14,7 @@ import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import Pagination from "../../components/admin/Pagination";
 import { adminApi } from "../../api/admin";
 import KemitraanSkeleton from '../../components/admin/skeleton/TableLayoutSkeleton';
+import { createExportFileName, downloadCsvFromPayload } from '../../utilitis/export';
 
 const DATA_PER_PAGE = 7;
 
@@ -38,16 +39,6 @@ const buildKemitraanPayload = ({ tipe, nama, jalan, image, imageFile }) => {
 
   return fd;
 };
-
-const downloadBlobFile = (blob, fileName) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
 
 // ============================================================================
 // 1. TABEL MITRA UNIVERSITAS / KAMPUS
@@ -658,27 +649,27 @@ export default function Kemitraan() {
         if (universitasData.length === 0) return alertWarning("Data Universitas kosong");
         headers = ['Nama Kampus/Universitas', 'Alamat Lengkap'];
         rows = universitasData.map(u => [u.nama, u.jalan || '']);
-        fileName = `laporan_universitas_${new Date().toISOString().slice(0,10)}`;
+        fileName = 'laporan_universitas';
         title = 'Laporan Data Mitra Universitas';
       } else {
         if (perusahaanData.length === 0) return alertWarning("Data Perusahaan kosong");
         headers = ['Nama Perusahaan', 'Alamat Lengkap'];
         rows = perusahaanData.map(p => [p.nama, p.jalan || '']);
-        fileName = `laporan_perusahaan_${new Date().toISOString().slice(0,10)}`;
+        fileName = 'laporan_perusahaan';
         title = 'Laporan Data Mitra Perusahaan';
       }
 
       if (selectedFormat === 'CSV') {
         const type = selectedReport === 'Mitra Universitas' ? 'universitas' : 'perusahaan';
         const exportRes = await adminApi.exportKemitraan(type);
-        downloadBlobFile(exportRes.data, `${fileName}.csv`);
+        await downloadCsvFromPayload({ payload: exportRes.data, prefix: fileName });
       } else {
         const { jsPDF } = await import('jspdf');
         const autoTable = (await import('jspdf-autotable')).default;
         const doc = new jsPDF();
         doc.text(title, 14, 15);
         autoTable(doc, { head: [headers], body: rows, startY: 25, headStyles: { fillColor: [60, 87, 89] } });
-        doc.save(`${fileName}.pdf`);
+        doc.save(createExportFileName(fileName, 'pdf'));
       }
 
       alertSuccess('Laporan berhasil diunduh');

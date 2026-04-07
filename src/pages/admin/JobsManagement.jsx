@@ -13,6 +13,7 @@ import {
 import { adminApi } from "../../api/admin";
 import TambahLowongan from "./TambahLowongan";
 import { alertSuccess, alertError, alertConfirm } from "../../utilitis/alert";
+import { downloadCsv } from "../../utilitis/export";
 
 // --- IMPORT KOMPONEN YANG SUDAH DIPISAH ---
 import JobCard from "../../components/admin/JobCard";
@@ -149,25 +150,18 @@ export default function ManajemenPekerjaan() {
 
   const handleExportCSV = () => {
     if (filteredJobs.length === 0) return;
-    const headers = ['Judul', 'Perusahaan', 'Lokasi', 'Tipe Pekerjaan', 'Status', 'Tanggal Berakhir'];
-    const rows = filteredJobs.map(job => [
-      job.judul || '',
-      job.perusahaan?.nama || '',
-      job.lokasi || '',
-      job.tipe_pekerjaan || '',
+    const headers = ['No', 'Judul', 'Perusahaan', 'Lokasi', 'Tipe Pekerjaan', 'Status', 'Tanggal Berakhir'];
+    const rows = filteredJobs.map((job, index) => [
+      index + 1,
+      job.judul || '-',
+      job.perusahaan?.nama || '-',
+      job.lokasi || '-',
+      job.tipe_pekerjaan || '-',
       getDisplayStatus(job),
-      job.lowongan_selesai || ''
+      job.lowongan_selesai || '-'
     ]);
-    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `lowongan_pekerjaan_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+
+    downloadCsv({ headers, rows, prefix: 'lowongan_pekerjaan' });
     alertSuccess("Data berhasil diekspor");
   };
 
