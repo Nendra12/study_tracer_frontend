@@ -146,6 +146,8 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
           >
+<<<<<<< HEAD
+=======
 
             <motion.div
               variants={itemVariants}
@@ -156,6 +158,7 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
+>>>>>>> edb4fde1ddee535dcbd358794ee9b897e0e25c3a
             <motion.h1
               variants={itemVariants}
               className="text-4xl lg:text-6xl font-black text-primary leading-[1.1] tracking-tight whitespace-pre-line"
