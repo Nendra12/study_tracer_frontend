@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import DefaultLoginImage from "../assets/login_image.webp";
+import DefaultLoginImage from "../assets/login_image.jpg";
 import DefaultLogo from "../assets/icon.png";
 import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -112,13 +112,13 @@ export default function Login() {
           </Link>
           <div className="absolute bottom-0 z-10 p-5">
             <div className="flex items-center gap-3">
-              <img src={theme?.logo || DefaultLogo} alt="" className="w-15" />
+              <img src={theme?.logo} alt="" className="w-15" />
               <h1 className="font-extrabold text-fourth">
                 Alumni Tracer Study
               </h1>
             </div>
             <p className="text-fourth text-medium">
-              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Gondang'}. Pantau peluang
+              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Kraksaan'}. Pantau peluang
               kerja dan tetap dekat dengan sesama alumni.
             </p>
           </div>
@@ -128,13 +128,13 @@ export default function Login() {
         <div className="w-full lg:w-1/2 py-3 px-8 md:p-12 flex flex-col justify-center bg-white max-h-dvh">
           <div className="max-w-md mx-auto w-full">
             <div className="flex items-center gap-3 mb-6 lg:hidden">
-              <img src={theme?.logo || DefaultLogo} alt="logo" className="w-15" />
+              <img src={theme?.logo} alt="logo" className="w-15" />
               <div>
                 <h1 className="font-extrabold text-secondary">
                   Alumni Tracer Study
                 </h1>
                 <p className="font-light text-xs text-third">
-                  {theme?.namaSekolah || 'SMK Negeri 1 Gondang'}
+                  {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
                 </p>
               </div>
             </div>

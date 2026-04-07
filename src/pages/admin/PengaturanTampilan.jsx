@@ -8,7 +8,7 @@ import { adminApi } from '../../api/admin';
 export default function PengaturanTampilan() {
   const { theme, updateSettings, refreshFromApi } = useThemeSettings();
 
-  const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMK Negeri 1 Gondang');
+  const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMKN 1 Kraksaan');
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
   const [secondaryColor, setSecondaryColor] = useState(theme?.secondaryColor || '#F3F4F4');
   const [thirdColor, setThirdColor] = useState(theme?.thirdColor || '#9CA3AF');
@@ -164,7 +164,7 @@ export default function PengaturanTampilan() {
   };
 
   const handleReset = () => {
-    setNamaSekolah(theme?.namaSekolah || 'SMK Negeri 1 Gondang');
+    setNamaSekolah(theme?.namaSekolah || 'SMKN 1 Kraksaan');
     setPrimaryColor(theme?.primaryColor || '#3C5759');
     setSecondaryColor(theme?.secondaryColor || '#F3F4F4');
     setThirdColor(theme?.thirdColor || '#9CA3AF');
@@ -234,11 +234,26 @@ export default function PengaturanTampilan() {
               <div className="space-y-3">
                 <label className="block text-sm font-bold text-gray-700">Meta Icon (Favicon)</label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {metaIconPreview ? <img src={metaIconPreview} alt="Meta Icon" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
+                  {/* Kotak gambar bisa diklik */}
+                  <div 
+                    onClick={() => metaIconInputRef.current.click()}
+                    className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
+                  >
+                    {metaIconPreview ? (
+                      <>
+                        <img src={metaIconPreview} alt="Meta Icon" className="w-full h-full object-contain p-2" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Upload size={20} className="text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <ImageIcon size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+                    )}
                   </div>
+                  
                   <div className="space-y-2 flex-1">
                     <input type="file" accept=".ico,.png,.jpg,.jpeg,.svg" className="hidden" ref={metaIconInputRef} onChange={(e) => handleImageChange(e, setMetaIconPreview, setMetaIconFile)} />
+                    {/* Tombol Ganti dikembalikan */}
                     <button onClick={() => metaIconInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                       <Upload size={14} /> Ganti Icon
                     </button>
@@ -268,20 +283,37 @@ export default function PengaturanTampilan() {
                 <input
                   type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
                   className="w-full lg:w-1/2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
-                  placeholder="Contoh: SMK Negeri 1 Gondang"
+                  placeholder="Contoh: SMKN 1 Kraksaan"
                 />
               </div>
 
               {/* PERUBAHAN: Grid 2 Kolom untuk Logo dan BG Login sejajar */}
+              {/* Grid 2 Kolom untuk Logo dan BG Login sejajar */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-6">
+                
+                {/* Logo Aplikasi */}
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {logoPreview ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" /> : <ImageIcon size={24} className="text-gray-400" />}
+                    {/* Kotak gambar bisa diklik */}
+                    <div 
+                      onClick={() => logoInputRef.current.click()}
+                      className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
+                    >
+                      {logoPreview ? (
+                        <>
+                          <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Upload size={20} className="text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <ImageIcon size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+                      )}
                     </div>
                     <div className="space-y-2 flex-1">
                       <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
+                      {/* Tombol Ganti dikembalikan */}
                       <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                         <Upload size={14} /> Ganti Logo
                       </button>
@@ -289,14 +321,29 @@ export default function PengaturanTampilan() {
                   </div>
                 </div>
 
+                {/* Login BG */}
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-gray-700">Gambar Background Halaman Login</label>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {loginBgPreview ? <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
+                    {/* Kotak gambar bisa diklik */}
+                    <div 
+                      onClick={() => loginBgInputRef.current.click()}
+                      className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
+                    >
+                      {loginBgPreview ? (
+                        <>
+                          <img src={loginBgPreview} alt="Login BG" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Upload size={24} className="text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <ImageIcon size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+                      )}
                     </div>
                     <div className="space-y-2 flex-1">
                       <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
+                      {/* Tombol Ganti dikembalikan */}
                       <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                         <Upload size={14} /> Ganti Gambar
                       </button>
@@ -345,11 +392,25 @@ export default function PengaturanTampilan() {
                   <div className="space-y-3">
                     <label className="block text-sm font-bold text-gray-700">Gambar Background Landing Page</label>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {landingBgPreview ? <img src={landingBgPreview} alt="Landing BG" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-gray-400" />}
+                      {/* Kotak gambar bisa diklik */}
+                      <div 
+                        onClick={() => landingBgInputRef.current.click()}
+                        className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
+                      >
+                        {landingBgPreview ? (
+                          <>
+                            <img src={landingBgPreview} alt="Landing BG" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Upload size={24} className="text-white" />
+                            </div>
+                          </>
+                        ) : (
+                          <ImageIcon size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+                        )}
                       </div>
                       <div className="space-y-2 flex-1">
                         <input type="file" accept="image/*" className="hidden" ref={landingBgInputRef} onChange={(e) => handleImageChange(e, setLandingBgPreview, setLandingBgFile)} />
+                        {/* Tombol Ganti dikembalikan */}
                         <button onClick={() => landingBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                           <Upload size={14} /> Ganti Gambar
                         </button>

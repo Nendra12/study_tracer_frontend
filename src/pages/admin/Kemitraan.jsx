@@ -13,6 +13,7 @@ import { alertSuccess, alertError, alertConfirm, alertWarning } from "../../util
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import Pagination from "../../components/admin/Pagination";
 import { adminApi } from "../../api/admin";
+import KemitraanSkeleton from '../../components/admin/skeleton/TableLayoutSkeleton';
 
 const DATA_PER_PAGE = 7;
 
@@ -686,6 +687,9 @@ export default function Kemitraan() {
     }
     finally { setExportingReport(false); }
   };
+  if (pageLoading) {
+    return <KemitraanSkeleton />;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">

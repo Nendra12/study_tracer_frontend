@@ -39,11 +39,11 @@ export default function FooterModals({ isOpen, type, onClose }) {
             <div className="space-y-4">
               <div>
                 <p className="font-bold text-slate-400 text-[10px] uppercase tracking-widest mb-1">Email</p>
-                <p className="text-primary font-bold">{theme?.emailKontak || 'smkn1gondang@yahoo.co.id'}</p>
+                <p className="text-primary font-bold">{theme?.emailKontak || 'info@sekolah.sch.id'}</p>
               </div>
               <div>
                 <p className="font-bold text-slate-400 text-[10px] uppercase tracking-widest mb-1">Website Resmi</p>
-                <p className="text-primary font-bold">{theme?.webKontak || 'smkn1gondang-nganjuk.sch.id'}</p>
+                <p className="text-primary font-bold">{theme?.webKontak || 'website-sekolah.sch.id'}</p>
               </div>
               <div>
                 <p className="font-bold text-slate-400 text-[10px] uppercase tracking-widest mb-1">Telepon</p>
