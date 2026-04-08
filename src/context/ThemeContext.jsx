@@ -11,7 +11,7 @@ export const useThemeSettings = () => {
 
 // Default fallback values
 const DEFAULT_THEME = {
-  namaSekolah: 'SMKN 1 Kraksaan',
+  namaSekolah: 'SMKN 2 Kraksaan',
   primaryColor: '#3c5759',
   secondaryColor: '#f3f4f4',
   thirdColor: '#9ca3af',

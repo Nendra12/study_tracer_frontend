@@ -175,7 +175,7 @@ export default function LupaPass() {
               <h1 className="font-extrabold text-fourth">Alumni Tracer Study</h1>
             </div>
             <p className="text-fourth text-medium">
-              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Kraksaan'}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
+              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 2 Kraksaan'}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
             </p>
           </div>
         </div>

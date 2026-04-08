@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, MoveUpRight, X } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../api/axios';
+import { useThemeSettings } from '../context/ThemeContext';
 
 function getImageUrl(path) {
   if (!path) return null;
@@ -45,6 +46,7 @@ const fallbackJobs = [
 ];
 
 export default function CareerSection({ jobList }) {
+  const { theme } = useThemeSettings();
   // State untuk menyimpan gambar yang sedang di-preview
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -84,7 +86,7 @@ export default function CareerSection({ jobList }) {
             Lowongan <span className="text-third">Pekerjaan</span>
           </h2>
           <p className="text-primary/80 font-medium">
-            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis SMKN 1 Kraksaan.
+            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
           </p>
         </motion.div>
 

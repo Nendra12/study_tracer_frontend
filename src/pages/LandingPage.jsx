@@ -175,7 +175,7 @@ export default function LandingPage() {
                 <>
                   {theme.landingTitle} <br />
                   <span className="text-transparent bg-clip-text bg-third">
-                    {theme?.namaSekolah || 'SMKN 1 Kraksaan'}.
+                    {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
                   </span>
                 </>
               ) : (
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   Tetap Terhubung <br />
                   <span>dengan Alumni </span> <br />
                   <span className="text-transparent bg-clip-text bg-third">
-                    {theme?.namaSekolah || 'SMKN 1 Kraksaan'}.
+                    {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
                   </span>
                 </>
               )}
@@ -325,7 +325,7 @@ export default function LandingPage() {
                   <div className='flex flex-col transition-all duration-500 ease-in-out'>
                     <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
                     <span className='text-[11px] font-semibold text-primary/80'>
-                      {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
+                      {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
                     </span>
                   </div>
                 </Link>
