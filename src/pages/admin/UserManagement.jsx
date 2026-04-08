@@ -21,31 +21,6 @@ import FeaturedAlumniList from '../../components/admin/FeaturedAlumniList';
 
 const PER_PAGE = 7;
 
-// --- DATA DUMMY UNTUK ALUMNI PILIHAN ---
-const dummyFeaturedAlumni = [
-  {
-    id: "dummy-1",
-    name: "Ahmad Fauzi",
-    jurusan: "Rekayasa Perangkat Lunak",
-    pekerjaan: "Senior Frontend Developer",
-    foto: null 
-  },
-  {
-    id: "dummy-2",
-    name: "Siti Nurhaliza",
-    jurusan: "Teknik Komputer Jaringan",
-    pekerjaan: "Network Engineer di Telkom",
-    foto: null
-  },
-  {
-    id: "dummy-3",
-    name: "Budi Santoso",
-    jurusan: "Teknik Kendaraan Ringan",
-    pekerjaan: "Kepala Mekanik Auto2000",
-    foto: null
-  }
-];
-
 const UserManagementSkeleton = () => (
   <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
     <div className="space-y-8">
@@ -108,8 +83,7 @@ export default function UserManagement() {
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
 
-  // INISIALISASI STATE DENGAN DATA DUMMY
-  const [featuredAlumni, setFeaturedAlumni] = useState(dummyFeaturedAlumni);
+  const [featuredAlumni, setFeaturedAlumni] = useState([]);
 
   const tabs = [
     { label: 'Semua', value: null },
@@ -136,6 +110,23 @@ export default function UserManagement() {
     }
   }, []);
 
+  const normalizeFeaturedPayload = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.featured_alumni)) return payload.featured_alumni;
+    return [];
+  };
+
+  const fetchFeaturedAlumni = useCallback(async () => {
+    try {
+      const res = await adminApi.getFeaturedAlumni();
+      const list = normalizeFeaturedPayload(res.data?.data ?? res.data);
+      setFeaturedAlumni(list);
+    } catch {
+      setFeaturedAlumni([]);
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
       try {
@@ -148,7 +139,8 @@ export default function UserManagement() {
       } catch { /* ignore */ }
     })();
     fetchStats();
-  }, [fetchStats]);
+    fetchFeaturedAlumni();
+  }, [fetchStats, fetchFeaturedAlumni]);
 
   const getFilters = () => {
     const currentTab = tabs.find(t => t.label === activeTab);
@@ -197,19 +189,31 @@ export default function UserManagement() {
   const handleToggleFeatured = async (alumniId, isCurrentlyFeatured) => {
     const selectedAlumni = alumni.find(a => a.id === alumniId);
     
-    if (isCurrentlyFeatured) {
-      setFeaturedAlumni(prev => prev.filter(a => a.id !== alumniId));
-      alertSuccess('Dihapus dari Sorotan', 'Alumni tidak lagi ditampilkan di Beranda.');
-    } else {
-      if (featuredAlumni.length >= 6) {
+    try {
+      if (!isCurrentlyFeatured && featuredAlumni.length >= 6) {
         alertError('Batas Maksimal', 'Maksimal hanya 6 alumni yang dapat disorot.');
         return;
       }
-      if (selectedAlumni) {
-        // Saat menambahkan dari tabel, kita gunakan data asli dari tabel tersebut
-        setFeaturedAlumni(prev => [...prev, selectedAlumni]);
+
+      await adminApi.toggleFeaturedAlumni(alumniId, !isCurrentlyFeatured);
+
+      if (isCurrentlyFeatured) {
+        setFeaturedAlumni(prev => prev.filter(a => a.id !== alumniId));
+        setAlumni(prev => prev.map(item => item.id === alumniId ? { ...item, is_featured: false } : item));
+        alertSuccess('Dihapus dari Sorotan', 'Alumni tidak lagi ditampilkan di Beranda.');
+      } else {
+        if (selectedAlumni) {
+          setFeaturedAlumni(prev => {
+            if (prev.some(a => a.id === alumniId)) return prev;
+            return [...prev, { ...selectedAlumni, is_featured: true }];
+          });
+        }
+        setAlumni(prev => prev.map(item => item.id === alumniId ? { ...item, is_featured: true } : item));
         alertSuccess('Ditambahkan ke Sorotan', 'Alumni kini ditampilkan di Beranda.');
       }
+    } catch (err) {
+      alertError('Gagal mengubah sorotan', err.response?.data?.message || 'Terjadi kesalahan saat mengubah alumni sorotan.');
+      await fetchFeaturedAlumni();
     }
   };
 

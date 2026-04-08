@@ -36,13 +36,7 @@ const AlumniTable = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/50 border-b border-slate-100">
-              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Alumni</th>
-              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jurusan</th>
-              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Foto</th>
-              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-40">AKSI</th> {/* Lebarkan sedikit kolom aksi */}
-            </tr>
+            <tr className="bg-slate-50/50 border-b border-slate-100"><th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Alumni</th><th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jurusan</th><th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Foto</th><th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th><th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-40">AKSI</th></tr>
           </thead>
           
           <tbody className="divide-y divide-slate-50">

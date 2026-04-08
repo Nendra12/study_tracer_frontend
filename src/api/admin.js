@@ -43,6 +43,18 @@ export const adminApi = {
     return api.get('/admin/alumni', { params: { ...filters, per_page: perPage } });
   },
 
+  getFeaturedAlumni() {
+    return api.get('/admin/alumni-featured');
+  },
+
+  updateFeaturedAlumni(alumniIds = []) {
+    return api.put('/admin/alumni-featured', { alumni_ids: alumniIds });
+  },
+
+  toggleFeaturedAlumni(id, isFeatured) {
+    return api.post(`/admin/alumni/${id}/featured`, { is_featured: isFeatured });
+  },
+
   getAlumniDetail(id) {
     return api.get(`/admin/alumni/${id}`);
   },
