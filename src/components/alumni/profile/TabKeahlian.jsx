@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, X, Save, Loader2, Clock, Edit2, Trash2 } from 'lucide-react';
-import { alumniApi } from '../../api/alumni';
-import { masterDataApi } from '../../api/masterData';
+import { alumniApi } from '../../../api/alumni';
+import { masterDataApi } from '../../../api/masterData';
 
 // Menggunakan SmoothDropdown milik Anda
-import SmoothDropdown from '../admin/SmoothDropdown';
+import SmoothDropdown from '../../admin/SmoothDropdown';
 
 export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
   const [masterSkills, setMasterSkills] = useState([]);

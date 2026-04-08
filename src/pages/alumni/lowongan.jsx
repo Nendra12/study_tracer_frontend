@@ -497,7 +497,7 @@ export default function Lowongan() {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-white border-2 border-primary/20 text-primary px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-sm hover:bg-primary hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="bg-white border border-primary text-primary px-5 py-2.5 rounded-xl text-[13px] font-bold hover:bg-primary hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Plus size={16} /> Tambah Lowongan
             </button>

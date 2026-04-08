@@ -4,18 +4,18 @@ import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../../components/alumni/Navbar';
 import Footer from '../../components/alumni/Footer';
-import ProfileHeader from '../../components/alumni/ProfileHeader';
-import ProfileSidebar from '../../components/alumni/ProfileSidebar';
+import ProfileHeader from '../../components/alumni/profile/ProfileHeader';
+import ProfileSidebar from '../../components/alumni/profile/ProfileSidebar';
 import { alumniApi } from '../../api/alumni';
 import { useAuth } from '../../context/AuthContext';
 
 // Import Komponen Tab
-import TabDetailPribadi from '../../components/alumni/TabDetailPribadi';
-import TabStatusKarier from '../../components/alumni/TabStatusKarier';
-import TabDeskripsiKarier from '../../components/alumni/TabDeskripsiKarier';
-import TabKeahlian from '../../components/alumni/TabKeahlian';
+import TabDetailPribadi from '../../components/alumni/profile/TabDetailPribadi';
+import TabStatusKarier from '../../components/alumni/profile/TabStatusKarier';
+import TabDeskripsiKarier from '../../components/alumni/profile/TabDeskripsiKarier';
+import TabKeahlian from '../../components/alumni/profile/TabKeahlian';
+import TabPortofolio from '../../components/alumni/profile/TabPortofolio';
 import { ProfilSkeleton } from '../../components/alumni/skeleton';
-import TabPortofolio from '../../components/alumni/TabPortofolio';
 
 function buildDisplayProfile(profile) {
   if (!profile) return profile;
@@ -133,7 +133,7 @@ export default function Profil() {
             onRefresh={refreshProfile}
             onShowSuccess={showSuccess}
           />
-          <div className="lg:col-span-8 bg-white rounded-4xl shadow-sm flex flex-col overflow-hidden border border-slate-100">
+          <div className="lg:col-span-8 bg-white rounded-md shadow-sm flex flex-col overflow-hidden border border-slate-100">
 
             <div className="flex border-b border-slate-100 px-2 overflow-x-auto md:overflow-x-hidden whitespace-nowrap scrollbar-hide">
               <button
