@@ -32,7 +32,7 @@ export default function AlumniStats({ stats }) {
       className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8  max-w-7xl mx-auto"
     >
       {/* Header Section */}
-      <div className="mb-16 gap-6">
+      <div className=" gap-6">
         {/* Judul Section */}
         <motion.div
           className=" mx-auto mb-16 space-y-4"
@@ -49,7 +49,7 @@ export default function AlumniStats({ stats }) {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 auto-rows-[220px]">
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 auto-rows-[minmax(220px,auto)]">
           {/* Box 1: Statistik Utama (Wider) */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -148,7 +148,7 @@ export default function AlumniStats({ stats }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 4 * 0.1 }}
-            className="md:col-span-4 lg:col-span-4 flex-col lg:flex-row bg-gradient-to-br from-primary to-primary rounded-md p-8 md:p-10 text-white flex lg:items-center gap-3 lg:justify-between relative overflow-hidden"
+            className="md:col-span-4 lg:col-span-4 flex-col lg:flex-row bg-gradient-to-br from-primary to-primary rounded-md p-8 md:p-10 text-white flex lg:items-center gap-3 lg:justify-between relative "
           >
             <div className="absolute right-0 top-0 w-1/3 h-full bg-white/5 skew-x-12 translate-x-10"></div>
             <div className="order-2 lg:order-1 max-w-xl relative z-10">
