@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Save, X, ChevronDown, Loader2, Clock } from 'lucide-react';
-import { alumniApi } from '../../api/alumni';
-import { alertConfirm } from '../../utilitis/alert';
+import { alumniApi } from '../../../api/alumni';
+import { alertConfirm } from '../../../utilitis/alert';
 
 // Map field backend → alias yang mungkin ada di changed_fields
 const FIELD_KEYS = {

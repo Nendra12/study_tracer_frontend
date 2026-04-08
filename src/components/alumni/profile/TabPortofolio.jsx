@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save, Clock } from 'lucide-react';
-import { alumniApi } from '../../api/alumni';
-import { STORAGE_BASE_URL } from '../../api/axios';
+import { alumniApi } from '../../../api/alumni';
+import { STORAGE_BASE_URL } from '../../../api/axios';
 
 export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
   const [isEditing, setIsEditing] = useState(false);

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock, AlertCircle } from 'lucide-react';
-import SmoothDropdown from '../admin/SmoothDropdown';
-import { alumniApi } from '../../api/alumni';
-import DeskripsiKerierInput from '../admin/DeskripsiKerierInput';
-import { alertConfirm } from '../../utilitis/alert';
+import SmoothDropdown from '../../admin/SmoothDropdown';
+import { alumniApi } from '../../../api/alumni';
+import DeskripsiKerierInput from '../../admin/DeskripsiKerierInput';
+import { alertConfirm } from '../../../utilitis/alert';
 
 export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }) {
   const [isEditing, setIsEditing] = useState(false);

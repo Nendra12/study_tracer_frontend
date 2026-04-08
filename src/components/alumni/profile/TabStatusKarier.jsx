@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
-import { alumniApi } from '../../api/alumni';
-import { masterDataApi } from '../../api/masterData';
-import SmoothDropdown from '../admin/SmoothDropdown';
+import { alumniApi } from '../../../api/alumni';
+import { masterDataApi } from '../../../api/masterData';
+import SmoothDropdown from '../../admin/SmoothDropdown';
 
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess }) {
   const [showForm, setShowForm] = useState(false);
