@@ -78,9 +78,8 @@ export default function AlumniSuccess({ alumniList }) {
               Tetap terhubung dengan <br />
               <span className="text-third">Alumni Kita.</span>
             </h2>
-            <p className="text-primary/80 font-medium text-lg italic border-l-4 border-amber-400 pl-4">
-              "Pendidikan adalah tiket ke masa depan." — Lihat bagaimana alumni
-              kami mewujudkannya.
+            <p className="text-primary/80 font-medium text-lg border-amber-400">
+              Setiap alumni punya langkahnya masing-masing. Lihat perjalanan mereka setelah lulus.
             </p>
           </motion.div>
         </div>
