@@ -125,7 +125,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
               </span>
               {!scrolled && (
                 <span className="text-xs font-semibold text-primary/80">
-                  {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
+                  {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
                 </span>
               )}
             </div>

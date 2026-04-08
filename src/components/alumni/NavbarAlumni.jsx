@@ -120,7 +120,7 @@ export default function NavbarAlumni({ user }) {
               </span>
               {!isSolidMode && (
                 <span className="text-xs font-semibold text-white/80">
-                  {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
+                  {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
                 </span>
               )}
             </div>
