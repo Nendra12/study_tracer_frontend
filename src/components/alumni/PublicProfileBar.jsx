@@ -32,18 +32,28 @@ function loadImageAsDataUrl(url) {
   });
 }
 
-function addWatermark(doc, webLink, logoDataUrl) {
+function addWatermark(doc, webLink, logoDataUrl, namaSekolah) {
   const x = 5, y = 5.5, logoSize = 5.2;
   const displayText = webLink.replace(/^https?:\/\//i, '');
+  const titleText = `Study Tracer | ${namaSekolah || 'SMK'}`;
 
   if (logoDataUrl) {
     doc.addImage(logoDataUrl, 'PNG', x, y - 1, logoSize, logoSize, undefined, 'FAST');
   }
 
   const textX = logoDataUrl ? x + logoSize + 2.2 : x;
+
+  // Baris 1: "Study Tracer | nama smk"
   doc.setFontSize(9.5);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(61, 90, 92);
+  doc.text(titleText, textX, y + 1.8);
+
+  // Baris 2: link web
+  doc.setFontSize(7.5);
+  doc.setFont(undefined, 'normal');
   doc.setTextColor(160, 160, 160);
-  doc.textWithLink(displayText, textX, y + 3.8, { url: webLink });
+  doc.textWithLink(displayText, textX, y + 5, { url: webLink });
 }
 
 function proxyStorageImages(container) {
@@ -103,7 +113,7 @@ function loadImage(dataUrl) {
 //    c. Jika lebih tinggi dari halaman penuh → slice dengan canvas per halaman
 // 3. Watermark di setiap halaman
 
-async function generateCvPdf(alumni, webLink, logoUrl) {
+async function generateCvPdf(alumni, webLink, logoUrl, namaSekolah) {
   const logoDataUrl = await loadImageAsDataUrl(logoUrl || DefaultLogo);
 
   const sourceRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');
@@ -156,7 +166,7 @@ async function generateCvPdf(alumni, webLink, logoUrl) {
   const ph = doc.internal.pageSize.getHeight(); // ~297mm
 
   const margin = 8;
-  const watermarkH = 6;
+  const watermarkH = 9;
   const sectionGap = 6;
   const availableW = pw - margin * 2;
   const contentStartY = margin + watermarkH;
@@ -166,7 +176,7 @@ async function generateCvPdf(alumni, webLink, logoUrl) {
   let cursorY = contentStartY;
 
   // Watermark halaman pertama
-  addWatermark(doc, webLink, logoDataUrl);
+  addWatermark(doc, webLink, logoDataUrl, namaSekolah);
 
   for (const { dataUrl, width, height } of sectionImages) {
     const imgW = availableW;
@@ -184,7 +194,7 @@ async function generateCvPdf(alumni, webLink, logoUrl) {
     if (imgH <= fullPageH) {
       doc.addPage();
       cursorY = contentStartY;
-      addWatermark(doc, webLink, logoDataUrl);
+      addWatermark(doc, webLink, logoDataUrl, namaSekolah);
       doc.addImage(dataUrl, 'PNG', margin, cursorY, imgW, imgH, undefined, 'FAST');
       cursorY += imgH + sectionGap;
       continue;
@@ -223,7 +233,7 @@ async function generateCvPdf(alumni, webLink, logoUrl) {
       if (srcY < fullImg.height) {
         doc.addPage();
         cursorY = contentStartY;
-        addWatermark(doc, webLink, logoDataUrl);
+        addWatermark(doc, webLink, logoDataUrl, namaSekolah);
       }
     }
 
@@ -246,7 +256,7 @@ export default function PublicProfileBar({ alumniData }) {
     try {
       setDownloading(true);
       const webLink = window.location.origin;
-      await generateCvPdf(alumniData, webLink, theme?.logo);
+      await generateCvPdf(alumniData, webLink, theme?.logo, theme?.namaSekolah);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
       alert('Gagal membuat PDF. Silakan coba lagi.');
