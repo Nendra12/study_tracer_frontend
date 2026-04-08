@@ -562,9 +562,9 @@ export default function Beranda() {
                             navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
                           }
                         }}
-                        className="w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 cursor-pointer"
+                        className={`w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 ${!isVerified ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       >
-                        ISI SEKARANG
+                        {isVerified ? 'ISI SEKARANG' : 'TUNGGU VERIFIKASI'}
                       </button>
                     </div>
                   </motion.div>

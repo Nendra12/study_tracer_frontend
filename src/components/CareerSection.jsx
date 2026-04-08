@@ -73,7 +73,7 @@ export default function CareerSection({ jobList }) {
 
   return (
     <section id="karir" className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
 
         {/* Header Section */}
         <motion.div
@@ -91,7 +91,7 @@ export default function CareerSection({ jobList }) {
         </motion.div>
 
         {/* Job Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {jobs.map((job, i) => (
             <motion.div
               key={i}
