@@ -4,8 +4,10 @@ import Dua from "../assets/svg/Authentication-rafiki.svg";
 import Tiga from "../assets/svg/Exams-amico.svg";
 import Empat from "../assets/svg/Done-rafiki.svg";
 import { Link } from "react-router-dom";
+import { useThemeSettings } from '../context/ThemeContext';
 
 export default function GuideSection() {
+  const { theme } = useThemeSettings();
   const steps = [
     {
       title: "Registrasi Akun",
@@ -77,7 +79,7 @@ export default function GuideSection() {
             transition={{ delay: 0.2 }}
             className="text-primary text-md font-medium opacity-80"
           >
-            Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer SMKN 1 Kraksaan.
+            Berikut adalah tahapan petunjuk pendaftaran akun Study Tracer {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
           </motion.p>
         </div>
 

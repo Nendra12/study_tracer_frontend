@@ -10,7 +10,6 @@ import { useAuth } from '../../context/AuthContext';
 import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
 
-// Import FooterModals
 import FooterModals from '../../components/alumni/FooterModals'; // Sesuaikan path jika berbeda
 
 export default function Register() {
@@ -94,6 +93,12 @@ export default function Register() {
       }
     }
 
+    if (formData.foto.size > 2 * 1024 * 1024) {
+      setError('Ukuran foto tidak boleh lebih dari 2 MB.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const fd = new FormData();
       fd.append('email', formData.email);
@@ -173,13 +178,13 @@ export default function Register() {
           <img src={theme?.logo || DefaultLogo} alt="Logo" className="w-10" />
           <div>
             <h1 className="text-primary font-bold text-sm leading-tight">Alumni Tracer Study</h1>
-            <p className="text-[10px] text-third">{theme?.namaSekolah || 'SMKN 1 Kraksaan'}</p>
+            <p className="text-[10px] text-third">{theme?.namaSekolah || 'SMKN 2 Kraksaan'}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs text-third hidden md:block">Sudah punya akun?</span>
           <Link to="/login" className="p-2 border border-fourth rounded-lg text-xs font-bold text-primary flex items-center gap-2 hover:bg-fourth transition-all">
-            <LogIn width={15}/>
+            <LogIn width={15} />
             <span>Masuk</span>
           </Link>
         </div>
@@ -190,10 +195,10 @@ export default function Register() {
         <div className="mb-10">
           <div className='w-full gap-10 flex items-center justify-between'>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-primary mb-1">Step {currentStep} dari 3 : {steps[currentStep-1].label}</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-primary mb-1">Step {currentStep} dari 3 : {steps[currentStep - 1].label}</h2>
             </div>
             <div className="px-3 py-1 bg-fourth text-third rounded-xl border">
-              <p className="text-xs">{ presentase }% Progres</p>
+              <p className="text-xs">{presentase}% Progres</p>
             </div>
           </div>
 
@@ -206,9 +211,8 @@ export default function Register() {
 
             {steps.map((step) => (
               <div key={step.id} className="relative z-10 flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  currentStep >= step.id ? 'bg-primary text-white' : 'bg-fourth text-third'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep >= step.id ? 'bg-primary text-white' : 'bg-fourth text-third'
+                  }`}>
                   {currentStep > step.id ? '✓' : step.id}
                 </div>
                 <span className={`text-[10px] mt-2 font-semibold ${currentStep >= step.id ? 'text-primary' : 'text-third'}`}>
@@ -238,32 +242,32 @@ export default function Register() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 md:gap-6">
-          <button 
+          <button
             onClick={() => openModal('privasi')}
             className="text-third hover:text-primary text-xs sm:text-sm font-bold transition-colors cursor-pointer"
-          > 
-            Kebijakan Privasi 
+          >
+            Kebijakan Privasi
           </button>
-          <button 
+          <button
             onClick={() => openModal('layanan')}
             className="text-third hover:text-primary text-xs sm:text-sm font-bold transition-colors cursor-pointer"
-          > 
-            Ketentuan Layanan 
+          >
+            Ketentuan Layanan
           </button>
-          <button 
+          <button
             onClick={() => openModal('kontak')}
             className="text-third hover:text-primary text-xs sm:text-sm font-bold transition-colors cursor-pointer"
-          > 
-            Kontak Dukungan 
+          >
+            Kontak Dukungan
           </button>
         </div>
       </footer>
 
       {/* Render Modal */}
-      <FooterModals 
-        isOpen={!!modalType} 
-        type={modalType} 
-        onClose={closeModal} 
+      <FooterModals
+        isOpen={!!modalType}
+        type={modalType}
+        onClose={closeModal}
       />
     </div>
   );

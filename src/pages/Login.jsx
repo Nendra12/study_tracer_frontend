@@ -124,7 +124,7 @@ export default function Login() {
               </h1>
             </div>
             <p className="text-white/90 text-sm font-medium leading-relaxed drop-shadow-md">
-              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 1 Kraksaan'}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
+              Masuk dan terhubung kembali dengan {theme?.namaSekolah || 'SMKN 2 Kraksaan'}. Pantau peluang kerja dan tetap dekat dengan sesama alumni.
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function Login() {
                   Alumni Tracer Study
                 </h1>
                 <p className="font-medium text-[10px] sm:text-xs text-gray-500">
-                  {theme?.namaSekolah || 'SMKN 1 Kraksaan'}
+                  {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
                 </p>
               </div>
             </div>

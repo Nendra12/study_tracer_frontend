@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, MoveUpRight, X } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../api/axios';
+import { useThemeSettings } from '../context/ThemeContext';
 
 function getImageUrl(path) {
   if (!path) return null;
@@ -45,6 +46,7 @@ const fallbackJobs = [
 ];
 
 export default function CareerSection({ jobList }) {
+  const { theme } = useThemeSettings();
   // State untuk menyimpan gambar yang sedang di-preview
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -71,7 +73,7 @@ export default function CareerSection({ jobList }) {
 
   return (
     <section id="karir" className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
 
         {/* Header Section */}
         <motion.div
@@ -84,12 +86,12 @@ export default function CareerSection({ jobList }) {
             Lowongan <span className="text-third">Pekerjaan</span>
           </h2>
           <p className="text-primary/80 font-medium">
-            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis SMKN 1 Kraksaan.
+            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
           </p>
         </motion.div>
 
         {/* Job Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {jobs.map((job, i) => (
             <motion.div
               key={i}

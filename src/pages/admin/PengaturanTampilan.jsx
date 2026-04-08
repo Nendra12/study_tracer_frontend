@@ -10,7 +10,7 @@ export default function PengaturanTampilan() {
   const { theme, updateSettings, refreshFromApi } = useThemeSettings();
   const navigate = useNavigate(); // Deklarasi useNavigate
 
-  const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMKN 1 Kraksaan');
+  const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMKN 2 Kraksaan');
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
   const [secondaryColor, setSecondaryColor] = useState(theme?.secondaryColor || '#F3F4F4');
   const [thirdColor, setThirdColor] = useState(theme?.thirdColor || '#9CA3AF');
@@ -309,7 +309,7 @@ export default function PengaturanTampilan() {
                 <input
                   type="text" value={namaSekolah} onChange={(e) => setNamaSekolah(e.target.value)}
                   className="w-full lg:w-1/2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white"
-                  placeholder="Contoh: SMKN 1 Kraksaan"
+                  placeholder="Contoh: SMKN 2 Kraksaan"
                 />
               </div>
 
