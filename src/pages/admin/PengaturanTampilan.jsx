@@ -165,33 +165,53 @@ export default function PengaturanTampilan() {
     }
   };
 
-  const handleReset = () => {
-    setNamaSekolah(theme?.namaSekolah || 'SMKN 1 Kraksaan');
-    setPrimaryColor(theme?.primaryColor || '#3C5759');
-    setSecondaryColor(theme?.secondaryColor || '#F3F4F4');
-    setThirdColor(theme?.thirdColor || '#9CA3AF');
-    setLandingTitle(theme?.landingTitle || '');
-    setLandingDescription(theme?.landingDescription || '');
-    setDeskripsiFooter(theme?.deskripsiFooter || '');
-    setEmailKontak(theme?.emailKontak || '');
-    setWebKontak(theme?.webKontak || '');
-    setTelpKontak(theme?.telpKontak || '');
-    setTeksPrivasi(theme?.teksPrivasi || '');
-    setTeksLayanan(theme?.teksLayanan || '');
-    setTeksDukungan(theme?.teksDukungan || '');
-    setLogoPreview(theme?.logo || null);
-    setLoginBgPreview(theme?.loginBg || null);
-    setLandingBgPreview(theme?.landingBg || null);
-    setLogoFile(null);
-    setLoginBgFile(null);
-    setLandingBgFile(null);
-    setMetaIconFile(null);
+  const handleReset = async () => {
+    const confirm = await alertConfirm(
+      "Yakin ingin mereset semua pengaturan ke default? Semua customisasi termasuk logo dan background akan dihapus."
+    );
+    if (!confirm.isConfirmed) return;
+
+    setIsSaving(true);
+
+    try {
+      await adminApi.resetPengaturanTampilan();
+      await refreshFromApi();
+      setLogoFile(null);
+      setLoginBgFile(null);
+      setLandingBgFile(null);
+      setMetaIconFile(null);
+      alertSuccess("Pengaturan berhasil direset ke default.");
+    } catch (error) {
+      alertError(error.response?.data?.message || "Gagal mereset pengaturan.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleKembali = async () => {
-    const confirm = await alertConfirm("Yakin ingin membatalkan perubahan? Semua input akan dikembalikan ke versi sebelumnya.");
-    if (confirm.isConfirmed) {
-      handleReset(); // Mengembalikan data ke kondisi awal
+    const confirm = await alertConfirm(
+      "Yakin ingin mengembalikan ke versi sebelumnya? Perubahan terakhir akan dibatalkan."
+    );
+    if (!confirm.isConfirmed) return;
+
+    setIsSaving(true);
+
+    try {
+      await adminApi.revertPengaturanTampilan();
+      await refreshFromApi();
+      setLogoFile(null);
+      setLoginBgFile(null);
+      setLandingBgFile(null);
+      setMetaIconFile(null);
+      alertSuccess("Pengaturan berhasil dikembalikan ke versi sebelumnya.");
+    } catch (error) {
+      if (error.response?.status === 404) {
+        alertError("Tidak ada riwayat perubahan yang dapat dikembalikan.");
+      } else {
+        alertError(error.response?.data?.message || "Gagal mengembalikan perubahan.");
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
