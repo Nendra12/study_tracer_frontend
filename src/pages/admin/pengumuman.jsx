@@ -7,7 +7,8 @@ import Pagination from "../../components/admin/Pagination";
 import TambahPengumuman from "./TambahPengumuman";
 import PengumumanCard from "../../components/admin/PengumumanCard";
 import PengumumanSidebar from "../../components/admin/PengumumanSidebar";
-import {PengumumanCardSkeleton, PengumumanSidebarSkeleton} from "../../components/admin/skeleton/PengumumanSkeleton";
+import SmoothDropdown from "../../components/admin/SmoothDropdown";
+import { PengumumanCardSkeleton, PengumumanSidebarSkeleton } from "../../components/admin/skeleton/PengumumanSkeleton";
 
 // Import API
 import { adminApi } from "../../api/admin";
@@ -185,26 +186,26 @@ export default function Pengumuman() {
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6">
           
           {/* --- KOLOM KIRI (DAFTAR PENGUMUMAN) --- */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-8 space-y-4 lg:space-y-6">
             
             {/* Filter Tab & Search Bar */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex flex-col gap-4">
               
-              {/* 1. TABS SKELETON / REAL */}
+              {/* 1. TABS */}
               {loading ? (
-                <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-hidden animate-pulse">
+                <div className="flex gap-2 w-full overflow-x-hidden p-1">
                   {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-16 h-8 bg-gray-300 rounded-md"></div>
+                    <div key={i} className="w-20 h-9 bg-gray-200/70 rounded-lg animate-pulse"></div>
                   ))}
                 </div>
               ) : (
-                <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto no-scrollbar">
+                <div className="flex gap-2 w-full overflow-x-auto no-scrollbar pb-1">
                   {["Semua", "Aktif", "Draft", "Berakhir"].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`cursor-pointer px-4 py-2 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
-                        activeTab === tab ? "bg-primary text-white shadow-md scale-105" : "text-gray-500 hover:bg-gray-200"
+                      className={`cursor-pointer px-5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                        activeTab === tab ? "bg-primary text-white shadow-md" : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
                       }`}
                     >
                       {tab}
@@ -213,44 +214,55 @@ export default function Pengumuman() {
                 </div>
               )}
 
-              {/* 2. SEARCH BAR SKELETON / REAL & DROPDOWNS */}
+              {/* 2. SEARCH BAR & DROPDOWNS */}
               {loading ? (
-                <div className="flex w-full sm:w-auto flex-1 gap-2">
-                  <div className="flex-1 min-w-[150px] h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
-                  <div className="hidden sm:block w-28 h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
-                  <div className="hidden sm:block w-36 h-10.5 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div className="flex flex-col md:flex-row w-full gap-3 mt-3">
+                  <div className="flex-1 h-[50px] bg-gray-200/70 rounded-xl animate-pulse"></div>
+                  <div className="flex gap-3 w-full md:w-auto">
+                    <div className="flex-1 md:w-[180px] h-[50px] bg-gray-200/70 rounded-xl animate-pulse"></div>
+                    <div className="flex-1 md:w-[200px] h-[50px] bg-gray-200/70 rounded-xl animate-pulse"></div>
+                  </div>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row w-full sm:w-auto flex-1 gap-2">
-                  <div className="relative flex-1 min-w-[150px] group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={16} />
+                // PERUBAHAN: Gunakan items-start agar margin-top bawaan SmoothDropdown sejajar dengan Search Bar
+                <div className="flex flex-col md:flex-row w-full gap-3 items-start">
+                  
+                  {/* Kolom Pencarian - Disamakan persis: mt-3, p-3, border-2, rounded-xl */}
+                  <div className="relative w-full md:flex-1 group mt-3">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={18} />
                     <input
                       type="text"
                       placeholder="Cari pengumuman..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20"
+                      className="w-full pl-11 pr-4 p-3 bg-white border-2 border-gray-100 rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                   </div>
 
-                  <select
-                    value={selectedSort}
-                    onChange={(e) => setSelectedSort(e.target.value)}
-                    className="cursor-pointer bg-white border border-gray-200 rounded-xl text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 shadow-sm w-full sm:w-auto"
-                  >
-                    <option value="Terbaru">Terbaru</option>
-                    <option value="Terlama">Terlama</option>
-                  </select>
+                  {/* Grup Dropdown */}
+                  <div className="flex flex-row gap-3 w-full md:w-auto shrink-0">
+                    
+                    {/* Width dibuat minimal 180px agar tidak bentrok dengan setingan dalam SmoothDropdown */}
+                    <div className="flex-1 md:w-[180px] relative z-50">
+                      <SmoothDropdown
+                        options={["Terbaru", "Terlama"]}
+                        value={selectedSort}
+                        onSelect={(val) => setSelectedSort(val)}
+                        placeholder="Urutkan"
+                      />
+                    </div>
 
-                  <select
-                    value={selectedPinned}
-                    onChange={(e) => setSelectedPinned(e.target.value)}
-                    className="cursor-pointer bg-white border border-gray-200 rounded-xl text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 shadow-sm w-full sm:w-auto"
-                  >
-                    <option value="Semua Tipe (Pin)">Semua Pin</option>
-                    <option value="Di-pin">Hanya Di-pin</option>
-                    <option value="Tidak Di-pin">Tidak Di-pin</option>
-                  </select>
+                    {/* Width diperlebar jadi 200px agar "Semua Tipe (Pin)" muat 1 baris utuh */}
+                    <div className="flex-1 md:w-[200px] relative z-40">
+                      <SmoothDropdown
+                        options={["Semua Tipe (Pin)", "Di-pin", "Tidak Di-pin"]}
+                        value={selectedPinned}
+                        onSelect={(val) => setSelectedPinned(val)}
+                        placeholder="Filter Pin"
+                      />
+                    </div>
+
+                  </div>
                 </div>
               )}
               
@@ -259,7 +271,6 @@ export default function Pengumuman() {
             {/* List Pengumuman Card (Format Grid) */}
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Tampilkan 4 buah Card Skeleton */}
                 {[1, 2, 3, 4].map((i) => (
                   <PengumumanCardSkeleton key={i} />
                 ))}
@@ -282,7 +293,7 @@ export default function Pengumuman() {
                     
                     {/* Pagination full width (Span 2 kolom di layar medium) */}
                     {totalPages > 1 && (
-                      <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-2">
+                      <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-4">
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                       </div>
                     )}
@@ -298,15 +309,13 @@ export default function Pengumuman() {
           </div>
 
           {/* --- KOLOM KANAN (SIDEBAR STATISTIK & TOMBOL BUAT) --- */}
-          <div className="lg:col-span-4">
-            {/* --- KOLOM KANAN (SIDEBAR STATISTIK & TOMBOL BUAT) --- */}
+          {/* Hapus duplikasi div lg:col-span-4 di sini */}
           <div className="lg:col-span-4">
             {loading ? (
               <PengumumanSidebarSkeleton />
             ) : (
               <PengumumanSidebar stats={stats} onOpenCreate={handleOpenCreate} />
             )}
-          </div>
           </div>
 
         </div>
@@ -323,17 +332,17 @@ export default function Pengumuman() {
       {/* --- RENDER MODAL GAMBAR SAJA (POP-UP LIGHTBOX) --- */}
       {selectedImage && (
         <div 
-          className="fixed inset-0 z-120 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in zoom-in-95 duration-200"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 sm:p-8 animate-in zoom-in-95 duration-200"
           onClick={() => setSelectedImage(null)}
         >
           <div 
-            className="relative flex justify-center items-center max-w-4xl max-h-[90vh]"
+            className="relative flex justify-center items-center w-full max-w-4xl max-h-full"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Tombol Close Mengambang di atas gambar */}
+            {/* Tombol Close diletakkan di dalam layar agar aman di HP */}
             <button 
               onClick={() => setSelectedImage(null)} 
-              className="absolute -top-4 -right-4 md:-top-5 md:-right-5 bg-black/60 border border-white/20 text-white p-2 rounded-full hover:bg-black/90 transition-all cursor-pointer shadow-xl z-10"
+              className="absolute top-2 right-2 sm:-top-5 sm:-right-5 bg-black/60 border border-white/20 text-white p-2 rounded-full hover:bg-black transition-all cursor-pointer shadow-xl z-10"
             >
               <X size={20} />
             </button>
@@ -342,7 +351,7 @@ export default function Pengumuman() {
             <img 
               src={selectedImage.foto} 
               alt={selectedImage.judul} 
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
           </div>
         </div>
