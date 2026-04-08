@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, Trash2, Check, X, Ban, Search, Star } from 'lucide-react'; // Tambahkan Star
-import Pagination from './Pagination';
+import Pagination from '../Pagination';
 
 const AlumniTable = ({
   alumni = [],
