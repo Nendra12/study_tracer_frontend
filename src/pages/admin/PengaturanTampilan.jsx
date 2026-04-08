@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Image as ImageIcon, Save, RefreshCcw, Eye } from 'lucide-react';
+import { RotateCcw, Upload, Image as ImageIcon, Save, RefreshCcw, Eye } from 'lucide-react';
 import { alertSuccess, alertConfirm, alertError } from '../../utilitis/alert';
 import { useThemeSettings } from '../../context/ThemeContext';
 import TampilanPreview from '../../components/admin/TampilanPreview'; 
 import { adminApi } from '../../api/admin';
+import { useNavigate } from 'react-router-dom'; // Pastikan ini di-import
 
 export default function PengaturanTampilan() {
   const { theme, updateSettings, refreshFromApi } = useThemeSettings();
+  const navigate = useNavigate(); // Deklarasi useNavigate
 
   const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMKN 1 Kraksaan');
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
@@ -113,7 +115,7 @@ export default function PengaturanTampilan() {
   const handleSave = async () => {
     if (!metaDescription || metaDescription.trim() === '') {
       alertError('Meta deskripsi wajib diisi.');
-      return; // Menghentikan proses simpan
+      return; 
     }
     const confirm = await alertConfirm("Terapkan perubahan tampilan ini ke seluruh sistem?");
     if (!confirm.isConfirmed) return;
@@ -186,6 +188,13 @@ export default function PengaturanTampilan() {
     setMetaIconFile(null);
   };
 
+  const handleKembali = async () => {
+    const confirm = await alertConfirm("Yakin ingin membatalkan perubahan? Semua input akan dikembalikan ke versi sebelumnya.");
+    if (confirm.isConfirmed) {
+      handleReset(); // Mengembalikan data ke kondisi awal
+    }
+  };
+
   const openPreview = (tabName) => {
     setActivePreviewTab(tabName);
     setShowPreviewModal(true);
@@ -234,7 +243,6 @@ export default function PengaturanTampilan() {
               <div className="space-y-3">
                 <label className="block text-sm font-bold text-gray-700">Meta Icon (Favicon)</label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  {/* Kotak gambar bisa diklik */}
                   <div 
                     onClick={() => metaIconInputRef.current.click()}
                     className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
@@ -253,7 +261,6 @@ export default function PengaturanTampilan() {
                   
                   <div className="space-y-2 flex-1">
                     <input type="file" accept=".ico,.png,.jpg,.jpeg,.svg" className="hidden" ref={metaIconInputRef} onChange={(e) => handleImageChange(e, setMetaIconPreview, setMetaIconFile)} />
-                    {/* Tombol Ganti dikembalikan */}
                     <button onClick={() => metaIconInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                       <Upload size={14} /> Ganti Icon
                     </button>
@@ -269,7 +276,7 @@ export default function PengaturanTampilan() {
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold text-primary">Identitas Sekolah & Media Login</h3>
               <button
-                onClick={() => openPreview('login')} // PERUBAHAN: Menjadi 'login'
+                onClick={() => openPreview('login')}
                 className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
               >
                 <Eye size={14} className='text-primary' /> Preview Tampilan
@@ -277,7 +284,6 @@ export default function PengaturanTampilan() {
             </div>
 
             <div className="space-y-8">
-              {/* Nama Sekolah (Full Width/Baris Sendiri) */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3">Nama Sekolah / Organisasi</label>
                 <input
@@ -287,15 +293,11 @@ export default function PengaturanTampilan() {
                 />
               </div>
 
-              {/* PERUBAHAN: Grid 2 Kolom untuk Logo dan BG Login sejajar */}
-              {/* Grid 2 Kolom untuk Logo dan BG Login sejajar */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-6">
                 
-                {/* Logo Aplikasi */}
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-gray-700">Logo Aplikasi</label>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    {/* Kotak gambar bisa diklik */}
                     <div 
                       onClick={() => logoInputRef.current.click()}
                       className="w-24 h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
@@ -313,7 +315,6 @@ export default function PengaturanTampilan() {
                     </div>
                     <div className="space-y-2 flex-1">
                       <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={(e) => handleImageChange(e, setLogoPreview, setLogoFile)} />
-                      {/* Tombol Ganti dikembalikan */}
                       <button onClick={() => logoInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                         <Upload size={14} /> Ganti Logo
                       </button>
@@ -321,11 +322,9 @@ export default function PengaturanTampilan() {
                   </div>
                 </div>
 
-                {/* Login BG */}
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-gray-700">Gambar Background Halaman Login</label>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    {/* Kotak gambar bisa diklik */}
                     <div 
                       onClick={() => loginBgInputRef.current.click()}
                       className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
@@ -343,7 +342,6 @@ export default function PengaturanTampilan() {
                     </div>
                     <div className="space-y-2 flex-1">
                       <input type="file" accept="image/*" className="hidden" ref={loginBgInputRef} onChange={(e) => handleImageChange(e, setLoginBgPreview, setLoginBgFile)} />
-                      {/* Tombol Ganti dikembalikan */}
                       <button onClick={() => loginBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                         <Upload size={14} /> Ganti Gambar
                       </button>
@@ -359,7 +357,7 @@ export default function PengaturanTampilan() {
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
               <h3 className="text-lg font-bold text-primary">Konten Landing Page</h3>
               <button
-                onClick={() => openPreview('landing')} // PERUBAHAN: Tetap 'landing'
+                onClick={() => openPreview('landing')}
                 className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
               >
                 <Eye size={14} className='text-primary' /> Preview Tampilan
@@ -367,7 +365,6 @@ export default function PengaturanTampilan() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Kolom Kiri: Judul & Deskripsi */}
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Judul Utama Landing Page</label>
@@ -387,12 +384,10 @@ export default function PengaturanTampilan() {
                 </div>
               </div>
               
-              {/* Kolom Kanan: BG Landing */}
               <div className="space-y-6">
                   <div className="space-y-3">
                     <label className="block text-sm font-bold text-gray-700">Gambar Background Landing Page</label>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      {/* Kotak gambar bisa diklik */}
                       <div 
                         onClick={() => landingBgInputRef.current.click()}
                         className="w-40 h-28 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-primary transition-colors group relative"
@@ -410,7 +405,6 @@ export default function PengaturanTampilan() {
                       </div>
                       <div className="space-y-2 flex-1">
                         <input type="file" accept="image/*" className="hidden" ref={landingBgInputRef} onChange={(e) => handleImageChange(e, setLandingBgPreview, setLandingBgFile)} />
-                        {/* Tombol Ganti dikembalikan */}
                         <button onClick={() => landingBgInputRef.current.click()} className="text-xs font-bold px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
                           <Upload size={14} /> Ganti Gambar
                         </button>
@@ -518,14 +512,36 @@ export default function PengaturanTampilan() {
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-end gap-3">
-          <button onClick={handleReset} disabled={isSaving} className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-100 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
-            <RefreshCcw size={16} /> Batal / Reset
+        <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          
+          {/* Tombol KEMBALI di kiri */}
+          <button 
+            onClick={handleKembali} 
+            disabled={isSaving} 
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-100 hover:text-red-500 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <RotateCcw size={16} /> Kembalikan Perubahan
           </button>
-          <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-primary hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
-            {isSaving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Save size={16} />}
-            {isSaving ? 'Menerapkan...' : 'Simpan Perubahan'}
-          </button>
+
+          {/* Grup Batal/Reset & Simpan di Kanan */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button 
+              onClick={handleReset} 
+              disabled={isSaving} 
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-100 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCcw size={16} /> Batal / Reset
+            </button>
+            <button 
+              onClick={handleSave} 
+              disabled={isSaving} 
+              className="w-full sm:w-auto px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-primary hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSaving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Save size={16} />}
+              {isSaving ? 'Menerapkan...' : 'Simpan Perubahan'}
+            </button>
+          </div>
+
         </div>
       </div>
 
