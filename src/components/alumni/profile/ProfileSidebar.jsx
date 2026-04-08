@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Edit, Mail, Phone, Plus, X, Loader2, Check, Clock } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaInstagram, FaFacebook, FaGlobe } from 'react-icons/fa';
 import Cropper from 'react-easy-crop';
-import { alumniApi } from '../../api/alumni';
-import { masterDataApi } from '../../api/masterData';
-import { STORAGE_BASE_URL } from '../../api/axios';
-import { alertConfirm } from '../../utilitis/alert';
+import { alumniApi } from '../../../api/alumni';
+import { masterDataApi } from '../../../api/masterData';
+import { STORAGE_BASE_URL } from '../../../api/axios';
+import { alertConfirm } from '../../../utilitis/alert';
 
 // Helper untuk URL Foto
 function getImageUrl(path) {
