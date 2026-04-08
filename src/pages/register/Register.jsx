@@ -93,6 +93,12 @@ export default function Register() {
       }
     }
 
+    if (formData.foto.size > 2 * 1024 * 1024) {
+      setError('Ukuran foto tidak boleh lebih dari 2 MB.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const fd = new FormData();
       fd.append('email', formData.email);

@@ -65,7 +65,7 @@ export default function AlumniSuccess({ alumniList }) {
       id="alumni"
       className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header dengan Layout Flex yang dinamis */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <motion.div
@@ -86,7 +86,7 @@ export default function AlumniSuccess({ alumniList }) {
         </div>
 
         {/* Grid Kartu Alumni */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {alumniData.map((alumni, index) => (
             <motion.div
               key={index}
@@ -94,7 +94,7 @@ export default function AlumniSuccess({ alumniList }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="group relative bg-white rounded-md p-4 shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500"
+              className="group relative bg-white rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500"
             >
               {/* Image Container dengan efek zoom */}
               <div className="relative h-72 w-full rounded-md overflow-hidden mb-6">
