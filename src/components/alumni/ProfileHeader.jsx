@@ -23,7 +23,7 @@ export default function ProfileHeader({ profile, onPerbarui }) {
                 navigate(`/alumni/daftar-alumni/${alumniId}`, { state: { fromProfile: true } });
               }
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-primary/20 text-primary rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-primary/20 text-primary rounded-md text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer"
           >
             <Eye size={16} /> Lihat Profil Publik
           </button>
@@ -32,7 +32,7 @@ export default function ProfileHeader({ profile, onPerbarui }) {
       </div>
 
       {/* Alert Box Kebijakan */}
-      <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+      <div className="bg-amber-50 border border-amber-200/60 rounded-md p-4 flex items-start gap-3 shadow-sm">
         <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
         <div>
           <h3 className="text-sm font-bold text-amber-800 mb-0.5">Kebijakan Pembaruan</h3>

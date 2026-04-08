@@ -389,7 +389,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       <input type="file" ref={fileInputRef} className="hidden" onChange={handleFotoSelect} accept="image/*" />
 
       {/* KOTAK 1: INFO PROFIL */}
-      <div className="bg-white rounded-4xl p-8 shadow-sm text-center border border-slate-100">
+      <div className="bg-white rounded-md p-8 shadow-sm text-center border border-slate-100">
         <div className="relative w-32 h-32 mx-auto mb-5">
           <div className="w-full h-full rounded-full overflow-hidden border-4 border-slate-50">
             {fotoUrl ? (
@@ -444,7 +444,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
         if (profile?.website) approvedLinks.push({ key: 'website', url: profile.website, icon: <FaGlobe size={16} /> });
 
         return (
-          <div className={`bg-white rounded-4xl p-8 shadow-sm border transition-all ${hasPending && !isEditing ? 'border-amber-200' : 'border-slate-100'}`}>
+          <div className={`bg-white rounded-md p-8 shadow-sm border transition-all ${hasPending && !isEditing ? 'border-amber-200' : 'border-slate-100'}`}>
             {/* Header */}
             <div className="flex justify-between items-center mb-5">
               <div className="flex items-center gap-2">

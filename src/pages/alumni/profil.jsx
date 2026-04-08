@@ -133,7 +133,7 @@ export default function Profil() {
             onRefresh={refreshProfile}
             onShowSuccess={showSuccess}
           />
-          <div className="lg:col-span-8 bg-white rounded-4xl shadow-sm flex flex-col overflow-hidden border border-slate-100">
+          <div className="lg:col-span-8 bg-white rounded-md shadow-sm flex flex-col overflow-hidden border border-slate-100">
 
             <div className="flex border-b border-slate-100 px-2 overflow-x-auto md:overflow-x-hidden whitespace-nowrap scrollbar-hide">
               <button
