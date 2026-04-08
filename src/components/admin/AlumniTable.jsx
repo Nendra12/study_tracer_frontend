@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Trash2, Check, X, Ban, Search } from 'lucide-react';
+import { Eye, Trash2, Check, X, Ban, Search, Star } from 'lucide-react'; // Tambahkan Star
 import Pagination from './Pagination';
 
 const AlumniTable = ({
@@ -14,8 +14,10 @@ const AlumniTable = ({
   handleReject,
   handleBan,
   handleDelete,
-  handlePhotoClick, // Pastikan prop ini diterima
-  STORAGE_BASE_URL
+  handlePhotoClick, 
+  STORAGE_BASE_URL,
+  featuredAlumniIds = [], // Prop baru
+  handleToggleFeatured    // Prop baru
 }) => {
 
   // Fungsi helper untuk status badge
@@ -39,7 +41,7 @@ const AlumniTable = ({
               <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Jurusan</th>
               <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Foto</th>
               <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">AKSI</th>
+              <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-40">AKSI</th> {/* Lebarkan sedikit kolom aksi */}
             </tr>
           </thead>
           
@@ -51,123 +53,142 @@ const AlumniTable = ({
                 </td>
               </tr>
             ) : (
-              alumni.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                  {/* KOLOM NAMA ALUMNI (Sesuai perbaikan agar nama muncul) */}
-                  <td className="px-4 py-4">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-700 text-sm group-hover:text-primary transition-colors">
-                        {item.nama || item.nama_alumni || 'Tanpa Nama'}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        NIS: {item.nis || '-'} • NISN: {item.nisn || '-'}
-                      </span>
-                    </div>
-                  </td>
-                  
-                  {/* KOLOM JURUSAN */}
-                  <td className="px-4 py-4">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-600">
-                        {item.jurusan?.nama_jurusan || item.jurusan?.nama || '-'}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        Lulus {item.tahun_lulus || '-'}
-                      </span>
-                    </div>
-                  </td>
+              alumni.map((item) => {
+                const isFeatured = featuredAlumniIds.includes(item.id);
 
-                  {/* KOLOM FOTO (Bulat dan Clickable untuk Pop-up) */}
-                  <td className="px-4 py-4">
-                    <div className="flex justify-center">
-                      {item.foto ? (
-                        <button 
-                          onClick={() => handlePhotoClick(`${STORAGE_BASE_URL}/${item.foto}`)}
-                          className="group/thumb relative w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 hover:border-primary transition-all shadow-sm cursor-pointer"
-                        >
-                          <img 
-                            src={`${STORAGE_BASE_URL}/${item.foto_thumbnail || item.foto}`} 
-                            alt="Alumni" 
-                            className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300"
-                            onError={(e) => { 
-                              const original = `${STORAGE_BASE_URL}/${item.foto}`;
-                              if (e.target.src !== original) e.target.src = original;
-                              else e.target.src = 'https://ui-avatars.com/api/?name=' + (item.nama || item.nama_alumni); 
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
-                            <Search size={12} className="text-white" />
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
+                    {/* KOLOM NAMA ALUMNI */}
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-700 text-sm group-hover:text-primary transition-colors">
+                          {item.nama || item.nama_alumni || 'Tanpa Nama'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          NIS: {item.nis || '-'} • NISN: {item.nisn || '-'}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    {/* KOLOM JURUSAN */}
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-slate-600">
+                          {item.jurusan?.nama_jurusan || item.jurusan?.nama || '-'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          Lulus {item.tahun_lulus || '-'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* KOLOM FOTO */}
+                    <td className="px-4 py-4">
+                      <div className="flex justify-center">
+                        {item.foto ? (
+                          <button 
+                            onClick={() => handlePhotoClick(`${STORAGE_BASE_URL}/${item.foto}`)}
+                            className="group/thumb relative w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 hover:border-primary transition-all shadow-sm cursor-pointer"
+                          >
+                            <img 
+                              src={`${STORAGE_BASE_URL}/${item.foto_thumbnail || item.foto}`} 
+                              alt="Alumni" 
+                              className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300"
+                              onError={(e) => { 
+                                const original = `${STORAGE_BASE_URL}/${item.foto}`;
+                                if (e.target.src !== original) e.target.src = original;
+                                else e.target.src = 'https://ui-avatars.com/api/?name=' + (item.nama || item.nama_alumni); 
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                              <Search size={12} className="text-white" />
+                            </div>
+                          </button>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">
+                            <X size={16} />
                           </div>
-                        </button>
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">
-                          <X size={16} />
-                        </div>
-                      )}
-                    </div>
-                  </td>
+                        )}
+                      </div>
+                    </td>
 
-                  {/* KOLOM STATUS */}
-                  <td className="px-4 py-4 text-center">
-                    {getStatusBadge(item.status_create)}
-                  </td>
+                    {/* KOLOM STATUS */}
+                    <td className="px-4 py-4 text-center">
+                      {getStatusBadge(item.status_create)}
+                    </td>
 
-                  {/* KOLOM AKSI (Kembali seperti fungsionalitas sebelumnya) */}
-                  <td className="px-4 py-4">
-                    <div className="flex justify-center items-center gap-1">
-                      {/* Tombol Lihat Detail */}
-                      <button 
-                        onClick={() => handleViewDetail(item.user_id || item.id_alumni || item.id)}
-                        className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-all active:scale-90 cursor-pointer"
-                        title="Lihat Detail"
-                      >
-                        <Eye size={18} />
-
-                      </button>
-
-                      {/* Aksi khusus status PENDING (Approve & Reject) */}
-                      {item.status_create === 'pending' && (
-                        <>
-                          <button 
-                            onClick={() => handleApprove(item.id)}
-                            className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all active:scale-90 cursor-pointer"
-                            title="Setujui"
+                    {/* KOLOM AKSI */}
+                    <td className="px-4 py-4">
+                      <div className="flex justify-center items-center gap-1">
+                        
+                        {/* --- TOMBOL SOROTAN (Hanya untuk yang Aktif) --- */}
+                        {item.status_create === 'ok' && (
+                          <button
+                            onClick={() => handleToggleFeatured(item.id, isFeatured)}
+                            title={isFeatured ? "Hapus dari Sorotan" : "Sorot di Beranda"}
+                            className={`p-2 rounded-xl transition-all active:scale-90 cursor-pointer ${
+                              isFeatured
+                                ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                                : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'
+                            }`}
                           >
-                            <Check size={18} />
+                            <Star size={18} className={isFeatured ? "fill-amber-500" : ""} />
                           </button>
-                          <button 
-                            onClick={() => handleReject(item.id)}
-                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90 cursor-pointer"
-                            title="Tolak"
-                          >
-                            <X size={18} />
-                          </button>
-                        </>
-                      )}
+                        )}
 
-                      {/* Aksi khusus status AKTIF/OK (Blacklist) */}
-                      {item.status_create === 'ok' && (
+                        {/* Tombol Lihat Detail */}
                         <button 
-                          onClick={() => handleBan(item.id, item.nama || item.nama_alumni)}
-                          className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all active:scale-90 cursor-pointer"
-                          title="Blacklist"
+                          onClick={() => handleViewDetail(item.user_id || item.id_alumni || item.id)}
+                          className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                          title="Lihat Detail"
                         >
-                          <Ban size={18} />
+                          <Eye size={18} />
                         </button>
-                      )}
 
-                      {/* Tombol Hapus Permanen */}
-                      <button 
-                        onClick={() => handleDelete(item.id, item.nama || item.nama_alumni)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-xl transition-all active:scale-90 cursor-pointer"
-                        title="Hapus Permanen"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        {/* Aksi khusus status PENDING (Approve & Reject) */}
+                        {item.status_create === 'pending' && (
+                          <>
+                            <button 
+                              onClick={() => handleApprove(item.id)}
+                              className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                              title="Setujui"
+                            >
+                              <Check size={18} />
+                            </button>
+                            <button 
+                              onClick={() => handleReject(item.id)}
+                              className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                              title="Tolak"
+                            >
+                              <X size={18} />
+                            </button>
+                          </>
+                        )}
+
+                        {/* Aksi khusus status AKTIF/OK (Blacklist) */}
+                        {item.status_create === 'ok' && (
+                          <button 
+                            onClick={() => handleBan(item.id, item.nama || item.nama_alumni)}
+                            className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all active:scale-90 cursor-pointer"
+                            title="Blacklist"
+                          >
+                            <Ban size={18} />
+                          </button>
+                        )}
+
+                        {/* Tombol Hapus Permanen */}
+                        <button 
+                          onClick={() => handleDelete(item.id, item.nama || item.nama_alumni)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-xl transition-all active:scale-90 cursor-pointer"
+                          title="Hapus Permanen"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

@@ -17,8 +17,34 @@ import FilterTahunLulus from '../../components/admin/FilterTahunLulus';
 import AlumniTable from '../../components/admin/AlumniTable';
 import AlumniDetailModal from '../../components/admin/AlumniDetailModal';
 import ProfileUpdateRequests from '../../components/admin/ProfileUpdateRequests';
+import FeaturedAlumniList from '../../components/admin/FeaturedAlumniList'; 
 
 const PER_PAGE = 7;
+
+// --- DATA DUMMY UNTUK ALUMNI PILIHAN ---
+const dummyFeaturedAlumni = [
+  {
+    id: "dummy-1",
+    name: "Ahmad Fauzi",
+    jurusan: "Rekayasa Perangkat Lunak",
+    pekerjaan: "Senior Frontend Developer",
+    foto: null 
+  },
+  {
+    id: "dummy-2",
+    name: "Siti Nurhaliza",
+    jurusan: "Teknik Komputer Jaringan",
+    pekerjaan: "Network Engineer di Telkom",
+    foto: null
+  },
+  {
+    id: "dummy-3",
+    name: "Budi Santoso",
+    jurusan: "Teknik Kendaraan Ringan",
+    pekerjaan: "Kepala Mekanik Auto2000",
+    foto: null
+  }
+];
 
 const UserManagementSkeleton = () => (
   <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
@@ -82,6 +108,9 @@ export default function UserManagement() {
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
 
+  // INISIALISASI STATE DENGAN DATA DUMMY
+  const [featuredAlumni, setFeaturedAlumni] = useState(dummyFeaturedAlumni);
+
   const tabs = [
     { label: 'Semua', value: null },
     { label: 'Menunggu', value: 'pending' },
@@ -144,6 +173,7 @@ export default function UserManagement() {
 
         const payload = res.data.data;
         setAlumni(payload.data || []);
+        
         const meta = payload.meta || payload;
         setPagination({
           current_page: meta.current_page || 1,
@@ -162,6 +192,26 @@ export default function UserManagement() {
   }, [currentPage, activeTab, debouncedSearch, selectedJurusan, selectedTahunLulus, fetchTrigger]);
 
   const refreshAlumni = () => setFetchTrigger(c => c + 1);
+
+  // FUNGSI UNTUK TOGGLE FEATURED ALUMNI
+  const handleToggleFeatured = async (alumniId, isCurrentlyFeatured) => {
+    const selectedAlumni = alumni.find(a => a.id === alumniId);
+    
+    if (isCurrentlyFeatured) {
+      setFeaturedAlumni(prev => prev.filter(a => a.id !== alumniId));
+      alertSuccess('Dihapus dari Sorotan', 'Alumni tidak lagi ditampilkan di Beranda.');
+    } else {
+      if (featuredAlumni.length >= 6) {
+        alertError('Batas Maksimal', 'Maksimal hanya 6 alumni yang dapat disorot.');
+        return;
+      }
+      if (selectedAlumni) {
+        // Saat menambahkan dari tabel, kita gunakan data asli dari tabel tersebut
+        setFeaturedAlumni(prev => [...prev, selectedAlumni]);
+        alertSuccess('Ditambahkan ke Sorotan', 'Alumni kini ditampilkan di Beranda.');
+      }
+    }
+  };
 
   const handleApprove = async (alumniId) => {
     const { isConfirmed } = await alertConfirm('Apakah Anda yakin ingin menyetujui alumni ini?');
@@ -284,18 +334,24 @@ export default function UserManagement() {
     <div className="space-y-6 max-w-full p-1 animate-in fade-in duration-700">
       <div className="space-y-8">
         
-        {/* 1. Stats Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {statsCards.map((s, i) => (
             <ManagementStatCard key={i} {...s} loading={statsLoading} />
           ))}
         </div>
 
-        {/* 2. User Management Table Section */}
+        {/* KOMPONEN ALUMNI PILIHAN (FEATURED) */}
+        <FeaturedAlumniList 
+          featuredAlumni={featuredAlumni} 
+          onRemoveFeatured={(id) => handleToggleFeatured(id, true)} 
+          STORAGE_BASE_URL={STORAGE_BASE_URL}
+        />
+
+        {/* User Management Table Section */}
         <div className="space-y-6">
           
-          {/* --- TOOLBAR UTAMA (Responsif & Rapi Sebaris) --- */}
-          {/* PERUBAHAN: Menghapus overflow-hidden dan menambahkan relative z-40 agar dropdown tidak terpotong */}
+          {/* TOOLBAR UTAMA */}
           <div className="bg-white p-2 md:p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 md:gap-4 transition-all relative z-40">
             
             {/* TABS (Kiri) */}
@@ -310,8 +366,6 @@ export default function UserManagement() {
 
             {/* SEARCH, FILTER, & EXPORT (Kanan) */}
             <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full lg:w-auto flex-1 lg:justify-end">
-              
-              {/* Search Bar - Akan shrink otomatis jika ruang sempit */}
               <div className="relative group w-full sm:w-auto flex-1 min-w-37.5 max-w-full lg:max-w-70">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={16} />
                 <input
@@ -323,8 +377,6 @@ export default function UserManagement() {
                 />
               </div>
 
-              {/* Grouping Filter & Button */}
-              {/* PERUBAHAN: Menghapus overflow-x-auto dan menggantinya dengan flex-wrap agar tidak memotong dropdown */}
               <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 relative z-50">
                 <FilterJurusan
                   isFilterOpen={isFilterOpen}
@@ -333,7 +385,6 @@ export default function UserManagement() {
                   setSelectedJurusan={setSelectedJurusan}
                   jurusanList={jurusanList}
                 />
-
                 <FilterTahunLulus
                   isTahunFilterOpen={isTahunFilterOpen}
                   setIsTahunFilterOpen={setIsTahunFilterOpen}
@@ -341,7 +392,6 @@ export default function UserManagement() {
                   setSelectedTahunLulus={setSelectedTahunLulus}
                   tahunLulusList={tahunLulusList}
                 />
-
                 <button
                   onClick={handleExport}
                   disabled={exportLoading}
@@ -351,7 +401,6 @@ export default function UserManagement() {
                   <span className="inline">Eksport CSV</span>
                 </button>
               </div>
-
             </div>
           </div>
 
@@ -370,13 +419,16 @@ export default function UserManagement() {
             handleDelete={handleDelete}
             handlePhotoClick={handlePhotoClick}
             STORAGE_BASE_URL={STORAGE_BASE_URL}
+            
+            // PASSING STATE & HANDLER KE TABLE
+            featuredAlumniIds={featuredAlumni.map(a => a.id)}
+            handleToggleFeatured={handleToggleFeatured}
           />
         </div>
 
-        {/* 3. KOMPONEN UPDATE REQUEST */}
         <ProfileUpdateRequests />
 
-        {/* Modals */}
+        {/* Modals & Popups */}
         <AlumniDetailModal
           showDetail={showDetail}
           setShowDetail={setShowDetail}
@@ -387,7 +439,6 @@ export default function UserManagement() {
           STORAGE_BASE_URL={STORAGE_BASE_URL}
         />
 
-        {/* Modal Pop-up Foto Bulat */}
         {showPhotoPreview && createPortal(
           <div
             className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-300"

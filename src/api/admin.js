@@ -339,6 +339,14 @@ export const adminApi = {
     });
   },
 
+  revertPengaturanTampilan() {
+    return api.post('/admin/pengaturan-tampilan/revert');
+  },
+
+  resetPengaturanTampilan() {
+    return api.post('/admin/pengaturan-tampilan/reset');
+  },
+
   // ── Kemitraan Management ─────────────────────
   getKemitraanUniversitas(params = {}) {
     return api.get('/admin/kemitraan/universitas', { params });
