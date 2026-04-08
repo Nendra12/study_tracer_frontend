@@ -14,13 +14,13 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
   if (!data) return null;
 
   const fotoUrl = getImageUrl(data.foto || data.foto_lowongan || data.banner) || 'https://i.pinimg.com/736x/13/40/11/1340118d98bb8e13d0fc55fa303a13ab.jpg'; // Menggunakan fallback default CareerSection
-  
+
   // Penyesuaian variabel data
   const judul = data.judul || data.role || data.judul_lowongan || '—';
   const perusahaanNama = data.perusahaan?.nama || data.perusahaan?.nama_perusahaan || data.company || '—';
   const tipePekerjaan = data.tipe_pekerjaan || data.type || 'Full-time';
   const deskripsi = data.deskripsi || data.description || 'Tidak ada deskripsi tersedia.';
-  
+
   const lokasi = data.perusahaan?.kota
     ? `${data.perusahaan.kota.nama}${data.perusahaan.kota.provinsi ? ', ' + data.perusahaan.kota.provinsi.nama : ''}`
     : (data.lokasi || data.location || '—');
@@ -29,12 +29,12 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
     <div className={`relative ${locked ? 'grayscale opacity-60' : ''} h-full`}>
       <motion.div
         whileHover={locked ? {} : { y: -4 }}
-        className={`bg-white rounded-4xl overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col h-full transition-all duration-500
+        className={`bg-white rounded-md overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col h-full transition-all duration-500
           ${locked ? '' : 'hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] group cursor-pointer'}`}
       >
-        
+
         {/* BAGIAN ATAS: Job Banner (Bisa diklik untuk preview) */}
-        <div 
+        <div
           className="h-60 w-full overflow-hidden relative"
           onClick={(e) => {
             if (locked || !onImageClick) return;
@@ -77,7 +77,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
               <MapPin size={16} />
               <span className="text-xs font-bold line-clamp-1 max-w-37.5">{lokasi}</span>
             </div>
-            
+
             <button className={`cursor-pointer w-8 h-8 rounded-full flex items-center justify-center transition-all 
               ${locked ? 'bg-slate-100 text-slate-400' : 'bg-fourth text-primary group-hover:bg-primary group-hover:text-white'}`}
             >

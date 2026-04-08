@@ -68,7 +68,7 @@ export default function LandingPage() {
     // Fallback timer: kalau gambar terlalu besar/lama, paksa buka halaman dalam maksimal 3 detik
     const timer = setTimeout(() => {
       setImgLoading(false);
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [theme?.landingBg]);
@@ -214,7 +214,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
                 <div className="flex -space-x-3">
                   {alumniList.map((i, index) => (
-                    <>
+                    <div key={index}>
                       {index < 4 && (
                         <img
                           key={index}
@@ -223,7 +223,7 @@ export default function LandingPage() {
                           className="w-10 h-10 object-cover rounded-full border-2 border-fourth"
                         />
                       )}
-                    </>
+                    </div>
                   ))}
                 </div>
                 <span className="text-sm font-bold text-primary">
@@ -253,7 +253,7 @@ export default function LandingPage() {
 
             {/* Floating Stat Card */}
             <motion.div
-              className="absolute top-[20%] left-[-5%] bg-white/80 backdrop-blur-xl p-5 rounded-md border border-white/60 shadow-xl z-20 animate-bounce"
+              className="absolute top-[20%] left-[-5%] bg-white/80 backdrop-blur-xl p-5 rounded-2xl border border-white/60 shadow-xl z-20 animate-bounce"
               style={{ animationDuration: "3s" }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -273,7 +273,7 @@ export default function LandingPage() {
 
             {/* Floating Info Card */}
             <motion.div
-              className="absolute bottom-[11%] left-[7%] bg-primary text-white p-6 rounded-md shadow-[0_20px_40px_rgba(60,87,89,0.4)] z-20 w-64 transform -rotate-3 hover:rotate-0 transition-transform duration-500"
+              className="absolute bottom-[11%] left-[7%] bg-primary text-white p-6 rounded-3xl shadow-[0_20px_40px_rgba(60,87,89,0.4)] z-20 w-64 transform -rotate-3 hover:rotate-0 transition-transform duration-500"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

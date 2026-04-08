@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DefaultLoginImage from "../assets/login_image.jpg";
 import DefaultLogo from "../assets/icon.png";
-import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck } from "lucide-react";
+import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useThemeSettings } from "../context/ThemeContext";

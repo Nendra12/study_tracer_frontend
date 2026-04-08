@@ -6,6 +6,8 @@ import { STORAGE_BASE_URL } from '../../api/axios';
 import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
 
+import Icon from "../../assets/icon.png"
+
 export default function NavbarAlumni({ user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -108,7 +110,7 @@ export default function NavbarAlumni({ user }) {
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <img
-              src={theme?.logo || "/icon.png"}
+              src={theme?.logo || Icon}
               alt="Alumni Tracer Logo"
               className="w-12 h-10 object-contain drop-shadow-sm"
             />
