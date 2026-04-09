@@ -7,6 +7,9 @@ import { masterDataApi } from "../../api/masterData";
 import SelectInput from "../../components/admin/SelectInput";
 import MultiSelectDropdown from "../../components/admin/MultiSelectDropdown";
 
+// 1. Import komponen SmoothKota
+import SmoothKota from "../../components/admin/SmoothKota"; // Sesuaikan path jika berbeda
+
 export default function Step2Profile({ onNext, onBack, formData, updateFormData }) {
   const [preview, setPreview] = useState(() => {
     if (formData.foto && typeof formData.foto === 'object') return URL.createObjectURL(formData.foto);
@@ -16,6 +19,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
   
   const [jurusanOpts, setJurusanOpts] = useState([]);
   const [skillOptions, setSkillOptions] = useState([]);
+  const [kotaOpts, setKotaOpts] = useState([]); // 2. State untuk menyimpan opsi kota
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -33,6 +37,17 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     }).catch(() => {
       setSkillOptions([{ id: 1, nama: "ReactJS" }, { id: 2, nama: "NodeJS" }]);
     });
+
+    // 3. Fetch data kota dari API
+    masterDataApi.getKota().then((res) => {
+      const data = res.data.data || [];
+      // Format data untuk dropdown { value, label }
+      const formattedKota = data.map(k => ({
+        value: k.nama_kota || k.nama, // Asumsi API mengembalikan nama kota
+        label: k.nama_kota || k.nama
+      }));
+      setKotaOpts(formattedKota);
+    }).catch(err => console.error("Gagal load kota", err));
   }, []);
 
   const handleFile = (e) => {
@@ -61,6 +76,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     if (!formData.alamat?.trim()) errs.alamat = 'Alamat wajib diisi';
     if (!formData.tahun_masuk) errs.tahun_masuk = 'Tahun masuk wajib diisi';
 
+    // Validasi No HP
     if (!formData.no_hp?.trim()) {
       errs.no_hp = 'No HP wajib diisi';
     } else {
@@ -69,16 +85,26 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
       else if (digits.length > 13) errs.no_hp = 'No HP maksimal 13 digit';
     }
 
+    // --- PERBAIKAN LOGIKA TAHUN DISINI ---
+    const currentYear = new Date().getFullYear();
+    
+    // Validasi Tahun Masuk
+    if (formData.tahun_masuk && parseInt(formData.tahun_masuk) > currentYear) {
+      errs.tahun_masuk = `Tahun masuk tidak boleh lebih dari ${currentYear}`;
+    }
+
+    // Validasi Tahun Lulus
     if (formData.tahun_lulus) {
-      if (formData.tahun_masuk && (parseInt(formData.tahun_lulus) - parseInt(formData.tahun_masuk)) < 3) {
-        errs.tahun_lulus = 'Tahun lulus harus minimal 3 tahun setelah tahun masuk';
+      if (formData.tahun_masuk && (parseInt(formData.tahun_lulus) - parseInt(formData.tahun_masuk)) <= 2) {
+        errs.tahun_lulus = 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk';
       }
     }
 
+    // Validasi Umur berdasarkan Tahun Masuk
     if (formData.tanggal_lahir && formData.tahun_masuk) {
       const birthYear = new Date(formData.tanggal_lahir).getFullYear();
       if (birthYear >= parseInt(formData.tahun_masuk)) {
-        errs.tanggal_lahir = 'Tanggal lahir invalid';
+        errs.tanggal_lahir = 'Tanggal lahir tidak valid (Tahun lahir melebihi tahun masuk)';
       }
     }
 
@@ -96,7 +122,6 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     onNext();
   };
 
-  // Opsi statis untuk Jenis Kelamin menggunakan format baru { value, label }
   const genderOptions = [
     { value: "Laki-laki", label: "Laki-laki" },
     { value: "Perempuan", label: "Perempuan" }
@@ -120,7 +145,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.nama_alumni && <p className="text-xs text-red-500 mt-0.5">{errors.nama_alumni}</p>}
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 relative z-40">
           <SelectInput 
             label="Jurusan" 
             placeholder="Pilih jurusan" 
@@ -132,7 +157,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* --- Baris 2 --- */}
-        <div className="space-y-1">
+        <div className="space-y-1 relative z-30">
           <SelectInput 
             label="Jenis Kelamin" 
             placeholder="Pilih..." 
@@ -163,22 +188,69 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* --- Baris 4 --- */}
-        <div className="space-y-1">
-          <YearsInput label="Tahun Masuk" isRequired={true} value={formData.tahun_masuk} onSelect={(val) => { updateFormData({ tahun_masuk: val }); setErrors(prev => ({ ...prev, tahun_masuk: undefined })); }} />
+        <div className="space-y-1 relative z-20">
+          <YearsInput 
+            label="Tahun Masuk" 
+            isRequired={true} 
+            value={formData.tahun_masuk} 
+            onSelect={(val) => { 
+              const currentYear = new Date().getFullYear();
+              updateFormData({ tahun_masuk: val }); 
+              
+              // 1. Validasi Real-time: Tahun Masuk tidak boleh lebih dari tahun sekarang
+              if (parseInt(val) > currentYear) {
+                setErrors(prev => ({ ...prev, tahun_masuk: `Tahun masuk tidak boleh lebih dari ${currentYear}` }));
+              } else {
+                setErrors(prev => ({ ...prev, tahun_masuk: undefined }));
+              }
+
+              // 2. Validasi Real-time: Cek ulang Tahun Lulus jika sudah terisi sebelumnya
+              if (formData.tahun_lulus) {
+                if ((parseInt(formData.tahun_lulus) - parseInt(val)) <= 2) {
+                  setErrors(prev => ({ ...prev, tahun_lulus: 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk' }));
+                } else {
+                  setErrors(prev => ({ ...prev, tahun_lulus: undefined }));
+                }
+              }
+            }} 
+          />
           {errors.tahun_masuk && <p className="text-xs text-red-500 mt-0.5">{errors.tahun_masuk}</p>}
         </div>
-        <div className="space-y-1">
-          <YearsInput label="Tahun Lulus" isRequired={true} value={formData.tahun_lulus} onSelect={(val) => { updateFormData({ tahun_lulus: val }); setErrors(prev => ({ ...prev, tahun_lulus: undefined })); }} />
+
+        <div className="space-y-1 relative z-20">
+          <YearsInput 
+            label="Tahun Lulus" 
+            isRequired={true} 
+            value={formData.tahun_lulus} 
+            onSelect={(val) => { 
+              updateFormData({ tahun_lulus: val }); 
+              
+              // Validasi Real-time: Tahun Lulus harus > 2 tahun dari Tahun Masuk
+              if (formData.tahun_masuk && (parseInt(val) - parseInt(formData.tahun_masuk)) <= 2) {
+                setErrors(prev => ({ ...prev, tahun_lulus: 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk' }));
+              } else {
+                setErrors(prev => ({ ...prev, tahun_lulus: undefined }));
+              }
+            }} 
+          />
           {errors.tahun_lulus && <p className="text-xs text-red-500 mt-0.5">{errors.tahun_lulus}</p>}
         </div>
 
         {/* --- Baris 5 --- */}
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-primary uppercase">Tempat Lahir <span className="text-red-500">*</span></label>
-          <div className="relative">
-            <MapPin size={16} className="absolute left-3 top-3 text-third" />
-            <input type="text" value={formData.tempat_lahir || ""} onChange={(e) => { updateFormData({ tempat_lahir: e.target.value }); setErrors(prev => ({ ...prev, tempat_lahir: undefined })); }} className={`w-full pl-9 p-2.5 bg-white border ${errors.tempat_lahir ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="Kota" />
-          </div>
+        {/* Trik Tailwind: [&_button] digunakan untuk menimpa gaya button di dalam SmoothKota dari luar tanpa harus mengubah file komponennya */}
+        <div className="space-y-1 relative z-10 [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
+          <SmoothKota 
+            label="Tempat Lahir"
+            isRequired={true}
+            options={kotaOpts}
+            value={formData.tempat_lahir || ""}
+            placeholder="Cari kota..."
+            isSearchable={true}
+            onSelect={(val) => { 
+              updateFormData({ tempat_lahir: val }); 
+              setErrors(prev => ({ ...prev, tempat_lahir: undefined })); 
+            }}
+          />
           {errors.tempat_lahir && <p className="text-xs text-red-500 mt-0.5">{errors.tempat_lahir}</p>}
         </div>
 
