@@ -190,8 +190,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               // Batasi tahun selesai agar minimal sama dengan tahun mulai
               minYear={data.tahun_mulai ? parseInt(data.tahun_mulai) : undefined}
               onSelect={(val) => setData({ ...data, tahun_selesai: val })}
-              // Tahun selesai boleh saja di masa depan (misal: kuliah lulus 2027)
-              // Tapi jika ingin dibatasi juga ke tahun sekarang, tambahkan: maxYear={tahunSekarang}
             />
           ) : (
             <div className="space-y-1">
@@ -435,13 +433,23 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           >
             <ArrowLeft size={16} /> Kembali
           </button>
-          <button
+         <button
             type="button"
             disabled={loading}
             onClick={() => setShowCaptchaModal(true)}
             className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-60"
           >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Selesai</>}
+            {loading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                <span>Memproses Data...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle size={18} /> 
+                <span>Selesai</span>
+              </>
+            )}
           </button>
         </div>
       </div>

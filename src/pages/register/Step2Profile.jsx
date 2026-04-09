@@ -147,6 +147,18 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
       errs.tanggal_lahir = 'Tanggal lahir wajib diisi';
     }
 
+    // Validasi Alamat Lengkap
+    if (!formData.alamat?.trim()) {
+      errs.alamat = 'Alamat wajib diisi';
+    } else {
+      const alamatText = formData.alamat.trim();
+      if (alamatText.length < 15) {
+        errs.alamat = 'Alamat terlalu pendek (min. 15 karakter). Mohon sertakan jalan, RT/RW, atau desa.';
+      } else if (alamatText.length > 255) {
+        errs.alamat = 'Alamat terlalu panjang (maks. 255 karakter)';
+      }
+    }
+
     return errs;
   };
 
@@ -410,7 +422,27 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
            <div className="space-y-1">
               <label className="text-[11px] font-bold text-primary uppercase">Alamat <span className="text-red-500">*</span></label>
-              <textarea rows="4" value={formData.alamat || ""} onChange={(e) => { updateFormData({ alamat: e.target.value }); setErrors(prev => ({ ...prev, alamat: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.alamat ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary resize-none transition-all h-[106px]`} placeholder="Alamat lengkap..." />
+              <textarea 
+                value={formData.alamat || ""} 
+                onChange={(e) => { 
+                  const val = e.target.value;
+                  updateFormData({ alamat: val }); 
+                  
+                  // Validasi Real-Time Alamat
+                  if (val.trim().length > 0 && val.trim().length < 15) {
+                    setErrors(prev => ({ ...prev, alamat: 'Sertakan alamat lengkap (nama jalan, RT/RW, atau desa)' }));
+                  } else if (val.trim().length > 255) {
+                    setErrors(prev => ({ ...prev, alamat: 'Alamat terlalu panjang' }));
+                  } else if (val.trim().length === 0) {
+                    setErrors(prev => ({ ...prev, alamat: 'Alamat wajib diisi' }));
+                  } else {
+                    setErrors(prev => ({ ...prev, alamat: undefined })); 
+                  }
+                }} 
+                rows="3"
+                placeholder="Contoh: Jl. Merdeka No. 123, RT 01/RW 02, Desa Maju..."
+                className={`w-full p-2.5 bg-white border ${errors.alamat ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary`} 
+              />
               {errors.alamat && <p className="text-xs text-red-500 mt-0.5">{errors.alamat}</p>}
            </div>
            
