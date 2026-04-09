@@ -35,9 +35,20 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [loadingKota, setLoadingKota] = useState(false);
 
   // State Form
-  const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { posisi: '', nama_perusahaan: '', id_provinsi: '', id_kota: '', jalan: '' });
-  const [universitas, setUniversitas] = useState(formData.universitas || { nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '' });
-  const [wirausaha, setWirausaha] = useState(formData.wirausaha || { id_bidang: '', nama_usaha: '' });
+  const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { 
+    posisi: '', nama_perusahaan: '', id_provinsi: '', id_kota: '', jalan: '', 
+    tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
+  });
+
+  const [universitas, setUniversitas] = useState(formData.universitas || { 
+    nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '', 
+    tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
+  });
+
+  const [wirausaha, setWirausaha] = useState(formData.wirausaha || { 
+    id_bidang: '', nama_usaha: '', 
+    tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
+  });
   
   const [tahunMulai, setTahunMulai] = useState(formData.tahun_mulai || '');
   const [tahunSelesai, setTahunSelesai] = useState(formData.tahun_selesai || '');
@@ -122,17 +133,18 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     const backendName = statusNameMap[selectedStatus] || selectedStatus;
     const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
     
+    const activeData = selectedStatus === 'Bekerja' ? pekerjaan : selectedStatus === 'Kuliah' ? universitas : wirausaha;
+
     const updates = {
       id_status: matched?.id || formData.id_status,
-      tahun_mulai: tahunMulai,
-      tahun_selesai: isSaatIni ? "" : tahunSelesai,
+      tahun_mulai: activeData?.tahun_mulai || "",
+      tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
       pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
       universitas: selectedStatus === 'Kuliah' ? universitas : null,
       wirausaha: selectedStatus === 'Wirausaha' ? wirausaha : null,
     };
     updateFormData(updates);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedStatus, pekerjaan, universitas, wirausaha, tahunMulai, tahunSelesai, isSaatIni, statusList]);
+  }, [selectedStatus, pekerjaan, universitas, wirausaha, statusList]);
 
   const statusOptions = [
     { id: 'Bekerja', label: 'Bekerja', sub: '(Working)', icon: Briefcase },
@@ -141,41 +153,97 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     { id: 'Mencari Kerja', label: 'Mencari Kerja', sub: '(Unemployed)', icon: Search },
   ];
 
-  // HELPER COMPONENT: Untuk merender inputan Tahun Selesai & Checkbox
-  const renderTahunSelesai = (label) => (
-    <div className="space-y-1">
-      {!isSaatIni ? (
-        <YearsInput
-          label={label}
-          text='(opsional)'
-          value={tahunSelesai}
-          onSelect={(val) => setTahunSelesai(val)}
-        />
-      ) : (
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-primary uppercase">
-            {label} <span className="text-gray-400 normal-case font-normal">(opsional)</span>
-          </label>
-          <div className="w-full px-3 py-2.5 bg-gray-100 border border-fourth rounded-xl text-sm text-gray-500 font-medium cursor-not-allowed">
-            Sedang Berlangsung 
-          </div>
+  const renderTahunDinamis = (type, label) => {
+    const data = type === 'Bekerja' ? pekerjaan : type === 'Kuliah' ? universitas : wirausaha;
+    const setData = type === 'Bekerja' ? setPekerjaan : type === 'Kuliah' ? setUniversitas : setWirausaha;
+
+    // Ambil tahun sekarang untuk batas maksimal tahun mulai
+    const tahunSekarang = new Date().getFullYear();
+
+    return (
+      <>
+        {/* Kolom Kiri: Tahun Mulai */}
+        <div className="relative z-[60]">
+          <YearsInput
+            label={`Tahun Mulai ${label} *`}
+            value={data.tahun_mulai}
+            // Batasi tahun mulai agar tidak bisa memilih masa depan
+            maxYear={tahunSekarang} 
+            onSelect={(val) => {
+              // Jika tahun mulai baru lebih besar dari tahun selesai yang sudah ada, reset tahun selesai
+              const updateData = { ...data, tahun_mulai: val };
+              if (data.tahun_selesai && parseInt(val) > parseInt(data.tahun_selesai)) {
+                updateData.tahun_selesai = "";
+              }
+              setData(updateData);
+            }}
+            isRequired={true}
+          />
         </div>
-      )}
-      
-      <label className="flex items-center gap-2 pt-1.5 text-[11px] text-primary cursor-pointer hover:text-primary transition-colors w-fit">
-        <input
-          type="checkbox"
-          checked={isSaatIni}
-          onChange={(e) => {
-            setIsSaatIni(e.target.checked);
-            if (e.target.checked) setTahunSelesai(''); 
-          }}
-          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
-        />
-        <span className="font-bold">Masih berlangsung (Saat ini)</span>
-      </label>
-    </div>
-  );
+
+        {/* Kolom Kanan: Tahun Selesai + Checkbox */}
+        <div className="relative z-[50]">
+          {!data.is_saat_ini ? (
+            <YearsInput
+              label={`Tahun Selesai ${label}`}
+              value={data.tahun_selesai}
+              // Batasi tahun selesai agar minimal sama dengan tahun mulai
+              minYear={data.tahun_mulai ? parseInt(data.tahun_mulai) : undefined}
+              onSelect={(val) => setData({ ...data, tahun_selesai: val })}
+              // Tahun selesai boleh saja di masa depan (misal: kuliah lulus 2027)
+              // Tapi jika ingin dibatasi juga ke tahun sekarang, tambahkan: maxYear={tahunSekarang}
+            />
+          ) : (
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-primary uppercase">{`Tahun Selesai ${label}`}</label>
+              <div className="p-2.5 bg-gray-100 border border-fourth rounded-xl text-sm text-gray-400 cursor-not-allowed">
+                Sedang Berlangsung
+              </div>
+            </div>
+          )}
+          <label className="flex items-center gap-2 mt-2 cursor-pointer w-fit">
+            <input
+              type="checkbox"
+              checked={data.is_saat_ini}
+              onChange={(e) => setData({ 
+                ...data, 
+                is_saat_ini: e.target.checked, 
+                tahun_selesai: e.target.checked ? "" : data.tahun_selesai 
+              })}
+              className="w-4 h-4 accent-primary cursor-pointer"
+            />
+            <span className="text-[10px] font-bold text-primary uppercase">Masih berlangsung</span>
+          </label>
+        </div>
+      </>
+    );
+  };
+
+  // FUNGSI BARU: Simpan data secara paksa sebelum kembali ke halaman sebelumnya
+  // Di dalam Step3Status.jsx, perbarui fungsi handleBack menjadi:
+
+  const handleBack = () => {
+    const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
+    const backendName = statusNameMap[selectedStatus] || selectedStatus;
+    const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
+    
+    // Ambil data dari objek yang sedang aktif
+    const activeData = selectedStatus === 'Bekerja' ? pekerjaan : 
+                      selectedStatus === 'Kuliah' ? universitas : wirausaha;
+
+    const updates = {
+      id_status: matched?.id || formData.id_status,
+      // Gunakan tahun dari data aktif, bukan dari state tahunMulai yang lama
+      tahun_mulai: activeData?.tahun_mulai || "",
+      tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
+      pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
+      universitas: selectedStatus === 'Kuliah' ? universitas : null,
+      wirausaha: selectedStatus === 'Wirausaha' ? wirausaha : null,
+    };
+    
+    updateFormData(updates);
+    onBack(); 
+  };
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -218,7 +286,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {selectedStatus === 'Bekerja' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             
-            {/* PERBAIKAN Z-INDEX: Berurutan mengecil dari atas ke bawah */}
             <div className="relative z-[80]">
               <InputDropdownEdit
                 label="Pekerjaan Sekarang *"
@@ -226,7 +293,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 options={["UI/UX", "DevOps", "Cloud Engineering", "Karyawan"]}
                 placeholder="Masukkan nama pekerjaan"
                 isRequired={true}
-                onSelect={(val) => setPekerjaan({ ...pekerjaan, posisi: val })}
+                onChange={(val) => setPekerjaan(prev => ({ ...prev, posisi: val }))}
+                onSelect={(val) => setPekerjaan(prev => ({ ...prev, posisi: val }))}
               />
             </div>
             
@@ -237,25 +305,16 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 options={perusahaanList}
                 placeholder="Ketik atau pilih nama perusahaan"
                 isRequired={true}
-                onSelect={(val) => setPekerjaan({ ...pekerjaan, nama_perusahaan: val })}
+                onChange={(val) => setPekerjaan(prev => ({ ...prev, nama_perusahaan: val }))}
+                onSelect={(val) => setPekerjaan(prev => ({ ...prev, nama_perusahaan: val }))}
               />
             </div>
             
-            <div className="relative z-[60]">
-              <YearsInput
-                label="Tahun Masuk"
-                isRequired={true}
-                value={tahunMulai}
-                onSelect={(val) => setTahunMulai(val)}
-              />
-            </div>
-            
-            <div className="relative z-[50]">
-              {renderTahunSelesai("Tahun Selesai")}
-            </div>
+            {renderTahunDinamis('Bekerja', 'Kerja')}
 
-            {/* AREA LOKASI (PROVINSI & KOTA) - Z-index diturunkan jadi 40 */}
+            {/* AREA LOKASI (PROVINSI & KOTA) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 relative z-[40]">
+              {/* ... biarkan provinsi dan kota seperti sebelumnya ... */}
               <div className="w-full relative z-[45]">
                 <SmoothDropdown
                   label="Provinsi *"
@@ -294,67 +353,69 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
         {/* FORM KULIAH */}
         {selectedStatus === 'Kuliah' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <div className="md:col-span-2 relative z-[80]">
               <UniversitySelector
+                univValue={universitas.nama_universitas} 
+                jurusanValue={universitas.id_jurusan_kuliah}
                 onUnivSelect={(val) => setUniversitas(prev => ({ ...prev, nama_universitas: val }))}
                 onJurusanSelect={(val) => setUniversitas(prev => ({ ...prev, id_jurusan_kuliah: val }))}
+                onChangeUniv={(val) => setUniversitas(prev => ({ ...prev, nama_universitas: val }))}
+                onChangeJurusan={(val) => setUniversitas(prev => ({ ...prev, id_jurusan_kuliah: val }))}
               />
             </div>
+
             <div className="relative z-[70]">
               <SmoothDropdown
-                label="Jalur Masuk Kuliah"
+                label="Jalur Masuk Kuliah *"
                 value={universitas.jalur_masuk}
                 options={["SNBP", "SNBT", "Mandiri", "Beasiswa"]}
                 isRequired={true}
                 onSelect={(val) => setUniversitas({ ...universitas, jalur_masuk: val })}
               />
             </div>
+
             <div className="relative z-[60]">
               <SmoothDropdown
-                label="Jenjang Kuliah"
+                label="Jenjang Kuliah *"
                 value={universitas.jenjang}
                 options={["D3", "D4", "S1", "S2", "S3"]}
                 isRequired={true}
                 onSelect={(val) => setUniversitas({ ...universitas, jenjang: val })}
               />
             </div>
-            <div className="relative z-[50]">
-              <YearsInput label="Tahun Masuk" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            </div>
-            <div className="relative z-[40]">
-              {renderTahunSelesai("Tahun Lulus")}
-            </div>
+
+            {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
+            {renderTahunDinamis('Kuliah', 'Kuliah')}
           </div>
         )}
 
         {/* FORM WIRAUSAHA */}
         {selectedStatus === 'Wirausaha' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <div className="space-y-1 relative z-[70]">
               <label className="text-[11px] font-bold text-primary uppercase">Nama Usaha *</label>
               <input
                 type="text"
                 value={wirausaha.nama_usaha}
                 onChange={(e) => setWirausaha({ ...wirausaha, nama_usaha: e.target.value })}
-                className="mt-2 w-full p-3 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                placeholder="Masukkan nama usaha"
               />
             </div>
+
             <div className="relative z-[60]">
               <SmoothDropdown
-                label="Bidang Usaha"
+                label="Bidang Usaha *"
                 value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
                 options={bidangUsahaList}
                 isRequired={true}
                 onSelect={(val) => setWirausaha({ ...wirausaha, id_bidang: bidangUsahaMap[val] || val })}
               />
             </div>
-            <div className="relative z-[50]">
-              <YearsInput label="Tahun Mulai" value={tahunMulai} onSelect={(val) => setTahunMulai(val)} isRequired={true} />
-            </div>
-            <div className="relative z-[40]">
-              {renderTahunSelesai("Tahun Berakhir")}
-            </div>
+
+            {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
+            {renderTahunDinamis('Wirausaha', 'Usaha')}
           </div>
         )}
 
@@ -369,7 +430,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         <div className="flex justify-between">
           <button
             type="button"
-            onClick={onBack}
+            onClick={handleBack}
             className="flex items-center gap-2 px-4 md:px-6 py-2 border border-fourth rounded-xl text-xs md:text-sm font-bold text-primary hover:bg-fourth transition-all cursor-pointer"
           >
             <ArrowLeft size={16} /> Kembali
