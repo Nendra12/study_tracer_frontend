@@ -174,13 +174,14 @@ export default function Register() {
     <div className="min-h-screen bg-gray-50 font-lexend flex flex-col">
       {/* Navbar Minimalis */}
       <header className="bg-white border-b border-fourth px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
           <img src={theme?.logo || DefaultLogo} alt="Logo" className="w-10" />
           <div>
             <h1 className="text-primary font-bold text-sm leading-tight">Alumni Tracer Study</h1>
             <p className="text-[10px] text-third">{theme?.namaSekolah || 'SMKN 2 Kraksaan'}</p>
           </div>
-        </div>
+        </Link>
+
         <div className="flex items-center gap-4">
           <span className="text-xs text-third hidden md:block">Sudah punya akun?</span>
           <Link to="/login" className="p-2 border border-fourth rounded-lg text-xs font-bold text-primary flex items-center gap-2 hover:bg-fourth transition-all">
