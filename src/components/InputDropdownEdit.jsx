@@ -6,41 +6,48 @@ export default function InputDropdownEdit({
   options = [],
   placeholder = "Pilih atau ketik...",
   isRequired = false,
+  value = "", // <-- TAMBAHAN: Menerima nilai awal
+  onChange,   // <-- TAMBAHAN: Menangkap ketikan manual
   onSelect
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState(null);
+  const [query, setQuery] = useState(value || ""); // Inisialisasi dengan value
+  const [selected, setSelected] = useState(value || null);
   const dropdownRef = useRef(null);
 
-  // Filter opsi berdasarkan input user
-  const filteredOptions = options.filter((option) =>
-    option.toLowerCase().includes(query.toLowerCase())
-  );
+  // TAMBAHAN: Sinkronisasi jika 'value' berubah dari luar (misal saat tombol Kembali ditekan)
+  useEffect(() => {
+    if (value !== undefined && value !== query) {
+      setQuery(value);
+      setSelected(value || null);
+    }
+  }, [value]);
 
-  // Cek apakah input user benar-benar baru (tidak ada di list)
+  const filteredOptions = options.filter((option) => {
+    const stringOption = String(option || "");
+    const stringQuery = String(query || "");
+    return stringOption.toLowerCase().includes(stringQuery.toLowerCase());
+  });
+
   const isCustomValue = query.length > 0 && !options.some(
     (opt) => opt.toLowerCase() === query.toLowerCase()
   );
 
-  const handleSelect = (value) => {
-    setSelected(value);
-    setQuery(value); // Set teks input sesuai yang dipilih
+  const handleSelect = (val) => {
+    setSelected(val);
+    setQuery(val);
     setIsOpen(false);
-    if (onSelect) onSelect(value);
+    if (onChange) onChange(val); // Beritahu parent
+    if (onSelect) onSelect(val); // Beritahu parent
   };
 
-  // Menutup dropdown saat klik di luar
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
-        
-        // JIKA ada ketikan (query) dan berbeda dari yang sudah dipilih, simpan yang baru!
         if (query && query !== selected) {
            handleSelect(query); 
         } 
-        // JIKA input malah dikosongkan, kembalikan ke pilihan terakhir (selected)
         else if (!query && selected) {
            setQuery(selected);
         }
@@ -48,7 +55,7 @@ export default function InputDropdownEdit({
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [selected]);
+  }, [selected, query]); // <-- Tambahkan query ke dependency
 
   return (
     <div className="space-y-1 w-full relative" ref={dropdownRef}>
@@ -56,7 +63,6 @@ export default function InputDropdownEdit({
         {label} {isRequired && <span className="text-red-500">*</span>}
       </label>
 
-      {/* Input Group */}
       <div className={`mt-2 flex items-center bg-white border-2 rounded-xl transition-all duration-300
         ${isOpen ? 'border-primary ring-2 ring-primary/10' : 'border-fourth hover:border-primary/50'}`}>
 
@@ -66,6 +72,7 @@ export default function InputDropdownEdit({
           onChange={(e) => {
             setQuery(e.target.value);
             setIsOpen(true);
+            if (onChange) onChange(e.target.value); // <-- TAMBAHAN: Simpan ketikan manual secara realtime
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
@@ -81,17 +88,15 @@ export default function InputDropdownEdit({
         </button>
       </div>
 
-      {/* Dropdown Menu */}
       <div className={`absolute z-20 w-full mt-2 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden transition-all duration-200 origin-top
         ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}>
 
         <ul className="max-h-52 overflow-y-auto py-1 custom-scrollbar">
-          {/* Opsi dari List */}
-          {filteredOptions.map((option) => (
+          {filteredOptions.map((option, index) => ( // Tambahkan 'index' di sini
             <li
-              key={option}
+              key={`${option}-${index}`} // Sekarang 'index' sudah terdefinisi
               onClick={() => handleSelect(option)}
-              className="flex items-center justify-between px-4 py-3 text-sm cursor-pointer hover:bg-fourth text-primary hover:text-primary transition-colors group"
+              className="flex items-center justify-between px-4 py-3 text-sm cursor-pointer hover:bg-fourth text-primary transition-colors group"
             >
               <span className={selected === option ? "font-bold text-primary" : ""}>
                 {option}
@@ -100,7 +105,6 @@ export default function InputDropdownEdit({
             </li>
           ))}
 
-          {/* Opsi Tambah Baru (Custom) */}
           {isCustomValue && (
             <li
               onClick={() => handleSelect(query)}
