@@ -277,13 +277,11 @@ export default function ProfileUpdateRequests() {
                     <FileEdit size={12} /> Sekilas Perubahan:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {(req.changes || [])
-                      .filter((change) => change.new !== "-")
-                      .map((change, idx) => (
-                        <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-fourth text-primary/80 border border-slate-100 rounded-lg text-[11px] font-bold">
-                          {change.label}
-                        </span>
-                      ))}
+                    {(req.changes || []).map((change, idx) => (
+                      <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-fourth text-primary/80 border border-slate-100 rounded-lg text-[11px] font-bold">
+                        {change.label}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
@@ -367,15 +365,21 @@ export default function ProfileUpdateRequests() {
                       </span>
                     </div>
 
-                    {/* Quick glance of changes — uses pre-built changes array */}
                     <div className="flex flex-wrap gap-2">
-                      {(req.changes || [])
-                        .filter((change) => change.new !== "-")
-                        .map((change, idx) => (
-                          <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
-                            {change.label}
+                      {(req.changes || []).map((change, idx) => {
+                        const isAdd = change.old === '-' && change.new !== '-';
+                        const isDel = change.new === '-' && change.old !== '-';
+                        const badgeText = isAdd ? `Menambah ${change.label}` : isDel ? `Menghapus ${change.label}` : `Mengubah ${change.label}`;
+                        const badgeClass = isAdd ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                          : isDel ? 'bg-red-50 text-red-600 border-red-100'
+                            : 'bg-blue-50 text-blue-600 border-blue-100';
+
+                        return (
+                          <span key={`${change.label}-${idx}`} className={`px-3 py-1.5 border rounded-lg text-[11px] font-bold ${badgeClass}`}>
+                            {badgeText}
                           </span>
-                        ))}
+                        );
+                      })}
                     </div>
                   </div>
 

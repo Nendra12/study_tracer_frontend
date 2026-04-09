@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock, AlertCircle } from 'lucide-react';
+import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock, AlertCircle, Lock } from 'lucide-react';
 import SmoothDropdown from '../../admin/SmoothDropdown';
 import { alumniApi } from '../../../api/alumni';
 import DeskripsiKerierInput from '../../admin/DeskripsiKerierInput';
 import { alertConfirm } from '../../../utilitis/alert';
 
-export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }) {
+export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -200,20 +200,26 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
   const editingPendingId = editMode === 'edit_pending' ? formData.pendingId : null;
 
   return (
-    <div className="p-6 lg:p-10 animate-fade-in">
+    <div className="p-6 lg:p-10 animate-in fade-in duration-300">
 
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-primary">Deskripsi Karier</h2>
-          <p className="text-slate-500 text-sm mt-1">Ceritakan lebih detail mengenai peran dan tanggung jawab pada pekerjaan Anda.</p>
+          <h2 className="text-md md:text-xl  font-bold text-primary">Deskripsi Karier</h2>
         </div>
 
         {!isEditing && getAvailableRiwayat().length > 0 && (
           <button
             onClick={() => { setEditMode('add'); setIsEditing(true); }}
-            className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl font-bold text-sm transition-all"
+            disabled={!isVerified}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+              !isVerified 
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
+            }`}
+            title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
           >
-            <Plus size={16} /> Deskripsi Karier
+            {!isVerified ? <Lock size={16} /> : <Plus size={16} />} 
+            <span className='hidden md:block'>{!isVerified ? 'Terkunci' : 'Deskripsi Karier'}</span>
           </button>
         )}
       </div>
@@ -238,14 +244,14 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
       {isEditing && (
         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-primary">
+            <h3 className="font-bold text-sm md:text-lg text-primary">
               {editMode === 'edit_pending'
                 ? 'Edit Ulang Pengajuan'
                 : editMode === 'edit'
                 ? 'Edit Deskripsi Karier'
                 : 'Tambah Deskripsi Karier Baru'}
             </h3>
-            <button type="button" onClick={resetForm} className="text-slate-400 hover:text-red-500">
+            <button type="button" onClick={resetForm} className="cursor-pointer text-slate-400 hover:text-red-500">
               <X size={20} />
             </button>
           </div>
@@ -320,7 +326,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
                 disabled={loading}
                 className="cursor-pointer flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm text-white bg-primary hover:bg-primary/90 transition-all disabled:opacity-70"
               >
-                {loading ? 'Menyimpan...' : <><Save size={16} /> Simpan Deskripsi</>}
+                {loading ? 'Menyimpan...' : <><Save size={16} />Simpan <span className='hidden md:block'> Deskripsi</span></>}
               </button>
             </div>
           </form>
@@ -328,10 +334,10 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
       )}
 
       {!isEditing && riwayatKarier.length > 0 && deskripsiList.length === 0 && pendingCreate.length === 0 && (
-        <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+        <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 mb-6 bg-white text-center">
           <FileText className="mx-auto text-slate-300 mb-4" size={40} />
-          <h3 className="text-base font-bold text-primary mb-1">Belum ada deskripsi</h3>
-          <p className="text-slate-500 text-sm max-w-sm mx-auto">Tambahkan deskripsi untuk melengkapi profil karier Anda agar lebih menarik.</p>
+          <h3 className="text-base font-bold text-slate-400 mb-1">Belum ada deskripsi</h3>
+          <p className="text-sm font-medium text-slate-400">Tambahkan deskripsi kegiatan karier untuk melengkapi profil karier Anda agar lebih menarik.</p>
         </div>
       )}
 
@@ -371,7 +377,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess }
                       </span>
                     )}
                   </div>
-                  {!hasPendingDelete && !hasPendingUpdate && (
+                  {isVerified && !hasPendingDelete && !hasPendingUpdate && (
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleEdit(item)}

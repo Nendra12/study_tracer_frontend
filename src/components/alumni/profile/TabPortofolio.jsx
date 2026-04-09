@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save, Clock } from 'lucide-react';
+import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { STORAGE_BASE_URL } from '../../../api/axios';
 
-export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
+export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -192,7 +192,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
   };
 
   return (
-    <div className="p-6 lg:p-10 animate-fade-in">
+    <div className="p-6 lg:p-10 animate-in fade-in duration-300">
       {/* Pending Update Alert - Only for update/delete actions */}
       {pendingUpdates.some(u => u.action === 'update' || u.action === 'delete') && (
         <div className="mb-6 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
@@ -208,16 +208,22 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
 
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-primary">Portofolio & Proyek</h2>
-          <p className="text-slate-500 text-sm mt-1">Tampilkan karya dan pengalaman proyek terbaik Anda.</p>
+          <h2 className="text-md md:text-xl font-bold text-primary">Portofolio & Proyek</h2>
         </div>
 
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl font-bold text-sm transition-all"
+            disabled={!isVerified}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+              !isVerified 
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
+            }`}
+            title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
           >
-            <Plus size={16} /> Tambah Proyek
+            {!isVerified ? <Lock size={16} /> : <Plus size={16} />} 
+            <span className='hidden md:block'>{!isVerified ? 'Terkunci' : 'Tambah Proyek'}</span>
           </button>
         )}
       </div>
@@ -229,7 +235,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
             <h3 className="font-bold text-lg text-slate-800">
               {formData.isPending ? 'Edit Pengajuan Portofolio' : formData.id ? 'Edit Proyek' : 'Tambah Proyek Baru'}
             </h3>
-            <button onClick={resetForm} className="text-slate-400 hover:text-red-500">
+            <button onClick={resetForm} className="cursor-pointer text-slate-400 hover:text-red-500">
               <X size={20} />
             </button>
           </div>
@@ -335,12 +341,12 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
         </div>
       )}
 
-      {/* --- LIST PORTOFOLIO --- */}
+      {/* --- List Portofolio --- */}
       {!isEditing && allPortfolios.length === 0 && (
-        <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+        <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 mb-6 bg-white text-center">
           <ImageIcon className="mx-auto text-slate-300 mb-4" size={48} />
-          <h3 className="text-lg font-bold text-primary mb-2">Belum ada portofolio</h3>
-          <p className="text-slate-500 text-sm max-w-sm mx-auto">Tambahkan karya, penelitian, atau proyek terbaik yang pernah Anda kerjakan.</p>
+          <h3 className="text-lg font-bold text-slate-400 mb-2">Belum ada portofolio</h3>
+          <p className="text-sm font-medium text-slate-400">Tambahkan karya, penelitian, atau proyek terbaik yang pernah Anda kerjakan.</p>
         </div>
       )}
 
@@ -365,22 +371,24 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess }) {
               )}
 
               {/* Action Buttons (Overlay) */}
-              <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="cursor-pointer p-2 bg-white/90 backdrop-blur text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-sm transition-colors"
-                  title={item.isPending ? 'Edit pengajuan' : 'Edit portofolio'}
-                >
-                  <Edit2 size={14} />
-                </button>
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="cursor-pointer p-2 bg-white/90 backdrop-blur text-red-600 hover:bg-red-600 hover:text-white rounded-lg shadow-sm transition-colors"
-                  title={item.isPending ? 'Batalkan pengajuan' : 'Hapus portofolio'}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              {isVerified && (
+                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="cursor-pointer p-2 bg-white/90 backdrop-blur text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-sm transition-colors"
+                    title={item.isPending ? 'Edit pengajuan' : 'Edit portofolio'}
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="cursor-pointer p-2 bg-white/90 backdrop-blur text-red-600 hover:bg-red-600 hover:text-white rounded-lg shadow-sm transition-colors"
+                    title={item.isPending ? 'Batalkan pengajuan' : 'Hapus portofolio'}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Content Area */}

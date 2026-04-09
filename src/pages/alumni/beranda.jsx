@@ -227,10 +227,10 @@ export default function Beranda() {
 
       {/* Notifikasi Info Kampus Melayang */}
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="hidden lg:flex absolute -top-8 right-16 z-40 bg-white/95 backdrop-blur-md text-slate-800 p-3 pr-6 rounded-2xl shadow-2xl border border-slate-100 items-center gap-3 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/alumni/pengumuman")}>
+        <div className="hidden lg:flex absolute -top-45 right-80 z-40 bg-white/95 backdrop-blur-md text-slate-800 p-3 pr-6 rounded-2xl shadow-2xl border border-slate-100 items-center gap-3 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/alumni/pengumuman")}>
           <img src={JobsImg} alt="" className="w-10 h-10" />
           <div className="flex flex-col">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Info Kampus</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Info Sekolah</span>
             <span className="text-sm font-black">Lihat Pengumuman</span>
           </div>
         </div>

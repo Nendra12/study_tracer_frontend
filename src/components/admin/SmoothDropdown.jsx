@@ -43,7 +43,7 @@ export default function SmoothDropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer mt-3 w-full p-3 bg-white border-2 border-gray-100 flex items-center justify-between rounded-xl text-sm transition-all outline-none"
+        className={`cursor-pointer ${label ? 'mt-3' : ''} w-full p-3 bg-white border-2 border-gray-100 flex items-center justify-between rounded-xl text-sm transition-all outline-none`}
       >
         <span className={selected ? 'text-primary/80 font-medium' : 'text-gray-400'}>
           {selected || placeholder}

@@ -35,7 +35,13 @@ export default function AlertBeranda({ isVerified, hasCompletedKuesioner, kuesio
                 <h3 className="text-lg font-bold text-slate-800 mb-1">Isi Tracer Study</h3>
                 <p className="text-slate-500 text-sm leading-relaxed max-w-3xl">Mohon bantu almamater dengan mengisi kuesioner pelacakan alumni untuk meningkatkan kualitas mutu pendidikan.</p>
               </div>
-              <button onClick={() => { if (kuesionerPending[0]?.id) navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`); }} className={`w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 ${!isVerified ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+              <button
+                onClick={() => {
+                  if (kuesionerPending[0]?.id) navigate(`/alumni/kuesioner/${kuesionerPending[0].id}`);
+                }}
+                disabled={!isVerified}
+                className="w-full md:w-auto bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all cursor-pointer hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:shadow-none"
+              >
                 {isVerified ? 'ISI SEKARANG' : 'TUNGGU VERIFIKASI'}
               </button>
             </div>

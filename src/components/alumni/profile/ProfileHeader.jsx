@@ -36,7 +36,7 @@ export default function ProfileHeader({ profile, onPerbarui }) {
         <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
         <div>
           <h3 className="text-sm font-bold text-amber-800 mb-0.5">Kebijakan Pembaruan</h3>
-          <p className="text-xs text-amber-700/80 font-medium">
+          <p className="text-xs text-amber-700/80 font-medium text-justify sm:text-left">
             Pembaruan pada profile memerlukan persetujuan Admin. Selama masa peninjauan, perubahan tidak dapat diakses publik. Harap pastikan semua informasi yang Anda berikan akurat dan sesuai dengan kebijakan kami untuk mempercepat proses persetujuan.
           </p>
         </div>

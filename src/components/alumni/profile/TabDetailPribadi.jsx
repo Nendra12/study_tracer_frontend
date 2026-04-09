@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Save, X, ChevronDown, Loader2, Clock } from 'lucide-react';
+import { Edit, Save, X, ChevronDown, Loader2, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { alertConfirm } from '../../../utilitis/alert';
 
@@ -33,7 +33,7 @@ function getLatestValue(latest, field) {
   return map[field] ?? '';
 }
 
-export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, triggerEdit }) {
+export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, triggerEdit, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [canceling, setCanceling] = useState(false);
@@ -163,38 +163,45 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       <div className="flex items-center justify-between mb-8">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-black text-primary tracking-tight">Detail Pribadi</h2>
+            <h2 className="text-md md:text-xl font-bold text-primary">Detail Pribadi</h2>
             {hasPending && hasNonPhotoChange && !isEditing && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full border border-amber-200">
                 <Clock size={9} /> PENDING
               </span>
             )}
           </div>
-          <p className="text-sm text-primary/60">Informasi dasar akun Anda.</p>
         </div>
 
         {isEditing ? (
           <div className="flex items-center gap-2">
             <button
               onClick={cancelEditing}
-              className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all cursor-pointer"
             >
               Batal
             </button>
+
             <button
               onClick={handleSaveProfile}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary text-white shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Simpan
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Simpan
             </button>
           </div>
         ) : (
           <button
             onClick={startEditing}
-            className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-all cursor-pointer"
+            disabled={!isVerified}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+              !isVerified 
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
+            }`}
+            title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
           >
-            <Edit size={14} /> {hasPending && hasNonPhotoChange ? 'Edit Ulang' : 'Edit Data'}
+            {!isVerified ? <Lock size={14} /> : <Edit size={14} />} 
+            {!isVerified ? 'Terkunci' : (hasPending && hasNonPhotoChange ? 'Edit Ulang' : 'Edit Data')}
           </button>
         )}
       </div>

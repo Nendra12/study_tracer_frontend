@@ -6,8 +6,6 @@ import {
 } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import Navbar from '../../components/alumni/Navbar';
-import Footer from '../../components/alumni/Footer';
 import PublicProfileBar from '../../components/alumni/PublicProfileBar';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -95,14 +93,13 @@ export default function AlumniDetail() {
               {error ? 'Terjadi kesalahan saat memuat profil. Silakan coba lagi.' : 'Profil alumni yang Anda cari tidak tersedia.'}
             </p>
             <button
-              onClick={() => navigate('/alumni/daftar-alumni')}
+              onClick={() => navigate('/alumni')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer"
             >
-              <ArrowLeft size={16} /> Ke Direktori Alumni
+              <ArrowLeft size={16} /> Ke Portal Alumni
             </button>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
