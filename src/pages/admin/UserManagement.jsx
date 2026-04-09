@@ -183,7 +183,30 @@ export default function UserManagement() {
     return () => { cancelled = true; };
   }, [currentPage, activeTab, debouncedSearch, selectedJurusan, selectedTahunLulus, fetchTrigger]);
 
+  useEffect(() => {
+    if (fetchTrigger === 0) return;
+    fetchStats();
+  }, [fetchTrigger, fetchStats]);
+
   const refreshAlumni = () => setFetchTrigger(c => c + 1);
+
+  const isSameAlumni = (item, alumniId) => {
+    if (!item) return false;
+    return [item.id, item.user_id, item.id_alumni].some((id) => String(id) === String(alumniId));
+  };
+
+  const patchStatsOnStatusChange = (fromStatus, toStatus) => {
+    setStats(prev => {
+      if (!prev) return prev;
+      const next = { ...prev };
+
+      if (fromStatus === 'pending') next.pending = Math.max(0, (Number(next.pending) || 0) - 1);
+      if (fromStatus === 'ok') next.active = Math.max(0, (Number(next.active) || 0) - 1);
+      if (toStatus === 'ok') next.active = (Number(next.active) || 0) + 1;
+
+      return next;
+    });
+  };
 
   // FUNGSI UNTUK TOGGLE FEATURED ALUMNI
   const handleToggleFeatured = async (alumniId, isCurrentlyFeatured) => {
@@ -222,10 +245,17 @@ export default function UserManagement() {
     if (!isConfirmed) return;
     setActionLoading(alumniId);
     try {
+      const target = alumni.find(item => isSameAlumni(item, alumniId));
       await adminApi.approveUser(alumniId);
+
+      patchStatsOnStatusChange(target?.status_create, 'ok');
+      setAlumni(prev => {
+        if (activeTab === 'Menunggu') return prev.filter(item => !isSameAlumni(item, alumniId));
+        return prev.map(item => (isSameAlumni(item, alumniId) ? { ...item, status_create: 'ok' } : item));
+      });
+
       alertSuccess('Verifikasi Berhasil', 'Akun alumni kini telah aktif dan dapat mengakses sistem.');
       refreshAlumni();
-      fetchStats();
     } catch (err) {
       alertError('Gagal Verifikasi', err.response?.data?.message || 'Terjadi kesalahan saat menyetujui data.');
     } finally { setActionLoading(null); }
@@ -245,10 +275,17 @@ export default function UserManagement() {
     if (!isConfirmed) return;
     setActionLoading(alumniId);
     try {
+      const target = alumni.find(item => isSameAlumni(item, alumniId));
       await adminApi.rejectUser(alumniId, { alasan });
+
+      patchStatsOnStatusChange(target?.status_create, 'rejected');
+      setAlumni(prev => {
+        if (activeTab === 'Menunggu') return prev.filter(item => !isSameAlumni(item, alumniId));
+        return prev.map(item => (isSameAlumni(item, alumniId) ? { ...item, status_create: 'rejected' } : item));
+      });
+
       alertSuccess('Data Ditolak', 'Notifikasi penolakan telah dikirimkan ke alumni yang bersangkutan.');
       refreshAlumni();
-      fetchStats();
     } catch (err) {
       alertError('Gagal Menolak', err.response?.data?.message || 'Gagal memproses penolakan.');
     } finally { setActionLoading(null); }
@@ -266,10 +303,17 @@ export default function UserManagement() {
     if (!isConfirmed) return;
     setActionLoading(alumniId);
     try {
+      const target = alumni.find(item => isSameAlumni(item, alumniId));
       await adminApi.banUser(alumniId, { alasan });
+
+      patchStatsOnStatusChange(target?.status_create, 'banned');
+      setAlumni(prev => {
+        if (activeTab === 'Menunggu' || activeTab === 'Aktif') return prev.filter(item => !isSameAlumni(item, alumniId));
+        return prev.map(item => (isSameAlumni(item, alumniId) ? { ...item, status_create: 'banned' } : item));
+      });
+
       alertSuccess(`User "${name}" berhasil diblacklist`);
       refreshAlumni();
-      fetchStats();
     } catch (err) {
       alertError(err.response?.data?.message || 'Gagal melakukan blacklist');
     } finally { setActionLoading(null); }
@@ -280,10 +324,18 @@ export default function UserManagement() {
     if (!isConfirmed) return;
     setActionLoading(userId);
     try {
+      const target = alumni.find(item => isSameAlumni(item, userId));
       await adminApi.deleteUser(userId);
+
+      patchStatsOnStatusChange(target?.status_create, null);
+      setStats(prev => {
+        if (!prev) return prev;
+        return { ...prev, total: Math.max(0, (Number(prev.total) || 0) - 1) };
+      });
+      setAlumni(prev => prev.filter(item => !isSameAlumni(item, userId)));
+
       alertSuccess('Dihapus!', 'Data user berhasil dihapus dari sistem.');
       refreshAlumni();
-      fetchStats();
     } catch (err) {
       alertError('Gagal!', err.response?.data?.message || 'Gagal menghapus user.');
     } finally { setActionLoading(null); }

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, Check, X, Loader2, RefreshCw, Eye, FileEdit, User, Award, Layout, FileText, Globe } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Clock, Check, X, Loader2, RefreshCw, Eye, FileEdit, User, Award, Layout, FileText, Globe, ChevronDown } from 'lucide-react';
 import { adminApi } from '../../../api/admin';
-import { alertSuccess, alertError } from '../../../utilitis/alert';
+import { alertSuccess, alertError, alertConfirm } from '../../../utilitis/alert';
 import CareerUpdateDetailModal from '../CareerUpdateDetailModal';
 import ProfileUpdateDetailModal from '../ProfileUpdateDetailModal';
 
@@ -78,6 +78,7 @@ export default function ProfileUpdateRequests() {
   // Modal states
   const [selectedCareerDetail, setSelectedCareerDetail] = useState(null);
   const [selectedProfileDetail, setSelectedProfileDetail] = useState(null);
+  const [expandedUserKey, setExpandedUserKey] = useState(null);
 
   // ── Fetch Career Updates (existing) ──
   const fetchCareerUpdates = useCallback(async () => {
@@ -189,8 +190,158 @@ export default function ProfileUpdateRequests() {
     }
   }
 
+  async function handleBulkActionByUser(group, actionType) {
+    try {
+      const bulkKey = `bulk-${actionType}-${group.userKey}`;
+      setActionLoading(bulkKey);
+
+      const results = await Promise.allSettled(
+        group.requests.map((req) => {
+          if (req.requestType === 'career') {
+            return actionType === 'approve'
+              ? adminApi.approveCareerUpdate(req.id)
+              : adminApi.rejectCareerUpdate(req.id);
+          }
+
+          return actionType === 'approve'
+            ? adminApi.approveProfileUpdate(req.id)
+            : adminApi.rejectProfileUpdate(req.id);
+        })
+      );
+
+      const succeededCareerIds = new Set();
+      const succeededProfileIds = new Set();
+      let successCount = 0;
+
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          const req = group.requests[index];
+          successCount += 1;
+          if (req.requestType === 'career') {
+            succeededCareerIds.add(req.id);
+          } else {
+            succeededProfileIds.add(req.id);
+          }
+        }
+      });
+
+      if (succeededCareerIds.size > 0) {
+        setCareerRequests((prev) => prev.filter((request) => !succeededCareerIds.has(request.id)));
+      }
+
+      if (succeededProfileIds.size > 0) {
+        setProfileRequests((prev) => prev.filter((request) => !succeededProfileIds.has(request.id)));
+      }
+
+      if (selectedCareerDetail && succeededCareerIds.has(selectedCareerDetail.id)) {
+        setSelectedCareerDetail(null);
+      }
+
+      if (selectedProfileDetail && succeededProfileIds.has(selectedProfileDetail.id)) {
+        setSelectedProfileDetail(null);
+      }
+
+      const failedCount = group.requests.length - successCount;
+
+      if (successCount > 0 && failedCount === 0) {
+        alertSuccess(
+          actionType === 'approve'
+            ? `Berhasil menyetujui semua request (${successCount}) untuk ${group.name}.`
+            : `Berhasil menolak semua request (${successCount}) untuk ${group.name}.`
+        );
+      } else if (successCount > 0) {
+        alertSuccess(
+          actionType === 'approve'
+            ? `Berhasil menyetujui ${successCount} request, ${failedCount} gagal diproses.`
+            : `Berhasil menolak ${successCount} request, ${failedCount} gagal diproses.`
+        );
+      } else {
+        alertError(
+          actionType === 'approve'
+            ? 'Semua request gagal disetujui. Silakan coba lagi.'
+            : 'Semua request gagal ditolak. Silakan coba lagi.'
+        );
+      }
+    } catch (err) {
+      console.error(`Failed to ${actionType} all requests by user:`, err);
+      alertError('Gagal memproses aksi massal: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function confirmBulkActionByUser(group, actionType) {
+    const actionLabel = actionType === 'approve' ? 'menyetujui' : 'menolak';
+    const result = await alertConfirm(
+      `Yakin ingin ${actionLabel} semua ${group.requestCount} request milik ${group.name}?`
+    );
+
+    if (result.isConfirmed) {
+      await handleBulkActionByUser(group, actionType);
+    }
+  }
+
   const isLoading = careerLoading || profileLoading;
   const totalPending = careerRequests.length + profileRequests.length;
+
+  const groupedRequests = useMemo(() => {
+    const groups = new Map();
+
+    const addRequest = (request, type) => {
+      const userKey = String(
+        request.userId ||
+        request.user_id ||
+        request.id_user ||
+        request.nama ||
+        request.name ||
+        `${type}-${request.id}`
+      );
+
+      if (!groups.has(userKey)) {
+        groups.set(userKey, {
+          userKey,
+          userId: request.userId || request.user_id || request.id_user || '-',
+          name: request.name || request.nama || 'Alumni',
+          initials: request.initials,
+          image: request.image,
+          angkatan: request.angkatan,
+          requests: [],
+        });
+      }
+
+      const userGroup = groups.get(userKey);
+
+      if (!userGroup.image && request.image) userGroup.image = request.image;
+      if ((!userGroup.name || userGroup.name === 'Alumni') && (request.name || request.nama)) {
+        userGroup.name = request.name || request.nama;
+      }
+      if (!userGroup.userId && (request.userId || request.user_id || request.id_user)) {
+        userGroup.userId = request.userId || request.user_id || request.id_user;
+      }
+      if (!userGroup.angkatan && request.angkatan) userGroup.angkatan = request.angkatan;
+
+      userGroup.requests.push({
+        ...request,
+        requestType: type,
+      });
+    };
+
+    careerRequests.forEach((request) => addRequest(request, 'career'));
+    profileRequests.forEach((request) => addRequest(request, 'profile'));
+
+    return Array.from(groups.values())
+      .map((group) => ({
+        ...group,
+        requestCount: group.requests.length,
+        careerCount: group.requests.filter((request) => request.requestType === 'career').length,
+        profileCount: group.requests.filter((request) => request.requestType === 'profile').length,
+      }))
+      .sort((a, b) => b.requestCount - a.requestCount);
+  }, [careerRequests, profileRequests]);
+
+  const toggleUserRequests = (userKey) => {
+    setExpandedUserKey((prev) => (prev === userKey ? null : userKey));
+  };
 
   if (isLoading) {
     return (
@@ -241,169 +392,156 @@ export default function ProfileUpdateRequests() {
         </button>
       </div>
 
-      {/* ── Career Update Cards ── */}
-      {careerRequests.length > 0 && (
+      {groupedRequests.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Status Karier</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {careerRequests.map((req) => (
-              <div
-                key={`career-${req.id}`}
-                className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(60,87,89,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden group"
-              >
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#425A5C]/40 to-[#425A5C] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-
-                <div className="flex justify-between items-start mb-6 mt-2">
-                  <div className="flex items-center gap-3">
-                    {req.image ? (
-                      <img src={req.image} alt={req.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-[#425A5C]/10 text-[#425A5C] flex items-center justify-center font-black text-lg border-2 border-slate-50">
-                        {req.initials || (req.name || 'A').substring(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-black text-slate-800 text-[15px] leading-tight mb-0.5">{req.name}</h3>
-                      <p className="text-[11px] text-slate-400 font-bold">Angkatan {req.angkatan} • {req.userId}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shrink-0">
-                    <Clock size={12} /> {req.time}
-                  </div>
-                </div>
-
-                <div className="mb-6 flex-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
-                    <FileEdit size={12} /> Sekilas Perubahan:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(req.changes || [])
-                      .filter((change) => change.new !== "-")
-                      .map((change, idx) => (
-                        <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-fourth text-primary/80 border border-slate-100 rounded-lg text-[11px] font-bold">
-                          {change.label}
-                        </span>
-                      ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-slate-50">
-                  <button
-                    onClick={() => setSelectedCareerDetail(req)}
-                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl font-bold text-[#425A5C] bg-[#425A5C]/5 hover:bg-[#425A5C]/10 transition-colors cursor-pointer text-xs"
-                  >
-                    <Eye size={14} strokeWidth={2.5} /> Lihat Detail
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleCareerReject(req.id)}
-                      disabled={actionLoading === req.id}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
-                    >
-                      {actionLoading === req.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak
-                    </button>
-                    <button
-                      onClick={() => handleCareerApprove(req.id)}
-                      disabled={actionLoading === req.id}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
-                    >
-                      {actionLoading === req.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {profileRequests.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Pembaruan Profil Lainnya</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {profileRequests.map((req) => {
-              const meta = SECTION_META[req.section] || { label: req.field || req.section, icon: FileEdit };
-              const SectionIcon = meta.icon;
-              const loadingKey = `profile-${req.id}`;
+          <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Daftar User Dengan Request</h3>
+          <div className="space-y-4">
+            {groupedRequests.map((group) => {
+              const isExpanded = expandedUserKey === group.userKey;
 
               return (
                 <div
-                  key={`profile-${req.id}`}
-                  className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(60,87,89,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden group"
+                  key={group.userKey}
+                  className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden"
                 >
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#425A5C]/40 to-[#425A5C] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-
-                  {/* Alumni info — same flat format as career cards */}
-                  <div className="flex justify-between items-start mb-6 mt-2">
-                    <div className="flex items-center gap-3">
-                      {req.image ? (
-                        <img src={req.image} alt={req.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-[#425A5C]/10 text-[#425A5C] flex items-center justify-center font-black text-lg border-2 border-slate-50">
-                          {req.initials || (req.name || 'A').substring(0, 2).toUpperCase()}
+                  <button
+                    type="button"
+                    onClick={() => toggleUserRequests(group.userKey)}
+                    className="w-full p-6 text-left hover:bg-slate-50/70 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {group.image ? (
+                          <img src={group.image} alt={group.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50 shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-[#425A5C]/10 text-[#425A5C] flex items-center justify-center font-black text-lg border-2 border-slate-50 shrink-0">
+                            {group.initials || (group.name || 'A').substring(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-black text-slate-800 text-[15px] leading-tight mb-0.5 truncate">{group.name}</h3>
+                          <p className="text-[11px] text-slate-400 font-bold truncate">
+                            Angkatan {group.angkatan || '-'} • {group.userId || '-'}
+                          </p>
                         </div>
-                      )}
-                      <div>
-                        <h3 className="font-black text-slate-800 text-[15px] leading-tight mb-0.5">{req.name}</h3>
-                        <p className="text-[11px] text-slate-400 font-bold">Angkatan {req.angkatan} • {req.userId}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-[#425A5C]/10 text-[#425A5C]">
+                          {group.requestCount} Request
+                        </span>
+                        {group.careerCount > 0 && (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-100">
+                            {group.careerCount} Karier
+                          </span>
+                        )}
+                        {group.profileCount > 0 && (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-100">
+                            {group.profileCount} Profil
+                          </span>
+                        )}
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shrink-0">
-                      <Clock size={12} /> {req.time}
-                    </div>
-                  </div>
+                  </button>
 
-                  {/* Section badge + action type */}
-                  <div className="mb-6 flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="flex items-center gap-1.5 px-3 py-1.5 bg-[#425A5C]/5 border border-[#425A5C]/10 rounded-lg text-[11px] font-bold text-[#425A5C]">
-                        <SectionIcon size={12} /> {meta.label}
-                      </span>
-                      <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${req.action === 'create' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                        req.action === 'delete' ? 'bg-red-50 text-red-600 border border-red-100' :
-                          'bg-blue-50 text-blue-600 border border-blue-100'
-                        }`}>
-                        {req.action === 'create' ? 'Tambah Baru' : req.action === 'delete' ? 'Hapus' : 'Perubahan'}
-                      </span>
-                    </div>
+                  {isExpanded && (
+                    <div className="px-6 pb-6">
+                      <div className="border-t border-slate-100 pt-4 space-y-3">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                          <button
+                            onClick={() => confirmBulkActionByUser(group, 'reject')}
+                            disabled={actionLoading === `bulk-reject-${group.userKey}` || actionLoading === `bulk-approve-${group.userKey}`}
+                            className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
+                          >
+                            {actionLoading === `bulk-reject-${group.userKey}` ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak Semua
+                          </button>
+                          <button
+                            onClick={() => confirmBulkActionByUser(group, 'approve')}
+                            disabled={actionLoading === `bulk-reject-${group.userKey}` || actionLoading === `bulk-approve-${group.userKey}`}
+                            className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
+                          >
+                            {actionLoading === `bulk-approve-${group.userKey}` ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima Semua
+                          </button>
+                        </div>
 
-                    {/* Quick glance of changes — uses pre-built changes array */}
-                    <div className="flex flex-wrap gap-2">
-                      {(req.changes || [])
-                        .filter((change) => change.new !== "-")
-                        .map((change, idx) => (
-                          <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
-                            {change.label}
-                          </span>
-                        ))}
-                    </div>
-                  </div>
+                        {group.requests.map((req) => {
+                          const isCareer = req.requestType === 'career';
+                          const meta = isCareer
+                            ? { label: 'Status Karier', icon: FileEdit }
+                            : SECTION_META[req.section] || { label: req.field || req.section || 'Pembaruan Profil', icon: FileEdit };
+                          const SectionIcon = meta.icon;
+                          const loadingKey = isCareer ? req.id : `profile-${req.id}`;
 
-                  {/* Action buttons */}
-                  <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-slate-50">
-                    <button
-                      onClick={() => setSelectedProfileDetail(req)}
-                      className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl font-bold text-[#425A5C] bg-[#425A5C]/5 hover:bg-[#425A5C]/10 transition-colors cursor-pointer text-xs"
-                    >
-                      <Eye size={14} strokeWidth={2.5} /> Lihat Detail
-                    </button>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleProfileReject(req.id)}
-                        disabled={actionLoading === loadingKey}
-                        className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
-                      >
-                        {actionLoading === loadingKey ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak
-                      </button>
-                      <button
-                        onClick={() => handleProfileApprove(req.id)}
-                        disabled={actionLoading === loadingKey}
-                        className="flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
-                      >
-                        {actionLoading === loadingKey ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima
-                      </button>
+                          return (
+                            <div key={`${req.requestType}-${req.id}`} className="rounded-2xl border border-slate-100 p-4 bg-slate-50/40">
+                              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-[#425A5C]">
+                                    <SectionIcon size={12} /> {meta.label}
+                                  </span>
+                                  {isCareer ? (
+                                    <span className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
+                                      Karier
+                                    </span>
+                                  ) : (
+                                    <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${req.action === 'create' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                      req.action === 'delete' ? 'bg-red-50 text-red-600 border border-red-100' :
+                                        'bg-blue-50 text-blue-600 border border-blue-100'
+                                      }`}>
+                                      {req.action === 'create' ? 'Tambah Baru' : req.action === 'delete' ? 'Hapus' : 'Perubahan'}
+                                    </span>
+                                  )}
+                                  <span className="flex items-center gap-1 text-[10px] font-bold bg-white border border-slate-200 text-slate-500 px-2.5 py-1 rounded-full">
+                                    <Clock size={12} /> {req.time || '-'}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => (isCareer ? setSelectedCareerDetail(req) : setSelectedProfileDetail(req))}
+                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-[#425A5C] bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer text-xs"
+                                  >
+                                    <Eye size={14} strokeWidth={2.5} /> Lihat Detail
+                                  </button>
+                                  <button
+                                    onClick={() => (isCareer ? handleCareerReject(req.id) : handleProfileReject(req.id))}
+                                    disabled={actionLoading === loadingKey}
+                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
+                                  >
+                                    {actionLoading === loadingKey ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak
+                                  </button>
+                                  <button
+                                    onClick={() => (isCareer ? handleCareerApprove(req.id) : handleProfileApprove(req.id))}
+                                    disabled={actionLoading === loadingKey}
+                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
+                                  >
+                                    {actionLoading === loadingKey ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                {(req.changes || [])
+                                  .filter((change) => change.new !== '-')
+                                  .map((change, idx) => (
+                                    <span
+                                      key={`${change.label}-${idx}`}
+                                      className="px-3 py-1.5 bg-white text-[#526061] border border-slate-200 rounded-lg text-[11px] font-bold"
+                                    >
+                                      {change.label}
+                                    </span>
+                                  ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}
