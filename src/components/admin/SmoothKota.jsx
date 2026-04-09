@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
 
-export default function SmoothDropdown({
+// NAMA FUNCTION SUDAH DIGANTI MENJADI SmoothKota
+export default function SmoothKota({
   label,
   options = [], 
   placeholder = "Pilih opsi",
@@ -36,7 +37,6 @@ export default function SmoothDropdown({
     : normalizedOptions;
 
   return (
-    // PERBAIKAN 1: Tambahkan min-w-[180px] agar tidak menciut di dalam tabel
     <div className="space-y-1 w-full min-w-[180px] relative text-left" ref={dropdownRef}>
       {label && (
         <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-1">
@@ -56,7 +56,6 @@ export default function SmoothDropdown({
       </button>
 
       {isOpen && (
-        // PERBAIKAN 2: Tambahkan min-w-[240px] agar popup cukup lebar untuk nama kota yang panjang
         <div className="absolute z-50 w-full min-w-[240px] mt-1 bg-white border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
           
           {isSearchable && (
@@ -73,7 +72,6 @@ export default function SmoothDropdown({
             </div>
           )}
 
-          {/* PERBAIKAN 3: overflow-x-hidden agar tidak muncul scroll horizontal */}
           <ul className="py-1 max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, idx) => (
