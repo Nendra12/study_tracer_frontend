@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, MoveUpRight } from 'lucide-react';
-import { STORAGE_BASE_URL } from '../../api/axios';
-import LockOverlay from './LockOverlay';
+import { STORAGE_BASE_URL } from '../../../api/axios';
+import LockOverlay from '../LockOverlay';
 
 function getImageUrl(path) {
   if (!path) return null;
