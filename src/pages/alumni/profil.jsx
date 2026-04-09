@@ -16,6 +16,7 @@ import TabDeskripsiKarier from '../../components/alumni/profile/TabDeskripsiKari
 import TabKeahlian from '../../components/alumni/profile/TabKeahlian';
 import TabPortofolio from '../../components/alumni/profile/TabPortofolio';
 import { ProfilSkeleton } from '../../components/alumni/skeleton';
+import { useThemeSettings } from '../../context/ThemeContext';
 
 function buildDisplayProfile(profile) {
   if (!profile) return profile;
@@ -56,8 +57,8 @@ function buildDisplayProfile(profile) {
 
 export default function Profil() {
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
-
+  // const { user: authUser } = useAuth();
+  const { theme } = useThemeSettings();
   // State Global Profil
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,11 +106,9 @@ export default function Profil() {
 
   const displayProfile = buildDisplayProfile(profile);
 
-  const navUser = {
-    nama_alumni: displayProfile?.nama || authUser?.profile?.nama || 'Alumni',
-    foto: displayProfile?.foto || authUser?.profile?.foto,
-    can_access_all: true
-  };
+  const { user } = useAuth();
+
+  const isVerified = user?.can_access_all ?? false;
 
   if (loading) return <ProfilSkeleton />;
 
@@ -125,15 +124,16 @@ export default function Profil() {
           </div>
         )}
 
-        <ProfileHeader profile={displayProfile} onPerbarui={handlePerbarui} />
+        <ProfileHeader profile={displayProfile} onPerbarui={handlePerbarui} isVerified={isVerified} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <ProfileSidebar
             profile={displayProfile}
             onRefresh={refreshProfile}
             onShowSuccess={showSuccess}
+            isVerified={isVerified}
           />
-          <div className="lg:col-span-8 bg-white rounded-md shadow-sm flex flex-col overflow-hidden border border-slate-100">
+          <div className="lg:col-span-8 bg-white rounded-md shadow-sm flex flex-col border border-slate-100">
 
             <div className="flex border-b border-slate-100 px-2 overflow-x-auto md:overflow-x-hidden whitespace-nowrap scrollbar-hide">
               <button
@@ -161,11 +161,11 @@ export default function Profil() {
             </div>
 
             {/* Render Tab Konten Secara Dinamis */}
-            {activeTab === 'detail' && <TabDetailPribadi profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} />}
-            {activeTab === 'karier' && <TabStatusKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'keahlian' && <TabKeahlian profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
-            {activeTab === 'portofolio' && <TabPortofolio profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} />}
+            {activeTab === 'detail' && <TabDetailPribadi profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} triggerEdit={triggerEdit} isVerified={isVerified} />}
+            {activeTab === 'karier' && <TabStatusKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
+            {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
+            {activeTab === 'keahlian' && <TabKeahlian profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
+            {activeTab === 'portofolio' && <TabPortofolio profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
 
           </div>
         </div>

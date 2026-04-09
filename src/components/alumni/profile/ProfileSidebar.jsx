@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit, Mail, Phone, Plus, X, Loader2, Check, Clock } from 'lucide-react';
+import { Edit, Mail, Phone, Plus, X, Loader2, Check, Clock, Lock } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaInstagram, FaFacebook, FaGlobe } from 'react-icons/fa';
 import Cropper from 'react-easy-crop';
 import { alumniApi } from '../../../api/alumni';
@@ -93,7 +93,7 @@ function pendingSocialToMap(pendingSocialArray, masterList) {
   return map;
 }
 
-export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
+export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVerified }) {
   const fileInputRef = useRef(null);
 
   // States
@@ -283,6 +283,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       setSavingSocial(true);
       // Pastikan master data sudah dimuat
       let currentMaster = socialMediaList;
+      console.log(currentMaster)
       if (currentMaster.length === 0) {
         const res = await masterDataApi.getSocialMedia();
         currentMaster = res.data.data || res.data || [];
@@ -314,16 +315,8 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
           onShowSuccess('Pengajuan tautan sosial berhasil diperbarui, menunggu persetujuan admin');
         }
       } else {
-        // Kirim via updateProfile
-        const formData = new FormData();
-        formData.append('nama_alumni', profile?.nama || '');
-        let index = 0;
-        for (const item of socialMediaPayload) {
-          formData.append(`social_media[${index}][id_sosmed]`, item.id_sosmed);
-          formData.append(`social_media[${index}][url]`, item.url);
-          index++;
-        }
-        await alumniApi.updateProfile(formData);
+        // Kirim via updateProfile (JSON payload)
+        await alumniApi.updateProfile({ social_media: socialMediaPayload });
         onShowSuccess('Tautan sosial dikirim, menunggu persetujuan admin');
       }
 
@@ -339,7 +332,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
 
   async function handleCancelPending() {
     const confirm = await alertConfirm("Apakah anda yakin membatalkan pengajuan tautan sosial ini? Data yang ada sebelumnya akan tetap berlaku.")
-    if(!confirm.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
     const pending = (profile?.pending_updates || []).find(
       u => u.section === 'social_media' && u.status === 'pending'
     ) || null;
@@ -355,7 +348,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
       setCancelingeSocial(false);
     }
   }
-  
+
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
   const pendingUpdates = (profile?.pending_updates || []).filter(
     (u) => u.section === 'personal_info' && u.status === 'pending'
@@ -407,10 +400,13 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
           )}
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={savingFoto}
-            className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-[#2A3E3F] transition-colors border-2 border-white shadow-sm disabled:opacity-50"
+            disabled={savingFoto || !isVerified}
+            title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
+            className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors border-2 border-white shadow-sm disabled:opacity-50 ${
+              !isVerified ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary cursor-pointer hover:bg-[#2A3E3F]'
+            }`}
           >
-            {savingFoto ? <Loader2 size={14} className="animate-spin" /> : <Edit size={14} />}
+            {savingFoto ? <Loader2 size={14} className="animate-spin" /> : (!isVerified ? <Lock size={14} /> : <Edit size={14} />)}
           </button>
         </div>
 
@@ -457,10 +453,18 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
               </div>
               {isEditing ? (
                 <div className="flex items-center gap-2">
-                  <button onClick={handleCancelEdit} className="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer"
+                  >
                     Batal
                   </button>
-                  <button onClick={handleSaveSocial} disabled={savingSocial} className="text-xs font-bold text-primary hover:underline cursor-pointer disabled:opacity-50">
+
+                  <button
+                    onClick={handleSaveSocial}
+                    disabled={savingSocial}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     {savingSocial ? 'Menyimpan...' : 'Simpan'}
                   </button>
                 </div>
@@ -468,8 +472,18 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
                 hasPending ? (
                   <></>
                 ) : (
-                  <button onClick={handleStartEdit} className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center">
-                    <Edit size={12} className="mr-1" />Edit
+                  <button
+                    onClick={handleStartEdit}
+                    disabled={!isVerified}
+                    title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      !isVerified 
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : 'text-slate-500 hover:text-primary hover:bg-primary/10 cursor-pointer'
+                    }`}
+                  >
+                    {!isVerified ? <Lock size={14} /> : <Edit size={14} />} 
+                    {!isVerified ? 'Terkunci' : 'Edit'}
                   </button>
                 )
               )}
@@ -573,7 +587,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess }) {
                 </div>
 
                 {/* Tombol tambah jika kosong */}
-                {approvedLinks.length === 0 && !hasPending && (
+                {isEditing && !hasPending && (
                   <button
                     onClick={() => { setShowAddSocial(true); handleStartEdit(); }}
                     className="flex items-center gap-2 text-sm font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer mt-4"

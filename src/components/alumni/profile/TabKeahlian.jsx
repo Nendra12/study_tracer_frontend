@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Plus, X, Save, Loader2, Clock, Edit2, Trash2 } from 'lucide-react';
+import { Award, Plus, X, Save, Loader2, Clock, Edit2, Trash2, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 
 // Menggunakan SmoothDropdown milik Anda
 import SmoothDropdown from '../../admin/SmoothDropdown';
 
-export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
+export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [masterSkills, setMasterSkills] = useState([]);
   const [mySkills, setMySkills] = useState([]);
 
@@ -19,6 +19,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
   // State untuk tambah skill baru
   const [newSkillName, setNewSkillName] = useState('');
   const [creatingSkill, setCreatingSkill] = useState(false);
+  const [skillError, setSkillError] = useState('');
 
   // State untuk pending updates
   const [isEditingPending, setIsEditingPending] = useState(false);
@@ -74,6 +75,17 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
   // Membuat skill baru lalu menambahkannya ke state lokal
   async function handleCreateSkill() {
     if (!newSkillName.trim()) return;
+    setSkillError('');
+
+    const alreadyMine = mySkills.find(s => 
+      (s.nama_skill || s.nama || s.name || '').toLowerCase() === newSkillName.trim().toLowerCase()
+    );
+
+    if (alreadyMine) {
+      setSkillError(`Keahlian "${alreadyMine.nama_skill || alreadyMine.nama || alreadyMine.name || newSkillName.trim()}" sudah ada di daftar Anda.`);
+      setNewSkillName('');
+      return;
+    }
 
     const exists = masterSkills.find(s =>
       (s.nama_skill || s.nama || s.name || '').toLowerCase() === newSkillName.trim().toLowerCase()
@@ -285,7 +297,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
       {/* --- HEADER KEAHLIAN --- */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 text-primary">
-          <h2 className="text-xl font-black tracking-tight">Keahlian Profil</h2>
+          <h2 className="text-md md:text-xl  font-bold text-primary">Keahlian Profil</h2>
         </div>
 
         <div className="flex items-center gap-2">
@@ -293,14 +305,17 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
           {!isEditingPending && !hasChanges && (
             <button
               onClick={() => setShowSearch(!showSearch)}
-              disabled={pendingUpdates.length > 0}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${showSearch
-                ? 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                : 'bg-primary text-white hover:bg-[#2A3E3F]'
+              disabled={!isVerified || pendingUpdates.length > 0}
+              title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner ' : ''}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${(!isVerified || pendingUpdates.length > 0)
+                  ? 'bg-slate-100 text-slate-400' 
+                  : (showSearch
+                      ? 'bg-primary text-white shadow-md hover:bg-[#2A3E3F]'
+                      : 'bg-primary/10 text-primary hover:bg-primary hover:text-white')
                 }`}
             >
-              {showSearch ? <X size={14} /> : <Plus size={14} />}
-              {showSearch ? 'Batal' : 'Edit Keahlian'}
+              {!isVerified ? <Lock size={14} /> : (showSearch ? <X size={14} /> : <Plus size={14} />)}
+              {showSearch ? 'Batal' : <span className='hidden md:block'> {!isVerified ? 'Terkunci' : 'Edit Keahlian'} </span>}
             </button>
           )}
 
@@ -321,7 +336,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
                 className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-green-700 transition-all cursor-pointer disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                Simpan Perubahan
+                <span className='hidden md:block'> Simpan Perubahan </span>
               </button>
             </>
           )}
@@ -330,10 +345,6 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
 
       {/* --- KONTEN PENCARIAN & LIST --- */}
       <div className="mb-10">
-        <p className="text-sm text-primary/60 mb-4 font-medium">
-          Daftar keahlian dan keterampilan teknis yang Anda miliki.
-        </p>
-
         {/* Dropdown Pencarian */}
         {showSearch && (
           <div className="relative mb-6 z-20 animate-in slide-in-from-top-2 duration-200">
@@ -353,7 +364,10 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
               <input
                 type="text"
                 value={newSkillName}
-                onChange={(e) => setNewSkillName(e.target.value)}
+                onChange={(e) => {
+                  setNewSkillName(e.target.value);
+                  if (skillError) setSkillError('');
+                }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateSkill(); } }}
                 placeholder="Keahlian tidak ada? Ketik nama keahlian baru..."
                 className="flex-1 px-4 py-2.5 border border-primary/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
@@ -365,9 +379,15 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
                 className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                Tambah Baru
+                Tambah <span className='hidden md:block'>Baru</span>
               </button>
             </div>
+            
+            {skillError && (
+              <p className="text-xs text-red-500 font-bold px-2 mt-2 animate-in fade-in slide-in-from-top-1">
+                {skillError}
+              </p>
+            )}
           </div>
         )}
 
@@ -396,7 +416,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess }) {
               <p className="text-sm text-slate-400 font-medium">
                 Belum ada keahlian yang ditambahkan.
               </p>
-              {!showSearch && !isEditingPending && pendingUpdates.length === 0 && (
+              {!showSearch && !isEditingPending && pendingUpdates.length === 0 && isVerified && (
                 <button
                   onClick={() => setShowSearch(true)}
                   className="text-xs text-primary font-bold mt-2 hover:underline cursor-pointer"

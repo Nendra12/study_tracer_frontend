@@ -49,6 +49,7 @@ const AlumniTable = ({
             ) : (
               alumni.map((item) => {
                 const isFeatured = featuredAlumniIds.includes(item.id);
+                const actionTargetId = item.user_id || item.id_alumni || item.id;
 
                 return (
                   <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
@@ -143,14 +144,14 @@ const AlumniTable = ({
                         {item.status_create === 'pending' && (
                           <>
                             <button 
-                              onClick={() => handleApprove(item.id)}
+                              onClick={() => handleApprove(actionTargetId)}
                               className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all active:scale-90 cursor-pointer"
                               title="Setujui"
                             >
                               <Check size={18} />
                             </button>
                             <button 
-                              onClick={() => handleReject(item.id)}
+                              onClick={() => handleReject(actionTargetId)}
                               className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90 cursor-pointer"
                               title="Tolak"
                             >
@@ -162,7 +163,7 @@ const AlumniTable = ({
                         {/* Aksi khusus status AKTIF/OK (Blacklist) */}
                         {item.status_create === 'ok' && (
                           <button 
-                            onClick={() => handleBan(item.id, item.nama || item.nama_alumni)}
+                            onClick={() => handleBan(actionTargetId, item.nama || item.nama_alumni)}
                             className="p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all active:scale-90 cursor-pointer"
                             title="Blacklist"
                           >
@@ -172,7 +173,7 @@ const AlumniTable = ({
 
                         {/* Tombol Hapus Permanen */}
                         <button 
-                          onClick={() => handleDelete(item.id, item.nama || item.nama_alumni)}
+                          onClick={() => handleDelete(actionTargetId, item.nama || item.nama_alumni)}
                           className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-xl transition-all active:scale-90 cursor-pointer"
                           title="Hapus Permanen"
                         >
