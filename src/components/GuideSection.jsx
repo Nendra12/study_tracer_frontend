@@ -16,7 +16,7 @@ export default function GuideSection() {
           Masuk ke halaman pendaftaran{" "}
           <Link
             to="/register"
-            className="text-primary font-semibold underline hover:text-[#2a3d3e] transition-colors"
+            className="text-blue-600 font-bold underline hover:text-[#2a3d3e] transition-colors"
           >
             Disini
           </Link>{" "}
@@ -110,7 +110,7 @@ export default function GuideSection() {
                   {step.title}
                 </h3>
 
-                <p className="text-primary/80 text-sm leading-relaxed font-medium">
+                <p className="text-primary/80 text-justify text-sm leading-relaxed font-medium">
                   {step.desc}
                 </p>
               </div>

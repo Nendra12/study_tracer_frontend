@@ -101,7 +101,7 @@ export default function AlumniSuccess({ alumniList }) {
                 <img
                   src={alumni.img}
                   alt={alumni.name}
-                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000"
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
                 />
 
                 {/* Floating Badge Year */}
