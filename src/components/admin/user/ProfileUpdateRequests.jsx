@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Clock, Check, X, Loader2, RefreshCw, Eye, FileEdit, User, Award, Layout, FileText, Globe, ChevronDown } from 'lucide-react';
 import { adminApi } from '../../../api/admin';
-import { alertSuccess, alertError } from '../../../utilitis/alert';
+import { alertSuccess, alertError, alertConfirm } from '../../../utilitis/alert';
 import CareerUpdateDetailModal from '../CareerUpdateDetailModal';
 import ProfileUpdateDetailModal from '../ProfileUpdateDetailModal';
 
@@ -270,6 +270,17 @@ export default function ProfileUpdateRequests() {
     }
   }
 
+  async function confirmBulkActionByUser(group, actionType) {
+    const actionLabel = actionType === 'approve' ? 'menyetujui' : 'menolak';
+    const result = await alertConfirm(
+      `Yakin ingin ${actionLabel} semua ${group.requestCount} request milik ${group.name}?`
+    );
+
+    if (result.isConfirmed) {
+      await handleBulkActionByUser(group, actionType);
+    }
+  }
+
   const isLoading = careerLoading || profileLoading;
   const totalPending = careerRequests.length + profileRequests.length;
 
@@ -442,14 +453,14 @@ export default function ProfileUpdateRequests() {
                       <div className="border-t border-slate-100 pt-4 space-y-3">
                         <div className="flex flex-wrap items-center justify-end gap-2">
                           <button
-                            onClick={() => handleBulkActionByUser(group, 'reject')}
+                            onClick={() => confirmBulkActionByUser(group, 'reject')}
                             disabled={actionLoading === `bulk-reject-${group.userKey}` || actionLoading === `bulk-approve-${group.userKey}`}
                             className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-red-500 bg-white border border-red-100 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer text-xs disabled:opacity-50"
                           >
                             {actionLoading === `bulk-reject-${group.userKey}` ? <Loader2 size={14} className="animate-spin" /> : <X size={14} strokeWidth={3} />} Tolak Semua
                           </button>
                           <button
-                            onClick={() => handleBulkActionByUser(group, 'approve')}
+                            onClick={() => confirmBulkActionByUser(group, 'approve')}
                             disabled={actionLoading === `bulk-reject-${group.userKey}` || actionLoading === `bulk-approve-${group.userKey}`}
                             className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
                           >
