@@ -277,15 +277,13 @@ export default function ProfileUpdateRequests() {
                     <FileEdit size={12} /> Sekilas Perubahan:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {(req.changes || []).map((change, idx) => (
-                      <>
-                        {change.new !== "-" && (
-                          <span key={idx} className="px-3 py-1.5 bg-fourth text-primary/80 border border-slate-100 rounded-lg text-[11px] font-bold">
-                            {change.label}
-                          </span>
-                        )}
-                      </>
-                    ))}
+                    {(req.changes || [])
+                      .filter((change) => change.new !== "-")
+                      .map((change, idx) => (
+                        <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-fourth text-primary/80 border border-slate-100 rounded-lg text-[11px] font-bold">
+                          {change.label}
+                        </span>
+                      ))}
                   </div>
                 </div>
 
@@ -371,15 +369,13 @@ export default function ProfileUpdateRequests() {
 
                     {/* Quick glance of changes — uses pre-built changes array */}
                     <div className="flex flex-wrap gap-2">
-                      {(req.changes || []).map((change, idx) => (
-                        <>
-                          {change.new !== "-" && (
-                            <span key={idx} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
-                              {change.label}
-                            </span>
-                          )}
-                        </>
-                      ))}
+                      {(req.changes || [])
+                        .filter((change) => change.new !== "-")
+                        .map((change, idx) => (
+                          <span key={`${change.label}-${idx}`} className="px-3 py-1.5 bg-[#f3f4f4] text-[#526061] border border-slate-100 rounded-lg text-[11px] font-bold">
+                            {change.label}
+                          </span>
+                        ))}
                     </div>
                   </div>
 

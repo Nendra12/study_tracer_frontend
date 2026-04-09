@@ -5,6 +5,7 @@ import SosmedInput from "../../components/SosmedInput";
 import DateOfBirthInput from "../../components/DateOfBirthInput";
 import { masterDataApi } from "../../api/masterData";
 import SelectInput from "../../components/admin/SelectInput";
+import { alertError } from "../../utilitis/alert";
 import MultiSelectDropdown from "../../components/admin/MultiSelectDropdown";
 
 // 1. Import komponen SmoothKota
@@ -53,8 +54,25 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // 1. Validasi Format File (Harus berupa gambar)
+      if (!file.type.startsWith('image/')) {
+        alertError('Format file tidak didukung! Harap unggah file berupa gambar (JPG, JPEG, atau PNG).');
+        e.target.value = ''; // Reset pilihan file
+        return;
+      }
+
+      // 2. Validasi Ukuran File (Maksimal 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB dalam bytes
+      if (file.size > maxSize) {
+        alertError('Ukuran file terlalu besar! Maksimal ukuran foto adalah 2MB.');
+        e.target.value = ''; // Reset pilihan file
+        return;
+      }
+
+      // Jika lolos semua validasi, pasang fotonya
       setPreview(URL.createObjectURL(file));
       updateFormData({ foto: file });
+      setErrors(prev => ({ ...prev, foto: undefined }));
     }
   };
 
@@ -69,23 +87,35 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     if (!formData.nama_alumni?.trim()) errs.nama_alumni = 'Nama lengkap wajib diisi';
     if (!formData.id_jurusan) errs.id_jurusan = 'Jurusan wajib dipilih';
     if (!formData.jenis_kelamin) errs.jenis_kelamin = 'Jenis kelamin wajib dipilih';
-    if (!formData.nis?.trim()) errs.nis = 'NIS wajib diisi';
-    if (!formData.nisn?.trim()) errs.nisn = 'NISN wajib diisi';
     if (!formData.tempat_lahir?.trim()) errs.tempat_lahir = 'Tempat lahir wajib diisi';
-    if (!formData.tanggal_lahir) errs.tanggal_lahir = 'Tanggal lahir wajib diisi';
     if (!formData.alamat?.trim()) errs.alamat = 'Alamat wajib diisi';
     if (!formData.tahun_masuk) errs.tahun_masuk = 'Tahun masuk wajib diisi';
 
-    // Validasi No HP
+    // --- 1. Validasi No HP (Min 10, Max 13 Angka) ---
     if (!formData.no_hp?.trim()) {
       errs.no_hp = 'No HP wajib diisi';
     } else {
       const digits = formData.no_hp.replace(/\D/g, '');
-      if (digits.length < 10) errs.no_hp = 'No HP minimal 10 digit';
-      else if (digits.length > 13) errs.no_hp = 'No HP maksimal 13 digit';
+      if (digits.length < 10) errs.no_hp = 'No HP minimal 10 angka';
+      else if (digits.length > 13) errs.no_hp = 'No HP maksimal 13 angka';
     }
 
-    // --- PERBAIKAN LOGIKA TAHUN DISINI ---
+    // --- 2. Validasi NIS (Harus Pas 10 Angka) ---
+    if (!formData.nis?.trim()) {
+      errs.nis = 'NIS wajib diisi';
+    } else {
+      const digits = formData.nis.replace(/\D/g, '');
+      if (digits.length !== 10) errs.nis = 'NIS harus terdiri dari tepat 10 angka';
+    }
+
+    // --- 3. Validasi NISN (Harus Pas 10 Angka) ---
+    if (!formData.nisn?.trim()) {
+      errs.nisn = 'NISN wajib diisi';
+    } else {
+      const digits = formData.nisn.replace(/\D/g, '');
+      if (digits.length !== 10) errs.nisn = 'NISN harus terdiri dari tepat 10 angka';
+    }
+
     const currentYear = new Date().getFullYear();
     
     // Validasi Tahun Masuk
@@ -93,19 +123,28 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
       errs.tahun_masuk = `Tahun masuk tidak boleh lebih dari ${currentYear}`;
     }
 
-    // Validasi Tahun Lulus
-    if (formData.tahun_lulus) {
-      if (formData.tahun_masuk && (parseInt(formData.tahun_lulus) - parseInt(formData.tahun_masuk)) <= 2) {
+    // Validasi Tahun Lulus (Min +2 tahun, Max +5 tahun)
+    if (formData.tahun_lulus && formData.tahun_masuk) {
+      const masuk = parseInt(formData.tahun_masuk);
+      const lulus = parseInt(formData.tahun_lulus);
+      
+      if ((lulus - masuk) <= 2) {
         errs.tahun_lulus = 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk';
+      } else if ((lulus - masuk) > 5) {
+        errs.tahun_lulus = `Tahun lulus maksimal 5 tahun setelah tahun masuk (${masuk + 5})`;
       }
     }
 
-    // Validasi Umur berdasarkan Tahun Masuk
+    // Validasi Usia Minimal (14 Tahun di bawah tahun masuk)
     if (formData.tanggal_lahir && formData.tahun_masuk) {
       const birthYear = new Date(formData.tanggal_lahir).getFullYear();
-      if (birthYear >= parseInt(formData.tahun_masuk)) {
-        errs.tanggal_lahir = 'Tanggal lahir tidak valid (Tahun lahir melebihi tahun masuk)';
+      const entryYear = parseInt(formData.tahun_masuk);
+      
+      if (entryYear - birthYear < 14) {
+        errs.tanggal_lahir = 'Usia minimal saat tahun masuk adalah 14 tahun';
       }
+    } else if (!formData.tanggal_lahir) {
+      errs.tanggal_lahir = 'Tanggal lahir wajib diisi';
     }
 
     return errs;
@@ -170,46 +209,120 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
         <div className="space-y-1">
           <label className="text-[11px] font-bold text-primary uppercase">No HP <span className="text-red-500">*</span></label>
-          <input type="text" inputMode="numeric" value={formData.no_hp || ""} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); updateFormData({ no_hp: val }); setErrors(prev => ({ ...prev, no_hp: undefined })); }} maxLength={13} className={`w-full p-2.5 bg-white border ${errors.no_hp ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="08..." />
+          <input 
+            type="text" 
+            inputMode="numeric" 
+            value={formData.no_hp || ""} 
+            onChange={(e) => { 
+              const val = e.target.value.replace(/\D/g, ''); 
+              updateFormData({ no_hp: val }); 
+              
+              // Validasi Real-Time No HP
+              if (val.length > 0 && val.length < 10) {
+                setErrors(prev => ({ ...prev, no_hp: 'No HP minimal 10 angka' }));
+              } else if (val.length === 0) {
+                setErrors(prev => ({ ...prev, no_hp: 'No HP wajib diisi' }));
+              } else {
+                setErrors(prev => ({ ...prev, no_hp: undefined })); 
+              }
+            }} 
+            maxLength={13}
+            className={`w-full p-2.5 bg-white border ${errors.no_hp ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} 
+            placeholder="081..." 
+          />
           {errors.no_hp && <p className="text-xs text-red-500 mt-0.5">{errors.no_hp}</p>}
         </div>
 
         {/* --- Baris 3 --- */}
         <div className="space-y-1">
           <label className="text-[11px] font-bold text-primary uppercase">NIS <span className="text-red-500">*</span></label>
-          <input type="text" value={formData.nis || ""} onChange={(e) => { updateFormData({ nis: e.target.value }); setErrors(prev => ({ ...prev, nis: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.nis ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="NIS" />
+          <input 
+            type="text" 
+            inputMode="numeric"
+            value={formData.nis || ""} 
+            onChange={(e) => { 
+              const val = e.target.value.replace(/\D/g, ''); 
+              updateFormData({ nis: val }); 
+              
+              // Validasi Real-Time NIS
+              if (val.length > 0 && val.length < 10) {
+                setErrors(prev => ({ ...prev, nis: 'NIS harus terdiri dari tepat 10 angka' }));
+              } else if (val.length === 0) {
+                setErrors(prev => ({ ...prev, nis: 'NIS wajib diisi' }));
+              } else {
+                setErrors(prev => ({ ...prev, nis: undefined })); 
+              }
+            }} 
+            maxLength={10}
+            className={`w-full p-2.5 bg-white border ${errors.nis ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} 
+            placeholder="Masukkan NIS" 
+          />
           {errors.nis && <p className="text-xs text-red-500 mt-0.5">{errors.nis}</p>}
         </div>
 
         <div className="space-y-1">
           <label className="text-[11px] font-bold text-primary uppercase">NISN <span className="text-red-500">*</span></label>
-          <input type="text" value={formData.nisn || ""} onChange={(e) => { updateFormData({ nisn: e.target.value }); setErrors(prev => ({ ...prev, nisn: undefined })); }} className={`w-full p-2.5 bg-white border ${errors.nisn ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} placeholder="NISN" />
+          <input 
+            type="text" 
+            inputMode="numeric"
+            value={formData.nisn || ""} 
+            onChange={(e) => { 
+              const val = e.target.value.replace(/\D/g, ''); 
+              updateFormData({ nisn: val }); 
+              
+              // Validasi Real-Time NISN
+              if (val.length > 0 && val.length < 10) {
+                setErrors(prev => ({ ...prev, nisn: 'NISN harus terdiri dari tepat 10 angka' }));
+              } else if (val.length === 0) {
+                setErrors(prev => ({ ...prev, nisn: 'NISN wajib diisi' }));
+              } else {
+                setErrors(prev => ({ ...prev, nisn: undefined })); 
+              }
+            }} 
+            maxLength={10}
+            className={`w-full p-2.5 bg-white border ${errors.nisn ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary transition-all`} 
+            placeholder="Masukkan NISN" 
+          />
           {errors.nisn && <p className="text-xs text-red-500 mt-0.5">{errors.nisn}</p>}
         </div>
 
         {/* --- Baris 4 --- */}
-        <div className="space-y-1 relative z-20">
+        <div className="space-y-1 relative z-20 focus-within:z-[100]">
           <YearsInput 
             label="Tahun Masuk" 
             isRequired={true} 
             value={formData.tahun_masuk} 
+            // Batasi pilihan maksimal adalah tahun sekarang
+            maxYear={new Date().getFullYear()} 
             onSelect={(val) => { 
-              const currentYear = new Date().getFullYear();
               updateFormData({ tahun_masuk: val }); 
-              
-              // 1. Validasi Real-time: Tahun Masuk tidak boleh lebih dari tahun sekarang
-              if (parseInt(val) > currentYear) {
-                setErrors(prev => ({ ...prev, tahun_masuk: `Tahun masuk tidak boleh lebih dari ${currentYear}` }));
-              } else {
-                setErrors(prev => ({ ...prev, tahun_masuk: undefined }));
-              }
+              setErrors(prev => ({ ...prev, tahun_masuk: undefined }));
 
-              // 2. Validasi Real-time: Cek ulang Tahun Lulus jika sudah terisi sebelumnya
+              // 1. Validasi Real-time: Cek ulang Tahun Lulus jika sudah terisi
               if (formData.tahun_lulus) {
-                if ((parseInt(formData.tahun_lulus) - parseInt(val)) <= 2) {
+                const masuk = parseInt(val);
+                const lulus = parseInt(formData.tahun_lulus);
+                
+                if ((lulus - masuk) <= 2) {
                   setErrors(prev => ({ ...prev, tahun_lulus: 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk' }));
+                } else if ((lulus - masuk) > 5) {
+                  setErrors(prev => ({ ...prev, tahun_lulus: `Tahun lulus maksimal 5 tahun setelah tahun masuk (${masuk + 5})` }));
                 } else {
                   setErrors(prev => ({ ...prev, tahun_lulus: undefined }));
+                }
+              }
+
+              // 2. PERBAIKAN: Validasi Real-time Cek Ulang Tanggal Lahir (Dua Arah)
+              if (formData.tanggal_lahir) {
+                const birthYear = new Date(formData.tanggal_lahir).getFullYear();
+                const entryYear = parseInt(val);
+                
+                if (entryYear - birthYear < 14) {
+                  alertError('Peringatan: Tanggal lahir harus minimal 14 tahun di bawah tahun masuk.');
+                  setErrors(prev => ({ ...prev, tanggal_lahir: 'Usia tidak mencukupi (minimal 14 tahun)' }));
+                } else {
+                  // Hapus error jika sekarang sudah valid
+                  setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
                 }
               }
             }} 
@@ -217,19 +330,35 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.tahun_masuk && <p className="text-xs text-red-500 mt-0.5">{errors.tahun_masuk}</p>}
         </div>
 
-        <div className="space-y-1 relative z-20">
+        <div className="space-y-1 relative z-20 focus-within:z-[100]">
           <YearsInput 
             label="Tahun Lulus" 
             isRequired={true} 
             value={formData.tahun_lulus} 
+            
+            // Batas maksimal: Tahun Masuk + 5
+            maxYear={formData.tahun_masuk ? parseInt(formData.tahun_masuk) + 5 : new Date().getFullYear() + 5}
+            
+            // <-- TAMBAHAN BARU: Batas minimal adalah Tahun Masuk
+            minYear={formData.tahun_masuk ? parseInt(formData.tahun_masuk) : null}
+            
             onSelect={(val) => { 
               updateFormData({ tahun_lulus: val }); 
               
-              // Validasi Real-time: Tahun Lulus harus > 2 tahun dari Tahun Masuk
-              if (formData.tahun_masuk && (parseInt(val) - parseInt(formData.tahun_masuk)) <= 2) {
-                setErrors(prev => ({ ...prev, tahun_lulus: 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk' }));
+              // Validasi Real-time: Tahun Lulus (Min +2 tahun, Max +5 tahun)
+              if (formData.tahun_masuk) {
+                const masuk = parseInt(formData.tahun_masuk);
+                const lulus = parseInt(val);
+                
+                if ((lulus - masuk) <= 2) {
+                  setErrors(prev => ({ ...prev, tahun_lulus: 'Tahun lulus harus lebih dari 2 tahun setelah tahun masuk' }));
+                } else if ((lulus - masuk) > 5) {
+                  setErrors(prev => ({ ...prev, tahun_lulus: `Tahun lulus maksimal 5 tahun setelah tahun masuk (${masuk + 5})` }));
+                } else {
+                  setErrors(prev => ({ ...prev, tahun_lulus: undefined }));
+                }
               } else {
-                setErrors(prev => ({ ...prev, tahun_lulus: undefined }));
+                 setErrors(prev => ({ ...prev, tahun_lulus: undefined }));
               }
             }} 
           />
@@ -238,7 +367,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
         {/* --- Baris 5 --- */}
         {/* Trik Tailwind: [&_button] digunakan untuk menimpa gaya button di dalam SmoothKota dari luar tanpa harus mengubah file komponennya */}
-        <div className="space-y-1 relative z-10 [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
+        <div className="space-y-1 relative z-[65] focus-within:z-[100] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
           <SmoothKota 
             label="Tempat Lahir"
             isRequired={true}
@@ -254,8 +383,26 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.tempat_lahir && <p className="text-xs text-red-500 mt-0.5">{errors.tempat_lahir}</p>}
         </div>
 
-        <div className="space-y-1">
-          <DateOfBirthInput isRequired={true} value={formData.tanggal_lahir} onChange={(val) => { updateFormData({ tanggal_lahir: val }); setErrors(prev => ({ ...prev, tanggal_lahir: undefined })); }} />
+        <div className="space-y-1 focus-within:z-[100]">
+          <DateOfBirthInput 
+            isRequired={true} 
+            value={formData.tanggal_lahir} 
+            onChange={(val) => { 
+              updateFormData({ tanggal_lahir: val }); 
+              setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
+
+              // Peringatan Real-time menggunakan alertError
+              if (formData.tahun_masuk) {
+                const birthYear = new Date(val).getFullYear();
+                const entryYear = parseInt(formData.tahun_masuk);
+                
+                if (entryYear - birthYear < 14) {
+                  alertError('Peringatan: Tanggal lahir harus minimal 14 tahun di bawah tahun masuk.');
+                  setErrors(prev => ({ ...prev, tanggal_lahir: 'Usia tidak mencukupi (minimal 14 tahun)' }));
+                }
+              }
+            }} 
+          />
           {errors.tanggal_lahir && <p className="text-xs text-red-500 mt-0.5">{errors.tanggal_lahir}</p>}
         </div>
 
@@ -290,7 +437,8 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* --- Baris 7 --- */}
-        <div className="md:col-span-1">
+        {/* UBAH z-30 MENJADI z-[60] DI BAWAH INI */}
+        <div className="md:col-span-1 relative z-[60] focus-within:z-[100]">
           <SosmedInput 
             value={formData.social_media} 
             onChange={(val) => updateFormData({ social_media: val })} 

@@ -11,7 +11,8 @@ export default function FeaturedAlumniList({ featuredAlumni, onRemoveFeatured, S
   const displayAlumni = featuredAlumni.slice(0, 4);
 
   const handleRemove = async (alumni) => {
-    const { isConfirmed } = await alertConfirm(`Hapus "${alumni.name}" dari sorotan Beranda?`);
+    const alumniName = alumni.nama || alumni.name || 'Alumni';
+    const { isConfirmed } = await alertConfirm(`Hapus "${alumniName}" dari sorotan Beranda?`);
     if (isConfirmed) {
       onRemoveFeatured(alumni.id);
     }
@@ -54,17 +55,17 @@ export default function FeaturedAlumniList({ featuredAlumni, onRemoveFeatured, S
             {/* Foto Profile */}
             <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
               <img 
-                src={getImageUrl(alumni.foto_thumbnail || alumni.foto) || `https://ui-avatars.com/api/?name=${alumni.name || 'A'}&background=fcd34d&color=78350f`} 
-                alt={alumni.name}
+                src={getImageUrl(alumni.foto_thumbnail || alumni.foto) || `https://ui-avatars.com/api/?name=${alumni.nama || alumni.name || 'A'}&background=fcd34d&color=78350f`} 
+                alt={alumni.nama || alumni.name || 'Alumni'}
                 className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${alumni.name || 'A'}&background=fcd34d&color=78350f`; }}
+                onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${alumni.nama || alumni.name || 'A'}&background=fcd34d&color=78350f`; }}
               />
             </div>
 
             {/* Info Singkat */}
             <div className="flex flex-col overflow-hidden">
-              <span className="text-xs font-bold text-slate-800 truncate">{alumni.name}</span>
-              <span className="text-[10px] text-slate-500 truncate">{alumni.jurusan || alumni.pekerjaan || 'Alumni'}</span>
+              <span className="text-xs font-bold text-slate-800 truncate">{alumni.nama || alumni.name || 'Alumni'}</span>
+              <span className="text-[10px] text-slate-500 truncate">{alumni.jurusan?.nama_jurusan || alumni.jurusan?.nama || alumni.pekerjaan || 'Alumni'}</span>
             </div>
           </div>
         ))}

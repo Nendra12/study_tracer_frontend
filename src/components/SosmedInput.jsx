@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Instagram, Linkedin, Facebook, Twitter, Check, Trash2, Plus } from 'lucide-react';
+import { ChevronDown, Check, Trash2, Plus } from 'lucide-react';
+import { FaLinkedin, FaGithub, FaInstagram, FaFacebook, FaGlobe, FaTiktok, FaYoutube } from 'react-icons/fa';
 import { masterDataApi } from '../api/masterData';
 
 const iconMap = {
-  instagram: <Instagram size={18} className="text-pink-500" />,
-  linkedin: <Linkedin size={18} className="text-blue-600" />,
-  facebook: <Facebook size={18} className="text-blue-500" />,
-  twitter: <Twitter size={18} className="text-sky-400" />,
+  instagram: <FaInstagram size={18} className="text-pink-500" />,
+  linkedin: <FaLinkedin size={18} className="text-blue-600" />,
+  facebook: <FaFacebook size={18} className="text-blue-500" />,
+  tiktok: <FaTiktok size={18} className="text-slate-800" />,
+  youtube: <FaYoutube size={18} className="text-red-500" />,
+  github: <FaGithub size={18} className="text-slate-700" />,
+  website: <FaGlobe size={18} className="text-slate-500" />
 };
 
 const fallbackPlatforms = [
-  { id: 1, label: 'Instagram', key: 'instagram' },
-  { id: 2, label: 'LinkedIn', key: 'linkedin' },
-  { id: 3, label: 'Facebook', key: 'facebook' },
-  { id: 4, label: 'Twitter', key: 'twitter' },
+  { id: 1, label: 'Facebook', key: 'facebook' },
+  { id: 2, label: 'GitHub', key: 'github' },
+  { id: 3, label: 'Instagram', key: 'instagram' },
+  { id: 4, label: 'LinkedIn', key: 'linkedin' },
+  { id: 5, label: 'TikTok', key: 'tiktok' },
+  { id: 7, label: 'YouTube', key: 'youtube' },
+  { id: 8, label: 'Website', key: 'website' }
 ];
 
 export default function SosmedInput({ value, onChange }) {
@@ -30,17 +37,18 @@ export default function SosmedInput({ value, onChange }) {
           id: p.id,
           label: p.nama_sosmed || p.nama || p.platform,
           key: (p.nama_sosmed || p.nama || p.platform || '').toLowerCase().replace(/\s+/g, ''),
-        }));
+        }))
+        .filter(p => !p.key.includes('twitter')); 
+
+        mapped.sort((a, b) => a.label.localeCompare(b.label));
         setPlatforms(mapped);
 
-        // Jika ada data awal dari parent
         if (value && value.length > 0) {
           setSocials(value.map(item => ({
             platformId: item.id_sosmed || item.platformId,
             url: item.url
           })));
         } else {
-          // Default: Munculkan 1 baris input kosong dengan platform pertama
           if (mapped.length > 0) {
             setSocials([{ platformId: mapped[0].id, url: '' }]);
           }
@@ -51,7 +59,6 @@ export default function SosmedInput({ value, onChange }) {
         if (value && value.length > 0) {
           setSocials(value.map(item => ({ platformId: item.id_sosmed || item.platformId, url: item.url })));
         } else {
-          // Default fallback: 1 baris kosong
           setSocials([{ platformId: fallbackPlatforms[0].id, url: '' }]);
         }
       });
@@ -61,7 +68,6 @@ export default function SosmedInput({ value, onChange }) {
 
   const fireOnChange = (updatedSocials) => {
     if (onChange) {
-      // Filter URL kosong agar tidak mengotori database
       const result = updatedSocials
         .filter((s) => s.url && s.url.trim() !== "")
         .map((s) => ({ id_sosmed: s.platformId, url: s.url }));
@@ -117,7 +123,9 @@ export default function SosmedInput({ value, onChange }) {
       <div className="space-y-3">
         {socials.map((item, index) => {
           const selectedPlatform = platforms.find(p => p.id === item.platformId);
+          // Ambil ID yang sudah dipakai (kecuali ID baris ini sendiri)
           const usedIds = socials.map(s => s.platformId).filter(id => id !== item.platformId);
+          // Opsi yang masih bisa dipilih baris ini (termasuk dirinya sendiri)
           const availablePlatforms = platforms.filter(p => !usedIds.includes(p.id));
 
           return (
@@ -129,19 +137,24 @@ export default function SosmedInput({ value, onChange }) {
                 <div className="relative border-r border-fourth">
                   <button
                     type="button"
-                    onClick={() => setOpenDropdownIndex(openDropdownIndex === index ? null : index)}
-                    className="flex items-center gap-2 px-3 py-2.5 cursor-pointer min-w-12.5 justify-center"
+                    // PERBAIKAN: Hanya bisa diklik jika ada platform LAIN yang tersedia (> 1)
+                    onClick={() => availablePlatforms.length > 1 && setOpenDropdownIndex(openDropdownIndex === index ? null : index)}
+                    className={`flex items-center gap-2 px-3 py-2.5 min-w-12.5 justify-center ${availablePlatforms.length > 1 ? 'cursor-pointer' : 'cursor-default'}`}
                   >
                     {selectedPlatform && getIcon(selectedPlatform)}
-                    <ChevronDown size={14} className={`text-third transition-transform duration-300 ${openDropdownIndex === index ? 'rotate-180' : ''}`} />
+                    {/* PERBAIKAN: Panah hanya muncul jika opsi tersedia lebih dari 1 */}
+                    {availablePlatforms.length > 1 && (
+                      <ChevronDown size={14} className={`text-third transition-transform duration-300 ${openDropdownIndex === index ? 'rotate-180' : ''}`} />
+                    )}
                   </button>
 
-                 {openDropdownIndex === index && (
+                 {/* PERBAIKAN: Dropdown hanya mekar jika opsi tersedia lebih dari 1 */}
+                 {openDropdownIndex === index && availablePlatforms.length > 1 && (
                   <div 
-                    className="absolute left-0 top-full z-50 mt-2 w-48 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden"
+                    className="absolute left-0 bottom-[calc(100%+8px)] z-50 w-48 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <ul className="py-1">
+                    <ul className="py-1 max-h-56 overflow-y-auto custom-scrollbar">
                         {availablePlatforms.map((p) => (
                           <li
                             key={p.id}
@@ -172,7 +185,7 @@ export default function SosmedInput({ value, onChange }) {
                 />
               </div>
 
-              {/* Tombol Trash - Hanya muncul jika baris > 1 */}
+              {/* Tombol Trash */}
               {socials.length > 1 && (
                 <button
                   type="button"
