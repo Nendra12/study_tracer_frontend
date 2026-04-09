@@ -226,7 +226,7 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                <span className="text-sm font-bold text-primary">
+                <span className="ml-9 text-sm font-bold text-primary">
                   +{stats?.total_alumni || 0} Bergabung
                 </span>
               </div>
