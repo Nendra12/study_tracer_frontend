@@ -1,6 +1,6 @@
 import React from 'react';
 import { Star, X } from 'lucide-react';
-import { alertConfirm } from '../../utilitis/alert';
+import { alertConfirm } from '../../../utilitis/alert';
 
 export default function FeaturedAlumniList({ featuredAlumni, onRemoveFeatured, STORAGE_BASE_URL }) {
   if (!featuredAlumni || featuredAlumni.length === 0) {

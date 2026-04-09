@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import LockOverlay from './LockOverlay';
+import LockOverlay from '../LockOverlay';
 
 // --- DATA DUMMY ---
 const dummyUniversitas = [

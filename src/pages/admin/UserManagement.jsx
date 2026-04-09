@@ -10,14 +10,14 @@ import { STORAGE_BASE_URL } from '../../api/axios';
 import { alertSuccess, alertError, alertConfirm } from '../../utilitis/alert';
 import { downloadCsvFromPayload } from '../../utilitis/export';
 
-import ManagementStatCard from '../../components/admin/ManagementStatCard';
-import UserManagementTabs from '../../components/admin/UserManagementTabs';
+import ManagementStatCard from '../../components/admin/user/ManagementStatCard';
+import UserManagementTabs from '../../components/admin/user/UserManagementTabs';
 import FilterJurusan from '../../components/admin/FilterJurusan';
 import FilterTahunLulus from '../../components/admin/FilterTahunLulus';
-import AlumniTable from '../../components/admin/AlumniTable';
-import AlumniDetailModal from '../../components/admin/AlumniDetailModal';
-import ProfileUpdateRequests from '../../components/admin/ProfileUpdateRequests';
-import FeaturedAlumniList from '../../components/admin/FeaturedAlumniList'; 
+import AlumniTable from '../../components/admin/user/AlumniTable';
+import AlumniDetailModal from '../../components/admin/user/AlumniDetailModal';
+import ProfileUpdateRequests from '../../components/admin/user/ProfileUpdateRequests';
+import FeaturedAlumniList from '../../components/admin/user/FeaturedAlumniList'; 
 
 const PER_PAGE = 7;
 

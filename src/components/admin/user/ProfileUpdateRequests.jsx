@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Check, X, Loader2, RefreshCw, Eye, FileEdit, User, Award, Layout, FileText, Globe } from 'lucide-react';
-import { adminApi } from '../../api/admin';
-import { alertSuccess, alertError } from '../../utilitis/alert';
-import CareerUpdateDetailModal from './CareerUpdateDetailModal';
-import ProfileUpdateDetailModal from './ProfileUpdateDetailModal';
+import { adminApi } from '../../../api/admin';
+import { alertSuccess, alertError } from '../../../utilitis/alert';
+import CareerUpdateDetailModal from '../CareerUpdateDetailModal';
+import ProfileUpdateDetailModal from '../ProfileUpdateDetailModal';
 
 // Label & Icon per section (matches backend section names)
 const SECTION_META = {
