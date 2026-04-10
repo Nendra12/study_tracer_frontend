@@ -15,6 +15,8 @@
   import { STORAGE_BASE_URL } from "../../api/axios";
   import { alumniApi } from "../../api/alumni";
   import { useThemeSettings } from "../../context/ThemeContext";
+  import { useAuth } from "../../context/AuthContext";
+  import { alertConfirm } from "../../utilitis/alert";
 
   function getImageUrl(path) {
     if (!path) return null;
@@ -41,6 +43,7 @@
 
     const navigate = useNavigate();
     const { theme } = useThemeSettings();
+    const { logout } = useAuth();
 
     useEffect(() => {
       const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -73,6 +76,14 @@
       } catch (err) {
         console.error('Error fetching unread count:', err);
       }
+    };
+
+    const handleLogoutClick = async () => {
+      const result = await alertConfirm('Apakah Anda yakin ingin keluar dari aplikasi?');
+      if (!result.isConfirmed) return;
+
+      await logout();
+      navigate('/');
     };
 
     const fotoThumbUrl = user?.foto_thumbnail ? getImageUrl(user.foto_thumbnail) : null;
@@ -217,7 +228,7 @@
                         />{" "}
                         Profil Anda
                       </Link>
-                      <button onClick={() => navigate("/logout")} className="cursor-pointer w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                      <button onClick={handleLogoutClick} className="cursor-pointer w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all">
                         <LogOut size={18} /> Keluar Aplikasi
                       </button>
                     </div>

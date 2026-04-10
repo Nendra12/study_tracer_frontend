@@ -5,6 +5,7 @@ import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { useThemeSettings } from '../../context/ThemeContext';
 import DefaultLogo from '../../assets/icon.png';
+import { toastError } from '../../utilitis/alert';
 
 // ═══════════════════════════════════════════
 // HELPER FUNCTIONS
@@ -261,7 +262,7 @@ export default function PublicProfileBar({ alumniData }) {
       await generateCvPdf(alumniData, webLink, theme?.logo, theme?.namaSekolah);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
-      alert('Gagal membuat PDF. Silakan coba lagi.');
+      toastError('Gagal membuat PDF. Silakan coba lagi.');
     } finally {
       setDownloading(false);
     }
@@ -295,7 +296,7 @@ export default function PublicProfileBar({ alumniData }) {
         <button
           onClick={handleDownloadPdf}
           disabled={downloading}
-          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-[13px] font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
+          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-[13px] font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
         >
           {downloading ? (
             <Loader2 size={16} className="animate-spin" />

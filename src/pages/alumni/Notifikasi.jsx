@@ -20,7 +20,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { alumniApi } from '../../api/alumni';
-import { alertConfirm } from '../../utilitis/alert';
+import { alertConfirm, toastError, toastSuccess } from '../../utilitis/alert';
 import JobsImg from '../../assets/svg/notification-svgrepo-com.svg';
 import { NotifikasiSkeleton } from '../../components/alumni/skeleton';
 
@@ -166,21 +166,27 @@ export default function Notifikasi() {
       await alumniApi.deleteAllNotifications();
       fetchNotifications();
       fetchUnreadCount();
+      toastSuccess('Semua notifikasi berhasil dihapus.');
     } catch (err) {
       console.error('Error clearing notifications:', err);
-      setError('Gagal menghapus notifikasi.');
+      toastError('Gagal menghapus notifikasi.');
     }
   };
 
   const deleteNotification = async (id, e) => {
     e.stopPropagation(); // Prevent marking as read when deleting
 
+    const confirm = await alertConfirm('Apakah anda yakin ingin menghapus notifikasi ini?');
+    if (!confirm.isConfirmed) return;
+
     try {
       await alumniApi.deleteNotification(id);
       fetchNotifications();
       fetchUnreadCount();
+      toastSuccess('Notifikasi berhasil dihapus.');
     } catch (err) {
       console.error('Error deleting notification:', err);
+      toastError('Gagal menghapus notifikasi.');
     }
   };
 

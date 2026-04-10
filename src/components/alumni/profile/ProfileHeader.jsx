@@ -23,7 +23,8 @@ export default function ProfileHeader({ profile, onPerbarui }) {
                 navigate(`/alumni/daftar-alumni/${alumniId}`, { state: { fromProfile: true } });
               }
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-primary/20 text-primary rounded-md text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer"
+            // Ubah bg menjadi primary, text menjadi white, dan berikan efek hover yang sesuai
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-md text-sm font-bold hover:opacity-90 transition-all cursor-pointer shadow-sm"
           >
             <Eye size={16} /> Lihat Profil Publik
           </button>
