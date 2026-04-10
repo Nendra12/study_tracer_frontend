@@ -99,11 +99,12 @@ export default function NavbarAlumni({ user }) {
 
   // --- LOGIKA WARNA DAN UKURAN DIPISAH ---
   
-  // 1. Cek apakah user sedang berada di halaman profil
+  // 1. Cek apakah user sedang berada di halaman profil atau kuesioner
   const isProfilePage = location.pathname.includes('/alumni/profile');
+  const isKuesionerPage = location.pathname.includes('/alumni/kuesioner');
   
-  // 2. Mode Warna Solid (Putih & Teks Primary): Aktif saat di-scroll ATAU di halaman profil
-  const isSolidMode = scrolled || isProfilePage;
+  // 2. Mode Warna Solid (Putih & Teks Primary): Aktif saat di-scroll ATAU di halaman profil & kuesioner
+  const isSolidMode = scrolled || isProfilePage || isKuesionerPage;
   
   // 3. Mode Menciut (Ukuran mengecil): HANYA aktif saat benar-benar di-scroll
   const isShrunk = scrolled;
@@ -131,11 +132,9 @@ export default function NavbarAlumni({ user }) {
               <span className={`font-black text-lg ${isSolidMode ? 'text-primary' : 'text-white'}`}>
                 Alumni Tracer
               </span>
-              {!isSolidMode && (
-                <span className="text-xs font-semibold text-white/80">
-                  {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
-                </span>
-              )}
+              <span className={`text-xs font-semibold ${isSolidMode ? 'text-primary/80' : 'text-white/80'}`}>
+                {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
+              </span>
             </div>
           </Link>
 
