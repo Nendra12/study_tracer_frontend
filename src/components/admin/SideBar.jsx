@@ -97,13 +97,14 @@ export default function SideBar({ active, setActive }) {
 
         {/* Header Sidebar + Tombol Close */}
         <div className="p-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          {/* Bungkus logo dan teks dengan Link menuju "/" (Landing Page) */}
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
             <img src={theme?.logo || DefaultLogo} alt="Logo" className='w-10 md:w-12'/>
             <div className="min-w-0">
               <h1 className="text-primary font-bold leading-tight text-sm truncate">{theme?.namaSekolah || 'Alumni Tracer'}</h1>
               <p className="text-third text-[10px]">Admin Portal</p>
             </div>
-          </div>
+          </Link>
 
           <button
             onClick={() => setActive(false)}

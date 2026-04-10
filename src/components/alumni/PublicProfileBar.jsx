@@ -5,6 +5,7 @@ import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { useThemeSettings } from '../../context/ThemeContext';
 import DefaultLogo from '../../assets/icon.png';
+import { toastError } from '../../utilitis/alert';
 
 // ═══════════════════════════════════════════
 // HELPER FUNCTIONS
@@ -259,7 +260,7 @@ export default function PublicProfileBar({ alumniData }) {
       await generateCvPdf(alumniData, webLink, theme?.logo, theme?.namaSekolah);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
-      alert('Gagal membuat PDF. Silakan coba lagi.');
+      toastError('Gagal membuat PDF. Silakan coba lagi.');
     } finally {
       setDownloading(false);
     }

@@ -3,6 +3,7 @@ import { X, Send, Image as ImageIcon, Loader2, Search } from 'lucide-react';
 import SmoothDropdown from '../admin/SmoothDropdown';
 import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
+import { toastWarning } from '../../utilitis/alert';
 
 export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
   const isEditMode = !!editJob;
@@ -165,7 +166,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       setFormData({ ...formData, foto: file });
       setPreviewUrl(URL.createObjectURL(file));
     } else if (file) {
-      alert("File terlalu besar (Maks 2MB)");
+      toastWarning("File terlalu besar (Maks 2MB)");
     }
   };
 

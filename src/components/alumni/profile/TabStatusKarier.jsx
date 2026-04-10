@@ -3,6 +3,7 @@ import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Ed
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 import SmoothDropdown from '../../admin/SmoothDropdown';
+import { toastError, toastWarning } from '../../../utilitis/alert';
 
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [showForm, setShowForm] = useState(false);
@@ -78,7 +79,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
   function handleOpenForm() {
     if (career && !career.tahun_selesai && career.status != 'Belum Bekerja') {
-      alert('Anda harus mengisi tanggal berakhir pada karir saat ini terlebih dahulu sebelum menambahkan status karir baru.');
+      toastWarning('Anda harus mengisi tanggal berakhir pada karir saat ini terlebih dahulu sebelum menambahkan status karir baru.');
       return;
     }
     setShowForm(true);
@@ -114,7 +115,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       onRefresh();
     } catch (err) {
       console.error('Failed to save career status:', err);
-      alert('Gagal menyimpan status: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal menyimpan status: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
@@ -122,11 +123,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
   async function handleUpdateEndDate() {
     if (!endDateValue) {
-      alert('Mohon isi tahun selesai');
+      toastWarning('Mohon isi tahun selesai');
       return;
     }
     if (!career?.id_status || !career?.id_riwayat) {
-      alert('Data karir tidak lengkap. Silakan refresh halaman.');
+      toastWarning('Data karir tidak lengkap. Silakan refresh halaman.');
       return;
     }
     try {
@@ -165,7 +166,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       onRefresh();
     } catch (err) {
       console.error('Failed to update end date:', err);
-      alert('Gagal memperbarui tahun selesai: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal memperbarui tahun selesai: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }

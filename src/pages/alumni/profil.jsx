@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Briefcase, Award, Check, Layout, FileText } from 'lucide-react';
+import { User, Briefcase, Award, Layout, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../../components/alumni/Navbar';
@@ -17,6 +17,7 @@ import TabKeahlian from '../../components/alumni/profile/TabKeahlian';
 import TabPortofolio from '../../components/alumni/profile/TabPortofolio';
 import { ProfilSkeleton } from '../../components/alumni/skeleton';
 import { useThemeSettings } from '../../context/ThemeContext';
+import { toastSuccess } from '../../utilitis/alert';
 
 function buildDisplayProfile(profile) {
   if (!profile) return profile;
@@ -62,7 +63,6 @@ export default function Profil() {
   // State Global Profil
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [successMsg, setSuccessMsg] = useState('');
 
   // State Navigasi Tab SPA
   const [activeTab, setActiveTab] = useState('detail');
@@ -100,8 +100,7 @@ export default function Profil() {
   }
 
   function showSuccess(msg) {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(''), 3000);
+    toastSuccess(msg);
   }
 
   const displayProfile = buildDisplayProfile(profile);
@@ -116,13 +115,6 @@ export default function Profil() {
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
 
       <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-16">
-
-        {/* Notifikasi Sukses Melayang */}
-        {successMsg && (
-          <div className="fixed top-20 right-6 z-50 bg-green-500 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2">
-            <Check size={16} /> {successMsg}
-          </div>
-        )}
 
         <ProfileHeader profile={displayProfile} onPerbarui={handlePerbarui} isVerified={isVerified} />
 

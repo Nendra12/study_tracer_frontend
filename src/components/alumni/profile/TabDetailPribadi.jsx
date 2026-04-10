@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Save, X, ChevronDown, Loader2, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
-import { alertConfirm } from '../../../utilitis/alert';
+import { alertConfirm, toastError } from '../../../utilitis/alert';
 
 // Map field backend → alias yang mungkin ada di changed_fields
 const FIELD_KEYS = {
@@ -92,7 +92,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       onRefresh();
     } catch (err) {
       console.error('Failed to update profile:', err);
-      alert('Gagal menyimpan profil: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal menyimpan profil: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
@@ -108,7 +108,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       onShowSuccess('Pengajuan perubahan berhasil dibatalkan');
       onRefresh();
     } catch (err) {
-      alert('Gagal membatalkan: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal membatalkan: ' + (err.response?.data?.message || err.message));
     } finally {
       setCanceling(false);
     }

@@ -21,6 +21,7 @@ import night from "../../assets/moon.png";
 import StatusPengajuanModal from "../../components/alumni/StatusPengajuanModal";
 import { alumniApi } from "../../api/alumni";
 import { useEffect } from "react";
+import { toastWarning } from "../../utilitis/alert";
 
 // --- MOCK DATA ---
 const mockProfile = {
@@ -439,7 +440,7 @@ export default function AlumniPortal() {
                     <button
                       onClick={() => {
                         if (kuesionerPending[0]?.id)
-                          alert(
+                          toastWarning(
                             `Navigasi ke kuesioner ID: ${kuesionerPending[0].id}`,
                           );
                       }}

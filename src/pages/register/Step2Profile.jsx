@@ -56,7 +56,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     if (file) {
       // 1. Validasi Format File (Harus berupa gambar)
       if (!file.type.startsWith('image/')) {
-        alertError('Format file tidak didukung! Harap unggah file berupa gambar (JPG, JPEG, atau PNG).');
+        alertError('Format file tidak didukung! Harap unggah file berupa format gambar (Contoh: JPG, JPEG, PNG atau SVG).');
         e.target.value = ''; // Reset pilihan file
         return;
       }
@@ -456,7 +456,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
                 )}
                 <div className="flex-1">
                   <div className="text-xs font-bold text-primary mb-1 flex items-center gap-1"><Upload size={12} /> Pilih File</div>
-                  <span className="text-[10px] text-gray-400">Max 2MB (PNG/JPG)</span>
+                  <span className="text-[10px] text-gray-400">Masukkan file dengan format foto dengan ukuran maksimal 2MB (Contoh: PNG/JPG)</span>
                   <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
                 </div>
                 {preview && (
