@@ -29,20 +29,11 @@ const DEFAULT_THEME = {
   teksDukungan: '',
 };
 
-// Derive storage base from API base URL
-// API = http://localhost:8000/api → Storage = http://localhost:8000/storage
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-const STORAGE_BASE = API_BASE.replace('/api', '/storage');
 
-/**
- * Fix Storage URL yang salah dari backend.
- * Backend mungkin mengembalikan http://localhost/storage/... (tanpa port)
- * karena APP_URL di .env Laravel belum diatur dengan benar.
- * Fungsi ini mengoreksi bagian /storage/... agar sesuai base yang benar.
- */
+const STORAGE_BASE = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage';
+
 const fixStorageUrl = (url) => {
   if (!url) return null;
-  // Ambil path setelah /storage/ dari URL yang dikembalikan backend
   const storageIndex = url.indexOf('/storage/');
   if (storageIndex !== -1) {
     const relativePath = url.substring(storageIndex + '/storage/'.length);

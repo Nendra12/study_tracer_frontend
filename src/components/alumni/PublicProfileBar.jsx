@@ -15,7 +15,8 @@ function loadImageAsDataUrl(url) {
   return new Promise((resolve) => {
     if (!url) { resolve(null); return; }
     let finalUrl = url;
-    const storagePrefix = 'http://localhost:8000/storage/';
+    const storageBase = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage';
+    const storagePrefix = `${storageBase}/`;
     if (typeof finalUrl === 'string' && finalUrl.startsWith(storagePrefix)) {
       finalUrl = `${window.location.origin}/storage/${finalUrl.replace(storagePrefix, '')}`;
     }
@@ -59,7 +60,8 @@ function addWatermark(doc, webLink, logoDataUrl, namaSekolah) {
 
 function proxyStorageImages(container) {
   const rewritten = [];
-  const prefix = 'http://localhost:8000/storage/';
+  const storageBase = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage';
+  const prefix = `${storageBase}/`;
   container.querySelectorAll('img').forEach((img) => {
     const src = img.getAttribute('src') || '';
     if (src.startsWith(prefix)) {
