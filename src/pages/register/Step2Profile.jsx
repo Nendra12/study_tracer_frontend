@@ -196,7 +196,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.nama_alumni && <p className="text-xs text-red-500 mt-0.5">{errors.nama_alumni}</p>}
         </div>
 
-        <div className="space-y-1 relative z-[55] focus-within:z-[9999]">
+        <div className="space-y-1 relative z-120">
           <SelectInput 
             label="Jurusan" 
             placeholder="Pilih jurusan" 
@@ -373,7 +373,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
         {/* --- Baris 5 --- */}
         {/* PERBAIKAN Z-INDEX: Memastikan SmoothKota tidak tertutup oleh grid di bawahnya */}
-        <div className="space-y-1 relative z-[60] focus-within:z-[9999] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
+        <div className="space-y-1 relative z-[60] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
           <SmoothKota 
             label="Tempat Lahir"
             isRequired={true}
@@ -463,7 +463,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
         {/* --- Baris 7 --- */}
         {/* UBAH z-30 MENJADI z-[60] DI BAWAH INI */}
-        <div className="md:col-span-1 relative z-[60] focus-within:z-[100]">
+        <div className="md:col-span-1 relative z-10 focus-within:z-100">
           <SosmedInput 
             value={formData.social_media} 
             onChange={(val) => updateFormData({ social_media: val })} 
