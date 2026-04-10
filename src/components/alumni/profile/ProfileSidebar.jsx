@@ -5,7 +5,7 @@ import Cropper from 'react-easy-crop';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 import { STORAGE_BASE_URL } from '../../../api/axios';
-import { alertConfirm, alertError, alertWarning } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastWarning } from '../../../utilitis/alert';
 
 // Helper untuk URL Foto
 function getImageUrl(path) {
@@ -149,7 +149,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
 
     const isImageFile = file.type?.startsWith('image/');
     if (!isImageFile) {
-      alertWarning('File yang diunggah harus berupa format foto (image)');
+      toastWarning('File yang diunggah harus berupa format foto (image)');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -172,7 +172,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       onShowSuccess('Perubahan foto dikirim dan menunggu persetujuan admin');
       onRefresh();
     } catch (err) {
-      alertError('Gagal mengunggah foto');
+      toastError('Gagal mengunggah foto');
     } finally {
       setSavingFoto(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -186,7 +186,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
 
     const croppedFile = await getCroppedFile(rawPreviewUrl, croppedAreaPixels);
     if (!croppedFile) {
-      alertError('Gagal memproses crop gambar');
+      toastError('Gagal memproses crop gambar');
       return;
     }
 
@@ -331,7 +331,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       setShowAddSocial(false);
       onRefresh();
     } catch (err) {
-      alertError('Gagal menyimpan tautan sosial');
+      toastError('Gagal menyimpan tautan sosial');
     } finally {
       setSavingSocial(false);
     }
@@ -350,7 +350,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       onShowSuccess('Pengajuan tautan sosial berhasil dibatalkan');
       onRefresh();
     } catch (err) {
-      alertError('Gagal membatalkan pengajuan');
+      toastError('Gagal membatalkan pengajuan');
     } finally {
       setCancelingeSocial(false);
     }

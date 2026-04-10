@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import { alumniApi } from '../../api/alumni';
 import { id as idLocale } from 'date-fns/locale';
-import { alertSuccess } from '../../utilitis/alert';
+import { alertConfirm, toastError, toastSuccess } from '../../utilitis/alert';
 import { useAuth } from '../../context/AuthContext';
 import { KuesionerSkeleton } from '../../components/alumni/skeleton';
 
@@ -98,8 +98,8 @@ function KuesionerModal() {
         }));
 
         if (!isAllAnswered) {
-            const confirm = window.confirm("Beberapa pertanyaan belum diisi. Tetap simpan?");
-            if (!confirm) return;
+            const result = await alertConfirm("Beberapa pertanyaan belum diisi. Tetap simpan?");
+            if (!result.isConfirmed) return;
         }
 
         console.log("Payload yang dikirim ke server:", payload);
@@ -111,7 +111,7 @@ function KuesionerModal() {
                 jawaban: payload
             });
 
-            alertSuccess("Jawaban berhasil disimpan dengan status: " + (isAllAnswered ? "Selesai" : "Proses"));
+            toastSuccess("Jawaban berhasil disimpan dengan status: " + (isAllAnswered ? "Selesai" : "Proses"));
 
             // Refresh user data agar lock state (can_access_all, has_completed_kuesioner) langsung terupdate
             try {
@@ -122,7 +122,7 @@ function KuesionerModal() {
 
             navigate("/alumni")
         } catch (error) {
-            alert("Gagal menyimpan jawaban.");
+            toastError("Gagal menyimpan jawaban.");
             console.error(error);
         } finally {
             setIsSubmitting(false);

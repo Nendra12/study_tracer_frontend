@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { STORAGE_BASE_URL } from '../../../api/axios';
+import { alertConfirm, toastError } from '../../../utilitis/alert';
 
 export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -105,7 +106,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
       onRefresh();
     } catch (error) {
       const msg = error.response?.data?.message || 'Gagal menyimpan portofolio';
-      alert(msg);
+      toastError(msg);
       console.error('Gagal menyimpan portofolio:', error);
     } finally {
       setLoading(false);
@@ -140,7 +141,8 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
       ? 'Batalkan pengajuan portofolio ini?'
       : 'Hapus portofolio ini?';
 
-    if (!confirm(confirmMsg)) return;
+    const result = await alertConfirm(confirmMsg);
+    if (!result.isConfirmed) return;
 
     try {
       if (item.isPending && item.pendingId) {
@@ -156,7 +158,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
       onRefresh();
     } catch (error) {
       const msg = error.response?.data?.message || 'Gagal menghapus portofolio';
-      alert(msg);
+      toastError(msg);
     }
   };
 

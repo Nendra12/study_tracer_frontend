@@ -3,7 +3,7 @@ import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock, AlertCircle, 
 import SmoothDropdown from '../../admin/SmoothDropdown';
 import { alumniApi } from '../../../api/alumni';
 import DeskripsiKerierInput from '../../admin/DeskripsiKerierInput';
-import { alertConfirm } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastWarning } from '../../../utilitis/alert';
 
 export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -74,7 +74,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
         onRefresh();
       } catch (error) {
         const message = error.response?.data?.message || 'Gagal menghapus deskripsi';
-        alert(message);
+        toastError(message);
       } finally {
         setLoading(false);
       }
@@ -95,7 +95,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
         onRefresh();
       } catch (error) {
         const message = error.response?.data?.message || 'Gagal membatalkan pengajuan';
-        alert(message);
+        toastError(message);
       } finally {
         setLoading(false);
       }
@@ -106,7 +106,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
     e.preventDefault();
 
     if (!formData.id_riwayat) {
-      alert('Pilih status karier terlebih dahulu!');
+      toastWarning('Pilih status karier terlebih dahulu!');
       return;
     }
 
@@ -139,7 +139,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
       resetForm();
     } catch (error) {
       const message = error.response?.data?.message || 'Gagal menyimpan deskripsi';
-      alert(message);
+      toastError(message);
     } finally {
       setLoading(false);
     }

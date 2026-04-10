@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, MoveUpRight, X } from 'lucide-react';
+import { MapPin, MoveUpRight, X, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; 
+import { useAuth } from '../context/AuthContext'; 
 import { STORAGE_BASE_URL } from '../api/axios';
 import { useThemeSettings } from '../context/ThemeContext';
 
@@ -47,10 +49,11 @@ const fallbackJobs = [
 
 export default function CareerSection({ jobList }) {
   const { theme } = useThemeSettings();
-  // State untuk menyimpan gambar yang sedang di-preview
+  const navigate = useNavigate(); // <-- Inisialisasi
+  const { user } = useAuth();     // <-- Inisialisasi
+  
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Kunci scroll background saat modal terbuka
   useEffect(() => {
     if (selectedImage) {
       document.body.style.overflow = 'hidden';
@@ -75,20 +78,34 @@ export default function CareerSection({ jobList }) {
     <section id="karir" className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto">
       <div className="max-w-7xl mx-auto relative z-10">
 
-        {/* Header Section */}
-        <motion.div
-          className="mx-auto mb-16"
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-4xl lg:text-5xl font-black text-primary tracking-tight mb-4">
-            Lowongan <span className="text-third">Pekerjaan</span>
-          </h2>
-          <p className="text-primary/80 font-medium">
-            Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
-          </p>
-        </motion.div>
+        {/* --- HEADER DIPERBARUI: Judul di kiri, Tombol di Kanan --- */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl lg:text-5xl font-black text-primary tracking-tight mb-4">
+              Lowongan <span className="text-third">Pekerjaan</span>
+            </h2>
+            <p className="text-primary/80 font-medium text-lg">
+              Informasi lowongan terbaru hasil kurasi jaringan alumni dan mitra strategis {theme?.namaSekolah || 'SMKN 2 Kraksaan'}.
+            </p>
+          </motion.div>
+
+          {/* Tombol dipindah ke sini agar sejajar */}
+          <motion.button
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            onClick={() => user ? navigate("/alumni/lowongan") : navigate("/login")}
+            className="group flex shrink-0 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
+          >
+            Lihat Semua Lowongan
+            <ArrowRight size={18} className="text-primary/70 group-hover:text-primary group-hover:translate-x-1.5 transition-all duration-300" />
+          </motion.button>
+        </div>
+        {/* -------------------------------------------------------- */}
 
         {/* Job Cards Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">

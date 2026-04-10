@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { ChevronDown, Home, LogOut, User, UserPen } from "lucide-react";
 import { STORAGE_BASE_URL } from "../api/axios";
 import { useThemeSettings } from "../context/ThemeContext";
+import { alertConfirm } from "../utilitis/alert";
 
 import Icon from "../assets/icon.png"
 
@@ -81,7 +82,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
       });
     }
   };
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const profile = user?.profile ?? null;
   const namaAlumni = profile?.nama || 'Alumni';
@@ -95,6 +96,15 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
     { name: "Alumni", href: "#alumni" },
     { name: "Karir", href: "#karir" },
   ];
+
+  const handleLogoutClick = async () => {
+    const result = await alertConfirm('Apakah Anda yakin ingin keluar dari aplikasi?');
+    if (!result.isConfirmed) return;
+
+    setIsDropdownOpen(false);
+    await logout();
+    navigate('/');
+  };
 
   return (
     <motion.nav
@@ -217,7 +227,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                               Profil Anda
                             </Link>
                             <button
-                              onClick={() => navigate("/logout")}
+                              onClick={handleLogoutClick}
                               className="w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-md transition-all"
                             >
                               <LogOut size={18} />

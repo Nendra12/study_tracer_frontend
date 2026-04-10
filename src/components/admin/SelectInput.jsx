@@ -16,7 +16,7 @@ export default function SelectInput({ label, value, options, onSelect, placehold
   const displayLabel = selectedOption ? selectedOption.label : value;
 
   return (
-    <div className="space-y-1 relative" ref={ref}>
+    <div className="space-y-1 relative isolate" ref={ref}>
       <label className="text-[11px] font-bold text-primary uppercase">
         {label} <span className="text-red-500">*</span>
       </label>
@@ -39,12 +39,12 @@ export default function SelectInput({ label, value, options, onSelect, placehold
         </div>
       </div>
       {isOpen && (
-        <div className="absolute z-20 w-full mt-1 bg-white border border-fourth rounded-xl shadow-xl max-h-48 overflow-y-auto">
+        <div className="absolute z-9999 w-full mt-1 bg-white border border-fourth rounded-xl shadow-xl max-h-48 overflow-y-auto">
           {options.map((opt, idx) => (
             <div 
               key={idx} 
               onClick={() => { onSelect(opt.value); setIsOpen(false); }} 
-              className={`px-3 py-2 text-xs cursor-pointer hover:bg-fourth ${value === opt.value ? "font-bold text-primary" : "text-slate-600"}`}
+              className={`px-3 py-2 text-xs cursor-pointer bg-white hover:bg-fourth ${value === opt.value ? "font-bold text-primary" : "text-slate-600"}`}
             >
               {opt.label}
             </div>

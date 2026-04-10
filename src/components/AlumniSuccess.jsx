@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // <-- Tambahan
+import { useAuth } from "../context/AuthContext"; // <-- Tambahan
 import { STORAGE_BASE_URL } from "../api/axios";
 
 function getImageUrl(path) {
@@ -18,7 +20,7 @@ const fallbackAlumni = [
     img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop",
   },
   {
-    name: "Siti Aminah",
+    name: "Yasmin Azzahra",
     year: "2019",
     role: "Data Analyst",
     company: "Bank Mandiri",
@@ -41,6 +43,9 @@ const fallbackAlumni = [
 ];
 
 export default function AlumniSuccess({ alumniList }) {
+  const navigate = useNavigate(); // <-- Inisialisasi
+  const { user } = useAuth();     // <-- Inisialisasi
+
   const alumniData = (alumniList && alumniList.length > 0)
     ? alumniList.slice(0, 4).map(a => {
       const latestStatus = a.riwayat_status?.[0];
@@ -60,19 +65,18 @@ export default function AlumniSuccess({ alumniList }) {
     : fallbackAlumni;
 
   return (
-    /* Menggunakan bg-[#f9fafb] (Off-White sedikit hangat) agar beda dengan section sebelumnya */
     <section
       id="alumni"
       className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header dengan Layout Flex yang dinamis */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+        
+        {/* --- HEADER DIPERBARUI: Judul di kiri, Tombol di Kanan --- */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className=""
           >
             <h2 className="text-4xl lg:text-5xl font-black text-primary leading-tight mb-4">
               Tetap terhubung dengan <br />
@@ -82,11 +86,25 @@ export default function AlumniSuccess({ alumniList }) {
               Setiap alumni punya langkahnya masing-masing. Lihat perjalanan mereka setelah lulus.
             </p>
           </motion.div>
+
+          {/* Tombol dipindah ke sini agar sejajar */}
+          <motion.button
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            onClick={() => user ? navigate("/alumni/daftar-alumni") : navigate("/login")}
+            className="group flex shrink-0 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
+          >
+            Lihat Semua Alumni
+            <ArrowRight size={18} className="text-primary/70 group-hover:text-primary group-hover:translate-x-1.5 transition-all duration-300" />
+          </motion.button>
         </div>
+        {/* -------------------------------------------------------- */}
 
         {/* Grid Kartu Alumni */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {alumniData.map((alumni, index) => (
+             /* ... (biarkan bagian mapping card alumni sama seperti sebelumnya) ... */
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 40 }}
