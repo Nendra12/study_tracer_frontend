@@ -40,6 +40,7 @@ export const alertConfirm = async (message) => {
     title: 'Apakah Anda yakin?',
     text: message,
     icon: 'question',
+    scrollbarPadding: false,
     showCancelButton: true,
     confirmButtonColor: primaryColor,
     cancelButtonColor: '#d33', 

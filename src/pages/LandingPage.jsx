@@ -9,7 +9,7 @@ import AlumniStats from "../components/AlumniStats";
 import AlumniSuccess from "../components/AlumniSuccess";
 import { motion } from "framer-motion";
 import CareerSection from "../components/CareerSection";
-import { Globe, Mail, Phone } from "lucide-react";
+import { Globe, Mail, Phone, ArrowRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { publicApi } from "../api/alumni";
 import Loader from "../components/Loaders";
@@ -304,144 +304,142 @@ export default function LandingPage() {
       {/* Karir & Lowongan - Sleek List */}
       <CareerSection jobList={jobList} />
 
-      {/* PERUBAHAN 1: Menambahkan -mt-8 md:-mt-12 untuk menarik footer ke atas (merapatkan jarak vertikal) */}
-      {/* Mengembalikan jarak atas (pt-16) dan membuang margin negatif agar jaraknya tetap lega */}
-      <footer className="bg-fourth pt-16 pb-6 border-t border-[#e2e8f0]">
-        {/* Pembungkus utama (Hanya perlu satu max-w-7xl) */}
-        <div className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* PERUBAHAN: Mengurangi padding-top (pt-12) dan membuang padding ganda di dalam wrapper */}
+      <footer className="bg-fourth pt-12 pb-6 border-t border-[#e2e8f0]">
+        {/* Pembungkus utama (Sekarang hanya 1 lapis agar tidak double) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Ubah ke 12 Kolom agar lebih mudah mengatur presisi lebar dan jarak */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 mb-10">
+          {/* Ubah ke 12 Kolom. mb-10 dikurangi menjadi mb-8 agar jarak ke garis bawah tidak terlalu jauh */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 mb-8">
 
-              {/* Kolom 1: Branding & Kontak Info (Mengambil 4 dari 12 kolom) */}
-              <div className="space-y-4 lg:col-span-4 lg:pr-8">
-                <Link to="/" className="flex items-center gap-2.5 group">
-                  <img
-                    src={theme?.logo || "/icon.png"}
-                    alt="Alumni Tracer Logo"
-                    className="w-12 h-10 object-contain drop-shadow-sm"
-                  />
-                  <div className='flex flex-col transition-all duration-500 ease-in-out'>
-                    <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
-                    <span className='text-[11px] font-semibold text-primary/80'>
-                      {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
-                    </span>
-                  </div>
-                </Link>
-                <p className="text-primary/80 text-sm leading-relaxed font-medium">
-                  {theme?.deskripsiFooter || 'Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas yang lebih kuat bersama-sama.'}
-                </p>
-              </div>
+            {/* Kolom 1: Branding & Kontak Info (Mengambil 4 dari 12 kolom) */}
+            <div className="space-y-4 lg:col-span-4 lg:pr-8">
+              <Link to="/" className="flex items-center gap-2.5 group">
+                <img
+                  src={theme?.logo || "/icon.png"}
+                  alt="Alumni Tracer Logo"
+                  className="w-12 h-10 object-contain drop-shadow-sm"
+                />
+                <div className='flex flex-col transition-all duration-500 ease-in-out'>
+                  <span className="font-black text-primary text-lg leading-tight">Alumni Tracer</span>
+                  <span className='text-[11px] font-semibold text-primary/80'>
+                    {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
+                  </span>
+                </div>
+              </Link>
+              <p className="text-primary/80 text-sm leading-relaxed font-medium">
+                {theme?.deskripsiFooter || 'Platform pelacakan dan jaringan alumni resmi. Menghubungkan lulusan, membina pertumbuhan, dan membangun komunitas yang lebih kuat bersama-sama.'}
+              </p>
+            </div>
 
-              {/* Kolom 2: Tautan Cepat (Mengambil 2 dari 12 kolom, posisikan agak ke tengah) */}
-              <div className="lg:col-span-2 lg:justify-self-center">
-                <h3 className="text-primary font-black mb-4">Tautan Cepat</h3>
-                <ul className="space-y-2.5">
-                  {[
-                    { label: "Beranda", href: "#beranda" },
-                    { label: "Petunjuk", href: "#petunjuk" },
-                    { label: "Statistik Publik", href: "#fitur" },
-                    { label: "Alumni", href: "#alumni" },
-                    { label: "Bursa Kerja", href: "#karir" }
-                  ].map((item) => (
-                    <li key={item.label}>
-                      <a
-                        href={item.href}
-                        onClick={(e) => handleSmoothScroll(e, item.href)}
-                        className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
-                      >
-                        {item.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Kolom 3: Untuk Alumni (Mengambil 2 dari 12 kolom) */}
-              <div className="lg:col-span-2 lg:justify-self-center">
-                <h3 className="text-primary font-black mb-4">Untuk Alumni</h3>
-                <ul className="space-y-2.5">
-                  {[
-                    "Masuk",
-                    "Daftar",
-                    "Perbarui Profil"
-                  ].map((item) => (
-                    <li key={item}>
-                      <a
-                        href="#"
-                        className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
-                      >
-                        {item}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Kolom 4: Kontak Kami (Mengambil 4 dari 12 kolom, diratakan ke ujung paling kanan) */}
-              <div className="lg:col-span-4 lg:justify-self-end flex flex-col">
-                <h3 className="text-primary font-black mb-4">
-                  Kontak Kami
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 group">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                      <Globe size={14} />
-                    </div>
-                    <a href={`https://${(theme?.webKontak || 'website-sekolah.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
-                      {(theme?.webKontak || 'website-sekolah.sch.id').replace(/^https?:\/\//, '')}
+            {/* Kolom 2: Tautan Cepat (Merata ke kiri) */}
+            <div className="lg:col-span-2 lg:justify-self-start">
+              <h3 className="text-primary font-black mb-4">Tautan Cepat</h3>
+              <ul className="space-y-2.5">
+                {[
+                  { label: "Beranda", href: "#beranda" },
+                  { label: "Petunjuk", href: "#petunjuk" },
+                  { label: "Statistik Publik", href: "#fitur" },
+                  { label: "Alumni", href: "#alumni" },
+                  { label: "Bursa Kerja", href: "#karir" }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <a
+                      href={item.href}
+                      onClick={(e) => handleSmoothScroll(e, item.href)}
+                      className="text-primary/80 text-sm font-bold hover:text-primary transition-colors"
+                    >
+                      {item.label}
                     </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Kolom 3: Untuk Alumni (Posisi di tengah) */}
+            <div className="lg:col-span-3 lg:justify-self-center">
+              <h3 className="text-primary font-black mb-4">Untuk Alumni</h3>
+              <ul className="space-y-2.5">
+                {[
+                  { label: "Masuk", path: "/login" },
+                  { label: "Daftar", path: "/register" },
+                  { label: "Perbarui Profil", path: "/alumni/profil" }
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      to={item.path}
+                      className="text-primary/80 text-sm font-bold hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Kolom 4: Kontak Kami (Merata ke kanan) */}
+            <div className="lg:col-span-3 lg:justify-self-end flex flex-col">
+              <h3 className="text-primary font-black mb-4">
+                Kontak Kami
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 group">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Globe size={14} />
                   </div>
-                  <div className="flex items-center gap-3 group">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                      <Mail size={14} />
-                    </div>
-                    <a href={`mailto:${theme?.emailKontak || 'info@sekolah.sch.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
-                      {theme?.emailKontak || 'info@sekolah.sch.id'}
-                    </a>
+                  <a href={`https://${(theme?.webKontak || 'website-sekolah.sch.id').replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
+                    {(theme?.webKontak || 'website-sekolah.sch.id').replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+                <div className="flex items-center gap-3 group">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Mail size={14} />
                   </div>
-                  <div className="flex items-center gap-3 group">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                      <Phone size={14} />
-                    </div>
-                    <a href={`tel:${(theme?.telpKontak || '(0358) 611606').replace(/[^\d+]/g, '')}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
-                      {theme?.telpKontak || '(0358) 611606'}
-                    </a>
+                  <a href={`mailto:${theme?.emailKontak || 'info@sekolah.sch.id'}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors break-all">
+                    {theme?.emailKontak || 'info@sekolah.sch.id'}
+                  </a>
+                </div>
+                <div className="flex items-center gap-3 group">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                    <Phone size={14} />
                   </div>
+                  <a href={`tel:${(theme?.telpKontak || '(0358) 611606').replace(/[^\d+]/g, '')}`} className="text-sm font-bold text-primary/80 hover:text-primary transition-colors">
+                    {theme?.telpKontak || '(0358) 611606'}
+                  </a>
                 </div>
               </div>
-
             </div>
 
-            {/* Bottom Bar (Tidak ada perubahan) */}
-            <div className="pt-6 border-t border-[#e2e8f0] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
-              <p className="text-third text-xs font-bold text-center md:text-left">
-                © {currentYear} Alumni Tracer. Hak cipta dilindungi.
-              </p>
+          </div>
 
-              <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
-                <button
-                  onClick={() => openModal('privasi')}
-                  className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Kebijakan Privasi
-                </button>
-                <button
-                  onClick={() => openModal('layanan')}
-                  className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Ketentuan Layanan
-                </button>
-                <button
-                  onClick={() => openModal('kontak')}
-                  className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Kontak Dukungan
-                </button>
-              </div>
+          {/* Bottom Bar */}
+          <div className="pt-6 border-t border-[#e2e8f0] flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
+            <p className="text-third text-xs font-bold text-center md:text-left">
+              © {currentYear} Alumni Tracer. Hak cipta dilindungi.
+            </p>
+
+            <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
+              <button
+                onClick={() => openModal('privasi')}
+                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+              >
+                Kebijakan Privasi
+              </button>
+              <button
+                onClick={() => openModal('layanan')}
+                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+              >
+                Ketentuan Layanan
+              </button>
+              <button
+                onClick={() => openModal('kontak')}
+                className="text-third hover:text-primary text-xs font-bold transition-colors cursor-pointer"
+              >
+                Kontak Dukungan
+              </button>
             </div>
           </div>
+          
         </div>
       </footer>
 

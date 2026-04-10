@@ -294,7 +294,7 @@ export default function PublicProfileBar({ alumniData }) {
         <button
           onClick={handleDownloadPdf}
           disabled={downloading}
-          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-[13px] font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
+          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-[13px] font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
         >
           {downloading ? (
             <Loader2 size={16} className="animate-spin" />
