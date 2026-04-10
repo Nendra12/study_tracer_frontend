@@ -305,17 +305,13 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Tipe Pekerjaan</label>
-              <select name="tipe_pekerjaan" value={formData.tipe_pekerjaan} onChange={handleInputChange} className="cursor-pointer w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none">
-                <option value="">-- Pilih Tipe --</option>
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Internship">Internship</option>
-                <option value="Contract">Contract</option>
-              </select>
-            </div>
+            <SmoothDropdown
+              label="Tipe Pekerjaan"
+              placeholder="Pilih Tipe Pekerjaan"
+              options={["Full-time", "Part-time", "Freelance", "Internship", "Contract"]}
+              value={formData.tipe_pekerjaan || ""}
+              onSelect={(val) => setFormData(prev => ({ ...prev, tipe_pekerjaan: val }))}
+            />
 
             {/* --- DROPDOWN PROVINSI & KOTA MENGGUNAKAN SMOOTHDROPDOWN --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
