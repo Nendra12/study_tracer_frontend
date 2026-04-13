@@ -200,7 +200,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
   const editingPendingId = editMode === 'edit_pending' ? formData.pendingId : null;
 
   return (
-    <div className="p-6 lg:p-10 animate-in fade-in duration-300">
+    <div className="p-5 lg:p-10 animate-in fade-in duration-300">
 
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -211,14 +211,13 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
           <button
             onClick={() => { setEditMode('add'); setIsEditing(true); }}
             disabled={!isVerified}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${
-              !isVerified 
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${!isVerified
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
+              }`}
             title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
           >
-            {!isVerified ? <Lock size={16} /> : <Plus size={16} />} 
+            {!isVerified ? <Lock size={16} /> : <Plus size={16} />}
             <span className='hidden md:block'>{!isVerified ? 'Terkunci' : 'Deskripsi Karier'}</span>
           </button>
         )}
@@ -242,14 +241,14 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
 
       {/* Form Tambah / Edit */}
       {isEditing && (
-        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
+        <div className="border-t py-5 mb-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-sm md:text-lg text-primary">
               {editMode === 'edit_pending'
                 ? 'Edit Ulang Pengajuan'
                 : editMode === 'edit'
-                ? 'Edit Deskripsi Karier'
-                : 'Tambah Deskripsi Karier Baru'}
+                  ? 'Edit Deskripsi Karier'
+                  : 'Tambah Deskripsi Karier Baru'}
             </h3>
             <button type="button" onClick={resetForm} className="cursor-pointer text-slate-400 hover:text-red-500">
               <X size={20} />
@@ -353,13 +352,12 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
             return (
               <div
                 key={`approved-${idx}`}
-                className={`p-5 bg-white rounded-2xl border shadow-sm relative group transition-all ${
-                  hasPendingDelete
-                    ? 'border-red-200 opacity-60'
-                    : hasPendingUpdate
+                className={`p-5 bg-white rounded-2xl border shadow-sm relative group transition-all ${hasPendingDelete
+                  ? 'border-red-200 opacity-60'
+                  : hasPendingUpdate
                     ? 'border-amber-200'
                     : 'border-slate-100'
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -413,38 +411,51 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
             return (
               <div
                 key={`pending-update-${idx}`}
-                className="p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm relative group"
+                className="p-4 sm:p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm relative group flex flex-col gap-3"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-slate-800 text-base">{karierLabel}</h3>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full border border-amber-300">
-                      <Clock size={10} /> Menunggu Persetujuan
-                    </span>
+                {/* HEADER: Judul, Status & Tombol Aksi */}
+                <div className="flex justify-between items-start gap-4">
+
+                  <div className="flex flex-col gap-2">
+                    <h3 className="font-bold text-slate-800 text-base leading-tight">
+                      {karierLabel}
+                    </h3>
+                    {/* Badge dipindah ke bawah judul & diubah menjadi w-fit agar tidak memakan ruang kosong */}
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        onClick={() => handleEditPending(pending)}
+                        className="cursor-pointer p-1.5 sm:p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                        title="Edit Ulang Pengajuan"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleCancelPending(pending.id)}
+                        className="cursor-pointer p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Batalkan Pengajuan"
+                        disabled={loading}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleEditPending(pending)}
-                      className="cursor-pointer p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Edit Ulang Pengajuan"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleCancelPending(pending.id)}
-                      className="cursor-pointer p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Batalkan Pengajuan"
-                      disabled={loading}
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
+
+                  {/* TOMBOL AKSI: Selalu tampil di HP, tapi sembunyi (muncul saat hover) di layar besar (md) */}
+
+
                 </div>
-                <p
-                  className="prose text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
+
+                <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 text-[10px] sm:text-[11px] font-bold rounded-full border border-amber-300">
+                  <Clock size={12} /> Menunggu Persetujuan
+                </span>
+                {/* KONTEN / DESKRIPSI */}
+                <div
+                  className="prose text-slate-600 text-sm leading-relaxed whitespace-pre-wrap break-words mt-1"
                   dangerouslySetInnerHTML={{ __html: pending.new_data?.deskripsi || '' }}
-                ></p>
-                <p className="text-xs text-amber-600 mt-3 italic">
+                />
+
+                {/* FOOTER */}
+                <p className="text-[11px] sm:text-xs text-amber-600 mt-1 italic leading-snug">
                   * Ini adalah perubahan yang menunggu persetujuan admin. Data asli tetap aktif hingga disetujui.
                 </p>
               </div>
@@ -464,11 +475,9 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-slate-800 text-base">{karierLabel}</h3>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full border border-amber-300">
-                      <Clock size={10} /> Menunggu Persetujuan
-                    </span>
+
                   </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleEditPending(pending)}
                       className="cursor-pointer p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
@@ -486,6 +495,9 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
                     </button>
                   </div>
                 </div>
+                <span className="inline-flex items-center mb-3 gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full border border-amber-300">
+                  <Clock size={10} /> Menunggu Persetujuan
+                </span>
                 <p
                   className="prose text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: pending.new_data?.deskripsi || '' }}
