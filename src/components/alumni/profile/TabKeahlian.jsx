@@ -249,7 +249,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
     : [];
 
   return (
-    <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
+    <div className="p-5 md:p-10 flex-1 animate-in fade-in duration-300">
 
       {/* Pending Update Alert */}
       {pendingUpdates.length > 0 && !isEditingPending && (
@@ -362,7 +362,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
             </p>
 
             {/* Input untuk membuat keahlian baru */}
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3 flex flex-col md:flex-row items-start gap-2">
               <input
                 type="text"
                 value={newSkillName}
@@ -372,7 +372,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
                 }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateSkill(); } }}
                 placeholder="Keahlian tidak ada? Ketik nama keahlian baru..."
-                className="flex-1 px-4 py-2.5 border border-primary/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                className="w-full flex-1 px-4 py-2.5 border border-primary/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                 disabled={creatingSkill}
               />
               <button

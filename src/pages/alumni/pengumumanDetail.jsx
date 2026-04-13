@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { PengumumanDetailSkeleton } from '../../components/alumni/skeleton';
+import { PengumumanDetailSkeleton2 } from '../../components/alumni/skeleton/PengumumanDetail';
 
 export default function PengumumanDetailAlumni() {
   const { id } = useParams();
@@ -53,25 +54,10 @@ export default function PengumumanDetailAlumni() {
           setOtherAnnouncements(filteredOthers);
         } catch (errList) {
           console.error("Gagal memuat daftar pengumuman lainnya:", errList);
-          // Fallback dummy data jika API list error/belum siap
-          // setOtherAnnouncements([
-          //   { id: '101', judul: 'Jadwal Reuni Akbar Angkatan 2020', created_at: new Date().toISOString() },
-          //   { id: '102', judul: 'Lowongan Pekerjaan Khusus Alumni Jurusan IPA', created_at: new Date().toISOString() },
-          // ]);
         }
 
       } catch (err) {
         console.error("Gagal memuat detail:", err);
-        // // Fallback dummy data detail jika API error
-        // setData({
-        //   id: id,
-        //   judul: "Pengumuman Sekolah (Simulasi Data)",
-        //   konten: "Ini adalah simulasi detail untuk pengumuman. Saat API sudah dihubungkan dan berfungsi dengan baik, data aslinya akan muncul di sini.\n\nPastikan Anda selalu mengecek halaman ini untuk informasi terbaru dari almamater tercinta.",
-        //   created_at: new Date().toISOString(),
-        //   status: "aktif",
-        //   is_pinned: false,
-        //   foto: null
-        // });
         setOtherAnnouncements([]);
       } finally {
         setLoading(false);
@@ -82,7 +68,7 @@ export default function PengumumanDetailAlumni() {
   }, [id]);
 
   if (loading) {
-    return <PengumumanDetailSkeleton />;
+    return <PengumumanDetailSkeleton2 />;
   }
 
   if (!data) {

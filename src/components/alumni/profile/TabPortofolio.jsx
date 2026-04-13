@@ -246,7 +246,7 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
 
       {/* --- FORM TAMBAH / EDIT --- */}
       {isEditing && (
-        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
+        <div className="pt-5 animate-in fade-in duration-300 border-t">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-lg text-slate-800">
               {formData.isPending ? 'Edit Pengajuan Portofolio' : formData.id ? 'Edit Proyek' : 'Tambah Proyek Baru'}

@@ -3,6 +3,8 @@ import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Ed
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 import SmoothDropdown from '../../admin/SmoothDropdown';
+import InputDropdownEdit from '../../InputDropdownEdit';
+import UniversitySelector from '../../UniversitasSelector';
 import { toastError, toastWarning } from '../../../utilitis/alert';
 
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
@@ -18,6 +20,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [jurusanKuliahList, setJurusanKuliahList] = useState([]);
   const [loadingKota, setLoadingKota] = useState(false);
+
+  // Autocomplete Options
+  const [posisiOptions, setPosisiOptions] = useState([]);
+  const [perusahaanOptions, setPerusahaanOptions] = useState([]);
+  const [universitasOptions, setUniversitasOptions] = useState([]);
 
   const [isSaatIni, setIsSaatIni] = useState(false);
 
@@ -47,16 +54,46 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
   async function loadMasterData() {
     try {
-      const [statusRes, provinsiRes, bidangRes, jurusanRes] = await Promise.all([
+      const [statusRes, provinsiRes, bidangRes, jurusanRes, masterPerusahaan, masterUniv, alumniRes] = await Promise.all([
         masterDataApi.getStatus(),
         masterDataApi.getProvinsi(),
         masterDataApi.getBidangUsaha(),
         masterDataApi.getJurusanKuliah(),
+        masterDataApi.getPerusahaan().catch(() => ({ data: { data: [] } })),
+        masterDataApi.getUniversitas().catch(() => ({ data: { data: [] } })),
+        alumniApi.getAlumniDirectory({ per_page: 1000 }).catch(() => ({ data: { data: [] } }))
       ]);
-      setStatusList(statusRes.data.data || statusRes.data || []);
-      setProvinsiList(provinsiRes.data.data || provinsiRes.data || []);
-      setBidangUsahaList(bidangRes.data.data || bidangRes.data || []);
-      setJurusanKuliahList(jurusanRes.data.data || jurusanRes.data || []);
+      
+      setStatusList(statusRes.data?.data || statusRes.data || []);
+      setProvinsiList(provinsiRes.data?.data || provinsiRes.data || []);
+      setBidangUsahaList(bidangRes.data?.data || bidangRes.data || []);
+      setJurusanKuliahList(jurusanRes.data?.data || jurusanRes.data || []);
+
+      // Extract Company and Univ from explicit master tables handling possible pagination format
+      const rawP = masterPerusahaan.data?.data?.data || masterPerusahaan.data?.data || masterPerusahaan.data || [];
+      const mp = Array.isArray(rawP) ? rawP.map(item => item.nama_perusahaan || item.nama || item) : [];
+      
+      const rawU = masterUniv.data?.data?.data || masterUniv.data?.data || masterUniv.data || [];
+      const mu = Array.isArray(rawU) ? rawU.map(item => item.nama_universitas || item.nama || item) : [];
+      
+      let pSet = new Set(mp.filter(Boolean));
+      let uSet = new Set(mu.filter(Boolean));
+      let posSet = new Set(["UI/UX", "Software Engineer", "DevOps", "Data Analyst", "Karyawan"]);
+      
+      // Extract from Alumni Directory to capture organic usage
+      const alumniList = alumniRes.data?.data?.data || alumniRes.data?.data || [];
+      alumniList.forEach(a => {
+        if (a.company) {
+          if (a.status === 'Bekerja') pSet.add(a.company);
+          if (a.status === 'Kuliah') uSet.add(a.company);
+        }
+        if (a.posisi) posSet.add(a.posisi);
+        if (a.jabatan) posSet.add(a.jabatan); 
+      });
+
+      setPerusahaanOptions(Array.from(pSet).sort());
+      setUniversitasOptions(Array.from(uSet).sort());
+      setPosisiOptions(Array.from(posSet).sort());
     } catch (err) { console.error('Failed to load master data:', err); }
   }
 
@@ -229,7 +266,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const careerInfo = getCareerDisplayInfo();
 
   return (
-    <div className="p-8 md:p-10 flex-1 animate-in fade-in duration-300">
+    <div className="p-5 md:p-10 flex-1 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3 text-primary">
           <h2 className="text-md md:text-xl font-bold text-primary">Status Karier Saat Ini</h2>
@@ -263,7 +300,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
       {/* Form Tambah Status */}
       {showForm && (
-        <div className="relative z-50 border-2 border-primary/30 rounded-3xl p-6 mb-6 bg-primary/5 animate-in slide-in-from-top duration-300">
+        <div className="relative z-50 mb-6 border-t py-5 animate-in slide-in-from-top duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-black text-primary">Tambahkan Status Baru</h3>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer"><X size={18} /></button>
@@ -271,7 +308,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
             {/* Status */}
-            <div className="sm:col-span-2 relative z-[60]">
+            <div className="sm:col-span-2 relative z-[100]">
               <SmoothDropdown
                 label={<><p className='text-primary'>Status</p></>}
                 isSearchable={false}
@@ -285,7 +322,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
               />
             </div>
 
-            <div className="relative z-[56]">
+            <div className="relative z-[90]">
               <SmoothDropdown
                 label="Tahun Mulai"
                 isSearchable={true}
@@ -301,7 +338,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                 })}
               />
             </div>
-            <div className="relative z-[55]">
+            <div className="relative z-[80]">
               {!isSaatIni ? (
                 <div>
                   <SmoothDropdown
@@ -341,13 +378,27 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             {/* FIELD UNTUK PEKERJAAN */}
             {!statusName.includes('belum') && (statusName.includes('kerja') || statusName.includes('bekerja')) && (
               <>
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Posisi / Judul Job</label>
-                  <input type="text" placeholder="Contoh: Software Engineer" value={form.posisi} onChange={(e) => setForm(prev => ({ ...prev, posisi: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                <div className="sm:col-span-2 relative z-[70]">
+                  <InputDropdownEdit
+                    label="Posisi / Judul Job"
+                    options={posisiOptions}
+                    value={form.posisi}
+                    placeholder="Contoh: Software Engineer"
+                    isRequired={false}
+                    onChange={(val) => setForm(prev => ({ ...prev, posisi: val }))}
+                    onSelect={(val) => setForm(prev => ({ ...prev, posisi: val }))}
+                  />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Nama Perusahaan</label>
-                  <input type="text" placeholder="Contoh: PT. Teknologi Sukses" value={form.nama_perusahaan} onChange={(e) => setForm(prev => ({ ...prev, nama_perusahaan: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                <div className="sm:col-span-2 relative z-[60]">
+                  <InputDropdownEdit
+                    label="Nama Perusahaan"
+                    options={perusahaanOptions}
+                    value={form.nama_perusahaan}
+                    placeholder="Contoh: PT. Teknologi Sukses"
+                    isRequired={false}
+                    onChange={(val) => setForm(prev => ({ ...prev, nama_perusahaan: val }))}
+                    onSelect={(val) => setForm(prev => ({ ...prev, nama_perusahaan: val }))}
+                  />
                 </div>
 
                 {/* PROVINSI & KOTA BERSEBELAHAN */}
@@ -393,22 +444,14 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             {/* FIELD UNTUK KULIAH */}
             {statusName.includes('kuliah') && (
               <>
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Nama Universitas</label>
-                  <input type="text" placeholder="Contoh: Universitas Indonesia" value={form.nama_universitas} onChange={(e) => setForm(prev => ({ ...prev, nama_universitas: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                </div>
-
-                <div className="sm:col-span-2 relative z-50">
-                  <SmoothDropdown
-                    label="Program Studi / Jurusan"
-                    isSearchable={true}
-                    placeholder="Pilih Jurusan"
-                    options={jurusanKuliahList.map(j => j.nama || j.nama_jurusan)}
-                    value={jurusanKuliahList.find(j => String(j.id) === String(form.id_jurusanKuliah))?.nama || jurusanKuliahList.find(j => String(j.id) === String(form.id_jurusanKuliah))?.nama_jurusan || ""}
-                    onSelect={(namaJur) => {
-                      const jur = jurusanKuliahList.find(j => j.nama === namaJur || j.nama_jurusan === namaJur);
-                      if (jur) setForm(prev => ({ ...prev, id_jurusanKuliah: String(jur.id) }));
-                    }}
+                <div className="sm:col-span-2 relative z-[70]">
+                  <UniversitySelector
+                    univValue={form.nama_universitas} 
+                    jurusanValue={form.id_jurusanKuliah}
+                    onUnivSelect={(val) => setForm(prev => ({ ...prev, nama_universitas: val }))}
+                    onJurusanSelect={(val) => setForm(prev => ({ ...prev, id_jurusanKuliah: val }))}
+                    onChangeUniv={(val) => setForm(prev => ({ ...prev, nama_universitas: val }))}
+                    onChangeJurusan={(val) => setForm(prev => ({ ...prev, id_jurusanKuliah: val }))}
                   />
                 </div>
 
@@ -467,7 +510,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-primary/10">
             <button onClick={() => setShowForm(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer">Batal</button>
             <button onClick={handleSave} disabled={saving || !form.id_status || !form.tahun_mulai} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50">
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Simpan Status
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Simpan <span className='hidden md:block'>Status</span>
             </button>
           </div>
         </div>
