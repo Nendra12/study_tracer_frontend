@@ -3,6 +3,7 @@ import DefaultLoginImage from "../assets/login_image.jpg";
 import DefaultLogo from "../assets/icon.png";
 import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
 import { useThemeSettings } from "../context/ThemeContext";
 import { authApi } from "../api/auth";
@@ -16,11 +17,13 @@ export default function Login() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [captchaLoading, setCaptchaLoading] = useState(false);
   const [sessionExpiredMsg, setSessionExpiredMsg] = useState('');
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { theme } = useThemeSettings();
   const navigate = useNavigate();
+  const hasGoogleClientId = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
   useEffect(() => {
     const reason = localStorage.getItem('session_expired_reason');
@@ -87,6 +90,36 @@ export default function Login() {
       await loadCaptcha(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const googleIdToken = credentialResponse?.credential;
+    if (!googleIdToken) {
+      setError("Token Google tidak ditemukan. Silakan coba lagi.");
+      return;
+    }
+
+    setError("");
+    setGoogleLoading(true);
+    try {
+      const user = await loginWithGoogle(googleIdToken);
+      if (user.role === "admin") {
+        navigate("/wb-admin");
+      } else {
+        navigate("/alumni");
+      }
+    } catch (err) {
+      const statusCode = err.response?.status;
+      const fieldErrors = err.response?.data?.errors || {};
+      const msg =
+        fieldErrors?.email?.[0] ||
+        (statusCode === 404 ? "Akun Google belum terdaftar. Silakan daftar terlebih dahulu." : null) ||
+        err.response?.data?.message ||
+        "Login Google gagal. Silakan coba lagi.";
+      setError(msg);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -302,7 +335,7 @@ export default function Login() {
                 {/* Tombol Masuk (Mengisi sisa ruang sepenuhnya dengan flex-1) */}
                 <button
                   type="submit"
-                  disabled={loading || captchaLoading || !captchaImage || !captchaToken.trim()}
+                  disabled={loading || googleLoading || captchaLoading || !captchaImage || !captchaToken.trim()}
                   className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3.5 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
                 >
                   {loading ? (
@@ -318,6 +351,24 @@ export default function Login() {
                   )}
                 </button>
               </div>
+
+              {hasGoogleClientId && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gray-200" />
+                    <span className="text-[10px] sm:text-xs lg:text-[11px] font-semibold text-gray-400">atau masuk dengan Google</span>
+                    <div className="h-px flex-1 bg-gray-200" />
+                  </div>
+
+                  <div className={`${googleLoading ? "opacity-70 pointer-events-none" : ""} flex justify-center`}>
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => setError("Login Google gagal. Silakan coba lagi.")}
+                      useOneTap={false}
+                    />
+                  </div>
+                </div>
+              )}
 
             </form>
 
