@@ -115,9 +115,9 @@ function KuesionerModal() {
 
             // Refresh user data agar lock state (can_access_all, has_completed_kuesioner) langsung terupdate
             try {
-              await refreshUser();
+                await refreshUser();
             } catch (e) {
-              console.warn('Failed to refresh user after submit:', e);
+                console.warn('Failed to refresh user after submit:', e);
             }
 
             navigate("/alumni")
@@ -174,7 +174,7 @@ function KuesionerModal() {
                                     {index + 1}
                                 </div>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 self-center" dangerouslySetInnerHTML={{__html:q.question}}/>
+                            <h3 className="text-lg font-bold text-slate-800 self-center" dangerouslySetInnerHTML={{ __html: q.question }} />
                         </div>
 
                         <div className="space-y-3">
@@ -182,8 +182,8 @@ function KuesionerModal() {
                                 <label
                                     key={idx}
                                     className={`group flex items-center p-4 rounded-xl border transition-all cursor-pointer ${answers[q.id] === opt.id
-                                            ? 'border-primary bg-slate-50'
-                                            : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                                        ? 'border-primary bg-slate-50'
+                                        : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                                         }`}
                                 >
                                     <input
@@ -193,7 +193,7 @@ function KuesionerModal() {
                                         onChange={() => handleSelectOption(q.id, opt.id)}
                                         className="w-5 h-5 border-slate-300 text-primary focus:ring-primary"
                                     />
-                                    <span className={`ml-4 transition-colors ${answers[q.id] === opt.id ? 'text-primary font-semibold' : 'text-slate-600'}`}dangerouslySetInnerHTML={{__html:opt.opsi}}/>
+                                    <span className={`ml-4 transition-colors ${answers[q.id] === opt.id ? 'text-primary font-semibold' : 'text-slate-600'}`} dangerouslySetInnerHTML={{ __html: opt.opsi }} />
                                 </label>
                             ))}
                         </div>

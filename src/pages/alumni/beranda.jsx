@@ -128,10 +128,13 @@ export default function Beranda() {
     return () => { cancelled = true; };
   }, []);
 
+  // Auto Refresh & Polling untuk Kuesioner Baru
   useEffect(() => {
+    // 1. Refresh saat pindah tab lalu kembali (visibilitychange)
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible' && !loading) {
         try {
+          await refreshUser(); // Update status global (contoh: canAccessAll di Navbar)
           const res = await alumniApi.getBeranda();
           setBerandaData(res.data.data);
         } catch (err) {
@@ -140,7 +143,24 @@ export default function Beranda() {
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+    // 2. Polling per 30 detik agar jika tab selalu terbuka, datanya tetap auto refresh
+    const intervalId = setInterval(async () => {
+      if (!loading) {
+        try {
+          await refreshUser(); // Update status global
+          const res = await alumniApi.getBeranda();
+          setBerandaData(res.data.data);
+        } catch (err) {
+          console.error('Error auto polling beranda:', err);
+        }
+      }
+    }, 30000); // 30 detik
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(intervalId);
+    };
   }, [loading]);
 
   useEffect(() => {

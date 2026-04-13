@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
 
-export default function SelectInput({ label, value, options, onSelect, placeholder }) {
+export default function SelectInput({ label, value, options, onSelect, placeholder, disabled, hideLabel }) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
 
@@ -17,12 +17,18 @@ export default function SelectInput({ label, value, options, onSelect, placehold
 
   return (
     <div className="space-y-1 relative isolate" ref={ref}>
-      <label className="text-[11px] font-bold text-primary uppercase">
-        {label} <span className="text-red-500">*</span>
-      </label>
+      {!hideLabel && (
+        <label className="text-[11px] font-bold text-primary uppercase">
+          {label} <span className="text-red-500">*</span>
+        </label>
+      )}
       <div 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="w-full px-3 py-2.5 bg-white border border-fourth rounded-xl text-sm flex justify-between items-center cursor-pointer hover:border-primary transition-all"
+        onClick={() => !disabled && setIsOpen(!isOpen)} 
+        // Tambahkan styling khusus jika disabled (misal: bg-gray-100 dan cursor-not-allowed)
+        className={`w-full px-3 py-2.5 border border-fourth rounded-xl text-sm flex justify-between items-center transition-all ${
+          disabled ? "bg-gray-50  appearance-none  opacity-70" : "bg-white cursor-pointer hover:border-primary"
+        }`}
+        // className="w-full px-3 py-2.5 bg-white border border-fourth rounded-xl text-sm flex justify-between items-center cursor-pointer hover:border-primary transition-all"
       >
         <span className={displayLabel ? "text-slate-800" : "text-gray-400"}>
           {displayLabel || placeholder}

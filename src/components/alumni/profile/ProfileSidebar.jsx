@@ -110,6 +110,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   // Mode edit: 'view' | 'edit' | 'edit_pending'
   const [editMode, setEditMode] = useState('view');
   const [socialForm, setSocialForm] = useState({});
+  const [initialSocialForm, setInitialSocialForm] = useState({});
   const [socialMediaList, setSocialMediaList] = useState([]);
   const [showAddSocial, setShowAddSocial] = useState(false);
 
@@ -133,13 +134,15 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   }, [showCropModal]);
 
   function initSocialForm(data) {
-    setSocialForm({
+    const form = {
       linkedin: data?.linkedin || '',
       github: data?.github || '',
       instagram: data?.instagram || '',
       facebook: data?.facebook || '',
       website: data?.website || '',
-    });
+    };
+    setSocialForm(form);
+    setInitialSocialForm(form);
   }
 
   // --- LOGIKA UPLOAD FOTO ---
@@ -261,13 +264,15 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       }
     }
 
-    setSocialForm({
+    const form = {
       linkedin: pendingMap.linkedin || '',
       github: pendingMap.github || '',
       instagram: pendingMap.instagram || '',
       facebook: pendingMap.facebook || '',
       website: pendingMap.website || '',
-    });
+    };
+    setSocialForm(form);
+    setInitialSocialForm(form);
     setShowAddSocial(true);
     setEditMode('edit_pending');
   }
@@ -286,6 +291,40 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   }
 
   async function handleSaveSocial() {
+    // Cek apakah ada perubahan
+    let hasChanges = false;
+    for (const platform of SOCIAL_PLATFORMS) {
+      const currentUrl = socialForm[platform.key]?.trim() || '';
+      const originalUrl = initialSocialForm[platform.key]?.trim() || '';
+      if (currentUrl !== originalUrl) {
+        hasChanges = true;
+        break;
+      }
+    }
+
+    if (!hasChanges) {
+      setEditMode('view');
+      setShowAddSocial(false);
+      return;
+    }
+
+    // Validasi URL sebelum mengirim
+    for (const platform of SOCIAL_PLATFORMS) {
+      const urlString = socialForm[platform.key]?.trim();
+      if (urlString) {
+        try {
+          const urlObj = new URL(urlString);
+          if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+            toastError(`Link ${platform.label} harus diawali dengan http:// atau https://`);
+            return;
+          }
+        } catch (_) {
+          toastError(`Format link ${platform.label} tidak valid. Pastikan menyertakan http:// atau https://`);
+          return;
+        }
+      }
+    }
+
     try {
       setSavingSocial(true);
       // Pastikan master data sudah dimuat

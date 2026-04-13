@@ -78,6 +78,20 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (formData.link_project) {
+      try {
+        const urlObj = new URL(formData.link_project);
+        if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+          toastError('Link proyek harus diawali dengan http:// atau https://');
+          return;
+        }
+      } catch (_) {
+        toastError('Format link proyek tidak valid. Pastikan menyertakan http:// atau https://');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const fd = new FormData();

@@ -4,19 +4,22 @@ import DatePicker from "react-datepicker";
 // Import CSS bawaan library
 import "react-datepicker/dist/react-datepicker.css";
 
-export default function DateOfBirthInput({ onChange, isRequired, value }) {
+export default function DateOfBirthInput({ onChange, isRequired, value, label, hideLabel = false, disabled = false }) {
   // Konversi string value (YYYY-MM-DD) ke Object Date untuk library
   const selectedDate = value ? new Date(value) : null;
 
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-bold text-primary uppercase block">
-        Tanggal Lahir {isRequired && <span className="text-red-500">*</span>}
-      </label>
+      {!hideLabel && (
+        <label className="text-[11px] font-bold text-primary uppercase block">
+          {label ? label : "Tanggal Lahir"} {isRequired && <span className="text-red-500">*</span>}
+        </label>
+      )}
       
       <div className="relative custom-datepicker">
         <DatePicker
           selected={selectedDate}
+          disabled={disabled}
           onChange={(date) => {
             // Simpan kembali dalam format YYYY-MM-DD agar sinkron dengan database
             if (date) {
@@ -35,7 +38,7 @@ export default function DateOfBirthInput({ onChange, isRequired, value }) {
           
           placeholderText="Pilih tanggal"
           dateFormat="dd/MM/yyyy"
-          className="w-full p-2.5 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary text-slate-700"
+          className={`w-full p-2.5 bg-white border border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-gray-500' : 'text-slate-700'}`}
         />
       </div>
 
