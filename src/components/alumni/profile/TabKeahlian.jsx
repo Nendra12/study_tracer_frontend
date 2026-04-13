@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Plus, X, Save, Loader2, Clock, Edit2, Trash2, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
+import { alertConfirm, toastError } from '../../../utilitis/alert';
 
 // Menggunakan SmoothDropdown milik Anda
 import SmoothDropdown from '../../admin/SmoothDropdown';
@@ -120,7 +121,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
       setNewSkillName('');
     } catch (err) {
       console.error('Failed to create new skill:', err);
-      alert('Gagal membuat keahlian baru: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal membuat keahlian baru: ' + (err.response?.data?.message || err.message));
     } finally {
       setCreatingSkill(false);
     }
@@ -150,7 +151,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
       onRefresh();
     } catch (err) {
       console.error('Failed to save skills:', err);
-      alert('Gagal menyimpan keahlian: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal menyimpan keahlian: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
@@ -189,7 +190,8 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
     const pendingUpdate = pendingUpdates[0];
     if (!pendingUpdate) return;
 
-    if (!confirm('Apakah Anda yakin ingin membatalkan pengajuan perubahan keahlian?')) return;
+    const result = await alertConfirm('Apakah Anda yakin ingin membatalkan pengajuan perubahan keahlian?');
+    if (!result.isConfirmed) return;
 
     try {
       setCancelingPending(true);
@@ -200,7 +202,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
       onRefresh();
     } catch (err) {
       console.error('Failed to cancel pending:', err);
-      alert('Gagal membatalkan pengajuan: ' + (err.response?.data?.message || err.message));
+      toastError('Gagal membatalkan pengajuan: ' + (err.response?.data?.message || err.message));
     } finally {
       setCancelingPending(false);
     }

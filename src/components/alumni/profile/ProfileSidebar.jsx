@@ -5,7 +5,7 @@ import Cropper from 'react-easy-crop';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 import { STORAGE_BASE_URL } from '../../../api/axios';
-import { alertConfirm, alertError, alertWarning } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastWarning } from '../../../utilitis/alert';
 
 // Helper untuk URL Foto
 function getImageUrl(path) {
@@ -110,6 +110,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   // Mode edit: 'view' | 'edit' | 'edit_pending'
   const [editMode, setEditMode] = useState('view');
   const [socialForm, setSocialForm] = useState({});
+  const [initialSocialForm, setInitialSocialForm] = useState({});
   const [socialMediaList, setSocialMediaList] = useState([]);
   const [showAddSocial, setShowAddSocial] = useState(false);
 
@@ -133,13 +134,15 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   }, [showCropModal]);
 
   function initSocialForm(data) {
-    setSocialForm({
+    const form = {
       linkedin: data?.linkedin || '',
       github: data?.github || '',
       instagram: data?.instagram || '',
       facebook: data?.facebook || '',
       website: data?.website || '',
-    });
+    };
+    setSocialForm(form);
+    setInitialSocialForm(form);
   }
 
   // --- LOGIKA UPLOAD FOTO ---
@@ -149,7 +152,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
 
     const isImageFile = file.type?.startsWith('image/');
     if (!isImageFile) {
-      alertWarning('File yang diunggah harus berupa format foto (image)');
+      toastWarning('File yang diunggah harus berupa format foto (image)');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -172,7 +175,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       onShowSuccess('Perubahan foto dikirim dan menunggu persetujuan admin');
       onRefresh();
     } catch (err) {
-      alertError('Gagal mengunggah foto');
+      toastError('Gagal mengunggah foto');
     } finally {
       setSavingFoto(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -186,7 +189,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
 
     const croppedFile = await getCroppedFile(rawPreviewUrl, croppedAreaPixels);
     if (!croppedFile) {
-      alertError('Gagal memproses crop gambar');
+      toastError('Gagal memproses crop gambar');
       return;
     }
 
@@ -261,13 +264,15 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       }
     }
 
-    setSocialForm({
+    const form = {
       linkedin: pendingMap.linkedin || '',
       github: pendingMap.github || '',
       instagram: pendingMap.instagram || '',
       facebook: pendingMap.facebook || '',
       website: pendingMap.website || '',
-    });
+    };
+    setSocialForm(form);
+    setInitialSocialForm(form);
     setShowAddSocial(true);
     setEditMode('edit_pending');
   }
@@ -286,6 +291,40 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   }
 
   async function handleSaveSocial() {
+    // Cek apakah ada perubahan
+    let hasChanges = false;
+    for (const platform of SOCIAL_PLATFORMS) {
+      const currentUrl = socialForm[platform.key]?.trim() || '';
+      const originalUrl = initialSocialForm[platform.key]?.trim() || '';
+      if (currentUrl !== originalUrl) {
+        hasChanges = true;
+        break;
+      }
+    }
+
+    if (!hasChanges) {
+      setEditMode('view');
+      setShowAddSocial(false);
+      return;
+    }
+
+    // Validasi URL sebelum mengirim
+    for (const platform of SOCIAL_PLATFORMS) {
+      const urlString = socialForm[platform.key]?.trim();
+      if (urlString) {
+        try {
+          const urlObj = new URL(urlString);
+          if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+            toastError(`Link ${platform.label} harus diawali dengan http:// atau https://`);
+            return;
+          }
+        } catch (_) {
+          toastError(`Format link ${platform.label} tidak valid. Pastikan menyertakan http:// atau https://`);
+          return;
+        }
+      }
+    }
+
     try {
       setSavingSocial(true);
       // Pastikan master data sudah dimuat
@@ -331,7 +370,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       setShowAddSocial(false);
       onRefresh();
     } catch (err) {
-      alertError('Gagal menyimpan tautan sosial');
+      toastError('Gagal menyimpan tautan sosial');
     } finally {
       setSavingSocial(false);
     }
@@ -350,7 +389,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       onShowSuccess('Pengajuan tautan sosial berhasil dibatalkan');
       onRefresh();
     } catch (err) {
-      alertError('Gagal membatalkan pengajuan');
+      toastError('Gagal membatalkan pengajuan');
     } finally {
       setCancelingeSocial(false);
     }

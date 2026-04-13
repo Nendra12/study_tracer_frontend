@@ -4,7 +4,7 @@ import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import TeksEditorInputan from '../../components/admin/TeksEditorInputan';
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
-import { alertError } from '../../utilitis/alert';
+import { alertError, alertSuccess } from '../../utilitis/alert';
 
 const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
   const isEditMode = !!editData;
@@ -15,6 +15,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
     is_pinned: false,
     konten: '',
     foto: null,
+    remove_foto: false,
   });
 
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -51,6 +52,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
         is_pinned: editData.is_pinned || false,
         konten: editData.konten || '',
         foto: null,
+        remove_foto: false,
       });
       // Set preview gambar dari data yang ada
       if (editData.foto) {
@@ -69,6 +71,7 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
         is_pinned: false,
         konten: '',
         foto: null,
+        remove_foto: false,
       });
       setPreviewUrl(null);
       setErrors({});
@@ -87,10 +90,12 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.size <= 2 * 1024 * 1024) { 
-      setFormData({ ...formData, foto: file });
+      setFormData({ ...formData, foto: file, remove_foto: false });
       setPreviewUrl(URL.createObjectURL(file));
+      if (errors.foto) setErrors(prev => ({ ...prev, foto: undefined }));
     } else if (file) {
       alert("File terlalu besar (Maks 2MB)");
+      e.target.value = null;
     }
   };
 
@@ -100,11 +105,20 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
   };
 
   const handleSubmit = async () => {
+    // 1. Validasi Manual Sebelum Mengirim (Hanya Judul dan Konten)
+    let newErrors = {};
+    if (!formData.judul.trim()) newErrors.judul = ['Judul pengumuman wajib diisi'];
+    if (!formData.konten.trim() || formData.konten === '<p><br></p>') newErrors.konten = ['Isi pengumuman wajib diisi'];
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // Berhenti jika ada error
+    }
+
     setSubmitting(true);
     setErrors({});
     
     try {
-      // Buat FormData untuk multipart upload
       const fd = new FormData();
       fd.append('judul', formData.judul);
       fd.append('konten', formData.konten);
@@ -116,20 +130,23 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
       }
 
       if (isEditMode) {
-        // Untuk update, tambahkan _method PUT
         fd.append('_method', 'PUT');
-        
-        // Handle penghapusan foto secara eksplisit
         if (formData.remove_foto && !formData.foto) {
           fd.append('remove_foto', '1');
         }
-        
         await adminApi.updatePengumuman(editData.id, fd);
+        
+        // Memanggil SweetAlert Sukses untuk Edit
+        alertSuccess('Pengumuman berhasil diperbarui!');
       } else {
         await adminApi.createPengumuman(fd);
+        
+        // Memanggil SweetAlert Sukses untuk Tambah Baru
+        alertSuccess('Pengumuman berhasil ditambahkan!');
       }
       
       onSuccess(); // Trigger refetch di parent
+      onClose(); // Tutup modal setelah sukses
     } catch (err) {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
@@ -191,13 +208,13 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
           <div className="space-y-5">
             {/* Input Judul */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-primary uppercase tracking-wider">Judul Pengumuman *</label>
+              <label className="text-xs font-bold text-primary uppercase tracking-wider">Judul Pengumuman <span className="text-red-500">*</span></label>
               <input 
                 name="judul" 
                 value={formData.judul} 
                 onChange={handleInputChange} 
                 placeholder="Contoh: Pemeliharaan Server Sistem Tracer" 
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20" 
+                className={`w-full px-4 py-3 bg-gray-50 border ${errors.judul ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} 
               />
               {errors.judul && <p className="text-red-500 text-xs mt-1">{errors.judul[0]}</p>}
             </div>
@@ -236,16 +253,18 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
 
             {/* Input Konten */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Isi Pengumuman *</label>
-              <TeksEditorInputan 
-                content={formData.konten}
-                onChange={(html) => {
-                  setFormData(prev => ({ ...prev, konten: html }));
-                  if (errors.konten) setErrors(prev => ({ ...prev, konten: undefined }));
-                }}
-                placeholder="Tuliskan detail pengumuman di sini..."
-                minHeight="200px"
-              />
+              <label className={`text-xs font-bold ${errors.konten ? 'text-red-500' : 'text-primary'} uppercase tracking-wider`}>Isi Pengumuman <span className="text-red-500">*</span></label>
+              <div className={`${errors.konten ? 'ring-2 ring-red-400 rounded-xl' : ''}`}>
+                <TeksEditorInputan 
+                  content={formData.konten}
+                  onChange={(html) => {
+                    setFormData(prev => ({ ...prev, konten: html }));
+                    if (errors.konten) setErrors(prev => ({ ...prev, konten: undefined }));
+                  }}
+                  placeholder="Tuliskan detail pengumuman di sini..."
+                  minHeight="200px"
+                />
+              </div>
               {errors.konten && <p className="text-red-500 text-xs mt-1">{errors.konten[0]}</p>}
             </div>
           </div>
@@ -262,8 +281,8 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
           </button>
           <button 
             onClick={handleSubmit} 
-            disabled={submitting || !formData.judul.trim() || !formData.konten.trim()} 
-            className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-[#2e4344] transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={submitting} 
+            className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Simpan Perubahan' : 'Kirim Pengumuman'} <Send size={18} /></>}
           </button>

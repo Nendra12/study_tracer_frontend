@@ -8,7 +8,8 @@ export default function YearsInput({
   value = null,
   onSelect,
   maxYear = new Date().getFullYear() + 5,
-  minYear = null // <-- TAMBAHAN BARU: Prop minYear
+  minYear = null, // <-- TAMBAHAN BARU: Prop minYear
+  disabled = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -40,8 +41,9 @@ export default function YearsInput({
 
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer w-full p-2.5 px-3 bg-white border border-fourth flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`cursor-pointer w-full p-2.5 px-3 bg-white border border-fourth flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : ''}`}
       >
         <span className={value ? 'font-medium text-gray-700' : 'text-gray-400'}>
           {value || placeholder}

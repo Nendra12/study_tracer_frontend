@@ -142,7 +142,7 @@ export default function AlumniDetail() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
       {/* --- BACKGROUND HERO --- */}
-      <div className="relative h-64 md:h-80 bg-gradient-to-br from-primary via-[#4A6B6D] to-[#2A3E3F] overflow-hidden">
+      <div className="relative h-64 md:h-80 bg-primary overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
           <div className="absolute bottom-10 right-20 w-60 h-60 rounded-full bg-white/10 blur-3xl" />

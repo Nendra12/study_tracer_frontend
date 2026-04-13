@@ -27,17 +27,24 @@ export default function UniversitySelector({
         
         setUniversities(names);
         setUnivMap(map);
-
-        // --- PERBAIKAN: Jika univValue berisi ID, cari namanya untuk ditampilkan ---
-        if (univValue) {
-          const foundName = Object.keys(map).find(key => String(map[key]) === String(univValue));
-          setSelectedUniv(foundName || univValue);
-        }
       })
       .catch(() => {
         setUniversities(["Universitas Indonesia", "Telkom University", "Politeknik Negeri Malang", "Institut Teknologi Bandung"]);
       });
-  }, [univValue]); // Pantau univValue untuk sinkronisasi balik
+  }, []);
+
+  // Sinkronisasi nilai universitas dari parent tanpa memicu refetch berulang.
+  useEffect(() => {
+    if (!univValue) {
+      setSelectedUniv("");
+      return;
+    }
+
+    const foundName = Object.keys(univMap).find(
+      (key) => String(univMap[key]) === String(univValue)
+    );
+    setSelectedUniv(foundName || String(univValue));
+  }, [univValue, univMap]);
 
   // 2. Fetch Jurusan
   useEffect(() => {
@@ -73,10 +80,9 @@ export default function UniversitySelector({
 
   const handleUnivSelect = (val) => {
     setSelectedUniv(val); // Simpan nama (string) di lokal agar input tidak muncul angka
-    const univId = univMap[val];
-    
-    // Kirim ID ke parent jika ada di map, jika tidak (ketik manual) kirim string-nya
-    if (onUnivSelect) onUnivSelect(univId || val);
+
+    // Simpan nama universitas ke parent agar konsisten dengan payload registrasi.
+    if (onUnivSelect) onUnivSelect(val);
     
     // Reset jurusan jika kampus diganti
     if (val !== selectedUniv) {

@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, Search } from 'lucide-react';
-import SmoothDropdown from '../admin/SmoothDropdown';
-import { alumniApi } from '../../api/alumni';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus } from 'lucide-react';
+import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
+import { useAuth } from '../../context/AuthContext';
+import { STORAGE_BASE_URL } from '../../api/axios';
+import SmoothDropdown from '../../components/admin/SmoothDropdown';
+import { toastWarning } from '../../utilitis/alert';
 
 export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
+  const { isAdmin } = useAuth();
   const isEditMode = !!editJob;
 
   const formatTime = (timeString) => {
@@ -18,7 +22,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     tanggal_berakhir: '',
     deskripsi: '',
     tipe_pekerjaan: '',
-    lokasi: '',
+    lokasi: '', // Opsional jika sudah pakai id_kota/id_provinsi, tapi kita sesuaikan dengan API
     foto: null,
     id_provinsi: '',
     id_kota: '',
@@ -41,6 +45,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const [creatingSkill, setCreatingSkill] = useState(false);
   const skillDropdownRef = useRef(null);
 
   // Set Minimum Date + Click outside handler
@@ -134,6 +139,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       setPreviewUrl(null);
       setErrors({});
       setSubmitError(null);
+      setSkillSearch('');
     }
   }, [editJob, isOpen]);
 
@@ -153,6 +159,41 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     setSelectedSkills(prev => prev.filter(s => s.id !== skillId));
   };
 
+  const handleCreateSkill = async () => {
+    if (!skillSearch.trim()) return;
+
+    // Cek apakah skill sebenarnya sudah ada di daftar
+    const exists = skillsList.find(s =>
+      (s.nama || s.name || '').toLowerCase() === skillSearch.trim().toLowerCase()
+    );
+
+    if (exists) {
+      addSkill(exists);
+      return;
+    }
+
+    try {
+      setCreatingSkill(true);
+      const res = await masterDataApi.createSkill({ name_skills: skillSearch.trim() });
+      const created = res.data?.data || res.data;
+
+      if (created) {
+        const newSkill = {
+          id: created.id || created.id_skills,
+          nama: created.nama_skill || created.nama || created.name || skillSearch.trim(),
+        };
+
+        setSkillsList(prev => [...prev, newSkill]);
+        addSkill(newSkill);
+      }
+    } catch (err) {
+      console.error('Gagal membuat skill baru:', err);
+      toastWarning('Gagal membuat skill baru: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setCreatingSkill(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -164,13 +205,41 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     if (file && file.size <= 2 * 1024 * 1024) {
       setFormData({ ...formData, foto: file });
       setPreviewUrl(URL.createObjectURL(file));
+      if (errors.foto) setErrors(prev => ({ ...prev, foto: undefined }));
     } else if (file) {
-      alert("File terlalu besar (Maks 2MB)");
+      toastWarning("File terlalu besar (Maks 2MB)");
+      e.target.value = null;
     }
   };
 
   // Submit ke API
   const handleSubmit = async () => {
+    // 1. Validasi Manual
+    let newErrors = {};
+    if (!formData.judul.trim()) newErrors.judul = 'Job Title wajib diisi';
+    if (!formData.perusahaan.trim()) newErrors.perusahaan = 'Nama Perusahaan wajib diisi';
+    if (!formData.tanggal_berakhir) newErrors.tanggal_berakhir = 'Tanggal Berakhir wajib diisi';
+    if (!formData.jam_mulai) newErrors.jam_mulai = 'Jam Mulai wajib diisi';
+    if (!formData.jam_berakhir) newErrors.jam_berakhir = 'Jam Berakhir wajib diisi';
+    if (!formData.tipe_pekerjaan) newErrors.tipe_pekerjaan = 'Tipe Pekerjaan wajib dipilih';
+    if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
+    if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+    if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
+
+    // Validasi Gambar
+    if (!isEditMode && !formData.foto) {
+      newErrors.foto = 'Gambar/Banner wajib diunggah';
+    } else if (isEditMode && !previewUrl) {
+      newErrors.foto = 'Gambar/Banner wajib diunggah';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll ke atas agar user melihat error
+      document.querySelector('.max-h-\\[90vh\\]')?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setSubmitting(true);
     setSubmitError(null);
     setErrors({});
@@ -178,21 +247,30 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     try {
       const fd = new FormData();
       fd.append('judul_lowongan', formData.judul);
-      if (formData.perusahaan) fd.append('nama_perusahaan', formData.perusahaan);
-      if (formData.deskripsi) fd.append('deskripsi', formData.deskripsi);
-      if (formData.tipe_pekerjaan) fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
-      if (formData.lokasi) fd.append('lokasi', formData.lokasi);
-      if (formData.tanggal_berakhir) fd.append('lowongan_selesai', formData.tanggal_berakhir);
-      if (formData.jam_mulai) fd.append('jam_mulai', formData.jam_mulai);
-      if (formData.jam_berakhir) fd.append('jam_berakhir', formData.jam_berakhir);
-      if (formData.id_kota) fd.append('id_kota', formData.id_kota);
-      if (formData.foto) fd.append('foto_lowongan', formData.foto);
+      fd.append('nama_perusahaan', formData.perusahaan);
+      fd.append('deskripsi', formData.deskripsi);
+      fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
+      fd.append('lowongan_selesai', formData.tanggal_berakhir);
+      fd.append('jam_mulai', formData.jam_mulai);
+      fd.append('jam_berakhir', formData.jam_berakhir);
+      fd.append('id_provinsi', formData.id_provinsi);
+      fd.append('id_kota', formData.id_kota);
+      
+      if (formData.foto instanceof File) {
+        fd.append('foto_lowongan', formData.foto);
+      }
 
       selectedSkills.forEach(skill => {
         fd.append('skills[]', skill.id);
       });
 
-      await alumniApi.submitLowongan(fd);
+      if (isEditMode) {
+        await adminApi.updateLowongan(editJob.id, fd);
+      } else {
+        if (isAdmin) fd.append('status', 'published');
+        const res = await adminApi.createLowongan(fd);
+        if (isAdmin && res.data?.data?.id) await adminApi.approveLowongan(res.data.data.id);
+      }
 
       onSuccess();
       onClose();
@@ -200,7 +278,6 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       console.error('Submit lowongan failed:', err);
       if (err.response?.status === 422) {
         const validationErrors = err.response.data?.errors || {};
-        // Map backend field names to form field names
         const mapped = {};
         if (validationErrors.judul_lowongan) mapped.judul = validationErrors.judul_lowongan[0];
         if (validationErrors.nama_perusahaan) mapped.perusahaan = validationErrors.nama_perusahaan[0];
@@ -212,8 +289,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         if (validationErrors.jam_berakhir) mapped.jam_berakhir = validationErrors.jam_berakhir[0];
         if (validationErrors.foto_lowongan) mapped.foto = validationErrors.foto_lowongan[0];
         if (validationErrors.id_kota) mapped.id_kota = validationErrors.id_kota[0];
+        if (validationErrors.id_provinsi) mapped.id_provinsi = validationErrors.id_provinsi[0];
         if (validationErrors.skills) mapped.skills = validationErrors.skills[0];
         setErrors(mapped);
+        document.querySelector('.max-h-\\[90vh\\]')?.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setSubmitError(err.response?.data?.message || 'Gagal mengirim lowongan. Silakan coba lagi.');
       }
@@ -253,8 +332,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
           {/* Upload Foto */}
           <div className="space-y-3">
-            <label className="text-[11px] font-black text-primary uppercase tracking-widest">Gambar / Banner (Opsional)</label>
-            <div className="flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+            <label className="text-[11px] font-black text-primary uppercase tracking-widest block">
+              Gambar / Banner <span className="text-red-500">*</span>
+            </label>
+            <div className={`flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed ${errors.foto ? 'border-red-400 bg-red-50/50' : 'border-gray-200 bg-gray-50/50'} rounded-2xl`}>
               <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0">
                 {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <ImageIcon size={32} className="text-gray-300" />}
               </div>
@@ -264,48 +345,63 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                   Pilih File
                   <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </label>
-                {errors.foto && <p className="text-xs text-red-500 font-medium mt-1">{errors.foto}</p>}
               </div>
             </div>
+            {errors.foto && <p className="text-xs text-red-500 font-medium">{errors.foto}</p>}
           </div>
 
           <div className="space-y-6">
+            {/* Job Title */}
             <div>
-              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Job Title *</label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                Job Title <span className="text-red-500">*</span>
+              </label>
               <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.judul ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
               {errors.judul && <p className="text-xs text-red-500 font-medium mt-1">{errors.judul}</p>}
             </div>
 
+            {/* Nama Perusahaan & Tanggal Berakhir */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Nama Perusahaan</label>
-                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Nama Perusahaan <span className="text-red-500">*</span>
+                </label>
+                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
+                {errors.perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.perusahaan}</p>}
               </div>
               <div>
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Tanggal Berakhir</label>
-                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Tanggal Berakhir <span className="text-red-500">*</span>
+                </label>
+                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.tanggal_berakhir ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
                 {errors.tanggal_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.tanggal_berakhir}</p>}
               </div>
             </div>
 
+            {/* Jam Mulai & Jam Berakhir */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Jam Mulai</label>
-                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Jam Mulai <span className="text-red-500">*</span>
+                </label>
+                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.jam_mulai ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
                 {errors.jam_mulai && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_mulai}</p>}
               </div>
               <div>
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Jam Berakhir</label>
-                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20" />
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Jam Berakhir <span className="text-red-500">*</span>
+                </label>
+                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.jam_berakhir ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
                 {errors.jam_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_berakhir}</p>}
               </div>
             </div>
 
+            {/* Tipe Pekerjaan */}
             <div className="relative z-60">
               <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
-                Tipe Pekerjaan
+                Tipe Pekerjaan <span className="text-red-500">*</span>
               </label>
-              <div className="w-full">
+              <div className={`w-full ${errors.tipe_pekerjaan ? 'ring-2 ring-red-400 rounded-xl' : ''}`}>
                 <SmoothDropdown
                   isSearchable={false}
                   placeholder="-- Pilih Tipe --"
@@ -313,42 +409,61 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                   value={formData.tipe_pekerjaan}
                   onSelect={(val) => {
                     setFormData(prev => ({ ...prev, tipe_pekerjaan: val }));
+                    if (errors.tipe_pekerjaan) setErrors(prev => ({ ...prev, tipe_pekerjaan: undefined }));
                   }}
                 />
               </div>
+              {errors.tipe_pekerjaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.tipe_pekerjaan}</p>}
             </div>
 
-            {/* Area Lokasi dengan SmoothDropdown */}
+            {/* Area Lokasi (Provinsi & Kota) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-50">
-              <div className="w-full rounded-xl">
-                <SmoothDropdown
-                  label="Provinsi"
-                  isSearchable={true}
-                  placeholder="Pilih Provinsi"
-                  options={provinsiList.map(p => p.nama)}
-                  value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
-                  onSelect={(namaProv) => {
-                    const prov = provinsiList.find(p => p.nama === namaProv);
-                    if (prov) setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
-                  }}
-                />
+              <div>
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Provinsi <span className="text-red-500">*</span>
+                </label>
+                <div className={`w-full rounded-xl ${errors.id_provinsi ? 'ring-2 ring-red-400' : ''}`}>
+                  <SmoothDropdown
+                    isSearchable={true}
+                    placeholder="Pilih Provinsi"
+                    options={provinsiList.map(p => p.nama)}
+                    value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
+                    onSelect={(namaProv) => {
+                      const prov = provinsiList.find(p => p.nama === namaProv);
+                      if (prov) {
+                        setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
+                        if (errors.id_provinsi) setErrors(prev => ({ ...prev, id_provinsi: undefined }));
+                      }
+                    }}
+                  />
+                </div>
+                {errors.id_provinsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_provinsi}</p>}
               </div>
-              <div className="w-full rounded-xl">
-                <SmoothDropdown
-                  label="Kota"
-                  isSearchable={true}
-                  placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
-                  options={kotaList.map(k => k.nama)}
-                  value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
-                  onSelect={(namaKota) => {
-                    const kota = kotaList.find(k => k.nama === namaKota);
-                    if (kota) setFormData({ ...formData, id_kota: String(kota.id) });
-                  }}
-                />
+
+              <div>
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Kota <span className="text-red-500">*</span>
+                </label>
+                <div className={`w-full rounded-xl ${errors.id_kota ? 'ring-2 ring-red-400' : ''}`}>
+                  <SmoothDropdown
+                    isSearchable={true}
+                    placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
+                    options={kotaList.map(k => k.nama)}
+                    value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
+                    onSelect={(namaKota) => {
+                      const kota = kotaList.find(k => k.nama === namaKota);
+                      if (kota) {
+                        setFormData({ ...formData, id_kota: String(kota.id) });
+                        if (errors.id_kota) setErrors(prev => ({ ...prev, id_kota: undefined }));
+                      }
+                    }}
+                  />
+                </div>
+                {errors.id_kota && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>}
               </div>
             </div>
 
-            {/* Bagian Skills */}
+            {/* Bagian Skills (TIDAK WAJIB) */}
             <div className="relative z-40" ref={skillDropdownRef}>
               <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                 Skills <span className="normal-case opacity-70">(Opsional)</span>
@@ -363,32 +478,69 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                 ))}
               </div>
 
-              <div className="relative">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={skillSearch}
-                  onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
-                  onFocus={() => setShowSkillDropdown(true)}
-                  placeholder="Cari dan pilih skill..."
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none"
-                />
-                {showSkillDropdown && (
-                  <div className="absolute z-50 top-[105%] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto py-2">
-                    {filteredSkills.length > 0 ? filteredSkills.map(s => (
-                      <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-primary">
-                        {s.nama || s.name}
-                      </div>
-                    )) : <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Skill tidak ditemukan</div>}
-                  </div>
+              <div className="relative flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={skillSearch}
+                    onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
+                    onFocus={() => setShowSkillDropdown(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (skillSearch && filteredSkills.length === 0) {
+                          handleCreateSkill();
+                        }
+                      }
+                    }}
+                    placeholder="Cari dan pilih skill..."
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none"
+                    disabled={creatingSkill}
+                  />
+                  {showSkillDropdown && (
+                    <div className="absolute z-50 top-[105%] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto py-2">
+                      {filteredSkills.length > 0 ? filteredSkills.map(s => (
+                        <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-primary">
+                          {s.nama || s.name}
+                        </div>
+                      )) : skillSearch.trim() ? (
+                        <div 
+                          onClick={handleCreateSkill} 
+                          className="px-4 py-3 text-sm text-primary font-bold cursor-pointer hover:bg-primary/5 flex items-center gap-2"
+                        >
+                          {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                          Tambahkan "{skillSearch}" sebagai skill baru
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Ketik untuk mencari atau menambah skill</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Tombol Tambah Muncul Jika Skill Tidak Ditemukan */}
+                {skillSearch && filteredSkills.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={handleCreateSkill}
+                    disabled={creatingSkill}
+                    className="flex items-center gap-1.5 px-4 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {creatingSkill ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                    <span className="hidden sm:inline">Tambah</span>
+                  </button>
                 )}
               </div>
-              {errors.skills && <p className="text-xs text-red-500 font-medium mt-1">{errors.skills}</p>}
             </div>
 
+            {/* Deskripsi */}
             <div>
-              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">Deskripsi & Kualifikasi Pekerjaan</label>
-              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                Deskripsi & Kualifikasi Pekerjaan <span className="text-red-500">*</span>
+              </label>
+              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={`w-full px-5 py-4 bg-slate-50 border ${errors.deskripsi ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none`} />
+              {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
             </div>
 
           </div>
@@ -399,7 +551,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
           <button onClick={onClose} disabled={submitting} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm cursor-pointer">
             Batal
           </button>
-          <button onClick={handleSubmit} disabled={submitting || !formData.judul} className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-[#2A3E3F] transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
+          <button onClick={handleSubmit} disabled={submitting} className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/80 transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Simpan' : 'Kirim'} <Send size={16} /></>}
           </button>
         </div>

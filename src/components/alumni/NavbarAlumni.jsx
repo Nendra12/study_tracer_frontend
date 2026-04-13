@@ -5,6 +5,8 @@ import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle } from 'lucide-react
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { alertConfirm } from '../../utilitis/alert';
 
 import Icon from "../../assets/icon.png"
 
@@ -17,6 +19,7 @@ export default function NavbarAlumni({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useThemeSettings();
+  const { logout } = useAuth();
 
   const canAccessAll = user?.can_access_all ?? false;
 
@@ -75,6 +78,16 @@ export default function NavbarAlumni({ user }) {
     }
   };
 
+  const handleLogoutClick = async () => {
+    const result = await alertConfirm('Apakah Anda yakin ingin keluar dari aplikasi?');
+    if (!result.isConfirmed) return;
+
+    setIsDropdownOpen(false);
+    setIsOpen(false);
+    await logout();
+    navigate('/');
+  };
+
   const fotoUrl = user?.foto ? getImageUrl(user.foto) : null;
 
   const navLinks = [
@@ -86,13 +99,19 @@ export default function NavbarAlumni({ user }) {
 
   // --- LOGIKA WARNA DAN UKURAN DIPISAH ---
   
-  // 1. Cek apakah user sedang berada di halaman profil
+  // 1. Cek apakah user sedang berada di halaman khusus
   const isProfilePage = location.pathname.includes('/alumni/profile');
+  const isKuesionerPage = location.pathname.includes('/alumni/kuesioner');
+  const isPengumumanDetail = location.pathname.startsWith('/alumni/pengumuman/') && location.pathname !== '/alumni/pengumuman';
   
-  // 2. Mode Warna Solid (Putih & Teks Primary): Aktif saat di-scroll ATAU di halaman profil
-  const isSolidMode = scrolled || isProfilePage;
+  // 2. Logika Warna Teks & Ikon (Gunakan warna Primary/Gelap saat halaman di-scroll ATAU di halaman dengan background terang)
+  const isSolidMode = scrolled || isProfilePage || isKuesionerPage || isPengumumanDetail;
   
-  // 3. Mode Menciut (Ukuran mengecil): HANYA aktif saat benar-benar di-scroll
+  // 3. Logika Background Navbar (Gunakan background putih hanya saat discroll atau di profil/kuesioner)
+  // Untuk pengumuman detail, biarkan transparan (sesuai permintaan "hanya warna text nya saja")
+  const hasSolidBg = scrolled;
+  
+  // 4. Mode Menciut (Ukuran mengecil): HANYA aktif saat benar-benar di-scroll
   const isShrunk = scrolled;
 
   return (
@@ -104,8 +123,8 @@ export default function NavbarAlumni({ user }) {
       {/* Container utama Menciut HANYA berdasarkan state `isShrunk` (yaitu: scrolled) */}
       <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${isShrunk ? 'px-8 sm:px-12 lg:px-32' : 'px-4 sm:px-6 lg:px-8'}`}>
         
-        {/* Background & Shadow menggunakan `isSolidMode` (warna solid di profil walau belum discroll) */}
-        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${isSolidMode ? 'shadow-md bg-white/90 backdrop-blur-xl px-6' : 'bg-transparent'}`}>
+        {/* Background & Shadow menggunakan `hasSolidBg` (hanya beri background putih jika diperlukan) */}
+        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${hasSolidBg ? 'shadow-md bg-white/90 backdrop-blur-xl px-6' : 'bg-transparent'}`}>
 
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2.5 group">
@@ -118,11 +137,9 @@ export default function NavbarAlumni({ user }) {
               <span className={`font-black text-lg ${isSolidMode ? 'text-primary' : 'text-white'}`}>
                 Alumni Tracer
               </span>
-              {!isSolidMode && (
-                <span className="text-xs font-semibold text-white/80">
-                  {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
-                </span>
-              )}
+              <span className={`text-xs font-semibold ${isSolidMode ? 'text-primary/80' : 'text-white/80'}`}>
+                {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
+              </span>
             </div>
           </Link>
 
@@ -232,7 +249,7 @@ export default function NavbarAlumni({ user }) {
                           Profil Anda
                         </Link>
                         <button
-                          onClick={() => navigate('/logout')}
+                          onClick={handleLogoutClick}
                           className="cursor-pointer w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl transition-all"
                         >
                           <LogOut size={18} />
@@ -300,7 +317,7 @@ export default function NavbarAlumni({ user }) {
                   <button onClick={() => { navigate('/alumni/profile'); setIsOpen(false); }} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
                     <User size={18} /> Profil Anda
                   </button>
-                  <button onClick={() => navigate('/logout')} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
+                  <button onClick={handleLogoutClick} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
                     <LogOut size={18} /> Keluar Aplikasi
                   </button>
                 </div>

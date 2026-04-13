@@ -10,7 +10,9 @@ export default function SmoothKota({
   value = null, 
   message = '',
   onSelect,
-  isSearchable = false 
+  isSearchable = false,
+  disabled = false,
+  hideLabel = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,8 +39,8 @@ export default function SmoothKota({
     : normalizedOptions;
 
   return (
-    <div className="space-y-1 w-full min-w-[180px] relative text-left" ref={dropdownRef}>
-      {label && (
+    <div className={`space-y-1 w-full min-w-[180px] relative text-left isolate ${isOpen ? 'z-9999' : 'z-60'}`} ref={dropdownRef}>
+      {!hideLabel && label && (
         <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-1">
           {label} {isRequired ? <span className="text-red-500">*</span> : <span className="text-[9px] text-slate-400 italic">{message}</span>}
         </label>
@@ -46,8 +48,9 @@ export default function SmoothKota({
 
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer w-full px-2 py-1.5 bg-white border border-gray-200 flex items-center justify-between rounded text-xs transition-all outline-none focus:ring-1 focus:ring-primary"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`cursor-pointer w-full px-2 py-1.5 bg-white border border-gray-200 flex items-center justify-between rounded text-xs transition-all outline-none focus:ring-1 focus:ring-primary ${disabled ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
       >
         <span className={selectedOption ? 'font-medium text-gray-700 truncate text-left' : 'text-gray-400 truncate text-left'}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -56,7 +59,7 @@ export default function SmoothKota({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full min-w-[240px] mt-1 bg-white border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="absolute z-9999 w-full min-w-[240px] mt-1 bg-white opacity-100 border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
           
           {isSearchable && (
             <div className="p-2 border-b border-gray-50 bg-gray-50/50 flex items-center gap-2">
@@ -93,7 +96,7 @@ export default function SmoothKota({
         </div>
       )}
 
-      {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+      {isOpen && <div className="fixed inset-0 z-9990" onClick={() => setIsOpen(false)} />}
     </div>
   );
 }

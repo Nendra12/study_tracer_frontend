@@ -170,7 +170,7 @@ export default function Alumni() {
             {/* FORM PENCARIAN - Menggunakan flex-1 agar mengambil sisa ruang */}
             <form 
               onSubmit={handleSearch} 
-              className="mt-3 flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+              className="flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
             >
               <div className="relative flex-1 flex items-center">
                 <Search className="absolute left-3 text-gray-400" size={18} />

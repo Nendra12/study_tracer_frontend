@@ -56,7 +56,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
     if (file) {
       // 1. Validasi Format File (Harus berupa gambar)
       if (!file.type.startsWith('image/')) {
-        alertError('Format file tidak didukung! Harap unggah file berupa gambar (JPG, JPEG, atau PNG).');
+        alertError('Format file tidak didukung! Harap unggah file berupa format gambar (Contoh: JPG, JPEG, PNG atau SVG).');
         e.target.value = ''; // Reset pilihan file
         return;
       }
@@ -196,7 +196,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.nama_alumni && <p className="text-xs text-red-500 mt-0.5">{errors.nama_alumni}</p>}
         </div>
 
-        <div className="space-y-1 relative z-40">
+        <div className="space-y-1 relative z-120">
           <SelectInput 
             label="Jurusan" 
             placeholder="Pilih jurusan" 
@@ -299,12 +299,12 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* --- Baris 4 --- */}
-        <div className="space-y-1 relative z-20 focus-within:z-[100]">
+        {/* PERBAIKAN Z-INDEX: Menggunakan z-[70] default dan z-[9999] saat focus-within agar opsi tidak tertutup */}
+        <div className="space-y-1 relative z-[70] focus-within:z-[9999]">
           <YearsInput 
             label="Tahun Masuk" 
             isRequired={true} 
             value={formData.tahun_masuk} 
-            // Batasi pilihan maksimal adalah tahun sekarang
             maxYear={new Date().getFullYear()} 
             onSelect={(val) => { 
               updateFormData({ tahun_masuk: val }); 
@@ -333,7 +333,6 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
                   alertError('Peringatan: Tanggal lahir harus minimal 14 tahun di bawah tahun masuk.');
                   setErrors(prev => ({ ...prev, tanggal_lahir: 'Usia tidak mencukupi (minimal 14 tahun)' }));
                 } else {
-                  // Hapus error jika sekarang sudah valid
                   setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
                 }
               }
@@ -342,22 +341,17 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.tahun_masuk && <p className="text-xs text-red-500 mt-0.5">{errors.tahun_masuk}</p>}
         </div>
 
-        <div className="space-y-1 relative z-20 focus-within:z-[100]">
+        {/* PERBAIKAN Z-INDEX: Dibuat sedikit di bawah Tahun Masuk agar berurutan */}
+        <div className="space-y-1 relative z-[65] focus-within:z-[9999]">
           <YearsInput 
             label="Tahun Lulus" 
             isRequired={true} 
             value={formData.tahun_lulus} 
-            
-            // Batas maksimal: Tahun Masuk + 5
             maxYear={formData.tahun_masuk ? parseInt(formData.tahun_masuk) + 5 : new Date().getFullYear() + 5}
-            
-            // <-- TAMBAHAN BARU: Batas minimal adalah Tahun Masuk
             minYear={formData.tahun_masuk ? parseInt(formData.tahun_masuk) : null}
-            
             onSelect={(val) => { 
               updateFormData({ tahun_lulus: val }); 
               
-              // Validasi Real-time: Tahun Lulus (Min +2 tahun, Max +5 tahun)
               if (formData.tahun_masuk) {
                 const masuk = parseInt(formData.tahun_masuk);
                 const lulus = parseInt(val);
@@ -378,8 +372,8 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* --- Baris 5 --- */}
-        {/* Trik Tailwind: [&_button] digunakan untuk menimpa gaya button di dalam SmoothKota dari luar tanpa harus mengubah file komponennya */}
-        <div className="space-y-1 relative z-[65] focus-within:z-[100] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
+        {/* PERBAIKAN Z-INDEX: Memastikan SmoothKota tidak tertutup oleh grid di bawahnya */}
+        <div className="space-y-1 relative z-[60] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-fourth [&_button_span]:!text-sm">
           <SmoothKota 
             label="Tempat Lahir"
             isRequired={true}
@@ -395,7 +389,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.tempat_lahir && <p className="text-xs text-red-500 mt-0.5">{errors.tempat_lahir}</p>}
         </div>
 
-        <div className="space-y-1 focus-within:z-[100]">
+        <div className="space-y-1 relative z-[55]">
           <DateOfBirthInput 
             isRequired={true} 
             value={formData.tanggal_lahir} 
@@ -403,7 +397,6 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
               updateFormData({ tanggal_lahir: val }); 
               setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
 
-              // Peringatan Real-time menggunakan alertError
               if (formData.tahun_masuk) {
                 const birthYear = new Date(val).getFullYear();
                 const entryYear = parseInt(formData.tahun_masuk);
@@ -456,7 +449,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
                 )}
                 <div className="flex-1">
                   <div className="text-xs font-bold text-primary mb-1 flex items-center gap-1"><Upload size={12} /> Pilih File</div>
-                  <span className="text-[10px] text-gray-400">Max 2MB (PNG/JPG)</span>
+                  <span className="text-[10px] text-gray-400">Masukkan file dengan format foto dengan ukuran maksimal 2MB (Contoh: PNG/JPG)</span>
                   <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
                 </div>
                 {preview && (
@@ -470,7 +463,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
 
         {/* --- Baris 7 --- */}
         {/* UBAH z-30 MENJADI z-[60] DI BAWAH INI */}
-        <div className="md:col-span-1 relative z-[60] focus-within:z-[100]">
+        <div className="md:col-span-1 relative z-10 focus-within:z-100">
           <SosmedInput 
             value={formData.social_media} 
             onChange={(val) => updateFormData({ social_media: val })} 
