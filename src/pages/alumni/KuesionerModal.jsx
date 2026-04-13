@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from '../../components/alumni/Navbar';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';

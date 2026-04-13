@@ -5,6 +5,7 @@ import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
+import { toastWarning, alertSuccess } from '../../utilitis/alert';
 
 const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const { isAdmin } = useAuth();
@@ -211,38 +212,108 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     if (file && file.size <= 2 * 1024 * 1024) {
       setFormData({ ...formData, foto: file });
       setPreviewUrl(URL.createObjectURL(file));
+      if (errors.foto) setErrors(prev => ({ ...prev, foto: undefined }));
     } else if (file) {
       alert("File terlalu besar (Maks 2MB)");
+      e.target.value = null;
     }
   };
 
+  // Submit ke API
   const handleSubmit = async () => {
+    // 1. Validasi Manual
+    let newErrors = {};
+    if (!formData.judul.trim()) newErrors.judul = 'Job Title wajib diisi';
+    if (!formData.perusahaan.trim()) newErrors.perusahaan = 'Nama Perusahaan wajib diisi';
+    if (!formData.tanggal_berakhir) newErrors.tanggal_berakhir = 'Tanggal Berakhir wajib diisi';
+    if (!formData.jam_mulai) newErrors.jam_mulai = 'Jam Mulai wajib diisi';
+    if (!formData.jam_berakhir) newErrors.jam_berakhir = 'Jam Berakhir wajib diisi';
+    if (!formData.tipe_pekerjaan) newErrors.tipe_pekerjaan = 'Tipe Pekerjaan wajib dipilih';
+    if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
+    if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+    if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
+
+    // Validasi Gambar
+    if (!isEditMode && !formData.foto) {
+      newErrors.foto = 'Gambar/Banner wajib diunggah';
+    } else if (isEditMode && !previewUrl) {
+      newErrors.foto = 'Gambar/Banner wajib diunggah';
+    }
+
+    // Jika ada error, hentikan submit dan tampilkan pesan merah
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll ke atas agar user melihat error
+      document.querySelector('.max-h-\\[90vh\\]')?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setSubmitting(true);
+    setErrors({});
+
     try {
       const fd = new FormData();
       fd.append('judul_lowongan', formData.judul);
       fd.append('nama_perusahaan', formData.perusahaan);
-      if (formData.tipe_pekerjaan) fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
-      if (formData.deskripsi) fd.append('deskripsi', formData.deskripsi);
-      if (formData.tanggal_berakhir) fd.append('lowongan_selesai', formData.tanggal_berakhir);
-      if (formData.jam_mulai) fd.append('jam_mulai', formatTime(formData.jam_mulai));
-      if (formData.jam_berakhir) fd.append('jam_berakhir', formatTime(formData.jam_berakhir));
-      if (formData.id_provinsi) fd.append('id_provinsi', formData.id_provinsi);
-      if (formData.id_kota) fd.append('id_kota', formData.id_kota);
-      if (formData.foto) fd.append('foto_lowongan', formData.foto);
-      selectedSkills.forEach(s => fd.append('skills[]', s.id));
+      fd.append('deskripsi', formData.deskripsi);
+      fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
+      fd.append('lowongan_selesai', formData.tanggal_berakhir);
+      fd.append('jam_mulai', formData.jam_mulai);
+      fd.append('jam_berakhir', formData.jam_berakhir);
+      fd.append('id_provinsi', formData.id_provinsi);
+      fd.append('id_kota', formData.id_kota);
+      
+      if (formData.foto instanceof File) {
+        fd.append('foto_lowongan', formData.foto);
+      }
+
+      selectedSkills.forEach(skill => {
+        fd.append('skills[]', skill.id);
+      });
 
       if (isEditMode) {
         await adminApi.updateLowongan(editJob.id, fd);
+        
+        // Memanggil SweetAlert Sukses untuk Edit
+        alertSuccess('Lowongan kerja berhasil diperbarui!');
       } else {
         if (isAdmin) fd.append('status', 'published');
         const res = await adminApi.createLowongan(fd);
         if (isAdmin && res.data?.data?.id) await adminApi.approveLowongan(res.data.data.id);
+        
+        // Memanggil SweetAlert Sukses untuk Tambah Baru
+        alertSuccess('Lowongan kerja berhasil dipublikasikan!');
       }
+
       onSuccess();
+      onClose();
     } catch (err) {
-      if (err.response?.data?.errors) setErrors(err.response.data.errors);
-      else alert('Gagal menyimpan data');
+      console.error('Submit lowongan failed:', err);
+      
+      // Jika error dari validasi backend (422)
+      if (err.response?.status === 422) {
+        const validationErrors = err.response.data?.errors || {};
+        const mapped = {};
+        if (validationErrors.judul_lowongan) mapped.judul = validationErrors.judul_lowongan[0];
+        if (validationErrors.nama_perusahaan) mapped.perusahaan = validationErrors.nama_perusahaan[0];
+        if (validationErrors.deskripsi) mapped.deskripsi = validationErrors.deskripsi[0];
+        if (validationErrors.tipe_pekerjaan) mapped.tipe_pekerjaan = validationErrors.tipe_pekerjaan[0];
+        if (validationErrors.lokasi) mapped.lokasi = validationErrors.lokasi[0];
+        if (validationErrors.lowongan_selesai) mapped.tanggal_berakhir = validationErrors.lowongan_selesai[0];
+        if (validationErrors.jam_mulai) mapped.jam_mulai = validationErrors.jam_mulai[0];
+        if (validationErrors.jam_berakhir) mapped.jam_berakhir = validationErrors.jam_berakhir[0];
+        if (validationErrors.foto_lowongan) mapped.foto = validationErrors.foto_lowongan[0];
+        if (validationErrors.id_kota) mapped.id_kota = validationErrors.id_kota[0];
+        if (validationErrors.id_provinsi) mapped.id_provinsi = validationErrors.id_provinsi[0];
+        if (validationErrors.skills) mapped.skills = validationErrors.skills[0];
+        
+        setErrors(mapped);
+        document.querySelector('.max-h-\\[90vh\\]')?.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Jika error sistem / server (500), tampilkan SweetAlert Error
+        const msg = err.response?.data?.message || 'Gagal mengirim lowongan. Silakan coba lagi.';
+        alertError(msg); 
+      }
     } finally {
       setSubmitting(false);
     }
@@ -261,10 +332,22 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         <div className="p-6 space-y-8">
           {/* Banner */}
           <div className="space-y-3">
-            <span className="text-sm font-bold text-primary/80">Gambar / Banner <span className="text-gray-400 font-normal">(opsional)</span></span>
-            <div className="flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/30">
-              <div className="w-32 h-32 sm:w-24 sm:h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0">
-                {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <ImageIcon size={32} className="text-gray-300" />}
+            <span className="text-sm font-bold text-primary/80">Gambar / Banner <span className="text-red-500">*</span></span>
+            <div className={`flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed ${errors.foto ? 'border-red-400' : 'border-gray-100'} rounded-2xl bg-gray-50/30`}>
+              <div className="w-32 h-32 sm:w-24 sm:h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0 relative group">
+                {previewUrl ? (
+                  <>
+                    <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                    <button 
+                      onClick={() => { setFormData(prev => ({ ...prev, foto: null })); setPreviewUrl(null); }}
+                      className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    >
+                      <X size={20} className="text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <ImageIcon size={32} className="text-gray-300" />
+                )}
               </div>
               <div className="flex-1 space-y-3">
                 <p className="text-xs text-gray-500 italic text-center sm:text-left">Silakan unggah gambar persegi, ukuran maks 2MB.</p>
@@ -274,78 +357,93 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                 </label>
               </div>
             </div>
+            {errors.foto && <p className="text-red-500 text-xs mt-1">{errors.foto[0]}</p>}
           </div>
 
           <div className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Job Title *</label>
-              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20" />
-              {errors.judul_lowongan && <p className="text-red-500 text-xs mt-1">{errors.judul_lowongan[0]}</p>}
+              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Job Title <span className="text-red-500">*</span></label>
+              <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={`w-full px-4 py-3 bg-gray-50 border ${errors.judul ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+              {errors.judul && <p className="text-red-500 text-xs mt-1">{errors.judul[0]}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Nama Perusahaan *</label>
-                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Nama Perusahaan <span className="text-red-500">*</span></label>
+                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} className={`w-full px-4 py-3 bg-gray-50 border ${errors.perusahaan ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+                {errors.perusahaan && <p className="text-red-500 text-xs mt-1">{errors.perusahaan[0]}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Tanggal Berakhir</label>
-                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Tanggal Berakhir <span className="text-red-500">*</span></label>
+                <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className={`w-full px-4 py-3 bg-gray-50 border ${errors.tanggal_berakhir ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+                {errors.tanggal_berakhir && <p className="text-red-500 text-xs mt-1">{errors.tanggal_berakhir[0]}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Jam Mulai</label>
-                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Jam Mulai <span className="text-red-500">*</span></label>
+                <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className={`w-full px-4 py-3 bg-gray-50 border ${errors.jam_mulai ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+                {errors.jam_mulai && <p className="text-red-500 text-xs mt-1">{errors.jam_mulai[0]}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Jam Berakhir</label>
-                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none" />
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Jam Berakhir <span className="text-red-500">*</span></label>
+                <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className={`w-full px-4 py-3 bg-gray-50 border ${errors.jam_berakhir ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+                {errors.jam_berakhir && <p className="text-red-500 text-xs mt-1">{errors.jam_berakhir[0]}</p>}
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Tipe Pekerjaan</label>
-              <select name="tipe_pekerjaan" value={formData.tipe_pekerjaan} onChange={handleInputChange} className="cursor-pointer w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none">
-                <option value="">-- Pilih Tipe --</option>
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Internship">Internship</option>
-                <option value="Contract">Contract</option>
-              </select>
+            <div>
+              <SmoothDropdown
+                label={<>Tipe Pekerjaan <span className="text-red-500">*</span></>}
+                placeholder="Pilih Tipe Pekerjaan"
+                options={["Full-time", "Part-time", "Freelance", "Internship", "Contract"]}
+                value={formData.tipe_pekerjaan || ""}
+                onSelect={(val) => {
+                  setFormData(prev => ({ ...prev, tipe_pekerjaan: val }));
+                  if (errors.tipe_pekerjaan) setErrors(prev => ({ ...prev, tipe_pekerjaan: undefined }));
+                }}
+              />
+              {errors.tipe_pekerjaan && <p className="text-red-500 text-xs mt-1">{errors.tipe_pekerjaan[0]}</p>}
             </div>
 
             {/* --- DROPDOWN PROVINSI & KOTA MENGGUNAKAN SMOOTHDROPDOWN --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <SmoothDropdown
-                label="Provinsi"
-                isSearchable={true}
-                placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
-                options={provinsiList.map(p => p.nama)}
-                value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
-                onSelect={(namaProv) => {
-                  const prov = provinsiList.find(p => p.nama === namaProv);
-                  if (prov) {
-                    setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
-                  }
-                }}
-              />
+              <div>
+                <SmoothDropdown
+                  label={<>Provinsi <span className="text-red-500">*</span></>}
+                  isSearchable={true}
+                  placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
+                  options={provinsiList.map(p => p.nama)}
+                  value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
+                  onSelect={(namaProv) => {
+                    const prov = provinsiList.find(p => p.nama === namaProv);
+                    if (prov) {
+                      setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
+                      if (errors.id_provinsi) setErrors(prev => ({ ...prev, id_provinsi: undefined }));
+                    }
+                  }}
+                />
+                {errors.id_provinsi && <p className="text-red-500 text-xs mt-1">{errors.id_provinsi[0]}</p>}
+              </div>
 
-              <SmoothDropdown
-                label="Kota"
-                isSearchable={true}
-                placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
-                options={kotaList.map(k => k.nama)}
-                value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
-                onSelect={(namaKota) => {
-                  const kota = kotaList.find(k => k.nama === namaKota);
-                  if (kota) {
-                    setFormData({ ...formData, id_kota: String(kota.id) });
-                  }
-                }}
-              />
+              <div>
+                <SmoothDropdown
+                  label={<>Kota <span className="text-red-500">*</span></>}
+                  isSearchable={true}
+                  placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
+                  options={kotaList.map(k => k.nama)}
+                  value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
+                  onSelect={(namaKota) => {
+                    const kota = kotaList.find(k => k.nama === namaKota);
+                    if (kota) {
+                      setFormData({ ...formData, id_kota: String(kota.id) });
+                      if (errors.id_kota) setErrors(prev => ({ ...prev, id_kota: undefined }));
+                    }
+                  }}
+                />
+                {errors.id_kota && <p className="text-red-500 text-xs mt-1">{errors.id_kota[0]}</p>}
+              </div>
             </div>
 
             {/* --- BAGIAN SKILLS (SEARCHABLE & ADD NEW) --- */}
@@ -413,7 +511,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                     type="button"
                     onClick={handleCreateSkill}
                     disabled={creatingSkill}
-                    className="flex items-center gap-1.5 px-4 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-4 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {creatingSkill ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                     <span className="hidden sm:inline">Tambah</span>
@@ -423,15 +521,17 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Deskripsi</label>
-              <textarea name="deskripsi" rows={4} value={formData.deskripsi} onChange={handleInputChange} placeholder="Deskripsi peran..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none resize-none min-h-30" />
+              <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Deskripsi <span className="text-red-500">*</span></label>
+              <textarea name="deskripsi" rows={4} value={formData.deskripsi} onChange={handleInputChange} placeholder="Deskripsi peran..." className={`w-full px-4 py-3 bg-gray-50 border ${errors.deskripsi ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none resize-none min-h-30 focus:ring-2 focus:ring-primary/20`} />
+              {errors.deskripsi && <p className="text-red-500 text-xs mt-1">{errors.deskripsi[0]}</p>}
             </div>
           </div>
         </div>
 
         <div className="p-6 border-t border-gray-100 flex justify-end gap-4 bg-gray-50/50">
           <button onClick={onClose} disabled={submitting} className="cursor-pointer text-sm font-bold text-gray-500 hover:text-gray-700 px-4">Batal</button>
-          <button onClick={handleSubmit} disabled={submitting || !formData.judul || !formData.perusahaan} className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-[#2e4344] transition-all shadow-lg active:scale-95 disabled:opacity-50">
+          {/* PERUBAHAN: Menghapus penguncian disabled dari !formData.judul dll, agar bisa divalidasi errornya saat diklik */}
+          <button onClick={handleSubmit} disabled={submitting} className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg active:scale-95 disabled:opacity-50">
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Perbarui' : 'Kirim'} <Send size={18} /></>}
           </button>
         </div>

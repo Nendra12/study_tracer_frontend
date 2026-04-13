@@ -4,7 +4,7 @@ import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import TeksEditorInputan from '../../components/admin/TeksEditorInputan';
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
-import { alertError } from '../../utilitis/alert';
+import { alertError, alertSuccess } from '../../utilitis/alert';
 
 const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
   const isEditMode = !!editData;
@@ -119,7 +119,6 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
     setErrors({});
     
     try {
-      // Buat FormData untuk multipart upload
       const fd = new FormData();
       fd.append('judul', formData.judul);
       fd.append('konten', formData.konten);
@@ -131,20 +130,23 @@ const TambahPengumuman = ({ isOpen, onClose, onSuccess, editData = null }) => {
       }
 
       if (isEditMode) {
-        // Untuk update, tambahkan _method PUT
         fd.append('_method', 'PUT');
-        
-        // Handle penghapusan foto secara eksplisit
         if (formData.remove_foto && !formData.foto) {
           fd.append('remove_foto', '1');
         }
-        
         await adminApi.updatePengumuman(editData.id, fd);
+        
+        // Memanggil SweetAlert Sukses untuk Edit
+        alertSuccess('Pengumuman berhasil diperbarui!');
       } else {
         await adminApi.createPengumuman(fd);
+        
+        // Memanggil SweetAlert Sukses untuk Tambah Baru
+        alertSuccess('Pengumuman berhasil ditambahkan!');
       }
       
       onSuccess(); // Trigger refetch di parent
+      onClose(); // Tutup modal setelah sukses
     } catch (err) {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
