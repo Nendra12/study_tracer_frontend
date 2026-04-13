@@ -13,17 +13,17 @@ export default function ProfilSkeleton() {
               <div className="h-4 bg-slate-100 rounded w-72 animate-pulse" />
             </div>
             <div className="flex gap-3">
-              <div className="h-10 bg-slate-200 rounded-xl w-40 animate-pulse" />
+              <div className="h-10 bg-slate-200 rounded-md w-40 animate-pulse" />
             </div>
           </div>
-          <div className="bg-amber-50/50 rounded-2xl h-16 animate-pulse" />
+          <div className="bg-amber-50/50 rounded-md h-16 animate-pulse" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sidebar skeleton (Kolom Kiri) */}
           <div className="lg:col-span-4 space-y-6">
             {/* Kartu 1: Info Profil Utama */}
-            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm animate-pulse">
+            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm animate-pulse">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-28 h-28 rounded-full bg-slate-200" />
                 <div className="h-5 bg-slate-200 rounded w-36" />
@@ -37,7 +37,7 @@ export default function ProfilSkeleton() {
             </div>
 
             {/* Kartu 2: Tautan Sosial (TAMBAHAN BARU SESUAI GAMBAR) */}
-            <div className="bg-white rounded-4xl p-6 border border-slate-100 shadow-sm animate-pulse">
+            <div className="bg-white rounded-md p-6 border border-slate-100 shadow-sm animate-pulse">
               <div className="flex justify-between items-center mb-6">
                 <div className="h-5 bg-slate-200 rounded w-32" /> {/* Judul */}
                 <div className="h-5 bg-slate-100 rounded w-12" /> {/* Tombol Edit */}
@@ -50,7 +50,7 @@ export default function ProfilSkeleton() {
           </div>
 
           {/* Main content skeleton (Kolom Kanan) */}
-          <div className="lg:col-span-8 bg-white rounded-4xl shadow-sm border border-slate-100 overflow-hidden animate-pulse">
+          <div className="lg:col-span-8 bg-white rounded-md shadow-sm border border-slate-100 overflow-hidden animate-pulse">
             
             {/* Tabs Sesuai Desain Asli (Ikon + Teks) */}
             <div className="flex border-b border-slate-100 px-2 sm:px-6 pt-5 overflow-x-auto no-scrollbar w-full">
@@ -88,14 +88,14 @@ export default function ProfilSkeleton() {
                     <div className="h-6 bg-slate-200 rounded w-40" />
                     <div className="h-4 bg-slate-100 rounded w-64" />
                  </div>
-                 <div className="h-10 bg-slate-100 rounded-xl w-28" /> {/* Tombol Edit Data */}
+                 <div className="h-10 bg-slate-100 rounded-md w-28" /> {/* Tombol Edit Data */}
               </div>
 
               <div className="space-y-6 pt-4">
                 {[1, 2, 3, 4, 5].map(i => (
                   <div key={i} className="space-y-3">
                     <div className="h-3 bg-slate-200 rounded w-24" /> {/* Label input */}
-                    <div className="h-12 bg-slate-50 rounded-xl w-full border border-slate-100" /> {/* Kolom input */}
+                    <div className="h-12 bg-slate-50 rounded-md w-full border border-slate-100" /> {/* Kolom input */}
                   </div>
                 ))}
               </div>

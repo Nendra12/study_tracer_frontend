@@ -48,6 +48,23 @@ function KuesionerModal() {
 
             if (dataKues?.data?.data) {
                 const raw = dataKues.data.data;
+                // VALIDASI AKSES KUESIONER MENGGUNAKAN SERVER TRUTH (kuesioner_pending)
+                try {
+                    const berandaRes = await alumniApi.getBeranda();
+                    const pendingKuesioners = berandaRes.data?.data?.kuesioner_pending || [];
+                    
+                    // Cek apakah ID kuesioner ini ada di dalam daftar kuesioner yang HARUS diisi user
+                    const isAllowed = pendingKuesioners.some(k => String(k.id_kuesioner || k.id) === String(idKuesioner));
+                    
+                    if (!isAllowed) {
+                        toastError("Akses ditolak: Kuesioner ini tidak ditujukan untuk Anda atau sudah Anda kerjakan.");
+                        navigate('/alumni');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("Gagal memvalidasi izin akses kuesioner dari server.", e);
+                }
+
                 setDataHeader({
                     "judul": raw.title,
                     "deskripsi": raw.deskripsi,
