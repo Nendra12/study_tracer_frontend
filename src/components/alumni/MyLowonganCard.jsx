@@ -27,54 +27,77 @@ export function ApprovalBadge({ status }) {
 export function TimelineProgress({ timeline }) {
   if (!timeline || timeline.length === 0) return null;
 
-  const getStepIcon = (step) => {
-    if (step.status === 'completed') return <CheckCircle2 size={18} className="text-emerald-500 bg-white rounded-full relative z-10" />;
-    if (step.status === 'rejected') return <XCircle size={18} className="text-red-500 bg-white rounded-full relative z-10" />;
-    if (step.status === 'in_progress') return <Loader2 size={18} className="text-amber-500 animate-spin bg-white rounded-full relative z-10" />;
-    return <Circle size={18} className="text-slate-300 bg-white rounded-full relative z-10" />;
+  // LOGIKA BARU: Cek status asli, dan paksa jadi 'completed' jika step di depannya sudah selesai
+  const getEffectiveStatus = (idx) => {
+    const currentStep = timeline[idx];
+    
+    // Jika statusnya memang sudah ada dari backend, gunakan status tersebut
+    if (currentStep.status === 'completed' || currentStep.status === 'rejected' || currentStep.status === 'in_progress') {
+      return currentStep.status;
+    }
+    
+    // Jika statusnya kosong/pending, kita cek apakah ADA step SETELAH ini yang sudah selesai
+    const hasPastStep = timeline.slice(idx + 1).some(s => 
+      s.status === 'completed' || s.status === 'in_progress' || s.status === 'rejected'
+    );
+    
+    // Jika step di depannya sudah dikerjakan, otomatis step ini kita anggap 'completed' (hijau)
+    return hasPastStep ? 'completed' : 'pending';
   };
 
-  const getLineColor = (step) => {
-    if (step.status === 'completed') return 'bg-emerald-400';
-    if (step.status === 'rejected') return 'bg-red-400';
+  const getStepIcon = (status) => {
+    if (status === 'completed') return <CheckCircle2 size={20} className="text-emerald-500" />;
+    if (status === 'rejected') return <XCircle size={20} className="text-red-500" />;
+    if (status === 'in_progress') return <Loader2 size={20} className="text-amber-500 animate-spin" />;
+    return <Circle size={20} className="text-slate-300" />;
+  };
+
+  const getLineColor = (status) => {
+    if (status === 'completed') return 'bg-emerald-400';
+    if (status === 'rejected') return 'bg-red-400';
     return 'bg-slate-200';
   };
 
   return (
-    <div className="flex items-start w-full relative pt-1">
-      {timeline.map((step, idx) => (
-        <div key={step.step} className="flex flex-col items-center min-w-17.5 flex-1 relative">
-          {/* Pembungkus Ikon dan Garis */}
-          <div className="relative w-full flex justify-center items-center mb-1.5">
-            {/* Garis Kiri (Mulai dari item ke-2) */}
-            {idx > 0 && (
-              <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-0.5 z-0 ${getLineColor(timeline[idx - 1])}`} />
-            )}
+    <div className="flex items-start w-full relative pt-2">
+      {timeline.map((step, idx) => {
+        // Gunakan status yang sudah melewati filter "Auto-Complete"
+        const effectiveStatus = getEffectiveStatus(idx);
+
+        return (
+          <div key={step.step || idx} className="flex flex-col items-center flex-1 relative">
             
-            {/* Garis Kanan (Berhenti sebelum item terakhir) */}
+            {/* Garis Penghubung Lurus */}
             {idx < timeline.length - 1 && (
-              <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-0.5 z-0 ${getLineColor(step)}`} />
+              <div 
+                className={`absolute top-3 left-1/2 w-full h-[3px] -translate-y-1/2 z-0 transition-colors duration-300 ${getLineColor(effectiveStatus)}`} 
+              />
             )}
 
-            {/* Ikon Step (z-index lebih tinggi dari garis) */}
-            {getStepIcon(step)}
-          </div>
+            {/* Ikon Step */}
+            <div className="relative z-10 flex items-center justify-center bg-white w-6 h-6 rounded-full">
+               {getStepIcon(effectiveStatus)}
+            </div>
 
-          <span className={`text-[10px] font-bold text-center leading-tight px-1 ${
-            step.status === 'completed' ? 'text-emerald-600' :
-            step.status === 'rejected' ? 'text-red-500' :
-            step.status === 'in_progress' ? 'text-amber-600' :
-            'text-slate-400'
-          }`}>
-            {step.label}
-          </span>
-          {step.date && (
-            <span className="text-[9px] text-slate-400 mt-0.5">
-              {new Date(step.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-            </span>
-          )}
-        </div>
-      ))}
+            {/* Label Teks dan Tanggal */}
+            <div className="flex flex-col items-center justify-center min-h-[32px] mt-1.5">
+              <span className={`text-[10px] font-bold text-center leading-tight px-1 transition-colors duration-300 ${
+                effectiveStatus === 'completed' ? 'text-emerald-600' :
+                effectiveStatus === 'rejected' ? 'text-red-500' :
+                effectiveStatus === 'in_progress' ? 'text-amber-600' :
+                'text-slate-400'
+              }`}>
+                {step.label}
+              </span>
+              {step.date && (
+                <span className="text-[9px] text-slate-400 mt-0.5">
+                  {new Date(step.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
