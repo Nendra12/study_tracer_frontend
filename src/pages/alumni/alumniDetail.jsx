@@ -170,50 +170,71 @@ export default function AlumniDetail() {
         )}
 
         {/* PROFILE HEADER CARD */}
-        <div data-pdf-section className="bg-white rounded-md shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
-          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative shrink-0">
-              <div className="w-32 h-32 md:w-44 md:h-44 rounded-3xl border-8 border-white shadow-2xl overflow-hidden bg-slate-50">
+        <div data-pdf-section className="bg-white rounded-md shadow-xl border border-slate-100 p-6 md:p-10 mb-10 w-full overflow-hidden">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center w-full">
+
+            {/* BAGIAN FOTO */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative shrink-0 mx-auto md:mx-0"
+            >
+              <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-3xl border-8 border-white shadow-xl overflow-hidden bg-slate-50 flex items-center justify-center relative z-10">
                 {imageSrc ? (
                   <img src={imageSrc} alt={alumni.nama} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-5xl font-black text-primary/20 bg-primary/5">
+                  <div className="w-full h-full flex items-center justify-center text-4xl md:text-5xl font-black text-primary/20 bg-primary/5">
                     {alumni.nama?.charAt(0) || 'A'}
                   </div>
                 )}
               </div>
+
+              {/* Status Badge */}
               {currentStatus && (
-                <div className={`absolute -bottom-3 -right-3 ${getStatusColor(currentStatus)} text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg border-4 border-white`}>
+                <div className={`absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 z-20 ${getStatusColor(currentStatus)} text-white px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg border-4 border-white`}>
                   {currentStatus}
                 </div>
               )}
             </motion.div>
 
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-5xl font-black text-primary tracking-tight leading-none mb-3">
+            {/* BAGIAN TEKS */}
+            <div className="flex-1 text-center md:text-left w-full mt-2 md:mt-0">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-primary tracking-tight leading-tight mb-4 md:mb-3">
                 {alumni.nama}
               </h1>
-              <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm font-bold text-primary/60">
+
+              {/* Detail Informasi (Role, Jurusan, Angkatan) */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 md:gap-y-3 md:gap-x-6 text-xs sm:text-sm font-bold text-primary/60">
+
                 {currentRole && (
-                  <span className="flex items-center gap-2">
-                    {getStatusIcon(currentStatus)} {currentRole}
-                    {currentCompany && currentCompany !== '-' && (
-                      <> di <span className="text-primary">{currentCompany}</span></>
-                    )}
+                  <span className="flex items-center gap-1.5 md:gap-2 bg-slate-50 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-slate-100 md:border-transparent">
+                    {getStatusIcon(currentStatus)}
+                    <span className="text-left">
+                      {currentRole}
+                      {currentCompany && currentCompany !== '-' && (
+                        <> di <span className="text-primary">{currentCompany}</span></>
+                      )}
+                    </span>
                   </span>
                 )}
+
                 {alumni.jurusan?.nama && (
-                  <span className="flex items-center gap-2">
-                    <GraduationCap size={16} className="text-primary/30" /> {alumni.jurusan.nama}
+                  <span className="flex items-center gap-1.5 md:gap-2 bg-slate-50 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-slate-100 md:border-transparent">
+                    <GraduationCap size={16} className="text-primary/40 shrink-0" />
+                    <span>{alumni.jurusan.nama}</span>
                   </span>
                 )}
+
                 {alumni.tahun_masuk && (
-                  <span className="flex items-center gap-2">
-                    <MapPin size={16} className="text-primary/30" /> Angkatan {alumni.tahun_masuk}
+                  <span className="flex items-center gap-1.5 md:gap-2 bg-slate-50 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-slate-100 md:border-transparent">
+                    <MapPin size={16} className="text-primary/40 shrink-0" />
+                    Angkatan {alumni.tahun_masuk}
                   </span>
                 )}
+
               </div>
             </div>
+
           </div>
         </div>
 

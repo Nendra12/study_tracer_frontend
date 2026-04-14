@@ -21,11 +21,11 @@ export default function AlumniDetailSkeleton() {
         </div>
 
         {/* PROFILE HEADER CARD SKELETON */}
-        <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
+        <div className="bg-white rounded-md shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
             {/* Foto Profil */}
             <div className="relative shrink-0">
-              <div className="w-32 h-32 md:w-44 md:h-44 rounded-3xl border-8 border-white shadow-2xl bg-slate-200 animate-pulse" />
+              <div className="w-32 h-32 md:w-44 md:h-44 rounded-md border-8 border-white shadow-2xl bg-slate-200 animate-pulse" />
               <div className="absolute -bottom-2 -right-2 w-20 h-6 rounded-full bg-slate-300 border-4 border-white animate-pulse" />
             </div>
 
@@ -58,7 +58,7 @@ export default function AlumniDetailSkeleton() {
           <div className="lg:col-span-4 space-y-8">
             
             {/* Status Karier Skeleton */}
-            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
                 <div className="h-3 w-32 bg-slate-200 rounded-full animate-pulse" />
@@ -74,7 +74,7 @@ export default function AlumniDetailSkeleton() {
             </div>
 
             {/* Info Akademik Skeleton */}
-            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
                 <div className="h-3 w-36 bg-slate-200 rounded-full animate-pulse" />
@@ -90,7 +90,7 @@ export default function AlumniDetailSkeleton() {
             </div>
             
             {/* Skills Skeleton */}
-            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
                <div className="flex items-center gap-3 mb-6">
                 <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
                 <div className="h-3 w-24 bg-slate-200 rounded-full animate-pulse" />
@@ -109,7 +109,7 @@ export default function AlumniDetailSkeleton() {
           <div className="lg:col-span-8 space-y-10">
             
             {/* Riwayat Karier Card */}
-            <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-md p-8 md:p-10 border border-slate-100 shadow-sm">
               <div className="flex items-center gap-3 mb-10">
                 <div className="w-6 h-6 bg-slate-200 rounded-lg animate-pulse" />
                 <div className="h-5 w-40 bg-slate-200 rounded-full animate-pulse" />

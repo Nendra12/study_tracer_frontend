@@ -149,7 +149,6 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                   <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} placeholder="Nama Perusahaan" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
                 </td>
                 <td className="py-2 px-3">
-                  <td className="py-2 px-3">
                   <SmoothKota
                     isSearchable={true}
                     placeholder="-- Pilih Kota --"
@@ -158,9 +157,8 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                     onSelect={(val) => setFormData(p => ({ ...p, id_kota: val }))}
                   />
                 </td>
-                </td>
                 <td className="py-2 px-3">
-                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
+                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat Perusahaan" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
                 </td>
                 <td className="py-2 px-3">
                   <div className="flex justify-end gap-2">

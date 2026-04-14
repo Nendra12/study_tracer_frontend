@@ -474,32 +474,32 @@ export default function Lowongan() {
 
           {/* TABS & ACTION BUTTON */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2">
               <button
                 onClick={() => { setActiveTab('semua'); setCurrentPage(1); setAppliedSearch(''); setSearchQuery(''); }}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
+                className={`px-2 py-2 md:px-5 md:py-2.5 rounded-xl text-[12px] md:text-[13px] font-bold transition-all cursor-pointer ${activeTab === 'semua' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
-                Semua Lowongan
+                Semua
               </button>
               <button
                 onClick={() => { setActiveTab('disimpan'); setCurrentPage(1); setAppliedSearch(''); setSearchQuery(''); }}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'disimpan' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
+                className={`px-2 py-2 md:px-5 md:py-2.5 rounded-xl text-[12px] md:text-[13px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeTab === 'disimpan' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
                 <Bookmark size={14} fill={activeTab === 'disimpan' ? 'currentColor' : 'none'} /> Disimpan
               </button>
               <button
                 onClick={() => { setActiveTab('saya'); setMyPage(1); setMyAppliedSearch(''); setMySearch(''); }}
-                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'saya' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
+                className={`px-2 py-2 md:px-5 md:py-2.5 rounded-xl text-[12px] md:text-[13px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeTab === 'saya' ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
               >
-                <FileText size={14} /> Lowongan Saya
+                <FileText size={14} /> <span className='block sm:hidden'>LowonganKu</span> <span className='hidden sm:block'>Lowongan Saya</span>
               </button>
             </div>
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-white border border-primary text-primary px-5 py-2.5 rounded-xl text-[13px] font-bold hover:bg-primary hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="px-5 py-2.5 rounded-xl text-[13px] font-bold bg-primary hover:bg-primary/80 text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <Plus size={16} /> Tambah Lowongan
+              <Plus size={16} />Tambah Lowongan
             </button>
           </div>
 
