@@ -131,7 +131,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
             />
             <div className="flex flex-col transition-all duration-500 ease-in-out">
               <span className="font-black text-primary text-lg">
-                Alumni Tracer
+                Study Tracer
               </span>
               {!scrolled && (
                 <span className="text-xs font-semibold text-primary/80">

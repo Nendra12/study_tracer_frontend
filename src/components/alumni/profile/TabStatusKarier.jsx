@@ -67,7 +67,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         masterDataApi.getUniversitas().catch(() => ({ data: { data: [] } })),
         alumniApi.getAlumniDirectory({ per_page: 1000 }).catch(() => ({ data: { data: [] } }))
       ]);
-      
+
       setStatusList(statusRes.data?.data || statusRes.data || []);
       setProvinsiList(provinsiRes.data?.data || provinsiRes.data || []);
       setBidangUsahaList(bidangRes.data?.data || bidangRes.data || []);
@@ -76,14 +76,14 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       // Extract Company and Univ from explicit master tables handling possible pagination format
       const rawP = masterPerusahaan.data?.data?.data || masterPerusahaan.data?.data || masterPerusahaan.data || [];
       const mp = Array.isArray(rawP) ? rawP.map(item => item.nama_perusahaan || item.nama || item) : [];
-      
+
       const rawU = masterUniv.data?.data?.data || masterUniv.data?.data || masterUniv.data || [];
       const mu = Array.isArray(rawU) ? rawU.map(item => item.nama_universitas || item.nama || item) : [];
-      
+
       let pSet = new Set(mp.filter(Boolean));
       let uSet = new Set(mu.filter(Boolean));
       let posSet = new Set(["UI/UX", "Software Engineer", "DevOps", "Data Analyst", "Karyawan"]);
-      
+
       // Extract from Alumni Directory to capture organic usage
       const alumniList = alumniRes.data?.data?.data || alumniRes.data?.data || [];
       alumniList.forEach(a => {
@@ -92,7 +92,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           if (a.status === 'Kuliah') uSet.add(a.company);
         }
         if (a.posisi) posSet.add(a.posisi);
-        if (a.jabatan) posSet.add(a.jabatan); 
+        if (a.jabatan) posSet.add(a.jabatan);
       });
 
       setPerusahaanOptions(Array.from(pSet).sort());
@@ -342,15 +342,14 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           <div className="relative group">
             <button
               onClick={handleOpenForm}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${
-                !isVerified || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${!isVerified || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')
                   ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                   : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
-              }`}
+                }`}
               disabled={!isVerified || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')}
               title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
             >
-              {!isVerified ? <Lock size={14} /> : <Plus size={14} />} 
+              {!isVerified ? <Lock size={14} /> : <Plus size={14} />}
               <span className='hidden md:block'>{!isVerified ? 'Terkunci' : 'Tambahkan status baru'}</span>
             </button>
             {career && !career.tahun_selesai && career.status != 'Belum Bekerja' && (
@@ -513,7 +512,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
               <>
                 <div className="sm:col-span-2 relative z-[70]">
                   <UniversitySelector
-                    univValue={form.nama_universitas} 
+                    univValue={form.nama_universitas}
                     jurusanValue={form.id_jurusanKuliah}
                     onUnivSelect={(val) => setForm(prev => ({ ...prev, nama_universitas: val }))}
                     onJurusanSelect={(val) => setForm(prev => ({ ...prev, id_jurusanKuliah: val }))}
