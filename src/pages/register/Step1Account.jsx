@@ -97,20 +97,110 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-fourth rounded-lg text-primary"><LockKeyhole size={20} /></div>
-        <h3 className="font-bold text-primary">Pengaturan akun</h3>
+        <h3 className="font-bold text-primary text-lg">Pengaturan Akun</h3>
       </div>
 
-      <div className="space-y-4">
-        {hasGoogleClientId && (
-          <div className="space-y-3 rounded-xl border border-fourth bg-fourtd p-4">
-            <div className="flex items-start gap-2 text-third">
-              <AlertCircle size={16} className="mt-0.5 shrink-0" />
-              <p className="text-xs">Daftar cepat dengan Google. Password tidak diperlukan untuk akun Google.</p>
+      <div className="space-y-5">
+
+        {/* --- ALERT SUKSES GOOGLE (Tampil jika sudah terverifikasi) --- */}
+        {isGoogleSignup && (
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm font-bold text-emerald-700 shadow-sm animate-in fade-in">
+            <CheckCircle size={18} className="shrink-0 text-emerald-500" />
+            Akun Google berhasil dihubungkan.
+          </div>
+        )}
+
+        {/* --- FORM EMAIL REGULER --- */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-primary">Email <span className="text-red-500">*</span></label>
+          <div className="relative mt-2">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-third" size={16} />
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={(e) => updateFormData({ email: e.target.value })}
+              disabled={isGoogleSignup}
+              className={`w-full pl-10 pr-4 py-3 bg-white border ${errors.email ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition-all`}
+            />
+          </div>
+          {errors.email ? (
+            <p className="text-xs text-red-500">{errors.email}</p>
+          ) : (
+            <p className="text-[10px] text-third italic">pastikan email Anda aktif dan valid</p>
+          )}
+        </div>
+
+        {/* --- FORM PASSWORD (Sembunyi jika pakai Google) --- */}
+        {!isGoogleSignup && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Input Password */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-primary">Password <span className="text-red-500">*</span></label>
+              <div className="relative mt-2">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-third" size={16} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Buat password"
+                  value={formData.password}
+                  onChange={(e) => updateFormData({ password: e.target.value })}
+                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-third hover:text-primary transition-colors cursor-pointer"
+                >
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+              {errors.password ? (
+                <p className="text-xs text-red-500">{errors.password}</p>
+              ) : (
+                <p className="text-[10px] text-third italic">minimal 8 karakter</p>
+              )}
             </div>
 
-            <div className={`${googleLoading ? 'opacity-70 pointer-events-none' : ''} flex justify-center md:justify-start`}>
+            {/* Input Konfirmasi Password */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-primary">Konfirmasi Password <span className="text-red-500">*</span></label>
+              <div className="relative mt-2">
+                <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 text-third" size={16} />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Ulangi password"
+                  value={formData.password_confirmation}
+                  onChange={(e) => updateFormData({ password_confirmation: e.target.value })}
+                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password_confirmation ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-third hover:text-primary transition-colors cursor-pointer"
+                >
+                  {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+              {errors.password_confirmation && <p className="text-xs text-red-500">{errors.password_confirmation}</p>}
+            </div>
+          </div>
+        )}
+
+        {/* --- PEMISAH "ATAU" --- */}
+        {hasGoogleClientId && !isGoogleSignup && (
+          <div className="flex items-center gap-4 py-4">
+            <div className="h-px bg-fourth flex-1"></div>
+            <span className="text-[10px] font-black text-third uppercase tracking-widest">Atau daftar dengan</span>
+            <div className="h-px bg-fourth flex-1"></div>
+          </div>
+        )}
+
+        {/* --- BAGIAN GOOGLE LOGIN (Tampil jika belum login Google) --- */}
+        {hasGoogleClientId && !isGoogleSignup && (
+          <div className="flex flex-col items-center justify-center space-y-4 pb-2">
+            <div className={`${googleLoading ? 'opacity-70 pointer-events-none' : ''} shadow-sm rounded-lg overflow-hidden`}>
               <GoogleLogin
                 onSuccess={handleGoogleRegisterSuccess}
                 onError={() => setErrors({ email: 'Registrasi Google gagal. Silakan coba lagi.' })}
@@ -120,94 +210,13 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
           </div>
         )}
 
-        {isGoogleSignup && (
-          <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
-            <CheckCircle size={14} className="shrink-0" />
-            Akun Google terverifikasi. Lanjutkan ke langkah berikutnya.
-          </div>
-        )}
-
-        {/* Input Email */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-primary">Email</label>
-          <div className="relative mt-2">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-third" size={16} />
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={(e) => updateFormData({ email: e.target.value })}
-              disabled={isGoogleSignup}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-fourth rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-            />
-          </div>
-          <p className="text-[10px] text-third italic">pastikan email Anda valid</p>
-          {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
-        </div>
-
-        {!isGoogleSignup && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Input Password */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-primary">Password <span className="text-red-500">*</span></label>
-            <div className="relative mt-2">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-third" size={16} />
-              <input
-                // Ubah type berdasarkan state showPassword
-                type={showPassword ? "text" : "password"}
-                placeholder="Masukkan Password Anda"
-                value={formData.password}
-                onChange={(e) => updateFormData({ password: e.target.value })}
-                // Tambahkan padding kanan (pr-10) agar teks tidak tertutup ikon mata
-                className="w-full pl-10 pr-10 py-3 bg-white border border-fourth rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
-              />
-              {/* Tombol Toggle Mata */}
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-third hover:text-primary transition-colors cursor-pointer"
-              >
-                {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-              </button>
-            </div>
-            <p className="text-[10px] text-third italic">minimal 8 karakter</p>
-            {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-          </div>
-
-          {/* Input Konfirmasi Password */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-primary">Konfirmasi Password <span className="text-red-500">*</span></label>
-            <div className="relative mt-2">
-              <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-third" size={16} />
-              <input
-                // Ubah type berdasarkan state showConfirmPassword
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Masukkan Konfirmasi Password Anda"
-                value={formData.password_confirmation}
-                onChange={(e) => updateFormData({ password_confirmation: e.target.value })}
-                // Tambahkan padding kanan (pr-10)
-                className="w-full pl-10 pr-10 py-3 bg-white border border-fourth rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
-              />
-              {/* Tombol Toggle Mata */}
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-third hover:text-primary transition-colors cursor-pointer"
-              >
-                {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-              </button>
-            </div>
-            {errors.password_confirmation && <p className="text-xs text-red-500">{errors.password_confirmation}</p>}
-          </div>
-          </div>
-        )}
       </div>
 
-      <div className="pt-6 flex justify-end">
+      <div className="pt-8 flex justify-end border-t border-fourth">
         <button
           onClick={handleNext}
           disabled={loading || googleLoading}
-          className="flex items-center gap-2 px-4 md:px-8 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 md:px-8 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
         >
           {loading ? 'Memvalidasi...' : 'Selanjutnya'} <ArrowRight size={16} />
         </button>
