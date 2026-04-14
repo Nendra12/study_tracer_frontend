@@ -77,6 +77,7 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
           <thead>
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
               <th className="px-3 py-3">Nama</th>
+              <th className="px-3 py-3">Program Studi</th>
               <th className="px-3 py-3">Alamat</th>
               <th className="px-3 py-3">Kota</th>
               <th className="px-3 py-3">Provinsi</th>
@@ -94,6 +95,9 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
                     className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
                     placeholder="Nama universitas"
                   />
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-xs text-slate-400">Diatur di tabel Program Studi</span>
                 </td>
                 <td className="px-3 py-2">
                   <input
@@ -129,7 +133,7 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
 
             {data.length === 0 && !isAdding ? (
               <tr>
-                <td colSpan={5} className="py-6 text-center text-xs text-slate-400">Tidak ada data universitas.</td>
+                <td colSpan={6} className="py-6 text-center text-xs text-slate-400">Tidak ada data universitas.</td>
               </tr>
             ) : (
               data.map((item) => (
@@ -142,6 +146,9 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
                         onChange={(e) => setFormData((prev) => ({ ...prev, nama_universitas: e.target.value }))}
                         className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
                       />
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className="text-xs text-slate-400">Diatur di tabel Program Studi</span>
                     </td>
                     <td className="px-3 py-2">
                       <input
@@ -175,6 +182,19 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
                 ) : (
                   <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors">
                     <td className="px-3 py-3 text-sm font-medium text-gray-700">{item.nama || '-'}</td>
+                    <td className="px-3 py-3 text-xs text-slate-600">
+                      {item.jurusan?.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {item.jurusan.map((j) => (
+                            <span key={`${item.id}-${j}`} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                              {j}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-xs text-slate-600">{item.alamat || '-'}</td>
                     <td className="px-3 py-3 text-xs text-slate-600">{item.kota || '-'}</td>
                     <td className="px-3 py-3 text-xs text-slate-600">{item.provinsi || '-'}</td>
@@ -218,9 +238,16 @@ export default function StatusKarir() {
       const data = res.data?.data || [];
       setUnivData(
         data.map((u) => {
+          const rawJurusan = Array.isArray(u.jurusan_kuliah)
+            ? u.jurusan_kuliah
+            : u.jurusan_kuliah
+              ? [u.jurusan_kuliah]
+              : [];
+
           return { 
             id: u.id, 
             nama: u.nama || u.nama_universitas, 
+            jurusan: rawJurusan.map((j) => j.nama || j.nama_jurusan || j.nama_prodi).filter(Boolean),
             alamat: u.alamat || u.jalan || '-',
             id_kota: u.id_kota || u.kota?.id || '',
             kota: u.kota?.nama || u.nama_kota || '-',
@@ -393,10 +420,11 @@ export default function StatusKarir() {
           item?.nama || "-",
         ]);
       } else {
-        headers = ["No", "Nama Universitas", "Alamat", "Kota", "Provinsi"];
+        headers = ["No", "Nama Universitas", "Program Studi", "Alamat", "Kota", "Provinsi"];
         rows = univData.map((item, index) => [
           index + 1,
           item?.nama || "-",
+          (item?.jurusan && item.jurusan.length > 0) ? item.jurusan.join('; ') : "-",
           item?.alamat || "-",
           item?.kota || "-",
           item?.provinsi || "-",
