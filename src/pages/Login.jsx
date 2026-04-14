@@ -163,12 +163,12 @@ export default function Login() {
         </div>
 
         {/* Bagian Kanan: Form Login */}
-        {/* lg:py-6 memotong ruang kosong di laptop, tapi HP tetap nyaman (p-5) */}
-        <div className="w-full lg:w-1/2 p-5 sm:p-8 lg:px-10 lg:py-6 xl:py-8 flex flex-col justify-center bg-white">
+        {/* PERUBAHAN: Mengurangi padding vertikal (lg:py-4) agar lebih memadat ke atas */}
+        <div className="w-full lg:w-1/2 p-5 sm:p-8 lg:px-8 lg:py-4 xl:py-6 flex flex-col justify-center bg-white">
           <div className="max-w-md mx-auto w-full">
             
             {/* Header Mobile */}
-            <div className="flex items-center gap-2.5 mb-5 lg:hidden">
+            <div className="flex items-center gap-2.5 mb-4 lg:hidden">
               <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
                 <img src={theme?.logo || DefaultLogo} alt="logo" className="w-8 h-8 object-contain" />
               </div>
@@ -182,16 +182,17 @@ export default function Login() {
               </div>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2 lg:mb-1 lg:text-2xl">
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-1 lg:text-2xl">
               Selamat Datang
             </h2>
-            <p className="text-gray-500 text-xs sm:text-sm mb-5 lg:mb-4 font-medium">
+            {/* PERUBAHAN: Mengurangi margin bawah (mb-3) */}
+            <p className="text-gray-500 text-xs sm:text-sm mb-4 lg:mb-3 font-medium">
               Masukan email dan password untuk mengakses akun anda
             </p>
 
             {/* Session Expired Warning */}
             {sessionExpiredMsg && (
-              <div className="mb-4 lg:mb-3 p-3 lg:p-2.5 bg-amber-50 border border-amber-200 rounded-xl lg:rounded-lg flex items-start gap-2">
+              <div className="mb-3 lg:mb-2.5 p-3 lg:p-2 bg-amber-50 border border-amber-200 rounded-xl lg:rounded-lg flex items-start gap-2">
                 <Clock size={16} className="text-amber-500 shrink-0 mt-0.5 lg:mt-0" />
                 <div>
                   <p className="text-xs font-bold text-amber-800">Sesi Berakhir</p>
@@ -202,28 +203,29 @@ export default function Login() {
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 lg:mb-3 p-3 lg:p-2.5 bg-red-50 border border-red-200 rounded-xl lg:rounded-lg text-red-600 text-xs sm:text-sm lg:text-xs font-medium flex items-start gap-2">
+              <div className="mb-3 lg:mb-2.5 p-3 lg:p-2 bg-red-50 border border-red-200 rounded-xl lg:rounded-lg text-red-600 text-xs sm:text-sm lg:text-xs font-medium flex items-start gap-2">
                 <AlertCircle size={16} className="shrink-0 mt-0.5 lg:mt-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Form - Jarak antar kolom disesuaikan: HP lega (space-y-4), Laptop padat (lg:space-y-3) */}
-            <form className="space-y-4 lg:space-y-3" onSubmit={handleSubmit}>
+            {/* Form - PERUBAHAN: space-y dirapatkan menjadi space-y-3 lg:space-y-2 */}
+            <form className="space-y-3 lg:space-y-2" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-xs sm:text-sm lg:text-xs font-bold text-gray-700 mb-1 lg:mb-1">
+                <label className="block text-xs sm:text-sm lg:text-[11px] font-bold text-gray-700 mb-1 lg:mb-0.5">
                   Email
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 lg:pl-3 flex items-center pointer-events-none text-gray-400">
                     <Mail size={16} />
                   </div>
+                  {/* PERUBAHAN: py dirapatkan menjadi py-2.5 lg:py-2 */}
                   <input
                     type="email"
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 lg:pl-9 p-3 lg:p-2.5 bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm lg:text-xs"
+                    className="w-full pl-10 lg:pl-9 py-2.5 lg:py-2 bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm lg:text-xs"
                     required
                     disabled={loading}
                   />
@@ -231,7 +233,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm lg:text-xs font-bold text-gray-700 mb-1 lg:mb-1">
+                <label className="block text-xs sm:text-sm lg:text-[11px] font-bold text-gray-700 mb-1 lg:mb-0.5">
                   Password
                 </label>
                 <div className="relative w-full">
@@ -240,7 +242,7 @@ export default function Login() {
                     placeholder="Masukkan Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 lg:p-2.5 pl-4 pr-12 lg:pr-10 bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-sm lg:text-xs"
+                    className="w-full py-2.5 lg:py-2 pl-4 pr-12 lg:pr-10 bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-sm lg:text-xs"
                     disabled={loading}
                   />
                   <button
@@ -255,20 +257,21 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm lg:text-xs font-bold text-gray-700 mb-1 lg:mb-1">
+                <label className="block text-xs sm:text-sm lg:text-[11px] font-bold text-gray-700 mb-1 lg:mb-0.5">
                   Captcha
                 </label>
-                <div className="rounded-xl lg:rounded-lg border border-gray-200 bg-gray-50 p-3 sm:p-4 lg:p-2.5 space-y-3 lg:space-y-2.5">
+                {/* PERUBAHAN: Padding dan gap dirapatkan */}
+                <div className="rounded-xl lg:rounded-lg border border-gray-200 bg-gray-50 p-2.5 sm:p-3 lg:p-2 space-y-2">
                   
-                  {/* Captcha Box: HP bertumpuk jika kekecilan, Laptop sejajar rata */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:gap-2.5">
-                    <div className="h-12 lg:h-10 w-full sm:w-[150px] lg:w-[130px] rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* PERUBAHAN: Tinggi gambar captcha dikurangi h-10 lg:h-9 */}
+                    <div className="h-10 lg:h-9 w-full sm:w-[150px] lg:w-[130px] rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
                       {captchaLoading ? (
                         <Loader2 size={16} className="animate-spin text-gray-400" />
                       ) : captchaImage ? (
                         <img src={captchaImage} alt="Captcha" className="h-full w-full object-contain" />
                       ) : (
-                        <span className="text-[10px] sm:text-xs lg:text-[10px] text-gray-400 font-medium">Gagal dimuat</span>
+                        <span className="text-[10px] text-gray-400 font-medium">Gagal dimuat</span>
                       )}
                     </div>
 
@@ -276,7 +279,7 @@ export default function Login() {
                       type="button"
                       onClick={() => loadCaptcha(true)}
                       disabled={loading || captchaLoading}
-                      className="cursor-pointer w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 lg:px-3 py-2.5 lg:py-2 text-[11px] sm:text-xs lg:text-[11px] font-bold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
+                      className="cursor-pointer w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 lg:px-3 py-2 lg:py-1.5 text-[11px] font-bold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
                       <RefreshCcw size={12} className={captchaLoading ? "animate-spin" : ""} />
                       Muat Ulang
@@ -284,7 +287,7 @@ export default function Login() {
                   </div>
 
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 lg:pl-3 flex items-center pointer-events-none text-gray-400">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                       <ShieldCheck size={14} />
                     </div>
                     <input
@@ -292,18 +295,18 @@ export default function Login() {
                       placeholder="Masukkan kode captcha"
                       value={captchaToken}
                       onChange={(e) => setCaptchaToken(e.target.value)}
-                      className="w-full pl-10 lg:pl-8 p-2.5 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs sm:text-sm lg:text-xs font-medium"
+                      className="w-full pl-9 p-2 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs lg:text-[11px] font-medium"
                       required
                       disabled={loading || captchaLoading}
                     />
                   </div>
-                  <p className="text-[9px] sm:text-[11px] lg:text-[10px] text-gray-500 font-medium leading-relaxed lg:leading-none">
-                    *Captcha hanya berlaku satu kali. Jika gagal, muat ulang.
+                  <p className="text-[9px] lg:text-[9px] text-gray-500 font-medium leading-none hidden lg:block">
+                    *Captcha berlaku satu kali.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-[11px] sm:text-sm lg:text-[11px] pt-1">
+              <div className="flex items-center justify-between text-[11px] sm:text-sm lg:text-[11px] pt-0.5">
                 <label className="flex items-center gap-1.5 sm:gap-2 text-gray-600 cursor-pointer font-medium">
                   <input
                     type="checkbox"
@@ -319,10 +322,8 @@ export default function Login() {
                 </Link>
               </div>
 
-              {/* Tombol Action - Diperbaiki Flexbox-nya agar tidak tercepit */}
-              <div className="flex gap-3 mt-4 lg:mt-3">
-                
-                {/* Tombol Kembali (Menyesuaikan lebar konten + padding) */}
+              {/* Tombol Action */}
+              <div className="flex gap-3 mt-3 lg:mt-2">
                 <Link
                   to="/"
                   className="flex lg:hidden items-center justify-center gap-1.5 px-4 shrink-0 bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm"
@@ -332,11 +333,10 @@ export default function Login() {
                   <span className="text-xs font-bold whitespace-nowrap">Kembali</span>
                 </Link>
 
-                {/* Tombol Masuk (Mengisi sisa ruang sepenuhnya dengan flex-1) */}
                 <button
                   type="submit"
                   disabled={loading || googleLoading || captchaLoading || !captchaImage || !captchaToken.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3.5 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
                 >
                   {loading ? (
                     <>
@@ -353,10 +353,10 @@ export default function Login() {
               </div>
 
               {hasGoogleClientId && (
-                <div className="space-y-3 pt-2">
+                <div className="space-y-2 pt-1">
                   <div className="flex items-center gap-3">
                     <div className="h-px flex-1 bg-gray-200" />
-                    <span className="text-[10px] sm:text-xs lg:text-[11px] font-semibold text-gray-400">atau masuk dengan Google</span>
+                    <span className="text-[10px] lg:text-[9px] font-bold text-gray-400 uppercase tracking-wide">atau masuk dengan</span>
                     <div className="h-px flex-1 bg-gray-200" />
                   </div>
 
@@ -372,7 +372,7 @@ export default function Login() {
 
             </form>
 
-            <p className="mt-6 lg:mt-4 text-xs sm:text-sm lg:text-xs text-gray-500 font-medium text-center">
+            <p className="mt-4 lg:mt-2 text-xs lg:text-[11px] text-gray-500 font-medium text-center">
               Belum punya akun alumni?{" "}
               <Link
                 to={"/register"}
