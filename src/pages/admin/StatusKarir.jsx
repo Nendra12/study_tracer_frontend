@@ -37,6 +37,7 @@ export default function StatusKarir() {
           return { 
             id: u.id, 
             nama: u.nama || u.nama_universitas, 
+            alamat: u.alamat || "",
             jurusan: rawJurusan.map(j => j.nama || j.nama_jurusan), 
             _jurusanRaw: rawJurusan 
           };
@@ -70,7 +71,8 @@ export default function StatusKarir() {
       const res = await adminApi.getStatusKarierBidangUsaha();
       setWirausahaData((res.data?.data || []).map((w) => ({ 
         id: w.id, 
-        nama: w.nama || w.nama_bidang 
+        nama: w.nama || w.nama_bidang,
+        alamat: w.alamat || "",
       })));
     } catch (err) { 
       console.error("Gagal memuat bidang usaha:", err); 
@@ -110,7 +112,10 @@ export default function StatusKarir() {
       }
 
       if (category === "univ") {
-        const res = await adminApi.createStatusKarierUniversitas({ nama: data.nama_universitas || data.nama });
+        const res = await adminApi.createStatusKarierUniversitas({
+          nama: data.nama_universitas || data.nama,
+          alamat: data.alamat || "",
+        });
         const newUnivId = res.data?.data?.id;
         // Jika ada jurusan yang dipilih saat buat universitas baru
         if (newUnivId && data.jurusan && data.jurusan.length > 0) {
@@ -121,7 +126,10 @@ export default function StatusKarir() {
         await adminApi.createStatusKarierProdi({ nama_prodi: data.nama_prodi || data.nama }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        await adminApi.createStatusKarierBidangUsaha({ nama_bidang: data.nama_bidang || data.nama }); 
+        await adminApi.createStatusKarierBidangUsaha({
+          nama_bidang: data.nama_bidang || data.nama,
+          alamat: data.alamat || "",
+        }); 
         fetchWirausaha();
       }
       alertSuccess("Data berhasil ditambahkan!");
@@ -140,7 +148,10 @@ export default function StatusKarir() {
       
       if (category === "univ") {
         const nama = data.nama_universitas || data.nama || Object.values(data)[0];
-        await adminApi.updateStatusKarierUniversitas(id, { nama });
+        await adminApi.updateStatusKarierUniversitas(id, {
+          nama,
+          alamat: data.alamat || "",
+        });
         
         // Sinkronisasi Multi-select Jurusan
         const currentUniv = univData.find(u => u.id === id);
@@ -164,7 +175,10 @@ export default function StatusKarir() {
         await adminApi.updateStatusKarierProdi(id, { nama_prodi: data.nama_prodi || data.nama || Object.values(data)[0] }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: data.nama_bidang || data.nama || Object.values(data)[0] }); 
+        await adminApi.updateStatusKarierBidangUsaha(id, {
+          nama_bidang: data.nama_bidang || data.nama || Object.values(data)[0],
+          alamat: data.alamat || "",
+        }); 
         fetchWirausaha();
       }
       alertSuccess("Data berhasil diubah!");
@@ -211,16 +225,18 @@ export default function StatusKarir() {
       } else if (selectedReport === "Bidang Wirausaha") {
         reportSlug = 'status_karier_wirausaha';
         reportTitle = 'Laporan Status Karier - Bidang Wirausaha';
-        headers = ["No", "Nama Bidang Wirausaha"];
+        headers = ["No", "Nama Bidang Wirausaha", "Alamat"];
         rows = wirausahaData.map((item, index) => [
           index + 1,
           item?.nama || "-",
+          item?.alamat || "-",
         ]);
       } else {
-        headers = ["No", "Nama Universitas", "Program Studi"];
+        headers = ["No", "Nama Universitas", "Alamat", "Program Studi"];
         rows = univData.map((item, index) => [
           index + 1,
           item?.nama || "-",
+          item?.alamat || "-",
           (item?.jurusan && item.jurusan.length > 0) ? item.jurusan.join('; ') : "-",
         ]);
       }
@@ -278,6 +294,10 @@ export default function StatusKarir() {
             onAddLabel="Tambah Kampus"
             nameKey="nama_universitas"
             withJurusan={true}
+            withAddress={true}
+            addressKey="alamat"
+            addressLabel="Alamat Kampus"
+            addressPlaceholder="Contoh: Jl. Ganesha No.10, Bandung"
             dropdownOptions={prodiData}
             onCreate={(data) => handleCreate('univ', data)}
             onUpdate={(id, data) => handleUpdate('univ', id, data)}
@@ -303,6 +323,10 @@ export default function StatusKarir() {
             placeholder="Contoh: Kuliner"
             onAddLabel="Tambah Bidang"
             nameKey="nama_bidang"
+            withAddress={true}
+            addressKey="alamat"
+            addressLabel="Alamat Usaha"
+            addressPlaceholder="Contoh: Jl. Diponegoro No.8, Surabaya"
             onCreate={(data) => handleCreate('wirausaha', data)}
             onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
             onDelete={(id) => handleDelete('wirausaha', id)}
