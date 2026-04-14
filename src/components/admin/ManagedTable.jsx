@@ -27,10 +27,14 @@ const ManagedTable = ({
   onDelete,
   readOnly = false,
   withJurusan = false,
-  dropdownOptions = []
+  dropdownOptions = [],
+  withAddress = false,
+  addressKey = "alamat",
+  addressLabel = "Alamat",
+  addressPlaceholder = "Masukkan alamat"
 }) => {
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState({ nama: "", jurusan: [] });
+  const [formData, setFormData] = useState({ nama: "", jurusan: [], alamat: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -48,13 +52,17 @@ const ManagedTable = ({
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  const resetForm = () => setFormData({ nama: "", jurusan: [] });
+  const resetForm = () => setFormData({ nama: "", jurusan: [], alamat: "" });
 
   const handleCreate = async () => {
     if (!formData.nama.trim()) return;
     setSaving(true);
     try {
-      await onCreate({ [nameKey]: formData.nama.trim(), jurusan: withJurusan ? formData.jurusan : [] });
+      await onCreate({
+        [nameKey]: formData.nama.trim(),
+        jurusan: withJurusan ? formData.jurusan : [],
+        ...(withAddress ? { [addressKey]: formData.alamat?.trim() || "" } : {}),
+      });
       resetForm(); setIsAdding(false);
     } catch (err) { console.error(err); } 
     finally { setSaving(false); }
@@ -64,7 +72,11 @@ const ManagedTable = ({
     if (!formData.nama.trim()) return;
     setSaving(true);
     try {
-      await onUpdate(id, { [nameKey]: formData.nama.trim(), jurusan: withJurusan ? formData.jurusan : [] });
+      await onUpdate(id, {
+        [nameKey]: formData.nama.trim(),
+        jurusan: withJurusan ? formData.jurusan : [],
+        ...(withAddress ? { [addressKey]: formData.alamat?.trim() || "" } : {}),
+      });
       setEditId(null); resetForm();
     } catch (err) { console.error(err); } 
     finally { setSaving(false); }
@@ -72,7 +84,11 @@ const ManagedTable = ({
 
   const startEdit = (item) => {
     setEditId(item.id); setIsAdding(false);
-    setFormData({ nama: item.nama, jurusan: Array.isArray(item.jurusan) ? item.jurusan : [] });
+    setFormData({
+      nama: item.nama,
+      jurusan: Array.isArray(item.jurusan) ? item.jurusan : [],
+      alamat: item.alamat || item[addressKey] || "",
+    });
   };
 
   const handleDelete = async (id, name) => {
@@ -128,6 +144,7 @@ const ManagedTable = ({
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
               <th className={`px-3 py-3 ${withJurusan ? "w-1/3" : ""}`}>Nama</th>
               {withJurusan && <th className="px-3 py-3">Jurusan Tersedia</th>}
+              {withAddress && <th className="px-3 py-3">{addressLabel}</th>}
               {!readOnly && <th className="px-3 py-3 text-right w-24">Aksi</th>}
             </tr>
           </thead>
@@ -140,6 +157,17 @@ const ManagedTable = ({
                 {withJurusan && (
                   <td className="py-3 px-3">
                     <MultiSelectDropdown options={dropdownOptions} selected={formData.jurusan} onChange={(newVal) => setFormData({ ...formData, jurusan: newVal })} placeholder="Pilih Jurusan..." />
+                  </td>
+                )}
+                {withAddress && (
+                  <td className="py-3 px-3">
+                    <input
+                      type="text"
+                      value={formData.alamat}
+                      onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
+                      placeholder={addressPlaceholder}
+                      className="w-full px-2 py-2 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none"
+                    />
                   </td>
                 )}
                 <td className="py-3 px-3">
@@ -158,11 +186,16 @@ const ManagedTable = ({
                 <tr key={`skel-${idx}`} className="animate-pulse bg-white">
                   <td className="py-4 px-3"><div className="h-4 bg-gray-200 rounded w-3/4"></div></td>
                   {withJurusan && <td className="py-4 px-3"><div className="flex gap-2"><div className="h-4 bg-gray-200 rounded w-16"></div><div className="h-4 bg-gray-200 rounded w-24"></div></div></td>}
+                  {withAddress && <td className="py-4 px-3"><div className="h-4 bg-gray-200 rounded w-5/6"></div></td>}
                   {!readOnly && <td className="py-4 px-3"><div className="flex justify-end gap-2"><div className="h-7 w-7 bg-gray-200 rounded-lg"></div><div className="h-7 w-7 bg-gray-200 rounded-lg"></div></div></td>}
                 </tr>
               ))
             ) : paginatedData.length === 0 ? (
-              <tr><td colSpan={withJurusan ? 3 : 2} className="py-6 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
+              <tr>
+                <td colSpan={(withJurusan ? 1 : 0) + (withAddress ? 1 : 0) + (readOnly ? 1 : 2)} className="py-6 text-center text-xs text-slate-400">
+                  Tidak ada data ditemukan.
+                </td>
+              </tr>
             ) : (
               paginatedData.map((item) => (
                 <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
@@ -183,6 +216,20 @@ const ManagedTable = ({
                             <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">{j}</span>
                           )) : <span className="text-xs text-gray-400 italic">- Tidak ada jurusan -</span>}
                         </div>
+                      )}
+                    </td>
+                  )}
+                  {withAddress && (
+                    <td className="py-3 px-3 max-w-72">
+                      {editId === item.id ? (
+                        <input
+                          type="text"
+                          value={formData.alamat}
+                          onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
+                          className="w-full px-2 py-2 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-500 line-clamp-2">{item.alamat || "-"}</span>
                       )}
                     </td>
                   )}

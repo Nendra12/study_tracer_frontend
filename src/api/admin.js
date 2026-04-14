@@ -415,6 +415,32 @@ export const adminApi = {
     });
   },
 
+  // ── Sebaran Alumni (Mapping) ─────────────────
+  getSebaranMarkers(filters = {}) {
+    return api.get('/admin/sebaran/markers', { params: filters });
+  },
+
+  getSebaranLocationDetail(type, id, filters = {}) {
+    return api.get(`/admin/sebaran/location/${type}/${id}`, { params: filters });
+  },
+
+  getSebaranFilters() {
+    return api.get('/admin/sebaran/filters');
+  },
+
+  getSebaranStats(filters = {}) {
+    return api.get('/admin/sebaran/stats', { params: filters });
+  },
+
+  getSebaranHeatmap(filters = {}) {
+    return api.get('/admin/sebaran/heatmap', { params: filters });
+  },
+
+  searchSebaranLocation(query, type = null) {
+    const params = type ? { q: query, type } : { q: query };
+    return api.get('/admin/sebaran/search', { params });
+  },
+
   // ── Meta Data Management ──────────────────────
   getMetaData() {
     return api.get('/metadata'); 
