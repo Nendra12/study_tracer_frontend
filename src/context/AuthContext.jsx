@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { authApi } from '../api/auth';
 import { createEcho, disconnectEcho } from '../utils/echo';
@@ -42,6 +43,18 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const res = await authApi.login(credentials);
+    const { token: newToken, user: userData } = res.data.data;
+    setToken(newToken);
+    persistUser(userData);
+
+    localStorage.setItem('auth_token', newToken);
+    localStorage.setItem('last_activity', Date.now().toString());
+    localStorage.removeItem('session_expired_reason');
+    return userData;
+  }, [persistUser]);
+
+  const loginWithGoogle = useCallback(async (googleIdToken) => {
+    const res = await authApi.googleLogin({ google_id_token: googleIdToken });
     const { token: newToken, user: userData } = res.data.data;
     setToken(newToken);
     persistUser(userData);
@@ -183,6 +196,7 @@ export function AuthProvider({ children }) {
     isAlumni: user?.role === 'alumni',
     echo: echoRef.current,
     login,
+    loginWithGoogle,
     register,
     logout,
     refreshUser,

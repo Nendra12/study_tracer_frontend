@@ -7,7 +7,6 @@ import Step2Profile from './Step2Profile';
 import Step3Status from './Step3Status';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
 
 import FooterModals from '../../components/alumni/FooterModals'; // Sesuaikan path jika berbeda
@@ -31,6 +30,9 @@ export default function Register() {
     email: '',
     password: '',
     password_confirmation: '',
+    google_id: '',
+    auth_provider: '',
+    google_picture: '',
     nama_alumni: '',
     id_jurusan: '',
     jenis_kelamin: '',
@@ -102,8 +104,14 @@ export default function Register() {
     try {
       const fd = new FormData();
       fd.append('email', formData.email);
-      fd.append('password', formData.password);
-      fd.append('password_confirmation', formData.password_confirmation);
+
+      if (formData.google_id) {
+        fd.append('google_id', formData.google_id);
+        fd.append('auth_provider', formData.auth_provider || 'google');
+      } else {
+        fd.append('password', formData.password);
+        fd.append('password_confirmation', formData.password_confirmation);
+      }
 
       if (formData.captcha_token) fd.append('captcha_token', formData.captcha_token);
       if (formData.captcha_key) fd.append('captcha_key', formData.captcha_key);

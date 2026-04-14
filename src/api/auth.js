@@ -34,6 +34,22 @@ export const authApi = {
   },
 
   /**
+   * POST /auth/google/login
+   * @param {{ google_id_token: string }} data
+   */
+  googleLogin(data) {
+    return api.post('/auth/google/login', data);
+  },
+
+  /**
+   * POST /auth/google/register
+   * @param {{ google_id_token: string }} data
+   */
+  googleRegister(data) {
+    return api.post('/auth/google/register', data);
+  },
+
+  /**
    * POST /logout
    */
   logout() {

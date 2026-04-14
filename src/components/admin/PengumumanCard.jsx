@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { STORAGE_BASE_URL } from '../../api/axios';
 
 // Fallback gambar
-import imgPengumuman from '../../assets/pengumuman.jpg';
+import imgPengumuman from '../../assets/pengumuman.png';
 
 // Helper: buat URL gambar lengkap dari path backend
 const getImageUrl = (foto) => {
