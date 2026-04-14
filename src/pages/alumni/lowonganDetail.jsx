@@ -101,7 +101,7 @@ export default function LowonganDetail() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20">
 
-      <main className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
+      <main className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-7 xl:px-0 pt-28 pb-20">
 
         {/* Tombol Kembali */}
         <button

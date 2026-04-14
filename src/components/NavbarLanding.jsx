@@ -117,7 +117,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
           }`}
       >
         <div
-          className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled
+          className={`relative rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled
             ? "shadow-md bg-white/70 backdrop-blur-xl px-4"
             : "bg-transparant"
             }`}

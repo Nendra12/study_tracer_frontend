@@ -103,9 +103,10 @@ export default function NavbarAlumni({ user }) {
   const isProfilePage = location.pathname.includes('/alumni/profile');
   const isKuesionerPage = location.pathname.includes('/alumni/kuesioner');
   const isPengumumanDetail = location.pathname.startsWith('/alumni/pengumuman/') && location.pathname !== '/alumni/pengumuman';
+  const isLowonganDetail = location.pathname.startsWith('/alumni/lowongan/') && location.pathname !== '/alumni/lowongan';
   
   // 2. Logika Warna Teks & Ikon (Gunakan warna Primary/Gelap saat halaman di-scroll ATAU di halaman dengan background terang)
-  const isSolidMode = scrolled || isProfilePage || isKuesionerPage || isPengumumanDetail;
+  const isSolidMode = scrolled || isProfilePage || isKuesionerPage || isPengumumanDetail || isLowonganDetail;
   
   // 3. Logika Background Navbar (Gunakan background putih hanya saat discroll atau di profil/kuesioner)
   // Untuk pengumuman detail, biarkan transparan (sesuai permintaan "hanya warna text nya saja")
@@ -124,7 +125,7 @@ export default function NavbarAlumni({ user }) {
       <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${isShrunk ? 'px-8 sm:px-12 lg:px-32' : 'px-4 sm:px-6 lg:px-8'}`}>
         
         {/* Background & Shadow menggunakan `hasSolidBg` (hanya beri background putih jika diperlukan) */}
-        <div className={`rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${hasSolidBg ? 'shadow-md bg-white/90 backdrop-blur-xl px-6' : 'bg-transparent'}`}>
+        <div className={`relative rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${hasSolidBg ? 'shadow-md bg-white/90 backdrop-blur-xl px-6' : 'bg-transparent'}`}>
 
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2.5 group">
