@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { School, BookOpen, Store } from "lucide-react";
+import { School, BookOpen, Store, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { alertSuccess, alertError, alertWarning } from "../../utilitis/alert";
 import { adminApi } from "../../api/admin";
 import { createExportFileName, downloadCsv } from "../../utilitis/export";
@@ -8,6 +8,192 @@ import { createExportFileName, downloadCsv } from "../../utilitis/export";
 import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
+import SmoothKota from "../../components/admin/SmoothKota";
+
+function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDelete }) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({ nama_universitas: '', alamat: '', id_kota: '' });
+
+  const resetForm = () => setFormData({ nama_universitas: '', alamat: '', id_kota: '' });
+
+  const startEdit = (item) => {
+    setIsAdding(false);
+    setEditId(item.id);
+    setFormData({
+      nama_universitas: item.nama || '',
+      alamat: item.alamat || '',
+      id_kota: item.id_kota ? String(item.id_kota) : (item.kota_id ? String(item.kota_id) : ''),
+    });
+  };
+
+  const handleCreate = async () => {
+    if (!formData.nama_universitas.trim() || !formData.id_kota) return;
+    setSaving(true);
+    try {
+      await onCreate(formData);
+      resetForm();
+      setIsAdding(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdate = async (id) => {
+    if (!formData.nama_universitas.trim() || !formData.id_kota) return;
+    setSaving(true);
+    try {
+      await onUpdate(id, formData);
+      resetForm();
+      setEditId(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-100 mb-6 shadow-sm overflow-hidden">
+      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 bg-blue-100 rounded-lg text-primary"><School size={16} /></div>
+          <h3 className="font-bold text-primary text-md">Data Universitas</h3>
+          <span className="text-xs text-slate-400 font-medium">({data.length})</span>
+        </div>
+        <button
+          onClick={() => {
+            setEditId(null);
+            resetForm();
+            setIsAdding(true);
+          }}
+          className="text-fourth bg-primary flex items-center gap-1 text-xs font-bold hover:text-white hover:opacity-90 px-2.5 py-2 rounded-lg transition-all cursor-pointer"
+        >
+          <Plus size={12} /> Tambah Kampus
+        </button>
+      </div>
+
+      <div className="p-4 overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
+              <th className="px-3 py-3">Nama</th>
+              <th className="px-3 py-3">Alamat</th>
+              <th className="px-3 py-3">Kota</th>
+              <th className="px-3 py-3">Provinsi</th>
+              <th className="px-3 py-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {isAdding && (
+              <tr className="bg-blue-50/50 align-top">
+                <td className="px-3 py-2">
+                  <input
+                    type="text"
+                    value={formData.nama_universitas}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, nama_universitas: e.target.value }))}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
+                    placeholder="Nama universitas"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <input
+                    type="text"
+                    value={formData.alamat}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, alamat: e.target.value }))}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
+                    placeholder="Alamat universitas"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <SmoothKota
+                    isSearchable={true}
+                    placeholder="Pilih Kota"
+                    value={formData.id_kota}
+                    options={kotaList.map((k) => ({ value: String(k.id), label: k.nama }))}
+                    onSelect={(val) => setFormData((prev) => ({ ...prev, id_kota: String(val) }))}
+                  />
+                </td>
+                <td className="px-3 py-2 text-xs text-slate-500">Otomatis dari kota</td>
+                <td className="px-3 py-2">
+                  <div className="flex justify-end gap-1">
+                    <button onClick={handleCreate} disabled={saving} className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded">
+                      <Check size={14} />
+                    </button>
+                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded">
+                      <X size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
+
+            {data.length === 0 && !isAdding ? (
+              <tr>
+                <td colSpan={5} className="py-6 text-center text-xs text-slate-400">Tidak ada data universitas.</td>
+              </tr>
+            ) : (
+              data.map((item) => (
+                editId === item.id ? (
+                  <tr key={item.id} className="bg-blue-50/50 align-top">
+                    <td className="px-3 py-2">
+                      <input
+                        type="text"
+                        value={formData.nama_universitas}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, nama_universitas: e.target.value }))}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="text"
+                        value={formData.alamat}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, alamat: e.target.value }))}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <SmoothKota
+                        isSearchable={true}
+                        placeholder="Pilih Kota"
+                        value={formData.id_kota}
+                        options={kotaList.map((k) => ({ value: String(k.id), label: k.nama }))}
+                        onSelect={(val) => setFormData((prev) => ({ ...prev, id_kota: String(val) }))}
+                      />
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-500">Otomatis dari kota</td>
+                    <td className="px-3 py-2">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={() => handleUpdate(item.id)} disabled={saving} className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded">
+                          <Check size={14} />
+                        </button>
+                        <button onClick={() => { setEditId(null); resetForm(); }} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors">
+                    <td className="px-3 py-3 text-sm font-medium text-gray-700">{item.nama || '-'}</td>
+                    <td className="px-3 py-3 text-xs text-slate-600">{item.alamat || '-'}</td>
+                    <td className="px-3 py-3 text-xs text-slate-600">{item.kota || '-'}</td>
+                    <td className="px-3 py-3 text-xs text-slate-600">{item.provinsi || '-'}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={() => startEdit(item)} className="p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg"><Pencil size={14} /></button>
+                        <button onClick={() => onDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function StatusKarir() {
   // --- STATE UNTUK EKSPOR ---
@@ -19,6 +205,7 @@ export default function StatusKarir() {
   const [univData, setUnivData] = useState([]);
   const [prodiData, setProdiData] = useState([]);
   const [wirausahaData, setWirausahaData] = useState([]);
+  const [kotaList, setKotaList] = useState([]);
   
   // --- STATE LOADING ---
   const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true });
@@ -31,15 +218,13 @@ export default function StatusKarir() {
       const data = res.data?.data || [];
       setUnivData(
         data.map((u) => {
-          const rawJurusan = Array.isArray(u.jurusan_kuliah) 
-            ? u.jurusan_kuliah 
-            : u.jurusan_kuliah ? [u.jurusan_kuliah] : [];
           return { 
             id: u.id, 
             nama: u.nama || u.nama_universitas, 
-            alamat: u.alamat || "",
-            jurusan: rawJurusan.map(j => j.nama || j.nama_jurusan), 
-            _jurusanRaw: rawJurusan 
+            alamat: u.alamat || u.jalan || '-',
+            id_kota: u.id_kota || u.kota?.id || '',
+            kota: u.kota?.nama || u.nama_kota || '-',
+            provinsi: u.provinsi?.nama || u.kota?.provinsi?.nama || u.nama_provinsi || '-',
           };
         })
       );
@@ -71,8 +256,7 @@ export default function StatusKarir() {
       const res = await adminApi.getStatusKarierBidangUsaha();
       setWirausahaData((res.data?.data || []).map((w) => ({ 
         id: w.id, 
-        nama: w.nama || w.nama_bidang,
-        alamat: w.alamat || "",
+        nama: w.nama || w.nama_bidang 
       })));
     } catch (err) { 
       console.error("Gagal memuat bidang usaha:", err); 
@@ -85,6 +269,12 @@ export default function StatusKarir() {
     fetchUniversitas();
     fetchProdi();
     fetchWirausaha();
+
+    adminApi.getKota()
+      .then((res) => {
+        setKotaList(res.data?.data || []);
+      })
+      .catch(() => setKotaList([]));
   }, [fetchUniversitas, fetchProdi, fetchWirausaha]);
 
 
@@ -112,24 +302,17 @@ export default function StatusKarir() {
       }
 
       if (category === "univ") {
-        const res = await adminApi.createStatusKarierUniversitas({
-          nama: data.nama_universitas || data.nama,
-          alamat: data.alamat || "",
+        await adminApi.createStatusKarierUniversitas({
+          nama_universitas: data.nama_universitas || data.nama,
+          alamat: data.alamat || '',
+          id_kota: data.id_kota,
         });
-        const newUnivId = res.data?.data?.id;
-        // Jika ada jurusan yang dipilih saat buat universitas baru
-        if (newUnivId && data.jurusan && data.jurusan.length > 0) {
-          await Promise.all(data.jurusan.map(j => adminApi.createStatusKarierProdi({ nama_prodi: j, id_universitas: newUnivId })));
-        }
         fetchUniversitas();
       } else if (category === "prodi") {
         await adminApi.createStatusKarierProdi({ nama_prodi: data.nama_prodi || data.nama }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        await adminApi.createStatusKarierBidangUsaha({
-          nama_bidang: data.nama_bidang || data.nama,
-          alamat: data.alamat || "",
-        }); 
+        await adminApi.createStatusKarierBidangUsaha({ nama_bidang: data.nama_bidang || data.nama }); 
         fetchWirausaha();
       }
       alertSuccess("Data berhasil ditambahkan!");
@@ -147,38 +330,17 @@ export default function StatusKarir() {
       }
       
       if (category === "univ") {
-        const nama = data.nama_universitas || data.nama || Object.values(data)[0];
         await adminApi.updateStatusKarierUniversitas(id, {
-          nama,
-          alamat: data.alamat || "",
+          nama_universitas: data.nama_universitas || data.nama || Object.values(data)[0],
+          alamat: data.alamat || '',
+          id_kota: data.id_kota,
         });
-        
-        // Sinkronisasi Multi-select Jurusan
-        const currentUniv = univData.find(u => u.id === id);
-        const currentJurusan = currentUniv?.jurusan || [];
-        const rawJurusan = currentUniv?._jurusanRaw || [];
-        const newJurusan = data.jurusan || [];
-        
-        const toAdd = newJurusan.filter(j => !currentJurusan.includes(j));
-        const toRemove = currentJurusan.filter(j => !newJurusan.includes(j));
-        
-        const syncPromises = [];
-        toAdd.forEach(j => syncPromises.push(adminApi.createStatusKarierProdi({ nama_prodi: j, id_universitas: id })));
-        toRemove.forEach(j => {
-          const rawJ = rawJurusan.find(rj => (rj.nama || rj.nama_jurusan) === j);
-          if (rawJ) syncPromises.push(adminApi.deleteStatusKarierProdi(rawJ.id));
-        });
-        if (syncPromises.length > 0) await Promise.all(syncPromises);
-        
         fetchUniversitas();
       } else if (category === "prodi") {
         await adminApi.updateStatusKarierProdi(id, { nama_prodi: data.nama_prodi || data.nama || Object.values(data)[0] }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        await adminApi.updateStatusKarierBidangUsaha(id, {
-          nama_bidang: data.nama_bidang || data.nama || Object.values(data)[0],
-          alamat: data.alamat || "",
-        }); 
+        await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: data.nama_bidang || data.nama || Object.values(data)[0] }); 
         fetchWirausaha();
       }
       alertSuccess("Data berhasil diubah!");
@@ -225,19 +387,19 @@ export default function StatusKarir() {
       } else if (selectedReport === "Bidang Wirausaha") {
         reportSlug = 'status_karier_wirausaha';
         reportTitle = 'Laporan Status Karier - Bidang Wirausaha';
-        headers = ["No", "Nama Bidang Wirausaha", "Alamat"];
+        headers = ["No", "Nama Bidang Wirausaha"];
         rows = wirausahaData.map((item, index) => [
           index + 1,
           item?.nama || "-",
-          item?.alamat || "-",
         ]);
       } else {
-        headers = ["No", "Nama Universitas", "Alamat", "Program Studi"];
+        headers = ["No", "Nama Universitas", "Alamat", "Kota", "Provinsi"];
         rows = univData.map((item, index) => [
           index + 1,
           item?.nama || "-",
           item?.alamat || "-",
-          (item?.jurusan && item.jurusan.length > 0) ? item.jurusan.join('; ') : "-",
+          item?.kota || "-",
+          item?.provinsi || "-",
         ]);
       }
 
@@ -286,19 +448,9 @@ export default function StatusKarir() {
         {/* KOLOM KIRI: DAFTAR TABEL */}
         <div className="lg:col-span-8 space-y-6 order-last lg:order-first">
           
-          <ManagedTable
-            title="Data Universitas & Jurusan"
-            icon={School}
+          <UniversitasTable
             data={univData}
-            placeholder="Nama Universitas"
-            onAddLabel="Tambah Kampus"
-            nameKey="nama_universitas"
-            withJurusan={true}
-            withAddress={true}
-            addressKey="alamat"
-            addressLabel="Alamat Kampus"
-            addressPlaceholder="Contoh: Jl. Ganesha No.10, Bandung"
-            dropdownOptions={prodiData}
+            kotaList={kotaList}
             onCreate={(data) => handleCreate('univ', data)}
             onUpdate={(id, data) => handleUpdate('univ', id, data)}
             onDelete={(id) => handleDelete('univ', id)}
@@ -323,10 +475,6 @@ export default function StatusKarir() {
             placeholder="Contoh: Kuliner"
             onAddLabel="Tambah Bidang"
             nameKey="nama_bidang"
-            withAddress={true}
-            addressKey="alamat"
-            addressLabel="Alamat Usaha"
-            addressPlaceholder="Contoh: Jl. Diponegoro No.8, Surabaya"
             onCreate={(data) => handleCreate('wirausaha', data)}
             onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
             onDelete={(id) => handleDelete('wirausaha', id)}

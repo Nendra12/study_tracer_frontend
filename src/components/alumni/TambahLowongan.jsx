@@ -19,6 +19,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   const [formData, setFormData] = useState({
     judul: '',
     perusahaan: '',
+    id_perusahaan: '',
+    alamat_perusahaan: '',
     tanggal_berakhir: '',
     deskripsi: '',
     tipe_pekerjaan: '',
@@ -40,6 +42,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   const [provinsiList, setProvinsiList] = useState([]);
   const [kotaList, setKotaList] = useState([]);
   const [loadingKota, setLoadingKota] = useState(false);
+  const [perusahaanMaster, setPerusahaanMaster] = useState([]);
 
   const [skillsList, setSkillsList] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
@@ -69,15 +72,19 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
     const fetchMasterData = async () => {
       try {
-        const [provRes, skillsRes] = await Promise.all([
+        const [provRes, skillsRes, perusahaanRes] = await Promise.all([
           masterDataApi.getProvinsi(),
           masterDataApi.getSkills(),
+          masterDataApi.getPerusahaan().catch(() => ({ data: { data: [] } })),
         ]);
         const provData = provRes.data?.data || provRes.data || [];
         setProvinsiList(Array.isArray(provData) ? provData : []);
 
         const skillsData = skillsRes.data?.data || skillsRes.data || [];
         setSkillsList(Array.isArray(skillsData) ? skillsData : []);
+
+        const rawPerusahaan = perusahaanRes.data?.data?.data || perusahaanRes.data?.data || perusahaanRes.data || [];
+        setPerusahaanMaster(Array.isArray(rawPerusahaan) ? rawPerusahaan : []);
       } catch (err) {
         console.error('Failed to fetch master data:', err);
       }
@@ -113,6 +120,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       setFormData({
         judul: editJob.judul || '',
         perusahaan: editJob.perusahaan?.nama || editJob.nama_perusahaan || '',
+        id_perusahaan: editJob.id_perusahaan ? String(editJob.id_perusahaan) : (editJob.perusahaan?.id ? String(editJob.perusahaan.id) : ''),
+        alamat_perusahaan: editJob.alamat_perusahaan || editJob.perusahaan?.jalan || '',
         tanggal_berakhir: editJob.lowongan_selesai || '',
         deskripsi: editJob.deskripsi || '',
         tipe_pekerjaan: editJob.tipe_pekerjaan || '',
@@ -132,7 +141,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     } else if (!editJob && isOpen) {
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
-        tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+        id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
         jam_mulai: '', jam_berakhir: '',
       });
       setSelectedSkills([]);
@@ -196,9 +205,26 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'perusahaan') {
+      const matched = perusahaanMaster.find((p) => {
+        const nama = p.nama || p.nama_perusahaan || '';
+        return nama.toLowerCase() === value.trim().toLowerCase();
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        perusahaan: value,
+        id_perusahaan: matched ? String(matched.id) : '',
+        alamat_perusahaan: matched ? (matched.jalan || prev.alamat_perusahaan) : prev.alamat_perusahaan,
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
   };
+
+  const isExistingCompany = Boolean(formData.id_perusahaan);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -222,8 +248,11 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     if (!formData.jam_mulai) newErrors.jam_mulai = 'Jam Mulai wajib diisi';
     if (!formData.jam_berakhir) newErrors.jam_berakhir = 'Jam Berakhir wajib diisi';
     if (!formData.tipe_pekerjaan) newErrors.tipe_pekerjaan = 'Tipe Pekerjaan wajib dipilih';
-    if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
-    if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+    if (!isExistingCompany) {
+      if (!formData.alamat_perusahaan?.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi untuk perusahaan baru';
+      if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
+      if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+    }
     if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
 
     // Validasi Gambar
@@ -247,14 +276,18 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     try {
       const fd = new FormData();
       fd.append('judul_lowongan', formData.judul);
-      fd.append('nama_perusahaan', formData.perusahaan);
+      if (isExistingCompany) {
+        fd.append('id_perusahaan', formData.id_perusahaan);
+      } else {
+        fd.append('nama_perusahaan', formData.perusahaan);
+        fd.append('alamat_perusahaan', formData.alamat_perusahaan || '');
+        fd.append('id_kota', formData.id_kota || '');
+      }
       fd.append('deskripsi', formData.deskripsi);
       fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
       fd.append('lowongan_selesai', formData.tanggal_berakhir);
       fd.append('jam_mulai', formData.jam_mulai);
       fd.append('jam_berakhir', formData.jam_berakhir);
-      fd.append('id_provinsi', formData.id_provinsi);
-      fd.append('id_kota', formData.id_kota);
       
       if (formData.foto instanceof File) {
         fd.append('foto_lowongan', formData.foto);
@@ -281,6 +314,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         const mapped = {};
         if (validationErrors.judul_lowongan) mapped.judul = validationErrors.judul_lowongan[0];
         if (validationErrors.nama_perusahaan) mapped.perusahaan = validationErrors.nama_perusahaan[0];
+        if (validationErrors.id_perusahaan) mapped.perusahaan = validationErrors.id_perusahaan[0];
+        if (validationErrors.alamat_perusahaan) mapped.alamat_perusahaan = validationErrors.alamat_perusahaan[0];
         if (validationErrors.deskripsi) mapped.deskripsi = validationErrors.deskripsi[0];
         if (validationErrors.tipe_pekerjaan) mapped.tipe_pekerjaan = validationErrors.tipe_pekerjaan[0];
         if (validationErrors.lokasi) mapped.lokasi = validationErrors.lokasi[0];
@@ -366,7 +401,16 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                 <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                   Nama Perusahaan <span className="text-red-500">*</span>
                 </label>
-                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} placeholder="PT. Contoh Sukses" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
+                <input name="perusahaan" list="perusahaan-master-options-alumni" value={formData.perusahaan} onChange={handleInputChange} placeholder="Ketik nama perusahaan atau pilih yang sudah ada" className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`} />
+                <datalist id="perusahaan-master-options-alumni">
+                  {perusahaanMaster.map((item) => {
+                    const nama = item.nama || item.nama_perusahaan;
+                    return <option key={item.id} value={nama} />;
+                  })}
+                </datalist>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  {isExistingCompany ? 'Perusahaan existing terdeteksi: akan kirim id_perusahaan.' : 'Perusahaan baru: lengkapi alamat dan kota perusahaan.'}
+                </p>
                 {errors.perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.perusahaan}</p>}
               </div>
               <div>
@@ -416,7 +460,24 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
               {errors.tipe_pekerjaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.tipe_pekerjaan}</p>}
             </div>
 
-            {/* Area Lokasi (Provinsi & Kota) */}
+            {!isExistingCompany && (
+              <div>
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Alamat Perusahaan Baru <span className="text-red-500">*</span>
+                </label>
+                <input
+                  name="alamat_perusahaan"
+                  value={formData.alamat_perusahaan}
+                  onChange={handleInputChange}
+                  placeholder="Masukkan alamat lengkap perusahaan"
+                  className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.alamat_perusahaan ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`}
+                />
+                {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
+              </div>
+            )}
+
+            {/* Area Lokasi (Provinsi & Kota) - hanya untuk perusahaan baru */}
+            {!isExistingCompany && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-50">
               <div>
                 <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
@@ -462,6 +523,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                 {errors.id_kota && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>}
               </div>
             </div>
+            )}
 
             {/* Bagian Skills (TIDAK WAJIB) */}
             <div className="relative z-40" ref={skillDropdownRef}>

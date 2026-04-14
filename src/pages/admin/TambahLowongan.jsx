@@ -19,6 +19,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const [formData, setFormData] = useState({
     judul: '',
     perusahaan: '',
+    id_perusahaan: '',
+    alamat_perusahaan: '',
     tanggal_berakhir: '',
     deskripsi: '',
     tipe_pekerjaan: '',
@@ -36,6 +38,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
   const [kotaList, setKotaList] = useState([]);
   const [loadingProvinsi, setLoadingProvinsi] = useState(false);
   const [loadingKota, setLoadingKota] = useState(false);
+  const [perusahaanMaster, setPerusahaanMaster] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -78,6 +81,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       setFormData({
         judul: editJob.judul || '',
         perusahaan: editJob.perusahaan?.nama || editJob.nama_perusahaan || '',
+        id_perusahaan: editJob.id_perusahaan ? String(editJob.id_perusahaan) : (editJob.perusahaan?.id ? String(editJob.perusahaan.id) : ''),
+        alamat_perusahaan: editJob.alamat_perusahaan || editJob.perusahaan?.jalan || '',
         tanggal_berakhir: editJob.lowongan_selesai || '',
         deskripsi: editJob.deskripsi || '',
         tipe_pekerjaan: editJob.tipe_pekerjaan || '',
@@ -99,7 +104,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     } else if (!editJob && isOpen) {
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
-        tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+        id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
         jam_mulai: '', jam_berakhir: '',
       });
       setSelectedSkills([]);
@@ -115,12 +120,16 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     const fetchData = async () => {
       setLoadingProvinsi(true);
       try {
-        const [resProv, resSkills] = await Promise.all([
+        const [resProv, resSkills, resPerusahaan] = await Promise.all([
           masterDataApi.getProvinsi(),
-          masterDataApi.getSkills()
+          masterDataApi.getSkills(),
+          masterDataApi.getPerusahaan().catch(() => ({ data: { data: [] } })),
         ]);
         setProvinsiList(resProv.data?.data || resProv.data || []);
         setSkillsList((resSkills.data?.data || resSkills.data || []).map(s => ({ id: s.id, nama: s.nama })));
+
+        const rawPerusahaan = resPerusahaan.data?.data?.data || resPerusahaan.data?.data || resPerusahaan.data || [];
+        setPerusahaanMaster(Array.isArray(rawPerusahaan) ? rawPerusahaan : []);
       } catch (err) {
         console.error("Failed to fetch master data", err);
       } finally {
@@ -203,9 +212,27 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === 'perusahaan') {
+      const matched = perusahaanMaster.find((p) => {
+        const nama = p.nama || p.nama_perusahaan || '';
+        return nama.toLowerCase() === value.trim().toLowerCase();
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        perusahaan: value,
+        id_perusahaan: matched ? String(matched.id) : '',
+        alamat_perusahaan: matched ? (matched.jalan || prev.alamat_perusahaan) : prev.alamat_perusahaan,
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
   };
+
+  const isExistingCompany = Boolean(formData.id_perusahaan);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -229,8 +256,11 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     if (!formData.jam_mulai) newErrors.jam_mulai = 'Jam Mulai wajib diisi';
     if (!formData.jam_berakhir) newErrors.jam_berakhir = 'Jam Berakhir wajib diisi';
     if (!formData.tipe_pekerjaan) newErrors.tipe_pekerjaan = 'Tipe Pekerjaan wajib dipilih';
-    if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
-    if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+    if (!isExistingCompany) {
+      if (!formData.alamat_perusahaan.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi untuk perusahaan baru';
+      if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
+      if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+    }
     if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
 
     // Validasi Gambar
@@ -254,14 +284,18 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     try {
       const fd = new FormData();
       fd.append('judul_lowongan', formData.judul);
-      fd.append('nama_perusahaan', formData.perusahaan);
+      if (isExistingCompany) {
+        fd.append('id_perusahaan', formData.id_perusahaan);
+      } else {
+        fd.append('nama_perusahaan', formData.perusahaan);
+        fd.append('alamat_perusahaan', formData.alamat_perusahaan || '');
+        fd.append('id_kota', formData.id_kota || '');
+      }
       fd.append('deskripsi', formData.deskripsi);
       fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
       fd.append('lowongan_selesai', formData.tanggal_berakhir);
       fd.append('jam_mulai', formData.jam_mulai);
       fd.append('jam_berakhir', formData.jam_berakhir);
-      fd.append('id_provinsi', formData.id_provinsi);
-      fd.append('id_kota', formData.id_kota);
       
       if (formData.foto instanceof File) {
         fd.append('foto_lowongan', formData.foto);
@@ -296,6 +330,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         const mapped = {};
         if (validationErrors.judul_lowongan) mapped.judul = validationErrors.judul_lowongan[0];
         if (validationErrors.nama_perusahaan) mapped.perusahaan = validationErrors.nama_perusahaan[0];
+        if (validationErrors.id_perusahaan) mapped.perusahaan = validationErrors.id_perusahaan[0];
+        if (validationErrors.alamat_perusahaan) mapped.alamat_perusahaan = validationErrors.alamat_perusahaan[0];
         if (validationErrors.deskripsi) mapped.deskripsi = validationErrors.deskripsi[0];
         if (validationErrors.tipe_pekerjaan) mapped.tipe_pekerjaan = validationErrors.tipe_pekerjaan[0];
         if (validationErrors.lokasi) mapped.lokasi = validationErrors.lokasi[0];
@@ -370,7 +406,16 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Nama Perusahaan <span className="text-red-500">*</span></label>
-                <input name="perusahaan" value={formData.perusahaan} onChange={handleInputChange} className={`w-full px-4 py-3 bg-gray-50 border ${errors.perusahaan ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+                <input name="perusahaan" list="perusahaan-master-options-admin" value={formData.perusahaan} onChange={handleInputChange} placeholder="Ketik nama perusahaan atau pilih yang sudah ada" className={`w-full px-4 py-3 bg-gray-50 border ${errors.perusahaan ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`} />
+                <datalist id="perusahaan-master-options-admin">
+                  {perusahaanMaster.map((item) => {
+                    const nama = item.nama || item.nama_perusahaan;
+                    return <option key={item.id} value={nama} />;
+                  })}
+                </datalist>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  {isExistingCompany ? 'Perusahaan existing terdeteksi: akan kirim id_perusahaan.' : 'Perusahaan baru: lengkapi alamat dan kota perusahaan.'}
+                </p>
                 {errors.perusahaan && <p className="text-red-500 text-xs mt-1">{errors.perusahaan[0]}</p>}
               </div>
               <div className="space-y-1.5">
@@ -407,7 +452,22 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
               {errors.tipe_pekerjaan && <p className="text-red-500 text-xs mt-1">{errors.tipe_pekerjaan[0]}</p>}
             </div>
 
+            {!isExistingCompany && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-primary/80 uppercase tracking-wider">Alamat Perusahaan Baru <span className="text-red-500">*</span></label>
+                <input
+                  name="alamat_perusahaan"
+                  value={formData.alamat_perusahaan}
+                  onChange={handleInputChange}
+                  placeholder="Masukkan alamat lengkap perusahaan"
+                  className={`w-full px-4 py-3 bg-gray-50 border ${errors.alamat_perusahaan ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`}
+                />
+                {errors.alamat_perusahaan && <p className="text-red-500 text-xs mt-1">{errors.alamat_perusahaan[0] || errors.alamat_perusahaan}</p>}
+              </div>
+            )}
+
             {/* --- DROPDOWN PROVINSI & KOTA MENGGUNAKAN SMOOTHDROPDOWN --- */}
+            {!isExistingCompany && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <SmoothDropdown
@@ -445,6 +505,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                 {errors.id_kota && <p className="text-red-500 text-xs mt-1">{errors.id_kota[0]}</p>}
               </div>
             </div>
+            )}
 
             {/* --- BAGIAN SKILLS (SEARCHABLE & ADD NEW) --- */}
             <div className="space-y-1.5" ref={skillDropdownRef}>

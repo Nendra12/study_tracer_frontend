@@ -41,12 +41,12 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   });
 
   const [universitas, setUniversitas] = useState(formData.universitas || { 
-    nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '', 
+    nama_universitas: '', alamat: '', id_provinsi: '', id_kota: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '', 
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
 
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { 
-    id_bidang: '', nama_usaha: '', 
+    id_bidang: '', nama_usaha: '', alamat: '', id_provinsi: '', id_kota: '',
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
   
@@ -114,18 +114,27 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       .finally(() => setLoadingProvinsi(false));
   }, []);
 
-  // Fetch Kota berdasarkan Provinsi yang dipilih
+  // Fetch Kota berdasarkan provinsi aktif di form status yang sedang dipilih
   useEffect(() => {
-    if (!pekerjaan.id_provinsi) {
+    const activeProvinsiId = selectedStatus === 'Bekerja'
+      ? pekerjaan.id_provinsi
+      : selectedStatus === 'Kuliah'
+        ? universitas.id_provinsi
+        : selectedStatus === 'Wirausaha'
+          ? wirausaha.id_provinsi
+          : '';
+
+    if (!activeProvinsiId) {
       setKotaList([]);
       return;
     }
+
     setLoadingKota(true);
-    masterDataApi.getKota(pekerjaan.id_provinsi)
+    masterDataApi.getKota(activeProvinsiId)
       .then((res) => setKotaList(res.data?.data || res.data || []))
       .catch((err) => console.error("Gagal mengambil kota", err))
       .finally(() => setLoadingKota(false));
-  }, [pekerjaan.id_provinsi]);
+  }, [selectedStatus, pekerjaan.id_provinsi, universitas.id_provinsi, wirausaha.id_provinsi]);
 
   // 3. FUNGSI PENYIMPANAN OTOMATIS
   useEffect(() => {
@@ -383,6 +392,49 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
+            <div className="relative z-[50]">
+              <SmoothDropdown
+                label="Provinsi Universitas *"
+                isSearchable={true}
+                placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
+                options={provinsiList.map((p) => p.nama)}
+                value={provinsiList.find((p) => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
+                onSelect={(namaProv) => {
+                  const prov = provinsiList.find((p) => p.nama === namaProv);
+                  if (prov) {
+                    setUniversitas((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="relative z-[40]">
+              <SmoothDropdown
+                label="Kota Universitas *"
+                isSearchable={true}
+                placeholder={!universitas.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
+                options={kotaList.map((k) => k.nama)}
+                value={kotaList.find((k) => String(k.id) === String(universitas.id_kota))?.nama || ''}
+                onSelect={(namaKota) => {
+                  const kota = kotaList.find((k) => k.nama === namaKota);
+                  if (kota) {
+                    setUniversitas((prev) => ({ ...prev, id_kota: String(kota.id) }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-1">
+              <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas *</label>
+              <input
+                type="text"
+                value={universitas.alamat}
+                onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
+                className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                placeholder="Masukkan alamat universitas"
+              />
+            </div>
+
             {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
             {renderTahunDinamis('Kuliah', 'Kuliah')}
           </div>
@@ -409,6 +461,49 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 options={bidangUsahaList}
                 isRequired={true}
                 onSelect={(val) => setWirausaha({ ...wirausaha, id_bidang: bidangUsahaMap[val] || val })}
+              />
+            </div>
+
+            <div className="relative z-[50]">
+              <SmoothDropdown
+                label="Provinsi Usaha *"
+                isSearchable={true}
+                placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
+                options={provinsiList.map((p) => p.nama)}
+                value={provinsiList.find((p) => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
+                onSelect={(namaProv) => {
+                  const prov = provinsiList.find((p) => p.nama === namaProv);
+                  if (prov) {
+                    setWirausaha((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="relative z-[40]">
+              <SmoothDropdown
+                label="Kota Usaha *"
+                isSearchable={true}
+                placeholder={!wirausaha.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
+                options={kotaList.map((k) => k.nama)}
+                value={kotaList.find((k) => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
+                onSelect={(namaKota) => {
+                  const kota = kotaList.find((k) => k.nama === namaKota);
+                  if (kota) {
+                    setWirausaha((prev) => ({ ...prev, id_kota: String(kota.id) }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-1">
+              <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha *</label>
+              <input
+                type="text"
+                value={wirausaha.alamat}
+                onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
+                className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                placeholder="Masukkan alamat usaha"
               />
             </div>
 
