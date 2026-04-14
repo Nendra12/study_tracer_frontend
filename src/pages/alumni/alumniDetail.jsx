@@ -122,6 +122,8 @@ export default function AlumniDetail() {
   let currentStatus = currentCareer?.status || 'Alumni';
   let currentRole = null;
   let currentCompany = null;
+  let currentLocation = null;
+  let currentAddress = null;
   let currentPeriod = null;
 
   if (currentCareer) {
@@ -130,12 +132,18 @@ export default function AlumniDetail() {
     if (currentCareer.pekerjaan) {
       currentRole = currentCareer.pekerjaan.posisi;
       currentCompany = currentCareer.pekerjaan.perusahaan?.nama || '-';
+      currentLocation = [currentCareer.pekerjaan.kota, currentCareer.pekerjaan.provinsi].filter(Boolean).join(', ');
+      currentAddress = currentCareer.pekerjaan.jalan || null;
     } else if (currentCareer.kuliah) {
       currentRole = currentCareer.kuliah.jenjang ? `Mahasiswa ${currentCareer.kuliah.jenjang}` : 'Mahasiswa';
-      currentCompany = currentCareer.kuliah.universitas?.nama || '-';
+      currentCompany = currentCareer.kuliah.universitas?.nama || currentCareer.kuliah.universitas || '-';
+      currentLocation = [currentCareer.kuliah.kota?.nama || currentCareer.kuliah.kota, currentCareer.kuliah.provinsi?.nama || currentCareer.kuliah.provinsi].filter(Boolean).join(', ');
+      currentAddress = currentCareer.kuliah.alamat || null;
     } else if (currentCareer.wirausaha) {
       currentRole = 'Wirausaha';
       currentCompany = currentCareer.wirausaha.nama_usaha || '-';
+      currentLocation = [currentCareer.wirausaha.kota?.nama || currentCareer.wirausaha.kota, currentCareer.wirausaha.provinsi?.nama || currentCareer.wirausaha.provinsi].filter(Boolean).join(', ');
+      currentAddress = currentCareer.wirausaha.alamat || null;
     }
   }
 
@@ -280,6 +288,18 @@ export default function AlumniDetail() {
                       <span className="text-sm font-bold text-primary">{currentPeriod}</span>
                     </div>
                   )}
+                  {currentLocation && (
+                    <div>
+                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Lokasi</p>
+                      <span className="text-sm font-bold text-primary">{currentLocation}</span>
+                    </div>
+                  )}
+                  {currentAddress && (
+                    <div>
+                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Alamat</p>
+                      <span className="text-sm font-bold text-primary">{currentAddress}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -409,12 +429,14 @@ export default function AlumniDetail() {
                       location = [kota, prov].filter(Boolean).join(', ');
                     } else if (item.kuliah) {
                       title = item.kuliah.jenjang ? `Mahasiswa ${item.kuliah.jenjang}` : (item.status?.nama || 'Kuliah');
-                      subtitle = item.kuliah.universitas?.nama || '';
-                      location = item.kuliah.jurusan_kuliah?.nama || '';
+                      subtitle = item.kuliah.universitas?.nama || item.kuliah.universitas || '';
+                      const lokasiKuliah = [item.kuliah.kota?.nama || item.kuliah.kota, item.kuliah.provinsi?.nama || item.kuliah.provinsi].filter(Boolean).join(', ');
+                      location = [item.kuliah.jurusan_kuliah?.nama || '', lokasiKuliah, item.kuliah.alamat || ''].filter(Boolean).join(' • ');
                     } else if (item.wirausaha) {
                       title = 'Wirausaha';
                       subtitle = item.wirausaha.nama_usaha || '';
-                      location = item.wirausaha.bidang_usaha?.nama || '';
+                      const lokasiUsaha = [item.wirausaha.kota?.nama || item.wirausaha.kota, item.wirausaha.provinsi?.nama || item.wirausaha.provinsi].filter(Boolean).join(', ');
+                      location = [item.wirausaha.bidang_usaha?.nama || item.wirausaha.bidang_usaha || '', lokasiUsaha, item.wirausaha.alamat || ''].filter(Boolean).join(' • ');
                     }
 
                     return (

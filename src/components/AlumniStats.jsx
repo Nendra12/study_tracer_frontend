@@ -1,21 +1,34 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import Stats from "../assets/svg/statistics-bars-graphic-educational-symbol-svgrepo-com.svg"
 import Education from "../assets/svg/education-svgrepo-com.svg"
 import EducationStats from "../assets/svg/education-bag-learning-7-svgrepo-com.svg"
 import Relation from "../assets/svg/users-relation-svgrepo-com.svg"
 import Job from "../assets/svg/looking-for-job-svgrepo-com.svg"
 
-// Komponen angka yang animasi muncul
+// Komponen angka yang animasi muncul (menghitung naik)
 const StatNumber = ({ value, suffix = "" }) => {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, Math.round);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "0px" });
+
+  useEffect(() => {
+    if (isInView) {
+      const animation = animate(count, Number(value) || 0, { duration: 2, ease: "easeOut" });
+      return () => animation.stop();
+    }
+  }, [isInView, value, count]);
+
   return (
     <motion.span
+      ref={ref}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       className="text-3xl lg:text-5xl font-black text-primary tracking-tighter"
     >
-      {value}
+      <motion.span>{rounded}</motion.span>
       {suffix}
     </motion.span>
   );

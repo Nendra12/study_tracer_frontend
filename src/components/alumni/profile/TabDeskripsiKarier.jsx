@@ -151,10 +151,14 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
       return `${item.pekerjaan.posisi || 'Bekerja'} di ${item.pekerjaan.perusahaan?.nama || item.pekerjaan.perusahaan || 'Perusahaan'}`;
     }
     if (item.kuliah) {
-      return `Mahasiswa di ${item.kuliah.universitas?.nama || item.kuliah.universitas || 'Universitas'}`;
+      const univName = item.kuliah.universitas?.nama || item.kuliah.universitas || 'Universitas';
+      const lokasiKuliah = [item.kuliah.kota?.nama || item.kuliah.kota, item.kuliah.provinsi?.nama || item.kuliah.provinsi].filter(Boolean).join(', ');
+      return lokasiKuliah ? `Mahasiswa di ${univName} (${lokasiKuliah})` : `Mahasiswa di ${univName}`;
     }
     if (item.wirausaha) {
-      return `Wirausaha: ${item.wirausaha.nama_usaha || 'Usaha'}`;
+      const namaUsaha = item.wirausaha.nama_usaha || 'Usaha';
+      const lokasiUsaha = [item.wirausaha.kota?.nama || item.wirausaha.kota, item.wirausaha.provinsi?.nama || item.wirausaha.provinsi].filter(Boolean).join(', ');
+      return lokasiUsaha ? `Wirausaha: ${namaUsaha} (${lokasiUsaha})` : `Wirausaha: ${namaUsaha}`;
     }
     return item.status?.nama || 'Status Tidak Diketahui';
   };

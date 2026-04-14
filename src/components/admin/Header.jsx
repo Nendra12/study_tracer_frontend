@@ -11,7 +11,7 @@ export default function Header({ toggleSidebar, user }) {
       text: `Selamat datang kembali, Admin`,
     },
     {
-      path: "/wb-admin/Sebaran-alumni",
+      path: "/wb-admin/sebaran-alumni",
       title: "Sebaran Alumni",
       text: "Pemetaan persebaran alumni yang bekerja, kuliah, dan wirausaha",
     },
