@@ -21,7 +21,6 @@ export default function AlumniLayout() {
   // Session inactivity timeout (5 jam)
   const { showWarning, remainingSeconds, extendSession, dismissWarning } = useInactivityTimeout();
 
-  console.log(userData)
   return (
     // Di file Layout utama Anda
     <div className="min-h-screen font-sans flex flex-col bg-slate-50">

@@ -145,8 +145,6 @@ export default function LandingPage() {
     );
   }
 
-  console.log(alumniList)
-
   return (
     <div className="relative min-h-screen font-sans text-primary/80 overflow-hidden selection:bg-primary selection:text-white">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[25%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
