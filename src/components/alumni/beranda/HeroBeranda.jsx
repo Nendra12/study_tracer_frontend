@@ -11,7 +11,7 @@ export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-white mt-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
           
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 lg:max-w-xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex flex-col items-start text-left  flex-1 lg:max-w-xl">
             <div className="flex items-center gap-3 font-semibold mb-4 bg-white/10 border border-white/20 px-4 py-2 rounded-md backdrop-blur-sm shadow-lg">
               {greeting.icon}
               <span className="text-white text-sm md:text-base tracking-wide">{greeting.text}</span>
