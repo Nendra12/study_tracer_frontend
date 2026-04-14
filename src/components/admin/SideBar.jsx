@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
-  FileText, LogOut, X,
+  FileText, LogOut, X, Map,
   IdCardLanyard, Megaphone, Palette, Handshake
 } from 'lucide-react';
 import DefaultLogo from '../../assets/icon.png';
@@ -18,8 +18,10 @@ export default function SideBar({ active, setActive }) {
   const navigate = useNavigate();
   const location = useLocation()
 
+  // --- TAMBAHAN MENU SEBARAN ALUMNI DI BAWAH BERANDA ---
   const menuItems = [
     { name: 'Beranda', icon: <LayoutDashboard size={20} />, path: '/wb-admin' },
+    { name: 'Sebaran Alumni', icon: <Map size={20} />, path: '/wb-admin/sebaran-alumni' },
     { name: 'Manajemen Pengguna', icon: <Users size={20} />, path: '/wb-admin/manage-user' },
     { name: 'Manajemen Pekerjaan', icon: <Briefcase size={20} />, path: '/wb-admin/jobs' },
     { name: 'Status Karier', icon: <IdCardLanyard size={20} />, path: '/wb-admin/status-karir' },
@@ -46,6 +48,7 @@ export default function SideBar({ active, setActive }) {
 
   const routes = [
     { path: "/wb-admin", title: "Beranda" },
+    { path: "/wb-admin/sebaran-alumni", title: "Sebaran Alumni" }, // Tambahan Route Title
     { path: "/wb-admin/manage-user", title: "Manajemen Pengguna" },
     { path: "/wb-admin/jobs/job-detail/:id", title: "Manajemen Pekerjaan" },
     { path: "/wb-admin/jobs", title: "Manajemen Pekerjaan" },
@@ -114,7 +117,7 @@ export default function SideBar({ active, setActive }) {
           </button>
         </div>
 
-        {/* Menu Items (Jalan Tengah: py-3 dan space-y-1.5) */}
+        {/* Menu Items */}
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
           {menuItems.map((item, index) => {
             const isActive = activeMenu === item.name;
