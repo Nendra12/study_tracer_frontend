@@ -83,6 +83,16 @@ export default function Register() {
         setLoading(false);
         return;
       }
+      if (!formData.universitas.alamat?.trim()) {
+        setError('Alamat universitas wajib diisi.');
+        setLoading(false);
+        return;
+      }
+      if (!formData.universitas.id_kota) {
+        setError('Kota universitas wajib dipilih.');
+        setLoading(false);
+        return;
+      }
       if (!formData.universitas.jalur_masuk) {
         setError('Jalur masuk kuliah wajib dipilih.');
         setLoading(false);
@@ -90,6 +100,29 @@ export default function Register() {
       }
       if (!formData.universitas.jenjang) {
         setError('Jenjang kuliah wajib dipilih.');
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (formData.wirausaha) {
+      if (!formData.wirausaha.id_bidang) {
+        setError('Bidang usaha wajib dipilih.');
+        setLoading(false);
+        return;
+      }
+      if (!formData.wirausaha.nama_usaha?.trim()) {
+        setError('Nama usaha wajib diisi.');
+        setLoading(false);
+        return;
+      }
+      if (!formData.wirausaha.alamat?.trim()) {
+        setError('Alamat usaha wajib diisi.');
+        setLoading(false);
+        return;
+      }
+      if (!formData.wirausaha.id_kota) {
+        setError('Kota usaha wajib dipilih.');
         setLoading(false);
         return;
       }
@@ -147,6 +180,8 @@ export default function Register() {
         }
         if (formData.universitas) {
           fd.append('universitas[nama_universitas]', formData.universitas.nama_universitas);
+          fd.append('universitas[alamat]', formData.universitas.alamat || '');
+          fd.append('universitas[id_kota]', formData.universitas.id_kota || '');
           fd.append('universitas[id_jurusanKuliah]', formData.universitas.id_jurusan_kuliah);
           fd.append('universitas[jalur_masuk]', formData.universitas.jalur_masuk);
           fd.append('universitas[jenjang]', formData.universitas.jenjang);
@@ -154,6 +189,8 @@ export default function Register() {
         if (formData.wirausaha) {
           if (formData.wirausaha.id_bidang) fd.append('wirausaha[id_bidang]', formData.wirausaha.id_bidang);
           fd.append('wirausaha[nama_usaha]', formData.wirausaha.nama_usaha);
+          fd.append('wirausaha[alamat]', formData.wirausaha.alamat || '');
+          fd.append('wirausaha[id_kota]', formData.wirausaha.id_kota || '');
         }
       }
 
