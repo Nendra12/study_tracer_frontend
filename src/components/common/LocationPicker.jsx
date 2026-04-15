@@ -22,18 +22,31 @@ function MapClickHandler({ onLocationSelect }) {
   return null;
 }
 
-function RecenterMap({ lat, lng }) {
+function RecenterMap({ lat, lng, zoom }) {
   const map = useMap();
 
   useEffect(() => {
     if (typeof lat === 'number' && typeof lng === 'number') {
-      map.setView([lat, lng], 16, { animate: true });
+      map.setView([lat, lng], zoom || 16, { animate: true });
     }
-  }, [lat, lng, map]);
+  }, [lat, lng, zoom, map]);
 
   return null;
 }
 
+/**
+ * LocationPicker - Shopee-style map picker with optional city auto-zoom.
+ *
+ * Props:
+ * - isOpen: boolean
+ * - onClose: () => void
+ * - onConfirm: ({ latitude, longitude, address }) => void
+ * - initialLat: number (default: -7.25)
+ * - initialLng: number (default: 112.75)
+ * - title: string
+ * - selectedKota: string (optional) — kota name, if set map auto-zooms to city
+ * - selectedProvinsi: string (optional) — provinsi name, used together with kota for zoom
+ */
 export default function LocationPicker({
   isOpen,
   onClose,
@@ -41,36 +54,69 @@ export default function LocationPicker({
   initialLat = -7.25,
   initialLng = 112.75,
   title = 'Pilih Lokasi',
+  selectedKota = '',
+  selectedProvinsi = '',
 }) {
   const mapRef = useRef(null);
   const [position, setPosition] = useState({ lat: initialLat, lng: initialLng });
+  const [recenterTarget, setRecenterTarget] = useState({ lat: initialLat, lng: initialLng, zoom: 13 });
   const [address, setAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isReversing, setIsReversing] = useState(false);
   const searchTimeout = useRef(null);
+  const hasAutoZoomed = useRef(false);
 
+  // Auto-zoom to kota when modal opens and kota is selected
   useEffect(() => {
-    if (isOpen) {
-      setPosition({ lat: initialLat, lng: initialLng });
-      setAddress('');
-      setSearchQuery('');
-      setSearchResults([]);
-
-      // Force Leaflet to recalculate dimensions after modal mount/animation.
-      // Use multiple staggered calls to handle different browser/animation timings.
-      const timers = [150, 300, 500].map((delay) =>
-        window.setTimeout(() => {
-          if (mapRef.current) {
-            mapRef.current.invalidateSize();
-          }
-        }, delay)
-      );
-
-      return () => timers.forEach((t) => window.clearTimeout(t));
+    if (!isOpen) {
+      hasAutoZoomed.current = false;
+      return;
     }
-  }, [isOpen, initialLat, initialLng]);
+
+    // Reset state
+    setAddress('');
+    setSearchQuery('');
+    setSearchResults([]);
+
+    // If kota is provided, geocode the city and zoom there
+    if (selectedKota && !hasAutoZoomed.current) {
+      hasAutoZoomed.current = true;
+      const query = [selectedKota, selectedProvinsi, 'Indonesia'].filter(Boolean).join(', ');
+
+      api.get('/geocode/search', { params: { q: query, limit: 1 } })
+        .then((res) => {
+          if (res.data?.success && res.data.data?.length > 0) {
+            const result = res.data.data[0];
+            setPosition({ lat: result.latitude, lng: result.longitude });
+            setRecenterTarget({ lat: result.latitude, lng: result.longitude, zoom: 13 });
+            setAddress(result.display_name || '');
+          } else {
+            setPosition({ lat: initialLat, lng: initialLng });
+            setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
+          }
+        })
+        .catch(() => {
+          setPosition({ lat: initialLat, lng: initialLng });
+          setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
+        });
+    } else if (!selectedKota) {
+      setPosition({ lat: initialLat, lng: initialLng });
+      setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
+    }
+
+    // Force Leaflet to recalculate dimensions after modal mount/animation.
+    const timers = [150, 300, 500].map((delay) =>
+      window.setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, delay)
+    );
+
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [isOpen, selectedKota, selectedProvinsi, initialLat, initialLng]);
 
   const reverseGeocode = useCallback(async (lat, lng) => {
     setIsReversing(true);
@@ -89,6 +135,7 @@ export default function LocationPicker({
 
   const handleLocationSelect = useCallback((lat, lng) => {
     setPosition({ lat, lng });
+    // Don't auto-recenter on click, just move marker
     reverseGeocode(lat, lng);
   }, [reverseGeocode]);
 
@@ -121,6 +168,7 @@ export default function LocationPicker({
 
   const handleSelectResult = (result) => {
     setPosition({ lat: result.latitude, lng: result.longitude });
+    setRecenterTarget({ lat: result.latitude, lng: result.longitude, zoom: 16 });
     setAddress(result.display_name || '');
     setSearchResults([]);
     setSearchQuery('');
@@ -135,6 +183,7 @@ export default function LocationPicker({
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setPosition({ lat: latitude, lng: longitude });
+        setRecenterTarget({ lat: latitude, lng: longitude, zoom: 16 });
         reverseGeocode(latitude, longitude);
       },
       (err) => {
@@ -170,7 +219,15 @@ export default function LocationPicker({
           </button>
         </div>
 
-        <div className="relative px-5 pt-4">
+        {/* Info: auto-zoom ke kota */}
+        {selectedKota && (
+          <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
+            <MapPin size={12} />
+            Peta sudah di-zoom ke <strong>{selectedKota}</strong>. Klik untuk pilih titik yang lebih akurat.
+          </div>
+        )}
+
+        <div className="relative px-5 pt-3">
           <div className="flex items-center rounded-xl border bg-gray-50 px-3 py-2">
             <Search size={18} className="mr-2 text-gray-400" />
             <input
@@ -201,8 +258,8 @@ export default function LocationPicker({
 
         <div className="m-5 overflow-hidden rounded-xl border" style={{ height: '350px' }}>
           <MapContainer
-            center={[position.lat, position.lng]}
-            zoom={13}
+            center={[recenterTarget.lat, recenterTarget.lng]}
+            zoom={recenterTarget.zoom}
             style={{ height: '100%', width: '100%' }}
             whenReady={(event) => {
               mapRef.current = event.target;
@@ -224,7 +281,7 @@ export default function LocationPicker({
               }}
             />
             <MapClickHandler onLocationSelect={handleLocationSelect} />
-            <RecenterMap lat={position.lat} lng={position.lng} />
+            <RecenterMap lat={recenterTarget.lat} lng={recenterTarget.lng} zoom={recenterTarget.zoom} />
           </MapContainer>
         </div>
 
