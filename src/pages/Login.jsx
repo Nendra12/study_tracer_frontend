@@ -125,9 +125,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen w-full bg-fourtd flex items-center justify-center p-4">
-      
+
       <div className="flex flex-col lg:flex-row w-full max-w-4xl xl:max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        
+
         {/* Bagian Kiri: Banner Gambar */}
         <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-6 xl:p-8 overflow-hidden">
           <img
@@ -136,7 +136,7 @@ export default function Login() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/40"></div>
-          
+
           <div className="relative z-10">
             <Link
               to="/"
@@ -166,7 +166,7 @@ export default function Login() {
         {/* PERUBAHAN: Mengurangi padding vertikal (lg:py-4) agar lebih memadat ke atas */}
         <div className="w-full lg:w-1/2 p-5 sm:p-8 lg:px-8 lg:py-4 xl:py-6 flex flex-col justify-center bg-white">
           <div className="max-w-md mx-auto w-full">
-            
+
             {/* Header Mobile */}
             <div className="flex items-center gap-2.5 mb-4 lg:hidden">
               <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
@@ -191,23 +191,33 @@ export default function Login() {
             </p>
 
             {/* Session Expired Warning */}
-            {sessionExpiredMsg && (
-              <div className="mb-3 lg:mb-2.5 p-3 lg:p-2 bg-amber-50 border border-amber-200 rounded-xl lg:rounded-lg flex items-start gap-2">
-                <Clock size={16} className="text-amber-500 shrink-0 mt-0.5 lg:mt-0" />
-                <div>
-                  <p className="text-xs font-bold text-amber-800">Sesi Berakhir</p>
-                  <p className="text-[10px] text-amber-600 mt-0.5 font-medium">{sessionExpiredMsg}</p>
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${sessionExpiredMsg ? "grid-rows-[1fr] opacity-100 mb-3 lg:mb-2.5" : "grid-rows-[0fr] opacity-0 m-0"
+                }`}
+            >
+              <div className="overflow-hidden">
+                <div className="p-3 lg:p-2 bg-amber-50 border border-amber-200 rounded-xl lg:rounded-lg flex items-start gap-2">
+                  <Clock size={16} className="text-amber-500 shrink-0 mt-0.5 lg:mt-0" />
+                  <div>
+                    <p className="text-xs font-bold text-amber-800">Sesi Berakhir</p>
+                    <p className="text-[10px] text-amber-600 mt-0.5 font-medium">{sessionExpiredMsg}</p>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Error Message */}
-            {error && (
-              <div className="mb-3 lg:mb-2.5 p-3 lg:p-2 bg-red-50 border border-red-200 rounded-xl lg:rounded-lg text-red-600 text-xs sm:text-sm lg:text-xs font-medium flex items-start gap-2">
-                <AlertCircle size={16} className="shrink-0 mt-0.5 lg:mt-0" />
-                <span>{error}</span>
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${error ? "grid-rows-[1fr] opacity-100 mb-3 lg:mb-2.5" : "grid-rows-[0fr] opacity-0 m-0"
+                }`}
+            >
+              <div className="overflow-hidden">
+                <div className="p-3 lg:p-2 bg-red-50 border border-red-200 rounded-xl lg:rounded-lg text-red-600 text-xs sm:text-sm lg:text-xs font-medium flex items-start gap-2">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 lg:mt-0" />
+                  <span>{error}</span>
+                </div>
               </div>
-            )}
+            </div>
 
             {/* Form - PERUBAHAN: space-y dirapatkan menjadi space-y-3 lg:space-y-2 */}
             <form className="space-y-3 lg:space-y-2" onSubmit={handleSubmit}>
@@ -262,7 +272,7 @@ export default function Login() {
                 </label>
                 {/* PERUBAHAN: Padding dan gap dirapatkan */}
                 <div className="rounded-xl lg:rounded-lg border border-gray-200 bg-gray-50 p-2.5 sm:p-3 lg:p-2 space-y-2">
-                  
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     {/* PERUBAHAN: Tinggi gambar captcha dikurangi h-10 lg:h-9 */}
                     <div className="h-10 lg:h-9 w-full sm:w-[150px] lg:w-[130px] rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
