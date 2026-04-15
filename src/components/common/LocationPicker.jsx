@@ -42,6 +42,7 @@ export default function LocationPicker({
   initialLng = 112.75,
   title = 'Pilih Lokasi',
 }) {
+  const mapRef = useRef(null);
   const [position, setPosition] = useState({ lat: initialLat, lng: initialLng });
   const [address, setAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,6 +57,18 @@ export default function LocationPicker({
       setAddress('');
       setSearchQuery('');
       setSearchResults([]);
+
+      // Force Leaflet to recalculate dimensions after modal mount/animation.
+      // Use multiple staggered calls to handle different browser/animation timings.
+      const timers = [150, 300, 500].map((delay) =>
+        window.setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        }, delay)
+      );
+
+      return () => timers.forEach((t) => window.clearTimeout(t));
     }
   }, [isOpen, initialLat, initialLng]);
 
@@ -186,8 +199,16 @@ export default function LocationPicker({
           )}
         </div>
 
-        <div className="m-5 min-h-[350px] flex-1 overflow-hidden rounded-xl border">
-          <MapContainer center={[position.lat, position.lng]} zoom={13} style={{ height: '100%', width: '100%' }}>
+        <div className="m-5 overflow-hidden rounded-xl border" style={{ height: '350px' }}>
+          <MapContainer
+            center={[position.lat, position.lng]}
+            zoom={13}
+            style={{ height: '100%', width: '100%' }}
+            whenReady={(event) => {
+              mapRef.current = event.target;
+              event.target.invalidateSize();
+            }}
+          >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
