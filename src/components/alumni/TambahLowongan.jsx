@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check } from 'lucide-react';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check,MapPin} from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
-import { toastWarning, alertSuccess, alertError } from '../../utilitis/alert';
+import LocationPicker from '../../components/common/LocationPicker';
+import { toastWarning } from '../../utilitis/alert';
 
 export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
   const { isAdmin } = useAuth();
@@ -28,6 +29,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     foto: null,
     id_provinsi: '',
     id_kota: '',
+    latitude_perusahaan: null,
+    longitude_perusahaan: null,
     jam_mulai: '',
     jam_berakhir: '',
   });
@@ -55,6 +58,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
   const [creatingSkill, setCreatingSkill] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const skillDropdownRef = useRef(null);
 
   // Set Minimum Date + Click outside handler
@@ -142,8 +146,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         tipe_pekerjaan: editJob.tipe_pekerjaan || '',
         lokasi: editJob.lokasi || '',
         foto: null,
-        id_provinsi: provinceId,
-        id_kota: cityId,
+        id_provinsi: editJob.id_provinsi ? String(editJob.id_provinsi) : '',
+        id_kota: editJob.id_kota ? String(editJob.id_kota) : '',
+        latitude_perusahaan: editJob.latitude_perusahaan ?? editJob.perusahaan?.latitude ?? null,
+        longitude_perusahaan: editJob.longitude_perusahaan ?? editJob.perusahaan?.longitude ?? null,
         jam_mulai: formatTime(editJob.jam_mulai),
         jam_berakhir: formatTime(editJob.jam_berakhir),
       });
@@ -160,6 +166,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
         id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+        latitude_perusahaan: null, longitude_perusahaan: null,
         jam_mulai: '', jam_berakhir: '',
       });
       setSelectedSkills([]);
@@ -246,7 +253,24 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'perusahaan') {
+      const matched = perusahaanMaster.find((p) => {
+        const nama = p.nama || p.nama_perusahaan || '';
+        return nama.toLowerCase() === value.trim().toLowerCase();
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        perusahaan: value,
+        id_perusahaan: matched ? String(matched.id) : '',
+        alamat_perusahaan: matched ? (matched.jalan || prev.alamat_perusahaan) : prev.alamat_perusahaan,
+        latitude_perusahaan: matched ? (matched.latitude ?? null) : prev.latitude_perusahaan,
+        longitude_perusahaan: matched ? (matched.longitude ?? null) : prev.longitude_perusahaan,
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
   };
 
@@ -304,6 +328,12 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         fd.append('nama_perusahaan', formData.perusahaan);
         fd.append('alamat_perusahaan', formData.alamat_perusahaan || '');
         fd.append('id_kota', formData.id_kota || '');
+        if (formData.latitude_perusahaan !== null && formData.latitude_perusahaan !== undefined) {
+          fd.append('latitude_perusahaan', formData.latitude_perusahaan);
+        }
+        if (formData.longitude_perusahaan !== null && formData.longitude_perusahaan !== undefined) {
+          fd.append('longitude_perusahaan', formData.longitude_perusahaan);
+        }
       }
       fd.append('deskripsi', formData.deskripsi);
       fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
@@ -545,49 +575,24 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                     name="alamat_perusahaan"
                     value={formData.alamat_perusahaan}
                     onChange={handleInputChange}
-                    placeholder="Jl. Kebumen No.16 , Kabupaten Malang, Jawa Timur"
-                    className={inputClass(errors.alamat_perusahaan)}
+                    placeholder="Masukkan alamat lengkap perusahaan"
+                    className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.alamat_perusahaan ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`}
                   />
-                  {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:bg-primary/80 cursor-pointer"
+                  >
+                    <MapPin size={14} />
+                    Pilih di Peta
+                  </button>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[25]">
-                  <div className={`z-[50] ${dropdownWrapperClass}`}>
-                    <SmoothDropdown
-                      label={<>Provinsi <span className="text-red-500">*</span></>}
-                      isSearchable={true}
-                      placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
-                      options={provinsiList.map(p => p.nama)}
-                      value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
-                      onSelect={(namaProv) => {
-                        const prov = provinsiList.find(p => p.nama === namaProv);
-                        if (prov) {
-                          setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
-                          if (errors.id_provinsi) setErrors(prev => ({ ...prev, id_provinsi: undefined }));
-                        }
-                      }}
-                    />
-                    {errors.id_provinsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_provinsi}</p>}
-                  </div>
-
-                  <div className={`z-[40] ${dropdownWrapperClass}`}>
-                    <SmoothDropdown
-                      label={<>Kota <span className="text-red-500">*</span></>}
-                      isSearchable={true}
-                      placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
-                      options={kotaList.map(k => k.nama)}
-                      value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
-                      onSelect={(namaKota) => {
-                        const kota = kotaList.find(k => k.nama === namaKota);
-                        if (kota) {
-                          setFormData({ ...formData, id_kota: String(kota.id) });
-                          if (errors.id_kota) setErrors(prev => ({ ...prev, id_kota: undefined }));
-                        }
-                      }}
-                    />
-                    {errors.id_kota && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>}
-                  </div>
-                </div>
+                {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
+                  <p className="mt-1 text-xs text-emerald-600">
+                    Koordinat tersimpan: {Number(formData.latitude_perusahaan).toFixed(5)}, {Number(formData.longitude_perusahaan).toFixed(5)}
+                  </p>
+                )}
+                {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
               </div>
             )}
 
@@ -682,6 +687,25 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
           </button>
         </div>
       </div>
+
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setFormData((prev) => ({
+            ...prev,
+            alamat_perusahaan: address || prev.alamat_perusahaan,
+            latitude_perusahaan: latitude,
+            longitude_perusahaan: longitude,
+          }));
+          if (errors.alamat_perusahaan) {
+            setErrors((prev) => ({ ...prev, alamat_perusahaan: undefined }));
+          }
+        }}
+        initialLat={typeof formData.latitude_perusahaan === 'number' ? formData.latitude_perusahaan : -7.25}
+        initialLng={typeof formData.longitude_perusahaan === 'number' ? formData.longitude_perusahaan : 112.75}
+        title="Pilih Lokasi Perusahaan"
+      />
     </div>
   );
 }

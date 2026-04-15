@@ -259,6 +259,60 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     filter: opacity(1);
 }
 
+/* Leaflet map fixes for global CSS resets (e.g., Tailwind preflight). */
+.leaflet-container {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.leaflet-container img,
+.leaflet-container svg {
+    max-width: none !important;
+    max-height: none !important;
+}
+
+/* Fix Leaflet tile images broken by Tailwind v4 preflight */
+.leaflet-tile,
+.leaflet-tile-pane img {
+    max-width: none !important;
+    max-height: none !important;
+    width: 256px !important;
+    height: 256px !important;
+    border: none !important;
+}
+
+.leaflet-pane {
+    z-index: 400;
+}
+
+.leaflet-tile-pane {
+    z-index: 200;
+}
+
+.leaflet-overlay-pane {
+    z-index: 400;
+}
+
+.leaflet-marker-pane {
+    z-index: 600;
+}
+
+.leaflet-control-container {
+    z-index: 800;
+}
+
+/* Fix control buttons broken by Tailwind reset */
+.leaflet-control-zoom a,
+.leaflet-control a {
+    all: revert;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
+}
+
 input[type="time"]:focus {
     outline: none;
     border-color: #3c5759;

@@ -182,6 +182,12 @@ export default function Register() {
           fd.append('universitas[nama_universitas]', formData.universitas.nama_universitas);
           fd.append('universitas[alamat]', formData.universitas.alamat || '');
           fd.append('universitas[id_kota]', formData.universitas.id_kota || '');
+          if (formData.universitas.latitude !== null && formData.universitas.latitude !== undefined) {
+            fd.append('universitas[latitude]', formData.universitas.latitude);
+          }
+          if (formData.universitas.longitude !== null && formData.universitas.longitude !== undefined) {
+            fd.append('universitas[longitude]', formData.universitas.longitude);
+          }
           fd.append('universitas[id_jurusanKuliah]', formData.universitas.id_jurusan_kuliah);
           fd.append('universitas[jalur_masuk]', formData.universitas.jalur_masuk);
           fd.append('universitas[jenjang]', formData.universitas.jenjang);
@@ -191,6 +197,12 @@ export default function Register() {
           fd.append('wirausaha[nama_usaha]', formData.wirausaha.nama_usaha);
           fd.append('wirausaha[alamat]', formData.wirausaha.alamat || '');
           fd.append('wirausaha[id_kota]', formData.wirausaha.id_kota || '');
+          if (formData.wirausaha.latitude !== null && formData.wirausaha.latitude !== undefined) {
+            fd.append('wirausaha[latitude]', formData.wirausaha.latitude);
+          }
+          if (formData.wirausaha.longitude !== null && formData.wirausaha.longitude !== undefined) {
+            fd.append('wirausaha[longitude]', formData.wirausaha.longitude);
+          }
         }
       }
 
