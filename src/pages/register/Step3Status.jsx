@@ -37,10 +37,12 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [loadingKota, setLoadingKota] = useState(false);
   const [showUniMap, setShowUniMap] = useState(false);
   const [showUsahaMap, setShowUsahaMap] = useState(false);
+  const [showBekerjaMap, setShowBekerjaMap] = useState(false);
 
   // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { 
     posisi: '', nama_perusahaan: '', id_provinsi: '', id_kota: '', jalan: '', 
+    latitude: null, longitude: null,
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
 
@@ -378,6 +380,32 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     }}
                   />
                 </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Perusahaan</label>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      value={pekerjaan.jalan || ''}
+                      onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
+                      className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                      placeholder="Masukkan jalan, no gedung, dll."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowBekerjaMap(true)}
+                      className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
+                    >
+                      <MapPin size={14} />
+                      Pilih di Peta
+                    </button>
+                  </div>
+                  {pekerjaan.latitude !== null && pekerjaan.longitude !== null && (
+                    <p className="text-xs text-emerald-600">
+                      Koordinat: {Number(pekerjaan.latitude).toFixed(5)}, {Number(pekerjaan.longitude).toFixed(5)}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -704,6 +732,24 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       </div>
 
       <LocationPicker
+        isOpen={showBekerjaMap}
+        onClose={() => setShowBekerjaMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setPekerjaan((prev) => ({
+            ...prev,
+            jalan: address || prev.jalan,
+            latitude,
+            longitude,
+          }));
+        }}
+        initialLat={typeof pekerjaan.latitude === 'number' ? pekerjaan.latitude : -7.25}
+        initialLng={typeof pekerjaan.longitude === 'number' ? pekerjaan.longitude : 112.75}
+        selectedKota={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ''}
+        title="Pilih Lokasi Perusahaan"
+      />
+
+      <LocationPicker
         isOpen={showUniMap}
         onClose={() => setShowUniMap(false)}
         onConfirm={({ latitude, longitude, address }) => {
@@ -716,6 +762,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         }}
         initialLat={typeof universitas.latitude === 'number' ? universitas.latitude : -7.25}
         initialLng={typeof universitas.longitude === 'number' ? universitas.longitude : 112.75}
+        selectedKota={kotaList.find(k => String(k.id) === String(universitas.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
         title="Pilih Lokasi Universitas"
       />
 
@@ -732,6 +780,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         }}
         initialLat={typeof wirausaha.latitude === 'number' ? wirausaha.latitude : -7.25}
         initialLng={typeof wirausaha.longitude === 'number' ? wirausaha.longitude : 112.75}
+        selectedKota={kotaList.find(k => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
         title="Pilih Lokasi Usaha"
       />
 
