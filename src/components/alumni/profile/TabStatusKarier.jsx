@@ -26,6 +26,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const [loadingKotaUsaha, setLoadingKotaUsaha] = useState(false);
   const [showUniMap, setShowUniMap] = useState(false);
   const [showUsahaMap, setShowUsahaMap] = useState(false);
+  const [showBekerjaMap, setShowBekerjaMap] = useState(false);
 
   // Autocomplete Options
   const [posisiOptions, setPosisiOptions] = useState([]);
@@ -36,7 +37,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
   const [form, setForm] = useState({
     id_status: '', tahun_mulai: '', tahun_selesai: '',
-    posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '',
+    posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '', latitude_perusahaan: null, longitude_perusahaan: null,
     nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', alamat_universitas: '', id_kota_universitas: '', id_provinsi_universitas: '', latitude_universitas: null, longitude_universitas: null,
     id_bidang: '', nama_usaha: '', alamat_usaha: '', id_kota_usaha: '', id_provinsi_usaha: '', latitude_usaha: null, longitude_usaha: null
   });
@@ -147,7 +148,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     setShowForm(true);
     setForm({
       id_status: '', tahun_mulai: '', tahun_selesai: '',
-      posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '',
+      posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '', latitude_perusahaan: null, longitude_perusahaan: null,
       nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', alamat_universitas: '', id_kota_universitas: '', id_provinsi_universitas: '', latitude_universitas: null, longitude_universitas: null,
       id_bidang: '', nama_usaha: '', alamat_usaha: '', id_kota_usaha: '', id_provinsi_usaha: '', latitude_usaha: null, longitude_usaha: null
     });
@@ -187,7 +188,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
       const isBelum = statusName.includes('belum');
       if (!isBelum && (statusName.includes('kerja') || statusName.includes('bekerja'))) {
-        payload.pekerjaan = { posisi: form.posisi, nama_perusahaan: form.nama_perusahaan, id_kota: form.id_kota, jalan: form.jalan };
+        payload.pekerjaan = { posisi: form.posisi, nama_perusahaan: form.nama_perusahaan, id_kota: form.id_kota, jalan: form.jalan, latitude: form.latitude_perusahaan, longitude: form.longitude_perusahaan };
       } else if (statusName.includes('kuliah')) {
         payload.universitas = {
           nama_universitas: form.nama_universitas,
@@ -551,7 +552,22 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
                 <div className="sm:col-span-2">
                   <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Alamat / Jalan <span className="normal-case font-medium text-slate-400">(opsional)</span></label>
-                  <input type="text" placeholder="Contoh: Jl. Sudirman No. 123" value={form.jalan} onChange={(e) => setForm(prev => ({ ...prev, jalan: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input type="text" placeholder="Contoh: Jl. Sudirman No. 123" value={form.jalan} onChange={(e) => setForm(prev => ({ ...prev, jalan: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                    <button
+                      type="button"
+                      onClick={() => setShowBekerjaMap(true)}
+                      className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:bg-[#2A3E3F] cursor-pointer"
+                    >
+                      <MapPin size={14} />
+                      Pilih di Peta
+                    </button>
+                  </div>
+                  {form.latitude_perusahaan !== null && form.longitude_perusahaan !== null && (
+                    <p className="mt-1 text-xs text-emerald-600">
+                      Koordinat: {Number(form.latitude_perusahaan).toFixed(5)}, {Number(form.longitude_perusahaan).toFixed(5)}
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -754,6 +770,24 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       )}
 
       <LocationPicker
+        isOpen={showBekerjaMap}
+        onClose={() => setShowBekerjaMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setForm((prev) => ({
+            ...prev,
+            jalan: address || prev.jalan,
+            latitude_perusahaan: latitude,
+            longitude_perusahaan: longitude,
+          }));
+        }}
+        initialLat={typeof form.latitude_perusahaan === 'number' ? form.latitude_perusahaan : -7.25}
+        initialLng={typeof form.longitude_perusahaan === 'number' ? form.longitude_perusahaan : 112.75}
+        selectedKota={kotaPekerjaanList.find(k => String(k.id) === String(form.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(form.id_provinsi))?.nama || ''}
+        title="Pilih Lokasi Perusahaan"
+      />
+
+      <LocationPicker
         isOpen={showUniMap}
         onClose={() => setShowUniMap(false)}
         onConfirm={({ latitude, longitude, address }) => {
@@ -766,6 +800,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         }}
         initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25}
         initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75}
+        selectedKota={kotaKuliahList.find(k => String(k.id) === String(form.id_kota_universitas))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(form.id_provinsi_universitas))?.nama || ''}
         title="Pilih Lokasi Universitas"
       />
 
@@ -782,6 +818,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         }}
         initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25}
         initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75}
+        selectedKota={kotaUsahaList.find(k => String(k.id) === String(form.id_kota_usaha))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(form.id_provinsi_usaha))?.nama || ''}
         title="Pilih Lokasi Usaha"
       />
 
