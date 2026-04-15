@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck } from 'lucide-react';
+import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck, MapPin } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
 import UniversitySelector from '../../components/UniversitasSelector';
+import LocationPicker from '../../components/common/LocationPicker';
 import { masterDataApi } from '../../api/masterData';
 import { authApi } from '../../api/auth';
 
@@ -33,6 +34,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [kotaList, setKotaList] = useState([]);
   const [loadingProvinsi, setLoadingProvinsi] = useState(false);
   const [loadingKota, setLoadingKota] = useState(false);
+  const [showUniMap, setShowUniMap] = useState(false);
+  const [showUsahaMap, setShowUsahaMap] = useState(false);
 
   // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { 
@@ -42,11 +45,13 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
   const [universitas, setUniversitas] = useState(formData.universitas || { 
     nama_universitas: '', alamat: '', id_provinsi: '', id_kota: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '', 
+    latitude: null, longitude: null,
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
 
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { 
     id_bidang: '', nama_usaha: '', alamat: '', id_provinsi: '', id_kota: '',
+    latitude: null, longitude: null,
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
   
@@ -426,13 +431,28 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="md:col-span-2 space-y-1">
               <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas *</label>
-              <input
-                type="text"
-                value={universitas.alamat}
-                onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
-                className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                placeholder="Masukkan alamat universitas"
-              />
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="text"
+                  value={universitas.alamat}
+                  onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
+                  className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                  placeholder="Masukkan alamat universitas"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowUniMap(true)}
+                  className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
+                >
+                  <MapPin size={14} />
+                  Pilih di Peta
+                </button>
+              </div>
+              {universitas.latitude !== null && universitas.longitude !== null && (
+                <p className="text-xs text-emerald-600">
+                  Koordinat: {Number(universitas.latitude).toFixed(5)}, {Number(universitas.longitude).toFixed(5)}
+                </p>
+              )}
             </div>
 
             {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
@@ -498,13 +518,28 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="md:col-span-2 space-y-1">
               <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha *</label>
-              <input
-                type="text"
-                value={wirausaha.alamat}
-                onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
-                className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                placeholder="Masukkan alamat usaha"
-              />
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="text"
+                  value={wirausaha.alamat}
+                  onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
+                  className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                  placeholder="Masukkan alamat usaha"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowUsahaMap(true)}
+                  className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
+                >
+                  <MapPin size={14} />
+                  Pilih di Peta
+                </button>
+              </div>
+              {wirausaha.latitude !== null && wirausaha.longitude !== null && (
+                <p className="text-xs text-emerald-600">
+                  Koordinat: {Number(wirausaha.latitude).toFixed(5)}, {Number(wirausaha.longitude).toFixed(5)}
+                </p>
+              )}
             </div>
 
             {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
@@ -548,6 +583,38 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           </button>
         </div>
       </div>
+
+      <LocationPicker
+        isOpen={showUniMap}
+        onClose={() => setShowUniMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setUniversitas((prev) => ({
+            ...prev,
+            alamat: address || prev.alamat,
+            latitude,
+            longitude,
+          }));
+        }}
+        initialLat={typeof universitas.latitude === 'number' ? universitas.latitude : -7.25}
+        initialLng={typeof universitas.longitude === 'number' ? universitas.longitude : 112.75}
+        title="Pilih Lokasi Universitas"
+      />
+
+      <LocationPicker
+        isOpen={showUsahaMap}
+        onClose={() => setShowUsahaMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setWirausaha((prev) => ({
+            ...prev,
+            alamat: address || prev.alamat,
+            latitude,
+            longitude,
+          }));
+        }}
+        initialLat={typeof wirausaha.latitude === 'number' ? wirausaha.latitude : -7.25}
+        initialLng={typeof wirausaha.longitude === 'number' ? wirausaha.longitude : 112.75}
+        title="Pilih Lokasi Usaha"
+      />
 
       {/* Modal CAPTCHA */}
       {showCaptchaModal && (
