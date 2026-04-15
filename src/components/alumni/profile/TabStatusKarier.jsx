@@ -10,7 +10,6 @@ import { toastError, toastWarning } from '../../../utilitis/alert';
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [pendingAlert, setPendingAlert] = useState(false);
   const [editingEndDate, setEditingEndDate] = useState(false);
   const [endDateValue, setEndDateValue] = useState('');
 
@@ -114,7 +113,13 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     }
   }
 
+  const hasPendingCareer = !!profile?.has_pending_career;
+
   function handleOpenForm() {
+    if (hasPendingCareer) {
+      toastWarning('Anda masih memiliki status karir yang menunggu persetujuan admin. Harap tunggu hingga disetujui sebelum menambahkan status baru.');
+      return;
+    }
     if (career && !career.tahun_selesai && career.status != 'Belum Bekerja') {
       toastWarning('Anda harus mengisi tanggal berakhir pada karir saat ini terlebih dahulu sebelum menambahkan status karir baru.');
       return;
@@ -147,7 +152,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
       await alumniApi.updateCareerStatus(payload);
       setShowForm(false);
-      setPendingAlert(true);
       onShowSuccess('Status karier berhasil dikirim, menunggu verifikasi admin');
       onRefresh();
     } catch (err) {
@@ -275,17 +279,25 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           <div className="relative group">
             <button
               onClick={handleOpenForm}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${!isVerified || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${!isVerified || hasPendingCareer || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white cursor-pointer'
                 }`}
-              disabled={!isVerified || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')}
-              title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
+              disabled={!isVerified || hasPendingCareer || (career && !career.tahun_selesai && career.status != 'Belum Bekerja')}
+              title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : hasPendingCareer ? 'Menunggu persetujuan admin' : ''}
             >
-              {!isVerified ? <Lock size={14} /> : <Plus size={14} />}
-              <span className='hidden md:block'>{!isVerified ? 'Terkunci' : 'Tambahkan status baru'}</span>
+              {!isVerified ? <Lock size={14} /> : hasPendingCareer ? <Clock size={14} /> : <Plus size={14} />}
+              <span className='hidden md:block'>{!isVerified ? 'Terkunci' : hasPendingCareer ? 'Menunggu Approval' : 'Tambahkan status baru'}</span>
             </button>
-            {career && !career.tahun_selesai && career.status != 'Belum Bekerja' && (
+            {hasPendingCareer && (
+              <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-64 bg-amber-700 text-white text-xs p-3 rounded-lg shadow-lg z-10">
+                <div className="flex items-start gap-2">
+                  <Clock size={14} className="shrink-0 mt-0.5" />
+                  <p>Status karir sebelumnya masih menunggu persetujuan admin. Anda tidak dapat menambahkan status baru sampai disetujui.</p>
+                </div>
+              </div>
+            )}
+            {!hasPendingCareer && career && !career.tahun_selesai && career.status != 'Belum Bekerja' && (
               <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10">
                 <div className="flex items-start gap-2">
                   <AlertCircle size={14} className="shrink-0 mt-0.5" />
@@ -297,6 +309,32 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         )}
       </div>
 
+      {hasPendingCareer && (
+        <div className="mb-4 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-300">
+          <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin.
+              Status akan diperbarui setelah disetujui. Anda tidak dapat menambahkan status karir baru selama menunggu persetujuan.
+            </p>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-green-500" />
+                <span className="text-[11px] font-bold text-green-700">Data Terkirim</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock size={14} className="text-amber-500" />
+                <span className="text-[11px] font-bold text-amber-700">Menunggu Review Admin</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <AlertCircle size={14} className="text-slate-300" />
+                <span className="text-[11px] font-bold text-slate-400">Disetujui</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Form Tambah Status */}
       {showForm && (
         <div className="relative z-50 mb-6 border-t py-5 animate-in slide-in-from-top duration-300">
@@ -599,69 +637,12 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         </div>
       )}
 
-      {/* Show pending alert even when no riwayat exists */}
-      {pendingAlert && riwayat.length === 0 && (
-        <div className="mt-6 mb-4 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-300">
-          <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
-            <p className="text-xs text-amber-700/80 font-medium">
-              Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin.
-              Status akan diperbarui setelah disetujui.
-            </p>
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 size={14} className="text-green-500" />
-                <span className="text-[11px] font-bold text-green-700">Data Terkirim</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock size={14} className="text-amber-500" />
-                <span className="text-[11px] font-bold text-amber-700">Menunggu Review Admin</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <AlertCircle size={14} className="text-slate-300" />
-                <span className="text-[11px] font-bold text-slate-400">Disetujui</span>
-              </div>
-            </div>
-          </div>
-          <button onClick={() => setPendingAlert(false)} className="text-amber-400 hover:text-amber-600 cursor-pointer">
-            <X size={16} />
-          </button>
-        </div>
-      )}
+
 
       {riwayat.length > 0 && (
         <div className="relative z-0 mt-8">
           {/* Pending Verification Alert */}
-          {pendingAlert && (
-            <div className="mb-4 bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-300">
-              <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-amber-800 mb-1">Menunggu Verifikasi Admin</h3>
-                <p className="text-xs text-amber-700/80 font-medium">
-                  Status karier baru Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh admin.
-                  Status akan diperbarui setelah disetujui.
-                </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 size={14} className="text-green-500" />
-                    <span className="text-[11px] font-bold text-green-700">Data Terkirim</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={14} className="text-amber-500" />
-                    <span className="text-[11px] font-bold text-amber-700">Menunggu Review Admin</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <AlertCircle size={14} className="text-slate-300" />
-                    <span className="text-[11px] font-bold text-slate-400">Disetujui</span>
-                  </div>
-                </div>
-              </div>
-              <button onClick={() => setPendingAlert(false)} className="text-amber-400 hover:text-amber-600 cursor-pointer">
-                <X size={16} />
-              </button>
-            </div>
-          )}
+
           <h3 className="text-sm font-black text-primary/60 uppercase tracking-widest mb-4">Riwayat Status</h3>
           <div className="space-y-4">
             {riwayat.map((item) => {

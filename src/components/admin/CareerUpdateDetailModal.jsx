@@ -49,6 +49,7 @@ export default function CareerUpdateDetailModal({
       onApprove(detail.id, 'all');
     }
   };
+  
 
   // console.log(detail)
   return createPortal(
