@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check,MapPin} from 'lucide-react';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import LocationPicker from '../../components/common/LocationPicker';
-import { toastWarning } from '../../utilitis/alert';
+import { toastWarning, alertSuccess, alertError } from '../../utilitis/alert';
 
 export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
   const { isAdmin } = useAuth();
@@ -58,7 +58,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
   const [creatingSkill, setCreatingSkill] = useState(false);
+  
+  // STATE MAP
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [mapLoading, setMapLoading] = useState(false);
   const skillDropdownRef = useRef(null);
 
   // Set Minimum Date + Click outside handler
@@ -146,8 +149,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         tipe_pekerjaan: editJob.tipe_pekerjaan || '',
         lokasi: editJob.lokasi || '',
         foto: null,
-        id_provinsi: editJob.id_provinsi ? String(editJob.id_provinsi) : '',
-        id_kota: editJob.id_kota ? String(editJob.id_kota) : '',
+        id_provinsi: provinceId,
+        id_kota: cityId,
         latitude_perusahaan: editJob.latitude_perusahaan ?? editJob.perusahaan?.latitude ?? null,
         longitude_perusahaan: editJob.longitude_perusahaan ?? editJob.perusahaan?.longitude ?? null,
         jam_mulai: formatTime(editJob.jam_mulai),
@@ -180,6 +183,41 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const isExistingCompany = Boolean(formData.id_perusahaan);
 
+  // --- LOGIKA MENCARI KOORDINAT KOTA (AUTO-GEOCODING) ---
+  const handleOpenMap = async () => {
+    if (formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null) {
+      setShowLocationPicker(true);
+      return;
+    }
+
+    const cityName = kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama;
+    const provName = provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama;
+
+    if (cityName) {
+      setMapLoading(true);
+      try {
+        const query = encodeURIComponent(`${cityName}, ${provName || ''}, Indonesia`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            latitude_perusahaan: parseFloat(data[0].lat),
+            longitude_perusahaan: parseFloat(data[0].lon)
+          }));
+        }
+      } catch (err) {
+        console.error("Gagal mencari koordinat kota:", err);
+      } finally {
+        setMapLoading(false);
+        setShowLocationPicker(true);
+      }
+    } else {
+      setShowLocationPicker(true);
+    }
+  };
+
   // --- HANDLER CUSTOM COMPANY DROPDOWN ---
   const filteredCompanies = perusahaanMaster.filter(p =>
     (p.nama || p.nama_perusahaan || '').toLowerCase().includes(companySearchTerm.toLowerCase())
@@ -191,6 +229,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       perusahaan: comp.nama || comp.nama_perusahaan,
       id_perusahaan: String(comp.id),
       alamat_perusahaan: comp.jalan || prev.alamat_perusahaan,
+      latitude_perusahaan: comp.latitude ?? prev.latitude_perusahaan,
+      longitude_perusahaan: comp.longitude ?? prev.longitude_perusahaan,
     }));
     setCompanyDropdownOpen(false);
     setCompanySearchTerm('');
@@ -202,12 +242,13 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       ...prev,
       perusahaan: companySearchTerm.trim(),
       id_perusahaan: '', 
+      latitude_perusahaan: null, 
+      longitude_perusahaan: null,
     }));
     setCompanyDropdownOpen(false);
     setCompanySearchTerm('');
     if (errors.perusahaan) setErrors(prev => ({ ...prev, perusahaan: undefined }));
   };
-
 
   // --- SKILL HELPERS ---
   const filteredSkills = skillsList.filter(s =>
@@ -253,6 +294,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     if (name === 'perusahaan') {
       const matched = perusahaanMaster.find((p) => {
         const nama = p.nama || p.nama_perusahaan || '';
@@ -297,9 +339,9 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     if (!formData.tipe_pekerjaan) newErrors.tipe_pekerjaan = 'Tipe Pekerjaan wajib dipilih';
     
     if (!isExistingCompany) {
-      if (!formData.alamat_perusahaan?.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi';
       if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
       if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+      if (!formData.alamat_perusahaan?.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi';
     }
     if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
 
@@ -393,11 +435,12 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   if (!isOpen) return null;
 
-  // Standarisasi kelas Input CSS (Tinggi 48px, Margin 0)
+  // Standarisasi kelas Input CSS
   const inputClass = (err) => `w-full h-[48px] px-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
+  const textareaClass = (err) => `w-full p-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none min-h-[120px]`;
   
-  // Wrapper untuk menetralkan styling liar SmoothDropdown agar match dgn inputClass
-  const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2 [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-semibold";
+  // PERUBAHAN: Menambahkan !text-[11px] !font-black !text-primary !uppercase !tracking-widest pada &label agar judulnya BOLD dan identik
+  const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-semibold [&_button_span]:!text-slate-700";
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -417,7 +460,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         <div className="p-6 md:p-8 overflow-y-auto space-y-8 flex-1 custom-modal-scroll">
 
           {submitError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-medium">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-bold">
               {submitError}
             </div>
           )}
@@ -452,7 +495,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
           <div className="space-y-6">
             
             <div className="relative z-[50]">
-              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                 Job Title <span className="text-red-500">*</span>
               </label>
               <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={inputClass(errors.judul)} />
@@ -460,9 +503,9 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[45]">
-              {/* DROPDOWN PERUSAHAAN CUSTOM (Tinggi 48px, Margin 0) */}
+              {/* DROPDOWN PERUSAHAAN CUSTOM */}
               <div className="w-full relative z-[100]" ref={companyRef}>
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                   Nama Perusahaan <span className="text-red-500">*</span>
                 </label>
                 <button
@@ -470,7 +513,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                   onClick={() => setCompanyDropdownOpen(!companyDropdownOpen)}
                   className={`cursor-pointer w-full h-[48px] px-4 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary/20`}
                 >
-                  <span className={formData.perusahaan ? 'text-primary/80 font-bold truncate' : 'text-gray-400 font-semibold truncate'}>
+                  <span className={formData.perusahaan ? 'text-slate-700 font-semibold truncate' : 'text-gray-400 font-semibold truncate'}>
                     {formData.perusahaan || 'Pilih atau ketik nama perusahaan'}
                   </span>
                   <ChevronDown size={18} className={`text-gray-400 shrink-0 transition-transform duration-300 ${companyDropdownOpen ? 'rotate-180' : ''}`} />
@@ -484,7 +527,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                         autoFocus
                         type="text"
                         placeholder="Cari..."
-                        className="w-full bg-transparent text-sm outline-none p-1 font-medium"
+                        className="w-full bg-transparent text-sm outline-none p-1 font-medium text-slate-700"
                         value={companySearchTerm}
                         onChange={(e) => setCompanySearchTerm(e.target.value)}
                         onKeyDown={(e) => {
@@ -515,7 +558,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                       )}
 
                       {filteredCompanies.length === 0 && !companySearchTerm.trim() && (
-                        <li className="px-4 py-3 text-xs text-gray-400 italic text-center">Ketik untuk mencari...</li>
+                        <li className="px-4 py-3 text-xs text-gray-400 italic font-medium text-center">Ketik untuk mencari...</li>
                       )}
                     </ul>
                   </div>
@@ -524,7 +567,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
               </div>
 
               <div className="relative z-[90]">
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                   Tanggal Berakhir <span className="text-red-500">*</span>
                 </label>
                 <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className={inputClass(errors.tanggal_berakhir)} />
@@ -534,14 +577,14 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[40]">
               <div className="relative">
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                   Jam Mulai <span className="text-red-500">*</span>
                 </label>
                 <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className={inputClass(errors.jam_mulai)} />
                 {errors.jam_mulai && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_mulai}</p>}
               </div>
               <div className="relative">
-                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                   Jam Berakhir <span className="text-red-500">*</span>
                 </label>
                 <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className={inputClass(errors.jam_berakhir)} />
@@ -567,38 +610,80 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
             {!isExistingCompany && formData.perusahaan.trim() !== '' && (
               <div className="p-6 border border-slate-200 rounded-2xl bg-slate-50/50 space-y-6 relative z-[30] animate-in slide-in-from-top-4 duration-300">
                 <p className="text-[11px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">PERUSAHAAN BARU, MOHON LENGKAPI ALAMAT:</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[25]">
+                  <div className={`z-[50] ${dropdownWrapperClass}`}>
+                    <SmoothDropdown
+                      label={<>Provinsi <span className="text-red-500">*</span></>}
+                      isSearchable={true}
+                      placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
+                      options={provinsiList.map(p => p.nama)}
+                      value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
+                      onSelect={(namaProv) => {
+                        const prov = provinsiList.find(p => p.nama === namaProv);
+                        if (prov) {
+                          setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
+                          if (errors.id_provinsi) setErrors(prev => ({ ...prev, id_provinsi: undefined }));
+                        }
+                      }}
+                    />
+                    {errors.id_provinsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_provinsi}</p>}
+                  </div>
+
+                  <div className={`z-[40] ${dropdownWrapperClass}`}>
+                    <SmoothDropdown
+                      label={<>Kota <span className="text-red-500">*</span></>}
+                      isSearchable={true}
+                      placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
+                      options={kotaList.map(k => k.nama)}
+                      value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
+                      onSelect={(namaKota) => {
+                        const kota = kotaList.find(k => k.nama === namaKota);
+                        if (kota) {
+                          setFormData({ ...formData, id_kota: String(kota.id) });
+                          if (errors.id_kota) setErrors(prev => ({ ...prev, id_kota: undefined }));
+                        }
+                      }}
+                    />
+                    {errors.id_kota && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>}
+                  </div>
+                </div>
+
                 <div className="relative">
-                  <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                     Alamat Perusahaan Baru <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    name="alamat_perusahaan"
-                    value={formData.alamat_perusahaan}
-                    onChange={handleInputChange}
-                    placeholder="Masukkan alamat lengkap perusahaan"
-                    className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.alamat_perusahaan ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowLocationPicker(true)}
-                    className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:bg-primary/80 cursor-pointer"
-                  >
-                    <MapPin size={14} />
-                    Pilih di Peta
-                  </button>
+                  <div className="flex gap-2 items-start">
+                    <input
+                      name="alamat_perusahaan"
+                      value={formData.alamat_perusahaan}
+                      onChange={handleInputChange}
+                      placeholder="Johnson Springs, Kabupaten Kotawaringin Timur"
+                      className={`${inputClass(errors.alamat_perusahaan)} flex-1`}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleOpenMap}
+                      disabled={mapLoading}
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {mapLoading ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
+                      <span className="hidden sm:inline">{mapLoading ? 'Mencari...' : 'Pilih di Peta'}</span>
+                    </button>
+                  </div>
+                  {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
+                    <p className="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1">
+                      <Check size={12} strokeWidth={3} /> Koordinat peta tersimpan
+                    </p>
+                  )}
+                  {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
                 </div>
-                {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
-                  <p className="mt-1 text-xs text-emerald-600">
-                    Koordinat tersimpan: {Number(formData.latitude_perusahaan).toFixed(5)}, {Number(formData.longitude_perusahaan).toFixed(5)}
-                  </p>
-                )}
-                {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
               </div>
             )}
 
             {/* BAGIAN SKILLS */}
             <div className="relative z-[20] focus-within:z-[100]" ref={skillDropdownRef}>
-              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                 Skills <span className="normal-case opacity-70 font-medium">(Opsional)</span>
               </label>
 
@@ -607,7 +692,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                   <span key={skill.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg border border-primary/10">
                     {skill.nama}
                     <button type="button" onClick={() => removeSkill(skill.id)} className="hover:text-red-500 cursor-pointer ml-1">
-                      <X size={14} />
+                      <X size={14} strokeWidth={3} />
                     </button>
                   </span>
                 ))}
@@ -646,7 +731,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                           Tambahkan "{skillSearch}" sebagai skill baru
                         </div>
                       ) : (
-                        <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Ketik untuk mencari atau menambah skill</div>
+                        <div className="px-4 py-3 text-xs text-gray-400 italic font-medium text-center">Ketik untuk mencari atau menambah skill</div>
                       )}
                     </div>
                   )}
@@ -667,10 +752,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
             </div>
 
             <div className="relative z-[10]">
-              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                 Deskripsi & Kualifikasi Pekerjaan <span className="text-red-500">*</span>
               </label>
-              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={`w-full px-5 py-4 bg-slate-50 border ${errors.deskripsi ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[120px]`} />
+              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={textareaClass(errors.deskripsi)} />
               {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
             </div>
 
