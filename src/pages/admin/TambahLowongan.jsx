@@ -6,9 +6,9 @@ import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import LocationPicker from '../../components/common/LocationPicker';
-import { toastWarning, alertSuccess } from '../../utilitis/alert';
+import { toastWarning, alertSuccess, alertError } from '../../utilitis/alert';
 
-const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
+export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
   const { isAdmin } = useAuth();
   const isEditMode = !!editJob;
 
@@ -37,28 +37,35 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
 
   const [previewUrl, setPreviewUrl] = useState(null);
   const [minDate, setMinDate] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState(null);
+
+  // --- DATA DARI API ---
   const [provinsiList, setProvinsiList] = useState([]);
   const [kotaList, setKotaList] = useState([]);
   const [loadingProvinsi, setLoadingProvinsi] = useState(false);
   const [loadingKota, setLoadingKota] = useState(false);
   const [perusahaanMaster, setPerusahaanMaster] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState({});
 
   // --- CUSTOM COMPANY DROPDOWN STATE ---
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const companyRef = useRef(null);
 
-  // --- SKILLS STATE ---
   const [skillsList, setSkillsList] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
   const [creatingSkill, setCreatingSkill] = useState(false);
+  
+  // STATE MAP
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [mapLoading, setMapLoading] = useState(false); // State loading untuk pencarian kota
+  
   const skillDropdownRef = useRef(null);
 
+  // Set Minimum Date + Click outside handler
   useEffect(() => {
     const today = new Date();
     today.setDate(today.getDate() + 1);
@@ -76,7 +83,58 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // --- SINKRONISASI DATA SAAT EDIT ---
+  // Fetch Provinsi & Skills saat modal dibuka
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchMasterData = async () => {
+      setLoadingProvinsi(true);
+      try {
+        const [provRes, skillsRes, perusahaanRes] = await Promise.all([
+          masterDataApi.getProvinsi(),
+          masterDataApi.getSkills(),
+          masterDataApi.getPerusahaan().catch(() => ({ data: { data: [] } })),
+        ]);
+        const provData = provRes.data?.data || provRes.data || [];
+        setProvinsiList(Array.isArray(provData) ? provData : []);
+
+        const skillsData = skillsRes.data?.data || skillsRes.data || [];
+        setSkillsList(Array.isArray(skillsData) ? skillsData : []);
+
+        const rawPerusahaan = perusahaanRes.data?.data?.data || perusahaanRes.data?.data || perusahaanRes.data || [];
+        setPerusahaanMaster(Array.isArray(rawPerusahaan) ? rawPerusahaan : []);
+      } catch (err) {
+        console.error('Failed to fetch master data:', err);
+      } finally {
+        setLoadingProvinsi(false);
+      }
+    };
+    fetchMasterData();
+  }, [isOpen]);
+
+  // Fetch Kota berdasarkan Provinsi
+  useEffect(() => {
+    if (!formData.id_provinsi) {
+      setKotaList([]);
+      return;
+    }
+    const fetchKota = async () => {
+      setLoadingKota(true);
+      try {
+        const res = await masterDataApi.getKota(formData.id_provinsi);
+        const data = res.data?.data || res.data || [];
+        setKotaList(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch kota:', err);
+        setKotaList([]);
+      } finally {
+        setLoadingKota(false);
+      }
+    };
+    fetchKota();
+  }, [formData.id_provinsi]);
+
+  // Sinkronisasi Form Saat Buka Modal
   useEffect(() => {
     if (editJob && isOpen) {
       const cityId = editJob.id_kota ? String(editJob.id_kota) : editJob.perusahaan?.kota?.id ? String(editJob.perusahaan.kota.id) : '';
@@ -99,14 +157,15 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         jam_mulai: formatTime(editJob.jam_mulai),
         jam_berakhir: formatTime(editJob.jam_berakhir),
       });
-
+      
       const fotoPath = editJob.foto_lowongan || editJob.foto;
       setPreviewUrl(fotoPath ? `${STORAGE_BASE_URL}/${fotoPath}` : null);
-
+      
       if (editJob.skills && Array.isArray(editJob.skills)) {
         setSelectedSkills(editJob.skills.map(s => ({ id: s.id, nama: s.nama })));
       }
       setErrors({});
+      setSubmitError(null);
     } else if (!editJob && isOpen) {
       setFormData({
         judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
@@ -117,50 +176,53 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       setSelectedSkills([]);
       setPreviewUrl(null);
       setErrors({});
+      setSubmitError(null);
       setSkillSearch('');
       setCompanySearchTerm('');
     }
   }, [editJob, isOpen]);
 
-  // Fetch Master Data
-  useEffect(() => {
-    if (!isOpen) return;
-    const fetchData = async () => {
-      setLoadingProvinsi(true);
-      try {
-        const [resProv, resSkills, resPerusahaan] = await Promise.all([
-          masterDataApi.getProvinsi(),
-          masterDataApi.getSkills(),
-          masterDataApi.getPerusahaan().catch(() => ({ data: { data: [] } })),
-        ]);
-        setProvinsiList(resProv.data?.data || resProv.data || []);
-        setSkillsList((resSkills.data?.data || resSkills.data || []).map(s => ({ id: s.id, nama: s.nama })));
-
-        const rawPerusahaan = resPerusahaan.data?.data?.data || resPerusahaan.data?.data || resPerusahaan.data || [];
-        setPerusahaanMaster(Array.isArray(rawPerusahaan) ? rawPerusahaan : []);
-      } catch (err) {
-        console.error("Failed to fetch master data", err);
-      } finally {
-        setLoadingProvinsi(false);
-      }
-    };
-    fetchData();
-  }, [isOpen]);
-
-  // Fetch Kota otomatis saat id_provinsi berubah
-  useEffect(() => {
-    if (!formData.id_provinsi) { setKotaList([]); return; }
-    const fetchKota = async () => {
-      setLoadingKota(true);
-      try {
-        const res = await masterDataApi.getKota(formData.id_provinsi);
-        setKotaList(res.data?.data || res.data || []);
-      } catch { setKotaList([]); } finally { setLoadingKota(false); }
-    };
-    fetchKota();
-  }, [formData.id_provinsi]);
-
   const isExistingCompany = Boolean(formData.id_perusahaan);
+
+  // --- LOGIKA MENCARI KOORDINAT KOTA (AUTO-GEOCODING) ---
+  const handleOpenMap = async () => {
+    // Jika sudah pernah memilih koordinat di map sebelumnya, langsung buka saja
+    if (formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null) {
+      setShowLocationPicker(true);
+      return;
+    }
+
+    // Jika belum ada koordinat, tapi user sudah memilih Kota & Provinsi
+    const cityName = kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama;
+    const provName = provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama;
+
+    if (cityName) {
+      setMapLoading(true);
+      try {
+        // Melakukan pencarian koordinat kota ke OpenStreetMap (Nominatim API)
+        const query = encodeURIComponent(`${cityName}, ${provName || ''}, Indonesia`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+          // Simpan koordinat kota tersebut sementara agar map terpusat ke sana
+          setFormData(prev => ({
+            ...prev,
+            latitude_perusahaan: parseFloat(data[0].lat),
+            longitude_perusahaan: parseFloat(data[0].lon)
+          }));
+        }
+      } catch (err) {
+        console.error("Gagal mencari koordinat kota:", err);
+      } finally {
+        setMapLoading(false);
+        setShowLocationPicker(true);
+      }
+    } else {
+      // Jika user belum milih kota sama sekali, langsung buka map (lokasi default)
+      setShowLocationPicker(true);
+    }
+  };
 
   // --- HANDLER CUSTOM COMPANY DROPDOWN ---
   const filteredCompanies = perusahaanMaster.filter(p =>
@@ -173,6 +235,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       perusahaan: comp.nama || comp.nama_perusahaan,
       id_perusahaan: String(comp.id),
       alamat_perusahaan: comp.jalan || prev.alamat_perusahaan,
+      latitude_perusahaan: comp.latitude ?? prev.latitude_perusahaan,
+      longitude_perusahaan: comp.longitude ?? prev.longitude_perusahaan,
     }));
     setCompanyDropdownOpen(false);
     setCompanySearchTerm('');
@@ -184,54 +248,60 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       ...prev,
       perusahaan: companySearchTerm.trim(),
       id_perusahaan: '', 
+      latitude_perusahaan: null, // Reset map jika perusahaan baru
+      longitude_perusahaan: null,
     }));
     setCompanyDropdownOpen(false);
     setCompanySearchTerm('');
     if (errors.perusahaan) setErrors(prev => ({ ...prev, perusahaan: undefined }));
   };
 
+
   // --- SKILL HELPERS ---
-  const filteredSkills = skillsList.filter(s => s.nama.toLowerCase().includes(skillSearch.toLowerCase()) && !selectedSkills.some(sel => sel.id === s.id));
-  const addSkill = (skill) => { setSelectedSkills(prev => [...prev, skill]); setSkillSearch(''); setShowSkillDropdown(false); };
-  const removeSkill = (skillId) => { setSelectedSkills(prev => prev.filter(s => s.id !== skillId)); };
+  const filteredSkills = skillsList.filter(s =>
+    (s.nama || s.name || '').toLowerCase().includes(skillSearch.toLowerCase()) &&
+    !selectedSkills.some(sel => sel.id === s.id)
+  );
+
+  const addSkill = (skill) => {
+    setSelectedSkills(prev => [...prev, { id: skill.id, nama: skill.nama || skill.name }]);
+    setSkillSearch('');
+    setShowSkillDropdown(false);
+  };
+
+  const removeSkill = (skillId) => {
+    setSelectedSkills(prev => prev.filter(s => s.id !== skillId));
+  };
 
   const handleCreateSkill = async () => {
     if (!skillSearch.trim()) return;
-    const exists = skillsList.find(s => s.nama.toLowerCase() === skillSearch.trim().toLowerCase());
+    const exists = skillsList.find(s => (s.nama || s.name || '').toLowerCase() === skillSearch.trim().toLowerCase());
     if (exists) { addSkill(exists); return; }
+
     try {
       setCreatingSkill(true);
       const res = await masterDataApi.createSkill({ name_skills: skillSearch.trim() });
       const created = res.data?.data || res.data;
+
       if (created) {
-        const newSkill = { id: created.id || created.id_skills, nama: created.nama_skill || created.nama || created.name || skillSearch.trim() };
+        const newSkill = {
+          id: created.id || created.id_skills,
+          nama: created.nama_skill || created.nama || created.name || skillSearch.trim(),
+        };
         setSkillsList(prev => [...prev, newSkill]);
         addSkill(newSkill);
       }
-    } catch (err) { alertError('Gagal membuat skill baru: ' + (err.response?.data?.message || err.message)); } finally { setCreatingSkill(false); }
+    } catch (err) {
+      console.error('Gagal membuat skill baru:', err);
+      toastWarning('Gagal membuat skill baru: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setCreatingSkill(false);
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === 'perusahaan') {
-      const matched = perusahaanMaster.find((p) => {
-        const nama = p.nama || p.nama_perusahaan || '';
-        return nama.toLowerCase() === value.trim().toLowerCase();
-      });
-
-      setFormData((prev) => ({
-        ...prev,
-        perusahaan: value,
-        id_perusahaan: matched ? String(matched.id) : '',
-        alamat_perusahaan: matched ? (matched.jalan || prev.alamat_perusahaan) : prev.alamat_perusahaan,
-        latitude_perusahaan: matched ? (matched.latitude ?? null) : prev.latitude_perusahaan,
-        longitude_perusahaan: matched ? (matched.longitude ?? null) : prev.longitude_perusahaan,
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
   };
 
@@ -242,12 +312,12 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       setPreviewUrl(URL.createObjectURL(file));
       if (errors.foto) setErrors(prev => ({ ...prev, foto: undefined }));
     } else if (file) {
-      alertError("File terlalu besar (Maks 2MB)");
+      toastWarning("File terlalu besar (Maks 2MB)");
       e.target.value = null;
     }
   };
 
-  // Submit
+  // Submit ke API
   const handleSubmit = async () => {
     let newErrors = {};
     if (!formData.judul.trim()) newErrors.judul = 'Job Title wajib diisi';
@@ -258,13 +328,17 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     if (!formData.tipe_pekerjaan) newErrors.tipe_pekerjaan = 'Tipe Pekerjaan wajib dipilih';
     
     if (!isExistingCompany) {
-      if (!formData.alamat_perusahaan.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi';
       if (!formData.id_provinsi) newErrors.id_provinsi = 'Provinsi wajib dipilih';
       if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
+      if (!formData.alamat_perusahaan?.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi';
     }
     if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
-    if (!isEditMode && !formData.foto) newErrors.foto = 'Gambar/Banner wajib diunggah';
-    else if (isEditMode && !previewUrl) newErrors.foto = 'Gambar/Banner wajib diunggah';
+
+    if (!isEditMode && !formData.foto) {
+      newErrors.foto = 'Gambar/Banner wajib diunggah';
+    } else if (isEditMode && !previewUrl) {
+      newErrors.foto = 'Gambar/Banner wajib diunggah';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -273,6 +347,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
     }
 
     setSubmitting(true);
+    setSubmitError(null);
     setErrors({});
 
     try {
@@ -296,8 +371,14 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       fd.append('lowongan_selesai', formData.tanggal_berakhir);
       fd.append('jam_mulai', formData.jam_mulai);
       fd.append('jam_berakhir', formData.jam_berakhir);
-      if (formData.foto instanceof File) fd.append('foto_lowongan', formData.foto);
-      selectedSkills.forEach(skill => fd.append('skills[]', skill.id));
+      
+      if (formData.foto instanceof File) {
+        fd.append('foto_lowongan', formData.foto);
+      }
+
+      selectedSkills.forEach(skill => {
+        fd.append('skills[]', skill.id);
+      });
 
       if (isEditMode) {
         await adminApi.updateLowongan(editJob.id, fd);
@@ -306,30 +387,35 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
         if (isAdmin) fd.append('status', 'published');
         const res = await adminApi.createLowongan(fd);
         if (isAdmin && res.data?.data?.id) await adminApi.approveLowongan(res.data.data.id);
-        alertSuccess('Lowongan kerja berhasil dipublikasikan!');
+        alertSuccess('Lowongan kerja berhasil dikirim!');
       }
 
       onSuccess();
       onClose();
     } catch (err) {
+      console.error('Submit lowongan failed:', err);
       if (err.response?.status === 422) {
-        const vErrs = err.response.data?.errors || {};
+        const validationErrors = err.response.data?.errors || {};
         const mapped = {};
-        if (vErrs.judul_lowongan) mapped.judul = vErrs.judul_lowongan[0];
-        if (vErrs.nama_perusahaan || vErrs.id_perusahaan) mapped.perusahaan = vErrs.nama_perusahaan?.[0] || vErrs.id_perusahaan?.[0];
-        if (vErrs.alamat_perusahaan) mapped.alamat_perusahaan = vErrs.alamat_perusahaan[0];
-        if (vErrs.deskripsi) mapped.deskripsi = vErrs.deskripsi[0];
-        if (vErrs.tipe_pekerjaan) mapped.tipe_pekerjaan = vErrs.tipe_pekerjaan[0];
-        if (vErrs.lowongan_selesai) mapped.tanggal_berakhir = vErrs.lowongan_selesai[0];
-        if (vErrs.jam_mulai) mapped.jam_mulai = vErrs.jam_mulai[0];
-        if (vErrs.jam_berakhir) mapped.jam_berakhir = vErrs.jam_berakhir[0];
-        if (vErrs.foto_lowongan) mapped.foto = vErrs.foto_lowongan[0];
-        if (vErrs.id_kota) mapped.id_kota = vErrs.id_kota[0];
-        if (vErrs.id_provinsi) mapped.id_provinsi = vErrs.id_provinsi[0];
+        if (validationErrors.judul_lowongan) mapped.judul = validationErrors.judul_lowongan[0];
+        if (validationErrors.nama_perusahaan) mapped.perusahaan = validationErrors.nama_perusahaan[0];
+        if (validationErrors.id_perusahaan) mapped.perusahaan = validationErrors.id_perusahaan[0];
+        if (validationErrors.alamat_perusahaan) mapped.alamat_perusahaan = validationErrors.alamat_perusahaan[0];
+        if (validationErrors.deskripsi) mapped.deskripsi = validationErrors.deskripsi[0];
+        if (validationErrors.tipe_pekerjaan) mapped.tipe_pekerjaan = validationErrors.tipe_pekerjaan[0];
+        if (validationErrors.lokasi) mapped.lokasi = validationErrors.lokasi[0];
+        if (validationErrors.lowongan_selesai) mapped.tanggal_berakhir = validationErrors.lowongan_selesai[0];
+        if (validationErrors.jam_mulai) mapped.jam_mulai = validationErrors.jam_mulai[0];
+        if (validationErrors.jam_berakhir) mapped.jam_berakhir = validationErrors.jam_berakhir[0];
+        if (validationErrors.foto_lowongan) mapped.foto = validationErrors.foto_lowongan[0];
+        if (validationErrors.id_kota) mapped.id_kota = vErrs.id_kota?.[0] || vErrs.id_kota;
+        if (validationErrors.id_provinsi) mapped.id_provinsi = vErrs.id_provinsi?.[0] || vErrs.id_provinsi;
+        if (validationErrors.skills) mapped.skills = validationErrors.skills[0];
+        
         setErrors(mapped);
         document.querySelector('.custom-modal-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        alertError(err.response?.data?.message || 'Gagal mengirim lowongan. Silakan coba lagi.');
+        setSubmitError(err.response?.data?.message || 'Gagal mengirim lowongan. Silakan coba lagi.');
       }
     } finally {
       setSubmitting(false);
@@ -338,30 +424,42 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
 
   if (!isOpen) return null;
 
-  // Standarisasi kelas Input agar 100% IDENTIK. Tinggi dikunci di 48px, Margin Top dikunci 10px (mb-2.5 di label)
-  const inputClass = (err) => `w-full h-[48px] px-4 bg-white border-2 ${err ? 'border-red-400' : 'border-gray-100'} rounded-xl text-sm outline-none focus:border-primary/30 transition-all`;
-  const textareaClass = (err) => `w-full p-4 bg-white border-2 ${err ? 'border-red-400' : 'border-gray-100'} rounded-xl text-sm outline-none focus:border-primary/30 transition-all resize-none min-h-[120px]`;
+  // Standarisasi kelas Input CSS (Tinggi 48px, Margin 0)
+  const inputClass = (err) => `w-full h-[48px] px-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
   
-  // Wrapper untuk menetralkan styling liar bawaan SmoothDropdown
-  const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!border-2 [&_button]:!border-gray-100 [&_button]:!rounded-xl";
+  // Wrapper untuk menetralkan styling liar SmoothDropdown agar match dgn inputClass
+  const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-semibold [&_button_span]:!text-slate-700";
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar custom-modal-scroll shadow-2xl relative flex flex-col">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative" onClick={e => e.stopPropagation()}>
         
         {/* HEADER MODAL */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-[70]">
-          <h2 className="text-xl font-bold text-primary">{isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 cursor-pointer"><X size={20} /></button>
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
+          <h2 className="text-xl font-black text-primary tracking-tight">
+            {isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors cursor-pointer">
+            <X size={20} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* KONTEN UTAMA */}
-        <div className="p-6 space-y-8 relative z-[60]">
-          
-          <div className="relative">
-            <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Gambar / Banner <span className="text-red-500">*</span></label>
-            <div className={`flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed ${errors.foto ? 'border-red-400' : 'border-gray-100'} rounded-xl bg-white`}>
-              <div className="w-32 h-32 sm:w-24 sm:h-24 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0 relative group">
+        <div className="p-6 md:p-8 overflow-y-auto space-y-8 flex-1 custom-modal-scroll">
+
+          {submitError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-medium">
+              {submitError}
+            </div>
+          )}
+
+          {/* Upload Foto */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-black text-primary uppercase tracking-widest block">
+              Gambar / Banner <span className="text-red-500">*</span>
+            </label>
+            <div className={`flex flex-col sm:flex-row items-center gap-6 p-6 border-2 border-dashed ${errors.foto ? 'border-red-400 bg-red-50/50' : 'border-gray-200 bg-gray-50/50'} rounded-2xl`}>
+              <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center border border-gray-200 overflow-hidden shadow-sm shrink-0 relative group">
                 {previewUrl ? (
                   <>
                     <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
@@ -371,37 +469,40 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                   </>
                 ) : <ImageIcon size={32} className="text-gray-300" />}
               </div>
-              <div className="flex-1 space-y-3">
-                <p className="text-xs text-gray-500 italic text-center sm:text-left">Silakan unggah gambar persegi, ukuran maks 2MB.</p>
-                <label className="px-6 py-2 border-2 border-primary text-primary font-bold rounded-xl cursor-pointer hover:bg-primary hover:text-white transition-all text-sm block sm:inline-block text-center">
+              <div className="flex-1 space-y-3 text-center sm:text-left">
+                <p className="text-xs text-gray-500 font-medium">Silakan unggah gambar persegi, ukuran maks 2MB.</p>
+                <label className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer hover:bg-slate-50 transition-all text-sm shadow-sm inline-block">
                   Pilih File
                   <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </label>
               </div>
             </div>
-            {errors.foto && <p className="text-red-500 text-xs mt-1">{errors.foto}</p>}
+            {errors.foto && <p className="text-xs text-red-500 font-medium mt-1">{errors.foto}</p>}
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-6">
+            
             <div className="relative z-[50]">
-              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Job Title <span className="text-red-500">*</span></label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                Job Title <span className="text-red-500">*</span>
+              </label>
               <input name="judul" value={formData.judul} onChange={handleInputChange} placeholder="Contoh: Senior Product Designer" className={inputClass(errors.judul)} />
-              {errors.judul && <p className="text-red-500 text-xs mt-1">{errors.judul}</p>}
+              {errors.judul && <p className="text-xs text-red-500 font-medium mt-1">{errors.judul}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-[45]">
-              {/* DROPDOWN PERUSAHAAN CUSTOM */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[45]">
+              {/* DROPDOWN PERUSAHAAN CUSTOM (Tinggi 48px, Margin 0) */}
               <div className="w-full relative z-[100]" ref={companyRef}>
-                <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                   Nama Perusahaan <span className="text-red-500">*</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setCompanyDropdownOpen(!companyDropdownOpen)}
-                  className={`cursor-pointer w-full h-[48px] px-4 bg-white border-2 ${errors.perusahaan ? 'border-red-400' : 'border-gray-100'} flex items-center justify-between rounded-xl text-sm transition-all outline-none`}
+                  className={`cursor-pointer w-full h-[48px] px-4 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary/20`}
                 >
-                  <span className={formData.perusahaan ? 'text-primary/80 font-medium truncate' : 'text-gray-400 truncate'}>
-                    {formData.perusahaan || 'Pilih atau ketik perusahaan'}
+                  <span className={formData.perusahaan ? 'text-primary/80 font-bold truncate' : 'text-gray-400 font-semibold truncate'}>
+                    {formData.perusahaan || 'Pilih atau ketik nama perusahaan'}
                   </span>
                   <ChevronDown size={18} className={`text-gray-400 shrink-0 transition-transform duration-300 ${companyDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -413,8 +514,8 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                       <input
                         autoFocus
                         type="text"
-                        placeholder="Cari atau ketik perusahaan baru..."
-                        className="w-full bg-transparent text-sm outline-none p-1"
+                        placeholder="Cari..."
+                        className="w-full bg-transparent text-sm outline-none p-1 font-medium"
                         value={companySearchTerm}
                         onChange={(e) => setCompanySearchTerm(e.target.value)}
                         onKeyDown={(e) => {
@@ -429,7 +530,7 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                     </div>
                     <ul className="py-1 max-h-48 overflow-y-auto custom-scrollbar">
                       {filteredCompanies.length > 0 && filteredCompanies.map(comp => (
-                        <li key={comp.id} onClick={() => handleCompanySelect(comp)} className="px-4 py-2.5 text-sm cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors flex justify-between items-center">
+                        <li key={comp.id} onClick={() => handleCompanySelect(comp)} className="px-4 py-2.5 text-sm font-medium cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors flex justify-between items-center">
                           <span className={`truncate ${formData.id_perusahaan === String(comp.id) ? "font-bold text-primary" : ""}`}>
                             {comp.nama || comp.nama_perusahaan}
                           </span>
@@ -450,26 +551,32 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                     </ul>
                   </div>
                 )}
-                {errors.perusahaan && <p className="text-red-500 text-xs mt-1">{errors.perusahaan}</p>}
+                {errors.perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.perusahaan}</p>}
               </div>
 
               <div className="relative z-[90]">
-                <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Tanggal Berakhir <span className="text-red-500">*</span></label>
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Tanggal Berakhir <span className="text-red-500">*</span>
+                </label>
                 <input type="date" name="tanggal_berakhir" value={formData.tanggal_berakhir} min={minDate} onChange={handleInputChange} className={inputClass(errors.tanggal_berakhir)} />
-                {errors.tanggal_berakhir && <p className="text-red-500 text-xs mt-1">{errors.tanggal_berakhir}</p>}
+                {errors.tanggal_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.tanggal_berakhir}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-[40]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[40]">
               <div className="relative">
-                <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Jam Mulai <span className="text-red-500">*</span></label>
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Jam Mulai <span className="text-red-500">*</span>
+                </label>
                 <input type="time" name="jam_mulai" value={formData.jam_mulai} onChange={handleInputChange} className={inputClass(errors.jam_mulai)} />
-                {errors.jam_mulai && <p className="text-red-500 text-xs mt-1">{errors.jam_mulai}</p>}
+                {errors.jam_mulai && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_mulai}</p>}
               </div>
               <div className="relative">
-                <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Jam Berakhir <span className="text-red-500">*</span></label>
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Jam Berakhir <span className="text-red-500">*</span>
+                </label>
                 <input type="time" name="jam_berakhir" value={formData.jam_berakhir} onChange={handleInputChange} className={inputClass(errors.jam_berakhir)} />
-                {errors.jam_berakhir && <p className="text-red-500 text-xs mt-1">{errors.jam_berakhir}</p>}
+                {errors.jam_berakhir && <p className="text-xs text-red-500 font-medium mt-1">{errors.jam_berakhir}</p>}
               </div>
             </div>
 
@@ -484,107 +591,172 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
                   if (errors.tipe_pekerjaan) setErrors(prev => ({ ...prev, tipe_pekerjaan: undefined }));
                 }}
               />
-              {errors.tipe_pekerjaan && <p className="text-red-500 text-xs mt-1">{errors.tipe_pekerjaan}</p>}
+              {errors.tipe_pekerjaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.tipe_pekerjaan}</p>}
             </div>
 
-            {/* FORM TAMBAHAN MUNCUL HANYA JIKA PERUSAHAAN BARU */}
+            {/* FORM TAMBAHAN JIKA PERUSAHAAN BARU */}
             {!isExistingCompany && formData.perusahaan.trim() !== '' && (
-              <div className="p-5 border border-gray-200 rounded-2xl bg-gray-50/50 space-y-5 relative z-[30] animate-in slide-in-from-top-4 duration-300">
-                <p className="text-xs font-bold text-amber-600 mb-2 italic">Data Perusahaan Baru, mohon lengkapi alamat berikut:</p>
-                <div className="relative">
-                  <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Alamat Perusahaan Baru <span className="text-red-500">*</span></label>
-                  <input
-                    name="alamat_perusahaan"
-                    value={formData.alamat_perusahaan}
-                    onChange={handleInputChange}
-                    placeholder="Masukkan alamat lengkap perusahaan"
-                    className={`w-full px-4 py-3 bg-gray-50 border ${errors.alamat_perusahaan ? 'border-red-400' : 'border-gray-200'} rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowLocationPicker(true)}
-                    className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:bg-primary/80 cursor-pointer"
-                  >
-                    <MapPin size={14} />
-                    Pilih di Peta
-                  </button>
+              <div className="p-6 border border-slate-200 rounded-2xl bg-slate-50/50 space-y-6 relative z-[30] animate-in slide-in-from-top-4 duration-300">
+                <p className="text-[11px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">PERUSAHAAN BARU, MOHON LENGKAPI ALAMAT:</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[25]">
+                  <div className={`z-[50] ${dropdownWrapperClass}`}>
+                    <SmoothDropdown
+                      label={<>Provinsi <span className="text-red-500">*</span></>}
+                      isSearchable={true}
+                      placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
+                      options={provinsiList.map(p => p.nama)}
+                      value={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ""}
+                      onSelect={(namaProv) => {
+                        const prov = provinsiList.find(p => p.nama === namaProv);
+                        if (prov) {
+                          setFormData({ ...formData, id_provinsi: String(prov.id), id_kota: '' });
+                          if (errors.id_provinsi) setErrors(prev => ({ ...prev, id_provinsi: undefined }));
+                        }
+                      }}
+                    />
+                    {errors.id_provinsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_provinsi}</p>}
+                  </div>
+
+                  <div className={`z-[40] ${dropdownWrapperClass}`}>
+                    <SmoothDropdown
+                      label={<>Kota <span className="text-red-500">*</span></>}
+                      isSearchable={true}
+                      placeholder={!formData.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
+                      options={kotaList.map(k => k.nama)}
+                      value={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ""}
+                      onSelect={(namaKota) => {
+                        const kota = kotaList.find(k => k.nama === namaKota);
+                        if (kota) {
+                          setFormData({ ...formData, id_kota: String(kota.id) });
+                          if (errors.id_kota) setErrors(prev => ({ ...prev, id_kota: undefined }));
+                        }
+                      }}
+                    />
+                    {errors.id_kota && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>}
+                  </div>
                 </div>
-                {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
-                  <p className="text-xs text-emerald-600">
-                    Koordinat tersimpan: {Number(formData.latitude_perusahaan).toFixed(5)}, {Number(formData.longitude_perusahaan).toFixed(5)}
-                  </p>
-                )}
-                {errors.alamat_perusahaan && <p className="text-red-500 text-xs mt-1">{errors.alamat_perusahaan[0] || errors.alamat_perusahaan}</p>}
+
+                <div className="relative">
+                  <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                    Alamat Perusahaan Baru <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-2 items-start">
+                    <input
+                      name="alamat_perusahaan"
+                      value={formData.alamat_perusahaan}
+                      onChange={handleInputChange}
+                      placeholder="Johnson Springs, Kabupaten Kotawaringin Timur"
+                      className={`${inputClass(errors.alamat_perusahaan)} flex-1`}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleOpenMap}
+                      disabled={mapLoading}
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {mapLoading ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
+                      <span className="hidden sm:inline">{mapLoading ? 'Mencari...' : 'Pilih di Peta'}</span>
+                    </button>
+                  </div>
+                  {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
+                    <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center gap-1">
+                      <Check size={12} /> Koordinat peta tersimpan
+                    </p>
+                  )}
+                  {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
+                </div>
               </div>
             )}
 
             {/* BAGIAN SKILLS */}
             <div className="relative z-[20] focus-within:z-[100]" ref={skillDropdownRef}>
-              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">
-                Skills <span className="text-gray-400 font-normal text-[10px]">(opsional)</span>
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                Skills <span className="normal-case opacity-70 font-medium">(Opsional)</span>
               </label>
+
               <div className="flex flex-wrap gap-2 mb-3">
                 {selectedSkills.map(skill => (
-                  <span key={skill.id} className="flex items-center gap-1 px-2.5 py-1 bg-white text-primary text-xs font-bold rounded-lg border border-gray-200 shadow-sm">
+                  <span key={skill.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary text-xs font-bold rounded-lg border border-primary/10">
                     {skill.nama}
-                    <button type="button" onClick={() => removeSkill(skill.id)} className="hover:text-red-500 cursor-pointer ml-1"><X size={12} /></button>
+                    <button type="button" onClick={() => removeSkill(skill.id)} className="hover:text-red-500 cursor-pointer ml-1">
+                      <X size={14} />
+                    </button>
                   </span>
                 ))}
               </div>
-              
+
               <div className="relative flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
                     value={skillSearch}
                     onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
                     onFocus={() => setShowSkillDropdown(true)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') { e.preventDefault(); if (skillSearch && filteredSkills.length === 0) handleCreateSkill(); }
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (skillSearch && filteredSkills.length === 0) handleCreateSkill();
+                      }
                     }}
-                    placeholder="Cari atau ketik skill baru..."
-                    className="w-full h-[48px] pl-11 pr-4 bg-white border-2 border-gray-100 rounded-xl text-sm focus:border-primary/30 outline-none transition-all"
+                    placeholder="Cari dan pilih skill..."
+                    className="w-full h-[48px] pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     disabled={creatingSkill}
                   />
                   {showSkillDropdown && (
-                    <div className="absolute z-[120] top-[105%] left-0 w-full bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-                      <ul className="py-1 max-h-48 overflow-y-auto custom-scrollbar">
-                        {filteredSkills.length > 0 ? (
-                          filteredSkills.map(s => (
-                            <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 hover:text-primary flex justify-between items-center">{s.nama}</div>
-                          ))
-                        ) : skillSearch.trim() ? (
-                          <div onClick={handleCreateSkill} className="px-4 py-3 text-sm text-primary font-bold cursor-pointer hover:bg-primary/5 flex items-center gap-2 border-t border-gray-50">
-                            {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} className="shrink-0" />}
-                            <span className="truncate">Tambahkan "{skillSearch}" sebagai skill baru</span>
-                          </div>
-                        ) : <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Ketik untuk mencari atau menambah skill</div>}
-                      </ul>
+                    <div className="absolute z-[120] top-[105%] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto py-2">
+                      {filteredSkills.length > 0 ? filteredSkills.map(s => (
+                        <div key={s.id} onClick={() => addSkill(s)} className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-slate-50 hover:text-primary">
+                          {s.nama || s.name}
+                        </div>
+                      )) : skillSearch.trim() ? (
+                        <div 
+                          onClick={handleCreateSkill} 
+                          className="px-4 py-3 text-sm text-primary font-bold cursor-pointer hover:bg-primary/5 flex items-center gap-2"
+                        >
+                          {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                          Tambahkan "{skillSearch}" sebagai skill baru
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 text-xs text-gray-400 italic text-center">Ketik untuk mencari atau menambah skill</div>
+                      )}
                     </div>
                   )}
                 </div>
+                
                 {skillSearch && filteredSkills.length === 0 && (
-                  <button type="button" onClick={handleCreateSkill} disabled={creatingSkill} className="flex items-center gap-1.5 px-4 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 h-[48px]">
-                    {creatingSkill ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} <span className="hidden sm:inline">Tambah</span>
+                  <button
+                    type="button"
+                    onClick={handleCreateSkill}
+                    disabled={creatingSkill}
+                    className="flex items-center gap-1.5 px-6 h-[48px] bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                  >
+                    {creatingSkill ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                    <span className="hidden sm:inline">Tambah</span>
                   </button>
                 )}
               </div>
             </div>
 
             <div className="relative z-[10]">
-              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">Deskripsi <span className="text-red-500">*</span></label>
-              <textarea name="deskripsi" rows={4} value={formData.deskripsi} onChange={handleInputChange} placeholder="Deskripsi peran..." className={textareaClass(errors.deskripsi)} />
-              {errors.deskripsi && <p className="text-red-500 text-xs mt-1">{errors.deskripsi}</p>}
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                Deskripsi & Kualifikasi Pekerjaan <span className="text-red-500">*</span>
+              </label>
+              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={`w-full px-5 py-4 bg-slate-50 border ${errors.deskripsi ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[120px]`} />
+              {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
             </div>
+
           </div>
         </div>
 
-        {/* FOOTER MODAL (Tombol-tombol) */}
+        {/* Footer Modal / Tombol Aksi */}
         <div className="p-6 border-t border-gray-100 flex justify-end gap-4 bg-white sticky bottom-0 z-[110] shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-          <button onClick={onClose} disabled={submitting} className="cursor-pointer text-sm font-bold text-gray-500 hover:text-gray-700 px-4">Batal</button>
-          <button onClick={handleSubmit} disabled={submitting} className="cursor-pointer flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg active:scale-95 disabled:opacity-50">
-            {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Perbarui' : 'Kirim'} <Send size={18} /></>}
+          <button onClick={onClose} disabled={submitting} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm cursor-pointer">
+            Batal
+          </button>
+          <button onClick={handleSubmit} disabled={submitting} className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/80 transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
+            {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Simpan' : 'Kirim'} <Send size={16} /></>}
           </button>
         </div>
       </div>
@@ -609,6 +781,4 @@ const TambahLowongan = ({ isOpen, onClose, onSuccess, editJob = null }) => {
       />
     </div>
   );
-};
-
-export default TambahLowongan;
+}
