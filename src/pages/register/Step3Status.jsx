@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck } from 'lucide-react';
+import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck, MapPin } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
 import UniversitySelector from '../../components/UniversitasSelector';
+import LocationPicker from '../../components/common/LocationPicker';
 import { masterDataApi } from '../../api/masterData';
 import { authApi } from '../../api/auth';
 
@@ -27,12 +28,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [bidangUsahaMap, setBidangUsahaMap] = useState({});
   const [perusahaanList, setPerusahaanList] = useState([]);
+  const [universitasList, setUniversitasList] = useState([]); 
   
-  // STATE BARU: Untuk Provinsi dan Kota
+  // STATE: Untuk Provinsi dan Kota
   const [provinsiList, setProvinsiList] = useState([]);
   const [kotaList, setKotaList] = useState([]);
   const [loadingProvinsi, setLoadingProvinsi] = useState(false);
   const [loadingKota, setLoadingKota] = useState(false);
+  const [showUniMap, setShowUniMap] = useState(false);
+  const [showUsahaMap, setShowUsahaMap] = useState(false);
 
   // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { 
@@ -41,21 +45,17 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   });
 
   const [universitas, setUniversitas] = useState(formData.universitas || { 
-    nama_universitas: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '', 
+    nama_universitas: '', alamat: '', id_provinsi: '', id_kota: '', id_jurusan_kuliah: '', jalur_masuk: '', jenjang: '', 
+    latitude: null, longitude: null,
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
 
   const [wirausaha, setWirausaha] = useState(formData.wirausaha || { 
-    id_bidang: '', nama_usaha: '', 
+    id_bidang: '', nama_usaha: '', alamat: '', id_provinsi: '', id_kota: '',
+    latitude: null, longitude: null,
     tahun_mulai: '', tahun_selesai: '', is_saat_ini: true 
   });
   
-  const [tahunMulai, setTahunMulai] = useState(formData.tahun_mulai || '');
-  const [tahunSelesai, setTahunSelesai] = useState(formData.tahun_selesai || '');
-  
-  // State untuk mengecek apakah masih berlangsung (Saat ini)
-  const [isSaatIni, setIsSaatIni] = useState(!formData.tahun_selesai);
-
   const loadCaptcha = async (isRefresh = false) => {
     setCaptchaLoading(true);
     try {
@@ -84,7 +84,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showCaptchaModal]);
 
-  // 2. Fetch data master (Status, Bidang Usaha, Perusahaan, & Provinsi)
+  // 2. Fetch data master (Status, Bidang Usaha, Perusahaan, Universitas & Provinsi)
   useEffect(() => {
     masterDataApi.getStatus().then((res) => setStatusList(res.data.data || []));
     
@@ -96,6 +96,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       setBidangUsahaMap(map);
     });
 
+    // Fetch Master Perusahaan
     masterDataApi.getPerusahaan()
       .then((res) => {
         const rawData = res.data?.data?.data || res.data?.data || [];
@@ -106,6 +107,17 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       })
       .catch((err) => console.error("Gagal mengambil data perusahaan", err));
 
+    // Fetch Master Universitas
+    masterDataApi.getUniversitas()
+      .then((res) => {
+        const rawData = res.data?.data?.data || res.data?.data || [];
+        const names = Array.isArray(rawData)
+          ? rawData.map((u) => u.nama_universitas || u.nama || u).filter(Boolean)
+          : [];
+        setUniversitasList(names);
+      })
+      .catch((err) => console.error("Gagal mengambil data universitas", err));
+
     // Fetch Provinsi
     setLoadingProvinsi(true);
     masterDataApi.getProvinsi()
@@ -114,18 +126,27 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       .finally(() => setLoadingProvinsi(false));
   }, []);
 
-  // Fetch Kota berdasarkan Provinsi yang dipilih
+  // Fetch Kota berdasarkan provinsi aktif di form status yang sedang dipilih
   useEffect(() => {
-    if (!pekerjaan.id_provinsi) {
+    const activeProvinsiId = selectedStatus === 'Bekerja'
+      ? pekerjaan.id_provinsi
+      : selectedStatus === 'Kuliah'
+        ? universitas.id_provinsi
+        : selectedStatus === 'Wirausaha'
+          ? wirausaha.id_provinsi
+          : '';
+
+    if (!activeProvinsiId) {
       setKotaList([]);
       return;
     }
+
     setLoadingKota(true);
-    masterDataApi.getKota(pekerjaan.id_provinsi)
+    masterDataApi.getKota(activeProvinsiId)
       .then((res) => setKotaList(res.data?.data || res.data || []))
       .catch((err) => console.error("Gagal mengambil kota", err))
       .finally(() => setLoadingKota(false));
-  }, [pekerjaan.id_provinsi]);
+  }, [selectedStatus, pekerjaan.id_provinsi, universitas.id_provinsi, wirausaha.id_provinsi]);
 
   // 3. FUNGSI PENYIMPANAN OTOMATIS
   useEffect(() => {
@@ -146,6 +167,14 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     updateFormData(updates);
   }, [selectedStatus, pekerjaan, universitas, wirausaha, statusList]);
 
+  // LOGIKA DINAMIS: Cek apakah Perusahaan / Universitas sudah ada di database
+  const isExistingPerusahaan = perusahaanList.some(p => p.toLowerCase() === (pekerjaan.nama_perusahaan || '').trim().toLowerCase());
+  const showPerusahaanLocation = (pekerjaan.nama_perusahaan || '').trim() !== '' && !isExistingPerusahaan;
+
+  const isExistingUniv = universitasList.some(u => u.toLowerCase() === (universitas.nama_universitas || '').trim().toLowerCase());
+  const showUnivLocation = (universitas.nama_universitas || '').trim() !== '' && !isExistingUniv;
+
+
   const statusOptions = [
     { id: 'Bekerja', label: 'Bekerja', sub: '(Working)', icon: Briefcase },
     { id: 'Kuliah', label: 'Kuliah', sub: '(Studying)', icon: GraduationCap },
@@ -156,21 +185,16 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const renderTahunDinamis = (type, label) => {
     const data = type === 'Bekerja' ? pekerjaan : type === 'Kuliah' ? universitas : wirausaha;
     const setData = type === 'Bekerja' ? setPekerjaan : type === 'Kuliah' ? setUniversitas : setWirausaha;
-
-    // Ambil tahun sekarang untuk batas maksimal tahun mulai
     const tahunSekarang = new Date().getFullYear();
 
     return (
       <>
-        {/* Kolom Kiri: Tahun Mulai */}
-        <div className="relative z-[60]">
+        <div className="relative z-[30]">
           <YearsInput
-            label={`Tahun Mulai ${label} *`}
+            label={<>Tahun Mulai {label}</>}
             value={data.tahun_mulai}
-            // Batasi tahun mulai agar tidak bisa memilih masa depan
             maxYear={tahunSekarang} 
             onSelect={(val) => {
-              // Jika tahun mulai baru lebih besar dari tahun selesai yang sudah ada, reset tahun selesai
               const updateData = { ...data, tahun_mulai: val };
               if (data.tahun_selesai && parseInt(val) > parseInt(data.tahun_selesai)) {
                 updateData.tahun_selesai = "";
@@ -181,13 +205,11 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           />
         </div>
 
-        {/* Kolom Kanan: Tahun Selesai + Checkbox */}
-        <div className="relative z-[50]">
+        <div className="relative z-[20]">
           {!data.is_saat_ini ? (
             <YearsInput
               label={`Tahun Selesai ${label}`}
               value={data.tahun_selesai}
-              // Batasi tahun selesai agar minimal sama dengan tahun mulai
               minYear={data.tahun_mulai ? parseInt(data.tahun_mulai) : undefined}
               onSelect={(val) => setData({ ...data, tahun_selesai: val })}
             />
@@ -217,21 +239,16 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     );
   };
 
-  // FUNGSI BARU: Simpan data secara paksa sebelum kembali ke halaman sebelumnya
-  // Di dalam Step3Status.jsx, perbarui fungsi handleBack menjadi:
-
   const handleBack = () => {
     const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
     const backendName = statusNameMap[selectedStatus] || selectedStatus;
     const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
     
-    // Ambil data dari objek yang sedang aktif
     const activeData = selectedStatus === 'Bekerja' ? pekerjaan : 
-                      selectedStatus === 'Kuliah' ? universitas : wirausaha;
+                       selectedStatus === 'Kuliah' ? universitas : wirausaha;
 
     const updates = {
       id_status: matched?.id || formData.id_status,
-      // Gunakan tahun dari data aktif, bukan dari state tahunMulai yang lama
       tahun_mulai: activeData?.tahun_mulai || "",
       tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
       pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
@@ -286,7 +303,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             
             <div className="relative z-[80]">
               <InputDropdownEdit
-                label="Pekerjaan Sekarang *"
+                label={<>Pekerjaan Sekarang</>}
                 value={pekerjaan.posisi}
                 options={["UI/UX", "DevOps", "Cloud Engineering", "Karyawan"]}
                 placeholder="Masukkan nama pekerjaan"
@@ -298,7 +315,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             
             <div className="relative z-[70]">
               <InputDropdownEdit
-                label="Nama Perusahaan *"
+                label={<>Nama Perusahaan</>}
                 value={pekerjaan.nama_perusahaan}
                 options={perusahaanList}
                 placeholder="Ketik atau pilih nama perusahaan"
@@ -310,42 +327,59 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             
             {renderTahunDinamis('Bekerja', 'Kerja')}
 
-            {/* AREA LOKASI (PROVINSI & KOTA) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 relative z-[40]">
-              {/* ... biarkan provinsi dan kota seperti sebelumnya ... */}
-              <div className="w-full relative z-[45]">
-                <SmoothDropdown
-                  label="Provinsi *"
-                  isSearchable={true}
-                  placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
-                  options={provinsiList.map(p => p.nama)}
-                  value={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ""}
-                  onSelect={(namaProv) => {
-                    const prov = provinsiList.find(p => p.nama === namaProv);
-                    if (prov) {
-                      setPekerjaan(prev => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
-                    }
-                  }}
-                />
-              </div>
+            {/* AREA LOKASI - HANYA MUNCUL JIKA PERUSAHAAN BARU */}
+            {showPerusahaanLocation && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
+                <div className="md:col-span-2 mb-2">
+                  <p className="text-[11px] font-bold text-amber-600 italic bg-amber-50 px-3 py-1.5 rounded-lg inline-block border border-amber-200/50">
+                    Data perusahaan baru terdeteksi, mohon lengkapi alamat perusahaan.
+                  </p>
+                </div>
+                
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Perusahaan <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={pekerjaan.jalan || ''}
+                    onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
+                    className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                    placeholder="Masukkan jalan, no gedung, dll."
+                  />
+                </div>
 
-              <div className="w-full relative z-[40]">
-                <SmoothDropdown
-                  label="Kota / Kabupaten *"
-                  isSearchable={true}
-                  placeholder={!pekerjaan.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
-                  options={kotaList.map(k => k.nama)}
-                  value={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ""}
-                  onSelect={(namaKota) => {
-                    const kota = kotaList.find(k => k.nama === namaKota);
-                    if (kota) {
-                      setPekerjaan(prev => ({ ...prev, id_kota: String(kota.id) }));
-                    }
-                  }}
-                />
+                <div className="w-full relative z-[45]">
+                  <SmoothDropdown
+                    label={<>Provinsi <span className="text-red-500">*</span></>}
+                    isSearchable={true}
+                    placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
+                    options={provinsiList.map(p => p.nama)}
+                    value={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ""}
+                    onSelect={(namaProv) => {
+                      const prov = provinsiList.find(p => p.nama === namaProv);
+                      if (prov) {
+                        setPekerjaan(prev => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="w-full relative z-[40]">
+                  <SmoothDropdown
+                    label={<>Kota / Kabupaten <span className="text-red-500">*</span></>}
+                    isSearchable={true}
+                    placeholder={!pekerjaan.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
+                    options={kotaList.map(k => k.nama)}
+                    value={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ""}
+                    onSelect={(namaKota) => {
+                      const kota = kotaList.find(k => k.nama === namaKota);
+                      if (kota) {
+                        setPekerjaan(prev => ({ ...prev, id_kota: String(kota.id) }));
+                      }
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-            
+            )}
           </div>
         )}
 
@@ -365,7 +399,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="relative z-[70]">
               <SmoothDropdown
-                label="Jalur Masuk Kuliah *"
+                label={<>Jalur Masuk Kuliah</>}
                 value={universitas.jalur_masuk}
                 options={["SNBP", "SNBT", "Mandiri", "Beasiswa"]}
                 isRequired={true}
@@ -375,7 +409,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="relative z-[60]">
               <SmoothDropdown
-                label="Jenjang Kuliah *"
+                label={<>Jenjang Kuliah</>}
                 value={universitas.jenjang}
                 options={["D3", "D4", "S1", "S2", "S3"]}
                 isRequired={true}
@@ -383,8 +417,120 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
+            <div className="relative z-[50]">
+              <SmoothDropdown
+                label="Provinsi Universitas *"
+                isSearchable={true}
+                placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
+                options={provinsiList.map((p) => p.nama)}
+                value={provinsiList.find((p) => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
+                onSelect={(namaProv) => {
+                  const prov = provinsiList.find((p) => p.nama === namaProv);
+                  if (prov) {
+                    setUniversitas((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="relative z-[40]">
+              <SmoothDropdown
+                label="Kota Universitas *"
+                isSearchable={true}
+                placeholder={!universitas.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
+                options={kotaList.map((k) => k.nama)}
+                value={kotaList.find((k) => String(k.id) === String(universitas.id_kota))?.nama || ''}
+                onSelect={(namaKota) => {
+                  const kota = kotaList.find((k) => k.nama === namaKota);
+                  if (kota) {
+                    setUniversitas((prev) => ({ ...prev, id_kota: String(kota.id) }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-1">
+              <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas *</label>
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="text"
+                  value={universitas.alamat}
+                  onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
+                  className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                  placeholder="Masukkan alamat universitas"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowUniMap(true)}
+                  className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
+                >
+                  <MapPin size={14} />
+                  Pilih di Peta
+                </button>
+              </div>
+              {universitas.latitude !== null && universitas.longitude !== null && (
+                <p className="text-xs text-emerald-600">
+                  Koordinat: {Number(universitas.latitude).toFixed(5)}, {Number(universitas.longitude).toFixed(5)}
+                </p>
+              )}
+            </div>
+
             {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
             {renderTahunDinamis('Kuliah', 'Kuliah')}
+
+            {/* AREA LOKASI - HANYA MUNCUL JIKA UNIVERSITAS BARU */}
+            {showUnivLocation && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
+                <div className="md:col-span-2 mb-2">
+                  <p className="text-[11px] font-bold text-amber-600 italic bg-amber-50 px-3 py-1.5 rounded-lg inline-block border border-amber-200/50">
+                    Data universitas baru terdeteksi, mohon lengkapi alamat universitas.
+                  </p>
+                </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={universitas.alamat}
+                    onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
+                    className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                    placeholder="Masukkan jalan, no kampus, dll."
+                  />
+                </div>
+
+                <div className="relative z-[50]">
+                  <SmoothDropdown
+                    label={<>Provinsi Universitas <span className="text-red-500">*</span></>}
+                    isSearchable={true}
+                    placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
+                    options={provinsiList.map((p) => p.nama)}
+                    value={provinsiList.find((p) => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
+                    onSelect={(namaProv) => {
+                      const prov = provinsiList.find((p) => p.nama === namaProv);
+                      if (prov) {
+                        setUniversitas((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="relative z-[40]">
+                  <SmoothDropdown
+                    label={<>Kota Universitas <span className="text-red-500">*</span></>}
+                    isSearchable={true}
+                    placeholder={!universitas.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
+                    options={kotaList.map((k) => k.nama)}
+                    value={kotaList.find((k) => String(k.id) === String(universitas.id_kota))?.nama || ''}
+                    onSelect={(namaKota) => {
+                      const kota = kotaList.find((k) => k.nama === namaKota);
+                      if (kota) {
+                        setUniversitas((prev) => ({ ...prev, id_kota: String(kota.id) }));
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -392,7 +538,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {selectedStatus === 'Wirausaha' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <div className="space-y-1 relative z-[70]">
-              <label className="text-[11px] font-bold text-primary uppercase">Nama Usaha *</label>
+              <label className="text-[11px] font-bold text-primary uppercase">Nama Usaha <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={wirausaha.nama_usaha}
@@ -404,7 +550,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="relative z-[60]">
               <SmoothDropdown
-                label="Bidang Usaha *"
+                label={<>Bidang Usaha <span className="text-red-500">*</span></>}
                 value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
                 options={bidangUsahaList}
                 isRequired={true}
@@ -412,8 +558,111 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
+            <div className="relative z-[50]">
+              <SmoothDropdown
+                label="Provinsi Usaha *"
+                isSearchable={true}
+                placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
+                options={provinsiList.map((p) => p.nama)}
+                value={provinsiList.find((p) => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
+                onSelect={(namaProv) => {
+                  const prov = provinsiList.find((p) => p.nama === namaProv);
+                  if (prov) {
+                    setWirausaha((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="relative z-[40]">
+              <SmoothDropdown
+                label="Kota Usaha *"
+                isSearchable={true}
+                placeholder={!wirausaha.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
+                options={kotaList.map((k) => k.nama)}
+                value={kotaList.find((k) => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
+                onSelect={(namaKota) => {
+                  const kota = kotaList.find((k) => k.nama === namaKota);
+                  if (kota) {
+                    setWirausaha((prev) => ({ ...prev, id_kota: String(kota.id) }));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-1">
+              <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha *</label>
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="text"
+                  value={wirausaha.alamat}
+                  onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
+                  className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                  placeholder="Masukkan alamat usaha"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowUsahaMap(true)}
+                  className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
+                >
+                  <MapPin size={14} />
+                  Pilih di Peta
+                </button>
+              </div>
+              {wirausaha.latitude !== null && wirausaha.longitude !== null && (
+                <p className="text-xs text-emerald-600">
+                  Koordinat: {Number(wirausaha.latitude).toFixed(5)}, {Number(wirausaha.longitude).toFixed(5)}
+                </p>
+              )}
+            </div>
+
             {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
             {renderTahunDinamis('Wirausaha', 'Usaha')}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={wirausaha.alamat}
+                  onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
+                  className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                  placeholder="Masukkan alamat usaha"
+                />
+              </div>
+
+              <div className="relative z-[50]">
+                <SmoothDropdown
+                  label={<>Provinsi Usaha <span className="text-red-500">*</span></>}
+                  isSearchable={true}
+                  placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
+                  options={provinsiList.map((p) => p.nama)}
+                  value={provinsiList.find((p) => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
+                  onSelect={(namaProv) => {
+                    const prov = provinsiList.find((p) => p.nama === namaProv);
+                    if (prov) {
+                      setWirausaha((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="relative z-[40]">
+                <SmoothDropdown
+                  label={<>Kota Usaha <span className="text-red-500">*</span></>}
+                  isSearchable={true}
+                  placeholder={!wirausaha.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
+                  options={kotaList.map((k) => k.nama)}
+                  value={kotaList.find((k) => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
+                  onSelect={(namaKota) => {
+                    const kota = kotaList.find((k) => k.nama === namaKota);
+                    if (kota) {
+                      setWirausaha((prev) => ({ ...prev, id_kota: String(kota.id) }));
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
@@ -453,6 +702,38 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           </button>
         </div>
       </div>
+
+      <LocationPicker
+        isOpen={showUniMap}
+        onClose={() => setShowUniMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setUniversitas((prev) => ({
+            ...prev,
+            alamat: address || prev.alamat,
+            latitude,
+            longitude,
+          }));
+        }}
+        initialLat={typeof universitas.latitude === 'number' ? universitas.latitude : -7.25}
+        initialLng={typeof universitas.longitude === 'number' ? universitas.longitude : 112.75}
+        title="Pilih Lokasi Universitas"
+      />
+
+      <LocationPicker
+        isOpen={showUsahaMap}
+        onClose={() => setShowUsahaMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setWirausaha((prev) => ({
+            ...prev,
+            alamat: address || prev.alamat,
+            latitude,
+            longitude,
+          }));
+        }}
+        initialLat={typeof wirausaha.latitude === 'number' ? wirausaha.latitude : -7.25}
+        initialLng={typeof wirausaha.longitude === 'number' ? wirausaha.longitude : 112.75}
+        title="Pilih Lokasi Usaha"
+      />
 
       {/* Modal CAPTCHA */}
       {showCaptchaModal && (

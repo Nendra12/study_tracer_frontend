@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Edit2, Lock } from 'lucide-react';
+import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Edit2, Lock, MapPin } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 import SmoothDropdown from '../../admin/SmoothDropdown';
 import InputDropdownEdit from '../../InputDropdownEdit';
 import UniversitySelector from '../../UniversitasSelector';
+import LocationPicker from '../../common/LocationPicker';
 import { toastError, toastWarning } from '../../../utilitis/alert';
 
 export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
@@ -15,10 +16,16 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
   const [statusList, setStatusList] = useState([]);
   const [provinsiList, setProvinsiList] = useState([]);
-  const [kotaList, setKotaList] = useState([]);
+  const [kotaPekerjaanList, setKotaPekerjaanList] = useState([]);
+  const [kotaKuliahList, setKotaKuliahList] = useState([]);
+  const [kotaUsahaList, setKotaUsahaList] = useState([]);
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [jurusanKuliahList, setJurusanKuliahList] = useState([]);
-  const [loadingKota, setLoadingKota] = useState(false);
+  const [loadingKotaPekerjaan, setLoadingKotaPekerjaan] = useState(false);
+  const [loadingKotaKuliah, setLoadingKotaKuliah] = useState(false);
+  const [loadingKotaUsaha, setLoadingKotaUsaha] = useState(false);
+  const [showUniMap, setShowUniMap] = useState(false);
+  const [showUsahaMap, setShowUsahaMap] = useState(false);
 
   // Autocomplete Options
   const [posisiOptions, setPosisiOptions] = useState([]);
@@ -30,8 +37,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const [form, setForm] = useState({
     id_status: '', tahun_mulai: '', tahun_selesai: '',
     posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '',
-    nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '',
-    id_bidang: '', nama_usaha: ''
+    nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', alamat_universitas: '', id_kota_universitas: '', id_provinsi_universitas: '', latitude_universitas: null, longitude_universitas: null,
+    id_bidang: '', nama_usaha: '', alamat_usaha: '', id_kota_usaha: '', id_provinsi_usaha: '', latitude_usaha: null, longitude_usaha: null
   });
 
   const currentYear = new Date().getFullYear();
@@ -96,20 +103,33 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     } catch (err) { console.error('Failed to load master data:', err); }
   }
 
-  async function loadKota(idProvinsi) {
+  async function loadKota(idProvinsi, target) {
     if (!idProvinsi) {
-      setKotaList([]);
+      if (target === 'pekerjaan') setKotaPekerjaanList([]);
+      if (target === 'kuliah') setKotaKuliahList([]);
+      if (target === 'usaha') setKotaUsahaList([]);
       return;
     }
-    setLoadingKota(true);
+
+    if (target === 'pekerjaan') setLoadingKotaPekerjaan(true);
+    if (target === 'kuliah') setLoadingKotaKuliah(true);
+    if (target === 'usaha') setLoadingKotaUsaha(true);
+
     try {
       const res = await masterDataApi.getKota(idProvinsi);
-      setKotaList(res.data.data || res.data || []);
+      const data = res.data.data || res.data || [];
+      if (target === 'pekerjaan') setKotaPekerjaanList(data);
+      if (target === 'kuliah') setKotaKuliahList(data);
+      if (target === 'usaha') setKotaUsahaList(data);
     } catch (err) {
       console.error('Failed to load kota:', err);
-      setKotaList([]);
+      if (target === 'pekerjaan') setKotaPekerjaanList([]);
+      if (target === 'kuliah') setKotaKuliahList([]);
+      if (target === 'usaha') setKotaUsahaList([]);
     } finally {
-      setLoadingKota(false);
+      if (target === 'pekerjaan') setLoadingKotaPekerjaan(false);
+      if (target === 'kuliah') setLoadingKotaKuliah(false);
+      if (target === 'usaha') setLoadingKotaUsaha(false);
     }
   }
 
@@ -125,7 +145,12 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       return;
     }
     setShowForm(true);
-    setForm({ id_status: '', tahun_mulai: '', tahun_selesai: '', posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '', nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', id_bidang: '', nama_usaha: '' });
+    setForm({
+      id_status: '', tahun_mulai: '', tahun_selesai: '',
+      posisi: '', nama_perusahaan: '', id_kota: '', id_provinsi: '', jalan: '',
+      nama_universitas: '', id_jurusanKuliah: '', jalur_masuk: '', jenjang: '', alamat_universitas: '', id_kota_universitas: '', id_provinsi_universitas: '', latitude_universitas: null, longitude_universitas: null,
+      id_bidang: '', nama_usaha: '', alamat_usaha: '', id_kota_usaha: '', id_provinsi_usaha: '', latitude_usaha: null, longitude_usaha: null
+    });
     loadMasterData();
   }
 
@@ -135,6 +160,25 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   async function handleSave() {
     try {
       setSaving(true);
+
+      if (!form.id_status || !form.tahun_mulai) {
+        toastWarning('Status dan tahun mulai wajib diisi.');
+        return;
+      }
+
+      if (statusName.includes('kuliah')) {
+        if (!form.nama_universitas?.trim()) return toastWarning('Nama universitas wajib diisi.');
+        if (!form.alamat_universitas?.trim()) return toastWarning('Alamat universitas wajib diisi.');
+        if (!form.id_kota_universitas) return toastWarning('Kota universitas wajib dipilih.');
+      }
+
+      if (statusName.includes('wirausaha') || statusName.includes('usaha')) {
+        if (!form.nama_usaha?.trim()) return toastWarning('Nama usaha wajib diisi.');
+        if (!form.id_bidang) return toastWarning('Bidang usaha wajib dipilih.');
+        if (!form.alamat_usaha?.trim()) return toastWarning('Alamat usaha wajib diisi.');
+        if (!form.id_kota_usaha) return toastWarning('Kota usaha wajib dipilih.');
+      }
+
       const payload = {
         id_status: form.id_status,
         tahun_mulai: form.tahun_mulai,
@@ -145,9 +189,25 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       if (!isBelum && (statusName.includes('kerja') || statusName.includes('bekerja'))) {
         payload.pekerjaan = { posisi: form.posisi, nama_perusahaan: form.nama_perusahaan, id_kota: form.id_kota, jalan: form.jalan };
       } else if (statusName.includes('kuliah')) {
-        payload.universitas = { nama_universitas: form.nama_universitas, id_jurusanKuliah: form.id_jurusanKuliah, jalur_masuk: form.jalur_masuk, jenjang: form.jenjang };
+        payload.universitas = {
+          nama_universitas: form.nama_universitas,
+          alamat: form.alamat_universitas,
+          id_kota: form.id_kota_universitas,
+          latitude: form.latitude_universitas,
+          longitude: form.longitude_universitas,
+          id_jurusanKuliah: form.id_jurusanKuliah,
+          jalur_masuk: form.jalur_masuk,
+          jenjang: form.jenjang,
+        };
       } else if (statusName.includes('wirausaha') || statusName.includes('usaha')) {
-        payload.wirausaha = { id_bidang: form.id_bidang, nama_usaha: form.nama_usaha };
+        payload.wirausaha = {
+          id_bidang: form.id_bidang,
+          nama_usaha: form.nama_usaha,
+          alamat: form.alamat_usaha,
+          id_kota: form.id_kota_usaha,
+          latitude: form.latitude_usaha,
+          longitude: form.longitude_usaha,
+        };
       }
 
       await alumniApi.updateCareerStatus(payload);
@@ -188,7 +248,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         };
       } else if (career.kuliah) {
         payload.universitas = {
-          nama_universitas: career.kuliah.universitas,
+          nama_universitas: career.kuliah.universitas?.nama || career.kuliah.universitas,
+          alamat: career.kuliah.alamat,
+          id_kota: career.kuliah.id_kota || career.kuliah.kota?.id,
+          latitude: career.kuliah.latitude,
+          longitude: career.kuliah.longitude,
           id_jurusanKuliah: career.kuliah.jurusan_kuliah?.id,
           jalur_masuk: career.kuliah.jalur_masuk,
           jenjang: career.kuliah.jenjang
@@ -196,7 +260,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       } else if (career.wirausaha) {
         payload.wirausaha = {
           id_bidang: career.wirausaha.id_bidang,
-          nama_usaha: career.wirausaha.nama_usaha
+          nama_usaha: career.wirausaha.nama_usaha,
+          alamat: career.wirausaha.alamat,
+          id_kota: career.wirausaha.id_kota || career.wirausaha.kota?.id,
+          latitude: career.wirausaha.latitude,
+          longitude: career.wirausaha.longitude,
         };
       }
 
@@ -248,9 +316,12 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         type: 'kuliah',
         fields: [
           { label: 'Jenjang', value: career.kuliah.jenjang || '-' },
-          { label: 'Universitas', value: career.kuliah.universitas || '-' },
+          { label: 'Universitas', value: career.kuliah.universitas?.nama || career.kuliah.universitas || '-' },
           { label: 'Program Studi / Jurusan', value: career.kuliah.jurusan_kuliah?.nama || '-' },
-          { label: 'Jalur Masuk', value: career.kuliah.jalur_masuk || '-' }
+          { label: 'Jalur Masuk', value: career.kuliah.jalur_masuk || '-' },
+          { label: 'Kota', value: career.kuliah.kota?.nama || career.kuliah.kota || '-' },
+          { label: 'Provinsi', value: career.kuliah.provinsi?.nama || career.kuliah.provinsi || '-' },
+          { label: 'Alamat', value: career.kuliah.alamat || '-' },
         ]
       };
     }
@@ -260,7 +331,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         type: 'wirausaha',
         fields: [
           { label: 'Nama Usaha', value: career.wirausaha.nama_usaha || '-' },
-          { label: 'Bidang Usaha', value: career.wirausaha.bidang_usaha || '-' }
+          { label: 'Bidang Usaha', value: career.wirausaha.bidang_usaha?.nama || career.wirausaha.bidang_usaha || '-' },
+          { label: 'Kota', value: career.wirausaha.kota?.nama || career.wirausaha.kota || '-' },
+          { label: 'Provinsi', value: career.wirausaha.provinsi?.nama || career.wirausaha.provinsi || '-' },
+          { label: 'Alamat', value: career.wirausaha.alamat || '-' },
         ]
       };
     }
@@ -268,6 +342,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     return null;
   }
   const careerInfo = getCareerDisplayInfo();
+  const currentNeedsCompletion = Boolean(
+    (career?.kuliah && (!career.kuliah.alamat || !(career.kuliah.id_kota || career.kuliah.kota?.id))) ||
+    (career?.wirausaha && (!career.wirausaha.alamat || !(career.wirausaha.id_kota || career.wirausaha.kota?.id)))
+  );
 
   return (
     <div className="p-5 md:p-10 flex-1 animate-in fade-in duration-300">
@@ -451,7 +529,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                         const prov = provinsiList.find(p => p.nama === namaProv || p.nama_provinsi === namaProv);
                         if (prov) {
                           setForm(prev => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
-                          loadKota(prov.id);
+                          loadKota(prov.id, 'pekerjaan');
                         }
                       }}
                     />
@@ -460,11 +538,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                     <SmoothDropdown
                       label="Kota / Kabupaten"
                       isSearchable={true}
-                      placeholder={!form.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
-                      options={kotaList.map(k => k.nama || k.nama_kota)}
-                      value={kotaList.find(k => String(k.id) === String(form.id_kota))?.nama || kotaList.find(k => String(k.id) === String(form.id_kota))?.nama_kota || ""}
+                      placeholder={!form.id_provinsi ? "Pilih provinsi dulu" : loadingKotaPekerjaan ? "Memuat..." : "Pilih Kota"}
+                      options={kotaPekerjaanList.map(k => k.nama || k.nama_kota)}
+                      value={kotaPekerjaanList.find(k => String(k.id) === String(form.id_kota))?.nama || kotaPekerjaanList.find(k => String(k.id) === String(form.id_kota))?.nama_kota || ""}
                       onSelect={(namaKota) => {
-                        const kota = kotaList.find(k => k.nama === namaKota || k.nama_kota === namaKota);
+                        const kota = kotaPekerjaanList.find(k => k.nama === namaKota || k.nama_kota === namaKota);
                         if (kota) setForm(prev => ({ ...prev, id_kota: String(kota.id) }));
                       }}
                     />
@@ -516,6 +594,67 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:col-span-2 relative z-40">
+                  <div className="w-full relative">
+                    <SmoothDropdown
+                      label="Provinsi Universitas"
+                      isSearchable={true}
+                      placeholder="Pilih Provinsi"
+                      options={provinsiList.map((p) => p.nama || p.nama_provinsi)}
+                      value={provinsiList.find((p) => String(p.id) === String(form.id_provinsi_universitas))?.nama || provinsiList.find((p) => String(p.id) === String(form.id_provinsi_universitas))?.nama_provinsi || ''}
+                      onSelect={(namaProv) => {
+                        const prov = provinsiList.find((p) => p.nama === namaProv || p.nama_provinsi === namaProv);
+                        if (prov) {
+                          setForm((prev) => ({ ...prev, id_provinsi_universitas: String(prov.id), id_kota_universitas: '' }));
+                          loadKota(prov.id, 'kuliah');
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="w-full relative">
+                    <SmoothDropdown
+                      label="Kota Universitas"
+                      isSearchable={true}
+                      placeholder={!form.id_provinsi_universitas ? 'Pilih provinsi dulu' : loadingKotaKuliah ? 'Memuat...' : 'Pilih Kota'}
+                      options={kotaKuliahList.map((k) => k.nama || k.nama_kota)}
+                      value={kotaKuliahList.find((k) => String(k.id) === String(form.id_kota_universitas))?.nama || kotaKuliahList.find((k) => String(k.id) === String(form.id_kota_universitas))?.nama_kota || ''}
+                      onSelect={(namaKota) => {
+                        const kota = kotaKuliahList.find((k) => k.nama === namaKota || k.nama_kota === namaKota);
+                        if (kota) {
+                          setForm((prev) => ({ ...prev, id_kota_universitas: String(kota.id) }));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Alamat Universitas</label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      placeholder="Contoh: Jl. Kampus Utama No. 1"
+                      value={form.alamat_universitas}
+                      onChange={(e) => setForm((prev) => ({ ...prev, alamat_universitas: e.target.value }))}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowUniMap(true)}
+                      className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:bg-[#2A3E3F] cursor-pointer"
+                    >
+                      <MapPin size={14} />
+                      Pilih di Peta
+                    </button>
+                  </div>
+                  {form.latitude_universitas !== null && form.longitude_universitas !== null && (
+                    <p className="mt-1 text-xs text-emerald-600">
+                      Koordinat: {Number(form.latitude_universitas).toFixed(5)}, {Number(form.longitude_universitas).toFixed(5)}
+                    </p>
+                  )}
+                </div>
               </>
             )}
 
@@ -540,6 +679,67 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                     }}
                   />
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:col-span-2 relative z-40">
+                  <div className="w-full relative">
+                    <SmoothDropdown
+                      label="Provinsi Usaha"
+                      isSearchable={true}
+                      placeholder="Pilih Provinsi"
+                      options={provinsiList.map((p) => p.nama || p.nama_provinsi)}
+                      value={provinsiList.find((p) => String(p.id) === String(form.id_provinsi_usaha))?.nama || provinsiList.find((p) => String(p.id) === String(form.id_provinsi_usaha))?.nama_provinsi || ''}
+                      onSelect={(namaProv) => {
+                        const prov = provinsiList.find((p) => p.nama === namaProv || p.nama_provinsi === namaProv);
+                        if (prov) {
+                          setForm((prev) => ({ ...prev, id_provinsi_usaha: String(prov.id), id_kota_usaha: '' }));
+                          loadKota(prov.id, 'usaha');
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="w-full relative">
+                    <SmoothDropdown
+                      label="Kota Usaha"
+                      isSearchable={true}
+                      placeholder={!form.id_provinsi_usaha ? 'Pilih provinsi dulu' : loadingKotaUsaha ? 'Memuat...' : 'Pilih Kota'}
+                      options={kotaUsahaList.map((k) => k.nama || k.nama_kota)}
+                      value={kotaUsahaList.find((k) => String(k.id) === String(form.id_kota_usaha))?.nama || kotaUsahaList.find((k) => String(k.id) === String(form.id_kota_usaha))?.nama_kota || ''}
+                      onSelect={(namaKota) => {
+                        const kota = kotaUsahaList.find((k) => k.nama === namaKota || k.nama_kota === namaKota);
+                        if (kota) {
+                          setForm((prev) => ({ ...prev, id_kota_usaha: String(kota.id) }));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Alamat Usaha</label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      placeholder="Contoh: Jl. Raya Usaha No. 10"
+                      value={form.alamat_usaha}
+                      onChange={(e) => setForm((prev) => ({ ...prev, alamat_usaha: e.target.value }))}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowUsahaMap(true)}
+                      className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:bg-[#2A3E3F] cursor-pointer"
+                    >
+                      <MapPin size={14} />
+                      Pilih di Peta
+                    </button>
+                  </div>
+                  {form.latitude_usaha !== null && form.longitude_usaha !== null && (
+                    <p className="mt-1 text-xs text-emerald-600">
+                      Koordinat: {Number(form.latitude_usaha).toFixed(5)}, {Number(form.longitude_usaha).toFixed(5)}
+                    </p>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -553,9 +753,46 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         </div>
       )}
 
+      <LocationPicker
+        isOpen={showUniMap}
+        onClose={() => setShowUniMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setForm((prev) => ({
+            ...prev,
+            alamat_universitas: address || prev.alamat_universitas,
+            latitude_universitas: latitude,
+            longitude_universitas: longitude,
+          }));
+        }}
+        initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25}
+        initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75}
+        title="Pilih Lokasi Universitas"
+      />
+
+      <LocationPicker
+        isOpen={showUsahaMap}
+        onClose={() => setShowUsahaMap(false)}
+        onConfirm={({ latitude, longitude, address }) => {
+          setForm((prev) => ({
+            ...prev,
+            alamat_usaha: address || prev.alamat_usaha,
+            latitude_usaha: latitude,
+            longitude_usaha: longitude,
+          }));
+        }}
+        initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25}
+        initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75}
+        title="Pilih Lokasi Usaha"
+      />
+
       {/* Current Career */}
       {careerInfo && (
         <div className={`relative border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 mb-6 bg-white transition-all duration-300 ${showForm ? 'animate-in slide-in-from-top-4' : ''}`}>
+          {currentNeedsCompletion && (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+              Data alamat atau kota pada status karier ini belum lengkap. Silakan lengkapi pada pengajuan status karier berikutnya agar titik sebaran peta akurat.
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="sm:col-span-2">
               <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Status Karier</label>
@@ -657,14 +894,20 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
               }
               else if (item.kuliah) {
                 title = item.kuliah.jenjang ? `Mahasiswa ${item.kuliah.jenjang}` : (item.status?.nama || 'Kuliah');
-                if (item.kuliah.universitas?.nama) details.push({ label: 'Universitas', value: item.kuliah.universitas.nama });
+                if (item.kuliah.universitas?.nama || item.kuliah.universitas) details.push({ label: 'Universitas', value: item.kuliah.universitas?.nama || item.kuliah.universitas });
                 if (item.kuliah.jurusan_kuliah?.nama) details.push({ label: 'Program Studi', value: item.kuliah.jurusan_kuliah.nama });
                 if (item.kuliah.jalur_masuk) details.push({ label: 'Jalur Masuk', value: item.kuliah.jalur_masuk });
+                const lokasiKuliah = [item.kuliah.kota?.nama || item.kuliah.kota, item.kuliah.provinsi?.nama || item.kuliah.provinsi].filter(Boolean).join(', ');
+                if (lokasiKuliah) details.push({ label: 'Lokasi', value: lokasiKuliah });
+                if (item.kuliah.alamat) details.push({ label: 'Alamat', value: item.kuliah.alamat });
               }
               else if (item.wirausaha) {
                 title = 'Wirausaha';
                 if (item.wirausaha.nama_usaha) details.push({ label: 'Nama Usaha', value: item.wirausaha.nama_usaha });
-                if (item.wirausaha.bidang_usaha?.nama) details.push({ label: 'Bidang Usaha', value: item.wirausaha.bidang_usaha.nama });
+                if (item.wirausaha.bidang_usaha?.nama || item.wirausaha.bidang_usaha) details.push({ label: 'Bidang Usaha', value: item.wirausaha.bidang_usaha?.nama || item.wirausaha.bidang_usaha });
+                const lokasiUsaha = [item.wirausaha.kota?.nama || item.wirausaha.kota, item.wirausaha.provinsi?.nama || item.wirausaha.provinsi].filter(Boolean).join(', ');
+                if (lokasiUsaha) details.push({ label: 'Lokasi', value: lokasiUsaha });
+                if (item.wirausaha.alamat) details.push({ label: 'Alamat', value: item.wirausaha.alamat });
               }
 
               const periode = `${item.tahun_mulai || '-'} - ${item.tahun_selesai || 'Sekarang'}`;
