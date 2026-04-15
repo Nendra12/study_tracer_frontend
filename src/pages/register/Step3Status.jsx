@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck, MapPin } from 'lucide-react';
+import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck, MapPin, Save } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
@@ -176,7 +176,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const isExistingUniv = universitasList.some(u => u.toLowerCase() === (universitas.nama_universitas || '').trim().toLowerCase());
   const showUnivLocation = (universitas.nama_universitas || '').trim() !== '' && !isExistingUniv;
 
-
   const statusOptions = [
     { id: 'Bekerja', label: 'Bekerja', sub: '(Working)', icon: Briefcase },
     { id: 'Kuliah', label: 'Kuliah', sub: '(Studying)', icon: GraduationCap },
@@ -193,7 +192,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       <>
         <div className="relative z-[30]">
           <YearsInput
-            label={<>Tahun Mulai {label}</>}
+            label="Tahun Mulai"
             value={data.tahun_mulai}
             maxYear={tahunSekarang} 
             onSelect={(val) => {
@@ -210,15 +209,16 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         <div className="relative z-[20]">
           {!data.is_saat_ini ? (
             <YearsInput
-              label={`Tahun Selesai ${label}`}
+              label="Tahun Selesai"
               value={data.tahun_selesai}
               minYear={data.tahun_mulai ? parseInt(data.tahun_mulai) : undefined}
               onSelect={(val) => setData({ ...data, tahun_selesai: val })}
+              isRequired={false}
             />
           ) : (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-primary uppercase">{`Tahun Selesai ${label}`}</label>
-              <div className="p-2.5 bg-gray-100 border border-fourth rounded-xl text-sm text-gray-400 cursor-not-allowed">
+              <label className="text-[11px] font-bold text-primary uppercase">Tahun Selesai (Opsional)</label>
+              <div className="p-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-sm text-gray-400 cursor-not-allowed">
                 Sedang Berlangsung
               </div>
             </div>
@@ -232,9 +232,9 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 is_saat_ini: e.target.checked, 
                 tahun_selesai: e.target.checked ? "" : data.tahun_selesai 
               })}
-              className="w-4 h-4 accent-primary cursor-pointer"
+              className="w-5 h-5 accent-[#1E293B] cursor-pointer"
             />
-            <span className="text-[10px] font-bold text-primary uppercase">Masih berlangsung</span>
+            <span className="text-[11px] font-bold text-[#1E293B] uppercase">Masih berlangsung (Saat ini)</span>
           </label>
         </div>
       </>
@@ -305,10 +305,10 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             
             <div className="relative z-[80]">
               <InputDropdownEdit
-                label={<>Pekerjaan Sekarang</>}
+                label="Pekerjaan Sekarang"
                 value={pekerjaan.posisi}
                 options={["UI/UX", "DevOps", "Cloud Engineering", "Karyawan"]}
-                placeholder="Masukkan nama pekerjaan"
+                placeholder="Contoh: Software Engineer"
                 isRequired={true}
                 onChange={(val) => setPekerjaan(prev => ({ ...prev, posisi: val }))}
                 onSelect={(val) => setPekerjaan(prev => ({ ...prev, posisi: val }))}
@@ -317,7 +317,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             
             <div className="relative z-[70]">
               <InputDropdownEdit
-                label={<>Nama Perusahaan</>}
+                label="Nama Perusahaan"
                 value={pekerjaan.nama_perusahaan}
                 options={perusahaanList}
                 placeholder="Ketik atau pilih nama perusahaan"
@@ -334,25 +334,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
                 <div className="md:col-span-2 mb-2">
                   <p className="text-[11px] font-bold text-amber-600 italic bg-amber-50 px-3 py-1.5 rounded-lg inline-block border border-amber-200/50">
-                    Data perusahaan baru terdeteksi, mohon lengkapi alamat perusahaan.
+                    Data perusahaan baru terdeteksi, mohon lengkapi alamat berikut:
                   </p>
                 </div>
                 
-                <div className="md:col-span-2 space-y-1">
-                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Perusahaan <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    value={pekerjaan.jalan || ''}
-                    onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
-                    className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                    placeholder="Masukkan jalan, no gedung, dll."
-                  />
-                </div>
-
                 <div className="w-full relative z-[45]">
                   <SmoothDropdown
-                    label={<>Provinsi <span className="text-red-500">*</span></>}
+                    label="Provinsi"
                     isSearchable={true}
+                    isRequired={true}
                     placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
                     options={provinsiList.map(p => p.nama)}
                     value={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ""}
@@ -367,8 +357,9 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
                 <div className="w-full relative z-[40]">
                   <SmoothDropdown
-                    label={<>Kota / Kabupaten <span className="text-red-500">*</span></>}
+                    label="Kota / Kabupaten"
                     isSearchable={true}
+                    isRequired={true}
                     placeholder={!pekerjaan.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
                     options={kotaList.map(k => k.nama)}
                     value={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ""}
@@ -382,29 +373,24 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 </div>
 
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Perusahaan</label>
-                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Perusahaan Baru <span className="text-red-500">*</span></label>
+                  <div className="mt-2 flex gap-2 items-start">
                     <input
                       type="text"
                       value={pekerjaan.jalan || ''}
                       onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
                       className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                      placeholder="Masukkan jalan, no gedung, dll."
+                      placeholder="Masukkan alamat lengkap perusahaan"
                     />
                     <button
                       type="button"
                       onClick={() => setShowBekerjaMap(true)}
-                      className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E293B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0F172A] cursor-pointer"
                     >
-                      <MapPin size={14} />
-                      Pilih di Peta
+                      <MapPin size={16} />
+                      Peta
                     </button>
                   </div>
-                  {pekerjaan.latitude !== null && pekerjaan.longitude !== null && (
-                    <p className="text-xs text-emerald-600">
-                      Koordinat: {Number(pekerjaan.latitude).toFixed(5)}, {Number(pekerjaan.longitude).toFixed(5)}
-                    </p>
-                  )}
                 </div>
               </div>
             )}
@@ -427,7 +413,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="relative z-[70]">
               <SmoothDropdown
-                label={<>Jalur Masuk Kuliah</>}
+                label="Jalur Masuk Kuliah"
                 value={universitas.jalur_masuk}
                 options={["SNBP", "SNBT", "Mandiri", "Beasiswa"]}
                 isRequired={true}
@@ -437,7 +423,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             <div className="relative z-[60]">
               <SmoothDropdown
-                label={<>Jenjang Kuliah</>}
+                label="Jenjang Kuliah"
                 value={universitas.jenjang}
                 options={["D3", "D4", "S1", "S2", "S3"]}
                 isRequired={true}
@@ -445,65 +431,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
-            <div className="relative z-[50]">
-              <SmoothDropdown
-                label="Provinsi Universitas *"
-                isSearchable={true}
-                placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
-                options={provinsiList.map((p) => p.nama)}
-                value={provinsiList.find((p) => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
-                onSelect={(namaProv) => {
-                  const prov = provinsiList.find((p) => p.nama === namaProv);
-                  if (prov) {
-                    setUniversitas((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
-                  }
-                }}
-              />
-            </div>
-
-            <div className="relative z-[40]">
-              <SmoothDropdown
-                label="Kota Universitas *"
-                isSearchable={true}
-                placeholder={!universitas.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
-                options={kotaList.map((k) => k.nama)}
-                value={kotaList.find((k) => String(k.id) === String(universitas.id_kota))?.nama || ''}
-                onSelect={(namaKota) => {
-                  const kota = kotaList.find((k) => k.nama === namaKota);
-                  if (kota) {
-                    setUniversitas((prev) => ({ ...prev, id_kota: String(kota.id) }));
-                  }
-                }}
-              />
-            </div>
-
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas *</label>
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <input
-                  type="text"
-                  value={universitas.alamat}
-                  onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
-                  className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                  placeholder="Masukkan alamat universitas"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowUniMap(true)}
-                  className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
-                >
-                  <MapPin size={14} />
-                  Pilih di Peta
-                </button>
-              </div>
-              {universitas.latitude !== null && universitas.longitude !== null && (
-                <p className="text-xs text-emerald-600">
-                  Koordinat: {Number(universitas.latitude).toFixed(5)}, {Number(universitas.longitude).toFixed(5)}
-                </p>
-              )}
-            </div>
-
-            {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
             {renderTahunDinamis('Kuliah', 'Kuliah')}
 
             {/* AREA LOKASI - HANYA MUNCUL JIKA UNIVERSITAS BARU */}
@@ -511,25 +438,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
                 <div className="md:col-span-2 mb-2">
                   <p className="text-[11px] font-bold text-amber-600 italic bg-amber-50 px-3 py-1.5 rounded-lg inline-block border border-amber-200/50">
-                    Data universitas baru terdeteksi, mohon lengkapi alamat universitas.
+                    Data universitas baru terdeteksi, mohon lengkapi alamat berikut:
                   </p>
-                </div>
-
-                <div className="md:col-span-2 space-y-1">
-                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    value={universitas.alamat}
-                    onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
-                    className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                    placeholder="Masukkan jalan, no kampus, dll."
-                  />
                 </div>
 
                 <div className="relative z-[50]">
                   <SmoothDropdown
-                    label={<>Provinsi Universitas <span className="text-red-500">*</span></>}
+                    label="Provinsi Universitas"
                     isSearchable={true}
+                    isRequired={true}
                     placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
                     options={provinsiList.map((p) => p.nama)}
                     value={provinsiList.find((p) => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
@@ -544,8 +461,9 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
                 <div className="relative z-[40]">
                   <SmoothDropdown
-                    label={<>Kota Universitas <span className="text-red-500">*</span></>}
+                    label="Kota Universitas"
                     isSearchable={true}
+                    isRequired={true}
                     placeholder={!universitas.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
                     options={kotaList.map((k) => k.nama)}
                     value={kotaList.find((k) => String(k.id) === String(universitas.id_kota))?.nama || ''}
@@ -556,6 +474,27 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                       }
                     }}
                   />
+                </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas Baru <span className="text-red-500">*</span></label>
+                  <div className="mt-2 flex gap-2 items-start">
+                    <input
+                      type="text"
+                      value={universitas.alamat || ''}
+                      onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
+                      className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                      placeholder="Masukkan alamat lengkap universitas"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowUniMap(true)}
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E293B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0F172A] cursor-pointer"
+                    >
+                      <MapPin size={16} />
+                      Peta
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -572,13 +511,13 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 value={wirausaha.nama_usaha}
                 onChange={(e) => setWirausaha({ ...wirausaha, nama_usaha: e.target.value })}
                 className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                placeholder="Masukkan nama usaha"
+                placeholder="Contoh: Toko Kopi Sejahtera"
               />
             </div>
 
             <div className="relative z-[60]">
               <SmoothDropdown
-                label={<>Bidang Usaha <span className="text-red-500">*</span></>}
+                label="Bidang Usaha"
                 value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
                 options={bidangUsahaList}
                 isRequired={true}
@@ -586,83 +525,14 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
-            <div className="relative z-[50]">
-              <SmoothDropdown
-                label="Provinsi Usaha *"
-                isSearchable={true}
-                placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
-                options={provinsiList.map((p) => p.nama)}
-                value={provinsiList.find((p) => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
-                onSelect={(namaProv) => {
-                  const prov = provinsiList.find((p) => p.nama === namaProv);
-                  if (prov) {
-                    setWirausaha((prev) => ({ ...prev, id_provinsi: String(prov.id), id_kota: '' }));
-                  }
-                }}
-              />
-            </div>
-
-            <div className="relative z-[40]">
-              <SmoothDropdown
-                label="Kota Usaha *"
-                isSearchable={true}
-                placeholder={!wirausaha.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
-                options={kotaList.map((k) => k.nama)}
-                value={kotaList.find((k) => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
-                onSelect={(namaKota) => {
-                  const kota = kotaList.find((k) => k.nama === namaKota);
-                  if (kota) {
-                    setWirausaha((prev) => ({ ...prev, id_kota: String(kota.id) }));
-                  }
-                }}
-              />
-            </div>
-
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha *</label>
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <input
-                  type="text"
-                  value={wirausaha.alamat}
-                  onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
-                  className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                  placeholder="Masukkan alamat usaha"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowUsahaMap(true)}
-                  className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer"
-                >
-                  <MapPin size={14} />
-                  Pilih di Peta
-                </button>
-              </div>
-              {wirausaha.latitude !== null && wirausaha.longitude !== null && (
-                <p className="text-xs text-emerald-600">
-                  Koordinat: {Number(wirausaha.latitude).toFixed(5)}, {Number(wirausaha.longitude).toFixed(5)}
-                </p>
-              )}
-            </div>
-
-            {/* Panggil fungsi tahun di sini agar sejajar Kiri-Kanan */}
             {renderTahunDinamis('Wirausaha', 'Usaha')}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  value={wirausaha.alamat}
-                  onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
-                  className="mt-2 w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                  placeholder="Masukkan alamat usaha"
-                />
-              </div>
-
               <div className="relative z-[50]">
                 <SmoothDropdown
-                  label={<>Provinsi Usaha <span className="text-red-500">*</span></>}
+                  label="Provinsi Usaha"
                   isSearchable={true}
+                  isRequired={true}
                   placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
                   options={provinsiList.map((p) => p.nama)}
                   value={provinsiList.find((p) => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
@@ -677,8 +547,9 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
               <div className="relative z-[40]">
                 <SmoothDropdown
-                  label={<>Kota Usaha <span className="text-red-500">*</span></>}
+                  label="Kota Usaha"
                   isSearchable={true}
+                  isRequired={true}
                   placeholder={!wirausaha.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
                   options={kotaList.map((k) => k.nama)}
                   value={kotaList.find((k) => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
@@ -689,6 +560,27 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     }
                   }}
                 />
+              </div>
+
+              <div className="md:col-span-2 space-y-1">
+                <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha <span className="text-red-500">*</span></label>
+                <div className="mt-2 flex gap-2 items-start">
+                  <input
+                    type="text"
+                    value={wirausaha.alamat || ''}
+                    onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
+                    className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                    placeholder="Masukkan alamat lengkap usaha"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowUsahaMap(true)}
+                    className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E293B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0F172A] cursor-pointer"
+                  >
+                    <MapPin size={16} />
+                    Peta
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -714,7 +606,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             type="button"
             disabled={loading}
             onClick={() => setShowCaptchaModal(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-60"
+            className="flex items-center gap-2 px-5 py-3 bg-[#1E293B] text-white rounded-xl text-xs md:text-sm font-bold hover:bg-[#0F172A] transition-all cursor-pointer disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -723,14 +615,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               </>
             ) : (
               <>
-                <CheckCircle size={18} /> 
-                <span>Selesai</span>
+                <Save size={16} /> 
+                <span>Simpan Status</span>
               </>
             )}
           </button>
         </div>
       </div>
 
+      {/* MAPS LOCATION PICKER (TERHUBUNG KE PROVINSI & KOTA YANG DIPILIH) */}
       <LocationPicker
         isOpen={showBekerjaMap}
         onClose={() => setShowBekerjaMap(false)}
@@ -742,8 +635,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             longitude,
           }));
         }}
-        initialLat={typeof pekerjaan.latitude === 'number' ? pekerjaan.latitude : -7.25}
-        initialLng={typeof pekerjaan.longitude === 'number' ? pekerjaan.longitude : 112.75}
+        initialLat={typeof pekerjaan.latitude === 'number' && pekerjaan.latitude !== null ? pekerjaan.latitude : -7.25}
+        initialLng={typeof pekerjaan.longitude === 'number' && pekerjaan.longitude !== null ? pekerjaan.longitude : 112.75}
         selectedKota={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ''}
         selectedProvinsi={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ''}
         title="Pilih Lokasi Perusahaan"
@@ -760,8 +653,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             longitude,
           }));
         }}
-        initialLat={typeof universitas.latitude === 'number' ? universitas.latitude : -7.25}
-        initialLng={typeof universitas.longitude === 'number' ? universitas.longitude : 112.75}
+        initialLat={typeof universitas.latitude === 'number' && universitas.latitude !== null ? universitas.latitude : -7.25}
+        initialLng={typeof universitas.longitude === 'number' && universitas.longitude !== null ? universitas.longitude : 112.75}
         selectedKota={kotaList.find(k => String(k.id) === String(universitas.id_kota))?.nama || ''}
         selectedProvinsi={provinsiList.find(p => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
         title="Pilih Lokasi Universitas"
@@ -778,8 +671,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             longitude,
           }));
         }}
-        initialLat={typeof wirausaha.latitude === 'number' ? wirausaha.latitude : -7.25}
-        initialLng={typeof wirausaha.longitude === 'number' ? wirausaha.longitude : 112.75}
+        initialLat={typeof wirausaha.latitude === 'number' && wirausaha.latitude !== null ? wirausaha.latitude : -7.25}
+        initialLng={typeof wirausaha.longitude === 'number' && wirausaha.longitude !== null ? wirausaha.longitude : 112.75}
         selectedKota={kotaList.find(k => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
         selectedProvinsi={provinsiList.find(p => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
         title="Pilih Lokasi Usaha"
@@ -795,7 +688,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 setShowCaptchaModal(false);
                 updateFormData({ captcha_token: '', captcha_key: '' });
               }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
