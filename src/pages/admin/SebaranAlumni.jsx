@@ -2,11 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { Search, Filter, Building2, School } from 'lucide-react';
 import { useSebaranAlumni } from '../../hooks/useSebaranAlumni';
 
-// Import Komponen Kecil yang Baru Dibuat
 import StatSebaran from '../../components/admin/sebaran/StatSebaran';
 import TopSebaran from '../../components/admin/sebaran/TopSebaran';
 import FilterSebaran from '../../components/admin/sebaran/FilterSebaran';
 import MapSebaran from '../../components/admin/sebaran/MapSebaran';
+
+import SkeletonSebaran from '../../components/admin/skeleton/SkeletonSebaran';
 
 export default function SebaranAlumni() {
   const {
@@ -45,6 +46,14 @@ export default function SebaranAlumni() {
     return Object.values(activeFilters).filter((v) => v !== '' && v !== null).length;
   }, [activeFilters]);
 
+  // LOGIKA LOADING SKELETON
+  // Tampilkan skeleton JIKA sedang memuat data pertama kali DAN markers masih kosong/belum ada
+  const isInitialLoading = loadingMarkers && (!markers || markers.length === 0) && (!stats);
+
+  if (isInitialLoading) {
+    return <SkeletonSebaran />;
+  }
+
   return (
     <div className="space-y-6">
       
@@ -56,7 +65,7 @@ export default function SebaranAlumni() {
           {searchResults.length > 0 && (
             <div className="absolute top-[110%] left-0 w-full bg-white rounded-xl shadow-lg border border-gray-100 z-[100] max-h-60 overflow-y-auto py-2">
               {searchResults.map((result) => (
-                <button key={`${result.type}-${result.id}`} onClick={() => handleSearchSelect(result)} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                <button key={`${result.type}-${result.id}`} onClick={() => handleSearchSelect(result)} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">
                   <div className={`p-2 rounded-lg ${result.type === 'perusahaan' ? 'bg-blue-50 text-blue-500' : 'bg-green-50 text-green-500'}`}>
                     {result.type === 'perusahaan' ? <Building2 size={16} /> : <School size={16} />}
                   </div>
