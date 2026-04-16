@@ -19,47 +19,8 @@ import {
 } from "../../components/admin/Chart";
 import { adminApi } from '../../api/admin';
 
-// --- Komponen Skeleton Loading ---
-const Skeleton = ({ className }) => (
-  <div className={`animate-pulse bg-gray-200 rounded-xl ${className}`} />
-);
-
-const DashboardLoading = () => (
-  <div className="space-y-6 p-1">
-    {/* Stats Grid Skeleton */}
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-white p-6 rounded-2xl border border-fourth shadow-sm h-32 flex flex-col justify-between">
-          <Skeleton className="w-12 h-12" />
-          <div className="space-y-2">
-            <Skeleton className="w-24 h-3" />
-            <Skeleton className="w-16 h-6" />
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* Section Waiting List Skeleton */}
-    <div className="bg-white border border-fourth rounded-2xl p-6 shadow-sm">
-      <Skeleton className="w-64 h-6 mb-8" />
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="flex justify-center"><Skeleton className="w-48 h-48 rounded-full" /></div>
-        <div className="lg:col-span-2 space-y-4">
-          <Skeleton className="w-full h-24 rounded-2xl" />
-          <Skeleton className="w-full h-24 rounded-2xl" />
-        </div>
-      </div>
-    </div>
-
-    {/* Charts Skeleton */}
-    <div className="bg-white border border-fourth rounded-2xl p-6 shadow-sm">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Skeleton className="h-64 rounded-2xl" />
-        <Skeleton className="lg:col-span-2 h-64 rounded-2xl" />
-      </div>
-    </div>
-  </div>
-);
+// --- Import Skeleton yang Baru Dibuat ---
+import SkeletonDashboard from '../../components/admin/skeleton/SkeletonDashboard';
 
 // --- Komponen StatCard ---
 const StatCard = ({ icon: Icon, label, value, badge, badgeColor }) => (
@@ -149,12 +110,12 @@ export default function Dashboard() {
       }
     })
     const total = data.reduce((sum, item) => sum + item.total, 0);
-    return Math.round((bagian / total) * 100);
+    return Math.round((bagian / total) * 100) || 0;
   }
 
   const presentaseKerja = hitungPersen(statusDistribution)
 
-  function badgePresentaseKerja(presentaseKerja) {
+  function badgePresentaseKerja() {
     if (presentaseKerja > 81) {
       return "Sangat Baik"
     } else if (presentaseKerja > 61) {
@@ -197,7 +158,8 @@ export default function Dashboard() {
     },
   ];
 
-  if (loading) return <DashboardLoading />;
+  // Panggil Skeleton Component yang Baru Jika Masih Loading
+  if (loading) return <SkeletonDashboard />;
 
   return (
     <div className="space-y-6 max-w-full overflow-hidden p-1 animate-in fade-in duration-700">
