@@ -83,16 +83,6 @@ export default function Register() {
         setLoading(false);
         return;
       }
-      if (!formData.universitas.alamat?.trim()) {
-        setError('Alamat universitas wajib diisi.');
-        setLoading(false);
-        return;
-      }
-      if (!formData.universitas.id_kota) {
-        setError('Kota universitas wajib dipilih.');
-        setLoading(false);
-        return;
-      }
       if (!formData.universitas.jalur_masuk) {
         setError('Jalur masuk kuliah wajib dipilih.');
         setLoading(false);
@@ -102,6 +92,19 @@ export default function Register() {
         setError('Jenjang kuliah wajib dipilih.');
         setLoading(false);
         return;
+      }
+      
+      if (formData.universitas.isNew) {
+        if (!formData.universitas.alamat?.trim()) {
+          setError('Alamat universitas wajib diisi.');
+          setLoading(false);
+          return;
+        }
+        if (!formData.universitas.id_kota) {
+          setError('Kota universitas wajib dipilih.');
+          setLoading(false);
+          return;
+        }
       }
     }
 
@@ -116,15 +119,44 @@ export default function Register() {
         setLoading(false);
         return;
       }
-      if (!formData.wirausaha.alamat?.trim()) {
-        setError('Alamat usaha wajib diisi.');
+      
+      if (formData.wirausaha.isNew) {
+        if (!formData.wirausaha.alamat?.trim()) {
+          setError('Alamat usaha wajib diisi.');
+          setLoading(false);
+          return;
+        }
+        if (!formData.wirausaha.id_kota) {
+          setError('Kota usaha wajib dipilih.');
+          setLoading(false);
+          return;
+        }
+      }
+    }
+    
+    if (formData.pekerjaan) {
+      if (!formData.pekerjaan.posisi?.trim()) {
+        setError('Pekerjaan/Posisi sekarang wajib diisi.');
         setLoading(false);
         return;
       }
-      if (!formData.wirausaha.id_kota) {
-        setError('Kota usaha wajib dipilih.');
+      if (!formData.pekerjaan.nama_perusahaan?.trim()) {
+        setError('Nama perusahaan wajib diisi.');
         setLoading(false);
         return;
+      }
+
+      if (formData.pekerjaan.isNew) {
+        if (!formData.pekerjaan.jalan?.trim()) {
+          setError('Alamat perusahaan wajib diisi.');
+          setLoading(false);
+          return;
+        }
+        if (!formData.pekerjaan.id_kota) {
+          setError('Kota tempat perusahaan wajib dipilih.');
+          setLoading(false);
+          return;
+        }
       }
     }
 

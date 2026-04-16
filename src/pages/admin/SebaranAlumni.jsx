@@ -23,7 +23,16 @@ export default function SebaranAlumni() {
     provinsi_id: '', jurusan_id: '', kota_id: '', bidang_usaha_id: '',
   });
 
-  const handleFilterChange = (key, value) => setActiveFilters((prev) => ({ ...prev, [key]: value }));
+  const handleFilterChange = (keyOrObj, value) => {
+    setActiveFilters((prev) => {
+      const nextFilters = typeof keyOrObj === 'object' ? { ...prev, ...keyOrObj } : { ...prev, [keyOrObj]: value };
+      
+      // Map langsung update
+      setTimeout(() => applyFilters(nextFilters), 0);
+      
+      return nextFilters;
+    });
+  };
 
   const handleApplyFilters = () => { applyFilters(activeFilters); setShowFilters(false); };
 
@@ -38,8 +47,24 @@ export default function SebaranAlumni() {
 
   const handleSearchSelect = (result) => {
     const filterKey = result.type === 'perusahaan' ? 'perusahaan_id' : 'universitas_id';
-    const updated = { ...activeFilters, [filterKey]: result.id };
-    setActiveFilters(updated); applyFilters(updated); setSearchQuery(''); setSearchResults([]);
+    
+    // Use the updated handler that auto-applies map update and triggers business logic if we put that logic in handleFilterChange or handle it properly.
+    // Wait, the business logic will be in FilterSebaran.jsx, but since it's search select here, we should apply it too.
+    const updates = { [filterKey]: result.id };
+    if (result.type === 'perusahaan') {
+        updates.tipe_karir = 'bekerja';
+        updates.universitas_id = '';
+        updates.bidang_usaha_id = '';
+    } else {
+        updates.tipe_karir = 'kuliah';
+        updates.perusahaan_id = '';
+        updates.bidang_usaha_id = '';
+    }
+    
+    handleFilterChange(updates);
+    setSearchQuery(''); 
+    setSearchResults([]);
+    setShowFilters(false);
   };
 
   const activeFilterCount = useMemo(() => {

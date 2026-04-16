@@ -61,8 +61,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   
   // STATE MAP
   const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [mapLoading, setMapLoading] = useState(false); // State loading untuk pencarian kota
-  
+
   const skillDropdownRef = useRef(null);
 
   // Set Minimum Date + Click outside handler
@@ -184,44 +183,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const isExistingCompany = Boolean(formData.id_perusahaan);
 
-  // --- LOGIKA MENCARI KOORDINAT KOTA (AUTO-GEOCODING) ---
-  const handleOpenMap = async () => {
-    // Jika sudah pernah memilih koordinat di map sebelumnya, langsung buka saja
-    if (formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null) {
-      setShowLocationPicker(true);
-      return;
-    }
-
-    // Jika belum ada koordinat, tapi user sudah memilih Kota & Provinsi
-    const cityName = kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama;
-    const provName = provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama;
-
-    if (cityName) {
-      setMapLoading(true);
-      try {
-        // Melakukan pencarian koordinat kota ke OpenStreetMap (Nominatim API)
-        const query = encodeURIComponent(`${cityName}, ${provName || ''}, Indonesia`);
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-        const data = await res.json();
-
-        if (data && data.length > 0) {
-          // Simpan koordinat kota tersebut sementara agar map terpusat ke sana
-          setFormData(prev => ({
-            ...prev,
-            latitude_perusahaan: parseFloat(data[0].lat),
-            longitude_perusahaan: parseFloat(data[0].lon)
-          }));
-        }
-      } catch (err) {
-        console.error("Gagal mencari koordinat kota:", err);
-      } finally {
-        setMapLoading(false);
-        setShowLocationPicker(true);
-      }
-    } else {
-      // Jika user belum milih kota sama sekali, langsung buka map (lokasi default)
-      setShowLocationPicker(true);
-    }
+  const handleOpenMap = () => {
+    setShowLocationPicker(true);
   };
 
   // --- HANDLER CUSTOM COMPANY DROPDOWN ---
@@ -408,9 +371,6 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         if (validationErrors.jam_mulai) mapped.jam_mulai = validationErrors.jam_mulai[0];
         if (validationErrors.jam_berakhir) mapped.jam_berakhir = validationErrors.jam_berakhir[0];
         if (validationErrors.foto_lowongan) mapped.foto = validationErrors.foto_lowongan[0];
-        if (validationErrors.id_kota) mapped.id_kota = vErrs.id_kota?.[0] || vErrs.id_kota;
-        if (validationErrors.id_provinsi) mapped.id_provinsi = vErrs.id_provinsi?.[0] || vErrs.id_provinsi;
-        if (validationErrors.skills) mapped.skills = validationErrors.skills[0];
         
         setErrors(mapped);
         document.querySelector('.custom-modal-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -424,11 +384,11 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   if (!isOpen) return null;
 
-  // Standarisasi kelas Input CSS (Tinggi 48px, Margin 0)
-  const inputClass = (err) => `w-full h-[48px] px-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
+  // PERUBAHAN: Menghapus font-semibold dan menggantinya dengan font-normal
+  const inputClass = (err) => `w-full h-[48px] px-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
   
-  // Wrapper untuk menetralkan styling liar SmoothDropdown agar match dgn inputClass
-  const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-semibold [&_button_span]:!text-slate-700";
+  // PERUBAHAN: Menghapus !font-semibold dan menggantinya dengan !font-normal
+  const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-normal [&_button_span]:!text-slate-700";
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -491,7 +451,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-[45]">
-              {/* DROPDOWN PERUSAHAAN CUSTOM (Tinggi 48px, Margin 0) */}
+              {/* DROPDOWN PERUSAHAAN CUSTOM */}
               <div className="w-full relative z-[100]" ref={companyRef}>
                 <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                   Nama Perusahaan <span className="text-red-500">*</span>
@@ -501,7 +461,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                   onClick={() => setCompanyDropdownOpen(!companyDropdownOpen)}
                   className={`cursor-pointer w-full h-[48px] px-4 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary/20`}
                 >
-                  <span className={formData.perusahaan ? 'text-primary/80 font-bold truncate' : 'text-gray-400 font-semibold truncate'}>
+                  {/* PERUBAHAN: Menghapus font-bold dan font-semibold */}
+                  <span className={formData.perusahaan ? 'text-primary/80 font-normal truncate' : 'text-gray-400 font-normal truncate'}>
                     {formData.perusahaan || 'Pilih atau ketik nama perusahaan'}
                   </span>
                   <ChevronDown size={18} className={`text-gray-400 shrink-0 transition-transform duration-300 ${companyDropdownOpen ? 'rotate-180' : ''}`} />
@@ -515,7 +476,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                         autoFocus
                         type="text"
                         placeholder="Cari..."
-                        className="w-full bg-transparent text-sm outline-none p-1 font-medium"
+                        // PERUBAHAN: Menghapus font-medium menjadi font-normal
+                        className="w-full bg-transparent text-sm outline-none p-1 font-normal"
                         value={companySearchTerm}
                         onChange={(e) => setCompanySearchTerm(e.target.value)}
                         onKeyDown={(e) => {
@@ -530,7 +492,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                     </div>
                     <ul className="py-1 max-h-48 overflow-y-auto custom-scrollbar">
                       {filteredCompanies.length > 0 && filteredCompanies.map(comp => (
-                        <li key={comp.id} onClick={() => handleCompanySelect(comp)} className="px-4 py-2.5 text-sm font-medium cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors flex justify-between items-center">
+                        <li key={comp.id} onClick={() => handleCompanySelect(comp)} className="px-4 py-2.5 text-sm font-normal cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors flex justify-between items-center">
                           <span className={`truncate ${formData.id_perusahaan === String(comp.id) ? "font-bold text-primary" : ""}`}>
                             {comp.nama || comp.nama_perusahaan}
                           </span>
@@ -652,11 +614,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                     <button
                       type="button"
                       onClick={handleOpenMap}
-                      disabled={mapLoading}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
                     >
-                      {mapLoading ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
-                      <span className="hidden sm:inline">{mapLoading ? 'Mencari...' : 'Pilih di Peta'}</span>
+                      <MapPin size={16} />
+                      <span className="hidden sm:inline">Pilih di Peta</span>
                     </button>
                   </div>
                   {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
@@ -701,7 +662,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                       }
                     }}
                     placeholder="Cari dan pilih skill..."
-                    className="w-full h-[48px] pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    // PERUBAHAN: Menghapus font-semibold menjadi font-normal
+                    className="w-full h-[48px] pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     disabled={creatingSkill}
                   />
                   {showSkillDropdown && (
@@ -743,7 +705,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
               <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                 Deskripsi & Kualifikasi Pekerjaan <span className="text-red-500">*</span>
               </label>
-              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={`w-full px-5 py-4 bg-slate-50 border ${errors.deskripsi ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[120px]`} />
+              {/* PERUBAHAN: Menghapus font-medium menjadi font-normal */}
+              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={`w-full px-5 py-4 bg-slate-50 border ${errors.deskripsi ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[120px]`} />
               {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
             </div>
 
@@ -777,6 +740,9 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         }}
         initialLat={typeof formData.latitude_perusahaan === 'number' ? formData.latitude_perusahaan : -7.25}
         initialLng={typeof formData.longitude_perusahaan === 'number' ? formData.longitude_perusahaan : 112.75}
+        selectedKota={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ''}
+        initialAddress={formData.alamat_perusahaan || ''}
         title="Pilih Lokasi Perusahaan"
       />
     </div>

@@ -123,6 +123,24 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
     };
   }, []);
 
+  // Debug: log selectedLocation structure untuk troubleshooting
+  useEffect(() => {
+    if (selectedLocation) {
+      console.log('🗺️ selectedLocation:', JSON.stringify(selectedLocation, null, 2));
+      console.log('🔑 entity:', selectedLocation.entity);
+      console.log('🔑 entity_id (root):', selectedLocation.entity_id);
+      console.log('👥 alumni:', selectedLocation.alumni);
+      console.log('📊 alumni count:', selectedLocation.alumni?.length);
+    }
+  }, [selectedLocation]);
+
+  // Helper: cek apakah selectedLocation cocok dengan marker
+  const isSelectedMarker = useCallback((marker) => {
+    if (!selectedLocation) return false;
+    // Coba cocokkan via entity.id
+    const entityId = selectedLocation.entity?.id ?? selectedLocation.entity_id ?? selectedLocation.id;
+    return entityId != null && String(entityId) === String(marker.entity_id);
+  }, [selectedLocation]);
 
 
   return (
@@ -160,7 +178,7 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
               position={[marker.latitude, marker.longitude]} 
               icon={markerIcons[marker.type] || markerIcons.bekerja} 
               eventHandlers={{ click: () => handleMarkerClick(marker) }}
-              zIndexOffset={selectedLocation && selectedLocation.entity?.id === marker.entity_id ? 1000 : 0}
+              zIndexOffset={isSelectedMarker(marker) ? 1000 : 0}
             >
               <Popup 
                 maxWidth={350} 
@@ -202,7 +220,7 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
                       )}
                     </div>
                   )}
-                  {selectedLocation && selectedLocation.entity?.id === marker.entity_id ? (
+                  {isSelectedMarker(marker) ? (
                     <div className="mt-4 border-t border-gray-100 pt-3 max-h-56 overflow-y-auto custom-scrollbar pr-1">
                       {loadingDetail ? (
                         <p className="text-xs font-medium text-gray-400 text-center py-4 animate-pulse">Memuat data detail...</p>

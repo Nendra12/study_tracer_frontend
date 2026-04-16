@@ -72,7 +72,7 @@ export default function SmoothDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute z-110 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="absolute z-[110] w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
           
           {/* INPUT SEARCH HANYA MUNCUL JIKA DIMINTA */}
           {isSearchable && (
@@ -110,7 +110,7 @@ export default function SmoothDropdown({
         </div>
       )}
 
-      {isOpen && <div className="fixed inset-0 z-100" onClick={() => setIsOpen(false)} />}
+      {isOpen && <div className="fixed inset-0 z-[100]" onClick={() => setIsOpen(false)} />}
     </div>
   );
 }

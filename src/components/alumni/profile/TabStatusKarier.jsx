@@ -25,6 +25,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const [kotaKuliahList, setKotaKuliahList] = useState([]);
   const [kotaUsahaList, setKotaUsahaList] = useState([]);
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
+  const [bidangUsahaMap, setBidangUsahaMap] = useState({});
   const [jurusanKuliahList, setJurusanKuliahList] = useState([]);
   
   const [loadingKotaPekerjaan, setLoadingKotaPekerjaan] = useState(false);
@@ -82,7 +83,18 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
       setStatusList(statusRes.data?.data || statusRes.data || []);
       setProvinsiList(provinsiRes.data?.data || provinsiRes.data || []);
-      setBidangUsahaList(bidangRes.data?.data || bidangRes.data || []);
+
+      const bidangData = bidangRes.data?.data || bidangRes.data || [];
+      setBidangUsahaList(bidangData);
+
+      const bidangMap = {};
+      (Array.isArray(bidangData) ? bidangData : []).forEach((b) => {
+        const name = b?.nama || b?.nama_bidang || b?.nama_bidang_usaha;
+        const id = b?.id;
+        if (name != null) bidangMap[String(name)] = id != null ? String(id) : String(name);
+      });
+      setBidangUsahaMap(bidangMap);
+
       setJurusanKuliahList(jurusanRes.data?.data || jurusanRes.data || []);
 
       const rawP = masterPerusahaan.data?.data?.data || masterPerusahaan.data?.data || masterPerusahaan.data || [];
@@ -173,7 +185,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
     return (
       <>
-        <div className="relative z-[70] w-full">
+        <div className="relative z-[10] w-full focus-within:z-[9999]">
           <SmoothDropdown
             label={<>Tahun Mulai <span className="text-red-500">*</span></>}
             isSearchable={true}
@@ -190,7 +202,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           />
         </div>
 
-        <div className="relative z-[20] w-full">
+        <div className="relative z-[10] w-full focus-within:z-[9999]">
           {!data.is_saat_ini ? (
             <SmoothDropdown
               label="Tahun Selesai (opsional)"
@@ -202,7 +214,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             />
           ) : (
             <div className="space-y-1">
-              <label className="text-[11px] font-black text-primary uppercase tracking-widest block mb-2.5">
+              <label className="text-[11px] font-bold text-primary uppercase tracking-widest block mb-2.5">
                 Tahun Selesai
               </label>
               <div className="w-full bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
@@ -543,7 +555,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                       />
                     ) : (
                       <div className="space-y-1">
-                        <label className="text-[11px] font-black text-primary/80 uppercase tracking-widest block mb-2.5">
+                        <label className="text-[11px] font-bold text-primary/80 uppercase tracking-widest block mb-2.5">
                           Tahun Selesai
                         </label>
                         <div className="w-full bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">

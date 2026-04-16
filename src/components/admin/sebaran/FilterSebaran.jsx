@@ -57,6 +57,50 @@ export default function FilterSebaran({
     ];
   };
 
+  const onFilterUpdate = (key, value) => {
+    const updates = { [key]: value };
+
+    // Aturan Bisnis Filter Sebaran
+    if (key === 'perusahaan_id' && value !== '') {
+      // Jika pilih Perusahaan, paksa tipe karir ke Bekerja dan reset filter wirausaha/kuliah
+      updates.tipe_karir = 'bekerja';
+      updates.universitas_id = '';
+      updates.bidang_usaha_id = '';
+    } else if (key === 'universitas_id' && value !== '') {
+      // Jika pilih Universitas, paksa tipe karir ke Kuliah
+      updates.tipe_karir = 'kuliah';
+      updates.perusahaan_id = '';
+      updates.bidang_usaha_id = '';
+    } else if (key === 'bidang_usaha_id' && value !== '') {
+      // Jika pilih Bidang Usaha, paksa tipe karir ke Wirausaha
+      updates.tipe_karir = 'wirausaha';
+      updates.perusahaan_id = '';
+      updates.universitas_id = '';
+    } else if (key === 'tipe_karir') {
+      // Jika ubah Tipe Karir secara manual
+      if (value === 'bekerja') {
+        updates.universitas_id = '';
+        updates.bidang_usaha_id = '';
+      } else if (value === 'kuliah') {
+        updates.perusahaan_id = '';
+        updates.bidang_usaha_id = '';
+      } else if (value === 'wirausaha') {
+        updates.perusahaan_id = '';
+        updates.universitas_id = '';
+      }
+    } else if (key === 'provinsi_id' && value === '') {
+      // Jika reset Provinsi, reset Kota
+      updates.kota_id = '';
+    }
+
+    handleFilterChange(updates);
+  };
+
+  // Status Disabling
+  const isKuliahDisabled = activeFilters.tipe_karir === 'bekerja' || activeFilters.tipe_karir === 'wirausaha' || activeFilters.perusahaan_id || activeFilters.bidang_usaha_id;
+  const isWirausahaDisabled = activeFilters.tipe_karir === 'bekerja' || activeFilters.tipe_karir === 'kuliah' || activeFilters.perusahaan_id || activeFilters.universitas_id;
+  const isBekerjaDisabled = activeFilters.tipe_karir === 'kuliah' || activeFilters.tipe_karir === 'wirausaha' || activeFilters.universitas_id || activeFilters.bidang_usaha_id;
+
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-top-4 duration-300 relative z-[50]">
       <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
@@ -80,10 +124,10 @@ export default function FilterSebaran({
               options={["Semua", ...(filterOptions?.tipe_karir?.map(i => i.label) || [])]}
               value={filterOptions?.tipe_karir?.find(i => i.key === activeFilters.tipe_karir)?.label || "Semua"}
               onSelect={(val) => {
-                if (val === "Semua") handleFilterChange('tipe_karir', '');
+                if (val === "Semua") onFilterUpdate('tipe_karir', '');
                 else {
                   const found = filterOptions?.tipe_karir?.find(i => i.label === val);
-                  handleFilterChange('tipe_karir', found ? found.key : '');
+                  onFilterUpdate('tipe_karir', found ? found.key : '');
                 }
               }}
               isSearchable={false}
@@ -95,7 +139,7 @@ export default function FilterSebaran({
               label="Angkatan Lulus"
               options={["Semua", ...(filterOptions?.angkatan?.map(String) || [])]}
               value={activeFilters.angkatan ? String(activeFilters.angkatan) : "Semua"}
-              onSelect={(val) => handleFilterChange('angkatan', val === "Semua" ? '' : val)}
+              onSelect={(val) => onFilterUpdate('angkatan', val === "Semua" ? '' : val)}
               isSearchable={true}
             />
           </div>
@@ -107,12 +151,10 @@ export default function FilterSebaran({
               value={filterOptions?.provinsi?.find(i => String(i.id) === String(activeFilters.provinsi_id))?.nama || "Semua"}
               onSelect={(val) => {
                 if (val === "Semua") {
-                  handleFilterChange('provinsi_id', '');
-                  handleFilterChange('kota_id', ''); 
+                  onFilterUpdate('provinsi_id', '');
                 } else {
                   const found = filterOptions?.provinsi?.find(i => i.nama === val);
-                  handleFilterChange('provinsi_id', found ? String(found.id) : '');
-                  handleFilterChange('kota_id', ''); 
+                  onFilterUpdate('provinsi_id', found ? String(found.id) : '');
                 }
               }}
               isSearchable={true}
@@ -127,14 +169,14 @@ export default function FilterSebaran({
               options={formatKotaOptions()}
               value={activeFilters.kota_id ? String(activeFilters.kota_id) : "Semua"}
               onSelect={(val) => {
-                if (val === "Semua" || val === "") handleFilterChange('kota_id', '');
-                else handleFilterChange('kota_id', val);
+                if (val === "Semua" || val === "") onFilterUpdate('kota_id', '');
+                else onFilterUpdate('kota_id', val);
               }}
             />
             {loadingKota && <span className="absolute right-10 top-[42px] text-[10px] text-primary italic bg-white px-1 pointer-events-none">memuat...</span>}
           </div>
 
-          <div className="relative z-[40] focus-within:z-[100] w-full">
+          <div className={`relative z-[40] focus-within:z-[100] w-full ${isBekerjaDisabled ? 'opacity-50 pointer-events-none' : 'transition-opacity duration-300'}`}>
             <SmoothDropdown
               label="Perusahaan"
               options={[
@@ -146,23 +188,26 @@ export default function FilterSebaran({
               ]}
               value={activeFilters.perusahaan_id ? String(activeFilters.perusahaan_id) : 'Semua'}
               onSelect={(val) => {
-                if (val === "Semua") handleFilterChange('perusahaan_id', '');
-                else handleFilterChange('perusahaan_id', String(val));
+                if (val === "Semua") onFilterUpdate('perusahaan_id', '');
+                else {
+                  const found = filterOptions?.perusahaan?.find(i => i.nama === val);
+                  onFilterUpdate('perusahaan_id', found ? String(found.id) : '');
+                }
               }}
               isSearchable={true}
             />
           </div>
 
-          <div className="relative z-[30] focus-within:z-[100] w-full">
+          <div className={`relative z-[30] focus-within:z-[100] w-full ${isKuliahDisabled ? 'opacity-50 pointer-events-none' : 'transition-opacity duration-300'}`}>
             <SmoothDropdown
               label="Universitas"
               options={mapOptions(filterOptions?.universitas)}
               value={filterOptions?.universitas?.find(i => String(i.id) === String(activeFilters.universitas_id))?.nama || "Semua"}
               onSelect={(val) => {
-                if (val === "Semua") handleFilterChange('universitas_id', '');
+                if (val === "Semua") onFilterUpdate('universitas_id', '');
                 else {
                   const found = filterOptions?.universitas?.find(i => i.nama === val);
-                  handleFilterChange('universitas_id', found ? String(found.id) : '');
+                  onFilterUpdate('universitas_id', found ? String(found.id) : '');
                 }
               }}
               isSearchable={true}
@@ -175,26 +220,26 @@ export default function FilterSebaran({
               options={mapOptions(filterOptions?.jurusan)}
               value={filterOptions?.jurusan?.find(i => String(i.id) === String(activeFilters.jurusan_id))?.nama || "Semua"}
               onSelect={(val) => {
-                if (val === "Semua") handleFilterChange('jurusan_id', '');
+                if (val === "Semua") onFilterUpdate('jurusan_id', '');
                 else {
                   const found = filterOptions?.jurusan?.find(i => i.nama === val);
-                  handleFilterChange('jurusan_id', found ? String(found.id) : '');
+                  onFilterUpdate('jurusan_id', found ? String(found.id) : '');
                 }
               }}
               isSearchable={true}
             />
           </div>
 
-          <div className="relative z-[10] focus-within:z-[100] w-full">
+          <div className={`relative z-[10] focus-within:z-[100] w-full ${isWirausahaDisabled ? 'opacity-50 pointer-events-none' : 'transition-opacity duration-300'}`}>
             <SmoothDropdown
               label="Bidang Usaha"
               options={mapOptions(filterOptions?.bidang_usaha)}
               value={filterOptions?.bidang_usaha?.find(i => String(i.id) === String(activeFilters.bidang_usaha_id))?.nama || "Semua"}
               onSelect={(val) => {
-                if (val === "Semua") handleFilterChange('bidang_usaha_id', '');
+                if (val === "Semua") onFilterUpdate('bidang_usaha_id', '');
                 else {
                   const found = filterOptions?.bidang_usaha?.find(i => i.nama === val);
-                  handleFilterChange('bidang_usaha_id', found ? String(found.id) : '');
+                  onFilterUpdate('bidang_usaha_id', found ? String(found.id) : '');
                 }
               }}
               isSearchable={true}
@@ -205,10 +250,10 @@ export default function FilterSebaran({
 
       <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-4 border-t border-gray-100 relative z-0">
         <button
-          onClick={handleApplyFilters}
+          onClick={() => setShowFilters(false)}
           className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all cursor-pointer shadow-md shadow-primary/20 w-full sm:w-auto"
         >
-          Terapkan Filter
+          Tutup Filter
         </button>
         <button
           onClick={handleResetFilters}
