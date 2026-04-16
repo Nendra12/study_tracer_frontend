@@ -83,7 +83,7 @@ export default function FormBekerja({
 
           {/* PERBAIKAN: Tombol kembali dipisah di sebelah kanan */}
           <div className="md:col-span-2 mt-2">
-            <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
+            <label className="text-[11px] font-bold text-primary uppercase tracking-widest mb-2.5 block">
               Alamat Perusahaan <span className="text-red-500">*</span>
             </label>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
