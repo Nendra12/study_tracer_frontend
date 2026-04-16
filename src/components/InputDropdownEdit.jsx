@@ -88,7 +88,7 @@ export default function InputDropdownEdit({
         </button>
       </div>
 
-      <div className={`absolute z-20 w-full mt-2 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden transition-all duration-200 origin-top
+      <div className={`absolute z-50 w-full mt-2 bg-white border border-fourth rounded-xl shadow-xl overflow-hidden transition-all duration-200 origin-top
         ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}>
 
         <ul className="max-h-52 overflow-y-auto py-1 custom-scrollbar">
