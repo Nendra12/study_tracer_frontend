@@ -1,6 +1,29 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { adminApi } from '../api/admin';
 
+const getArrayPayload = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
+
+const mergeById = (items = []) => {
+  const map = new Map();
+
+  items.forEach((item, index) => {
+    if (!item) return;
+
+    const hasId = item.id !== undefined && item.id !== null;
+    const key = hasId ? `id-${String(item.id)}` : `fallback-${item.nama || item.nama_perusahaan || index}`;
+
+    if (!map.has(key)) {
+      map.set(key, item);
+    }
+  });
+
+  return Array.from(map.values());
+};
+
 export function useSebaranAlumni() {
   const [markers, setMarkers] = useState([]);
   const [bounds, setBounds] = useState(null);
@@ -20,6 +43,39 @@ export function useSebaranAlumni() {
 
   const [filters, setFilters] = useState({});
   const searchTimeout = useRef(null);
+
+  const fetchAllPerusahaan = useCallback(async () => {
+    const perPage = 200;
+    let page = 1;
+    let lastPage = 1;
+    const collected = [];
+
+    while (page <= lastPage) {
+      const res = await adminApi.getPerusahaan({ page, per_page: perPage });
+      const payload = res.data?.data || res.data || {};
+      const rows = getArrayPayload(payload);
+
+      if (rows.length > 0) {
+        collected.push(...rows);
+      }
+
+      const nextLastPage = Number(payload?.last_page || payload?.meta?.last_page || 1);
+      const hasPagination = !Array.isArray(payload) && Array.isArray(payload?.data);
+
+      if (!hasPagination) {
+        break;
+      }
+
+      if (!Number.isFinite(nextLastPage) || nextLastPage < 1) {
+        break;
+      }
+
+      lastPage = nextLastPage;
+      page += 1;
+    }
+
+    return mergeById(collected);
+  }, []);
 
   const fetchMarkers = useCallback(async (filterParams = {}) => {
     setLoadingMarkers(true);
@@ -61,14 +117,26 @@ export function useSebaranAlumni() {
     setLoadingFilters(true);
 
     try {
-      const res = await adminApi.getSebaranFilters();
-      setFilterOptions(res.data?.data || res.data || null);
+      const [sebaranRes, perusahaanMaster] = await Promise.all([
+        adminApi.getSebaranFilters(),
+        fetchAllPerusahaan(),
+      ]);
+
+      const baseOptions = sebaranRes.data?.data || sebaranRes.data || {};
+      const sebaranPerusahaan = Array.isArray(baseOptions?.perusahaan)
+        ? baseOptions.perusahaan
+        : [];
+
+      setFilterOptions({
+        ...baseOptions,
+        perusahaan: mergeById([...sebaranPerusahaan, ...perusahaanMaster]),
+      });
     } catch (err) {
       console.error('fetchFilterOptions error:', err);
     } finally {
       setLoadingFilters(false);
     }
-  }, []);
+  }, [fetchAllPerusahaan]);
 
   const fetchStats = useCallback(async (filterParams = {}) => {
     setLoadingStats(true);
