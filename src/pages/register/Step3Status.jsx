@@ -150,31 +150,31 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       .finally(() => setLoadingKota(false));
   }, [selectedStatus, pekerjaan.id_provinsi, universitas.id_provinsi, wirausaha.id_provinsi]);
 
-  // 3. FUNGSI PENYIMPANAN OTOMATIS
-  useEffect(() => {
-    const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
-    const backendName = statusNameMap[selectedStatus] || selectedStatus;
-    const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
-    
-    const activeData = selectedStatus === 'Bekerja' ? pekerjaan : selectedStatus === 'Kuliah' ? universitas : wirausaha;
-
-    const updates = {
-      id_status: matched?.id || formData.id_status,
-      tahun_mulai: activeData?.tahun_mulai || "",
-      tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
-      pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
-      universitas: selectedStatus === 'Kuliah' ? universitas : null,
-      wirausaha: selectedStatus === 'Wirausaha' ? wirausaha : null,
-    };
-    updateFormData(updates);
-  }, [selectedStatus, pekerjaan, universitas, wirausaha, statusList]);
-
   // LOGIKA DINAMIS: Cek apakah Perusahaan / Universitas sudah ada di database
   const isExistingPerusahaan = perusahaanList.some(p => p.toLowerCase() === (pekerjaan.nama_perusahaan || '').trim().toLowerCase());
   const showPerusahaanLocation = (pekerjaan.nama_perusahaan || '').trim() !== '' && !isExistingPerusahaan;
 
   const isExistingUniv = universitasList.some(u => u.toLowerCase() === (universitas.nama_universitas || '').trim().toLowerCase());
   const showUnivLocation = (universitas.nama_universitas || '').trim() !== '' && !isExistingUniv;
+
+  // 3. FUNGSI PENYIMPANAN OTOMATIS
+  useEffect(() => {
+    const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
+    const backendName = statusNameMap[selectedStatus] || selectedStatus;
+    const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
+
+    const activeData = selectedStatus === 'Bekerja' ? pekerjaan : selectedStatus === 'Kuliah' ? universitas : wirausaha;
+
+    const updates = {
+      id_status: matched?.id || formData.id_status,
+      tahun_mulai: activeData?.tahun_mulai || "",
+      tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
+      pekerjaan: selectedStatus === 'Bekerja' ? { ...pekerjaan, isNew: showPerusahaanLocation } : null,
+      universitas: selectedStatus === 'Kuliah' ? { ...universitas, isNew: showUnivLocation } : null,
+      wirausaha: selectedStatus === 'Wirausaha' ? { ...wirausaha, isNew: true } : null,
+    };
+    updateFormData(updates);
+  }, [selectedStatus, pekerjaan, universitas, wirausaha, statusList, showPerusahaanLocation, showUnivLocation]);
 
   const statusOptions = [
     { id: 'Bekerja', label: 'Bekerja', sub: '(Working)', icon: Briefcase },
@@ -253,9 +253,9 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       id_status: matched?.id || formData.id_status,
       tahun_mulai: activeData?.tahun_mulai || "",
       tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
-      pekerjaan: selectedStatus === 'Bekerja' ? pekerjaan : null,
-      universitas: selectedStatus === 'Kuliah' ? universitas : null,
-      wirausaha: selectedStatus === 'Wirausaha' ? wirausaha : null,
+      pekerjaan: selectedStatus === 'Bekerja' ? { ...pekerjaan, isNew: showPerusahaanLocation } : null,
+      universitas: selectedStatus === 'Kuliah' ? { ...universitas, isNew: showUnivLocation } : null,
+      wirausaha: selectedStatus === 'Wirausaha' ? { ...wirausaha, isNew: true } : null,
     };
     
     updateFormData(updates);
