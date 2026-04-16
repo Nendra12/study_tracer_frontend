@@ -16,21 +16,41 @@ export default function SmoothDropdown({
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
+  const normalizedOptions = options.map((opt, index) => {
+    if (typeof opt === 'object' && opt !== null) {
+      return {
+        key: String(opt.key ?? opt.value ?? index),
+        value: String(opt.value ?? ''),
+        label: String(opt.label ?? opt.value ?? ''),
+      };
+    }
+
+    const stringValue = String(opt);
+    return {
+      key: `${stringValue}-${index}`,
+      value: stringValue,
+      label: stringValue,
+    };
+  });
+
+  const selectedOption = normalizedOptions.find((opt) => String(opt.value) === String(selected));
+  const selectedLabel = selectedOption?.label || (selected ? String(selected) : placeholder);
+
   useEffect(() => {
     setSelected(value);
   }, [value]);
 
-  const handleSelect = (option) => {
-    setSelected(option);
+  const handleSelect = (optionValue) => {
+    setSelected(optionValue);
     setIsOpen(false);
     setSearchTerm("");
-    if (onSelect) onSelect(option);
+    if (onSelect) onSelect(optionValue);
   };
 
   // Logika filter hanya jalan jika isSearchable true
-  const filteredOptions = isSearchable 
-    ? options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase()))
-    : options;
+  const filteredOptions = isSearchable
+    ? normalizedOptions.filter((opt) => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    : normalizedOptions;
 
   return (
     <div className="space-y-1 w-full relative" ref={dropdownRef}>
@@ -46,7 +66,7 @@ export default function SmoothDropdown({
         className={`cursor-pointer ${label ? 'mt-3' : ''} w-full p-3 bg-white border-2 border-gray-100 flex items-center justify-between rounded-xl text-sm transition-all outline-none`}
       >
         <span className={selected ? 'text-primary/80 font-medium' : 'text-gray-400'}>
-          {selected || placeholder}
+          {selectedLabel}
         </span>
         <ChevronDown size={18} className={`text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -73,14 +93,14 @@ export default function SmoothDropdown({
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <li
-                  key={option}
-                  onClick={() => handleSelect(option)}
+                  key={option.key}
+                  onClick={() => handleSelect(option.value)}
                   className="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors"
                 >
-                  <span className={selected === option ? "font-bold text-primary" : ""}>
-                    {option}
+                  <span className={String(selected) === String(option.value) ? "font-bold text-primary" : ""}>
+                    {option.label}
                   </span>
-                  {selected === option && <Check size={16} className="text-primary" />}
+                  {String(selected) === String(option.value) && <Check size={16} className="text-primary" />}
                 </li>
               ))
             ) : (
