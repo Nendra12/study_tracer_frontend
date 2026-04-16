@@ -48,6 +48,7 @@ export default function FilterSebaran({
   if (!showFilters) return null;
 
   const mapOptions = (arr, labelKey = 'nama') => ["Semua", ...(arr?.map(i => i[labelKey]) || [])];
+  const getItemLabel = (item) => item?.nama || item?.nama_perusahaan || item?.label || '';
   
   const formatKotaOptions = () => {
     return [
@@ -136,14 +137,17 @@ export default function FilterSebaran({
           <div className="relative z-[40] focus-within:z-[100] w-full">
             <SmoothDropdown
               label="Perusahaan"
-              options={mapOptions(filterOptions?.perusahaan)}
-              value={filterOptions?.perusahaan?.find(i => String(i.id) === String(activeFilters.perusahaan_id))?.nama || "Semua"}
+              options={[
+                { value: 'Semua', label: 'Semua' },
+                ...((filterOptions?.perusahaan || []).map((item) => ({
+                  value: String(item.id),
+                  label: getItemLabel(item),
+                }))),
+              ]}
+              value={activeFilters.perusahaan_id ? String(activeFilters.perusahaan_id) : 'Semua'}
               onSelect={(val) => {
                 if (val === "Semua") handleFilterChange('perusahaan_id', '');
-                else {
-                  const found = filterOptions?.perusahaan?.find(i => i.nama === val);
-                  handleFilterChange('perusahaan_id', found ? String(found.id) : '');
-                }
+                else handleFilterChange('perusahaan_id', String(val));
               }}
               isSearchable={true}
             />
