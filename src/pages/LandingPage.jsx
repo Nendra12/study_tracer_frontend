@@ -17,9 +17,12 @@ import { STORAGE_BASE_URL } from "../api/axios";
 import { useThemeSettings } from "../context/ThemeContext";
 import FooterModals from "../components/alumni/FooterModals";
 
+// IMPORT KOMPONEN BARU
+import ThumbnailPortal from "../components/ThumbnailPortal";
+
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { user } = useAuth()
+  const { user } = useAuth();
   const { theme } = useThemeSettings();
 
   // State untuk data dinamis
@@ -126,6 +129,7 @@ export default function LandingPage() {
       },
     },
   });
+  
   const currentYear = new Date().getFullYear();
 
   function getImageUrl(path) {
@@ -134,7 +138,6 @@ export default function LandingPage() {
     return `${STORAGE_BASE_URL}/${path}`;
   }
 
-  // console.log(alumniList)
   const isPageReady = !apiLoading && !imgLoading;
 
   if (!isPageReady) {
@@ -201,36 +204,14 @@ export default function LandingPage() {
               )}
             </motion.p>
 
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap gap-4 pt-2"
-            >
-              <button
-                onClick={() => user ? navigate("/alumni") : navigate("/login")}
-                className="bg-primary text-white px-8 py-4 rounded-md font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2 transition-all duration-300 ease-in-out"
-              >
-                Masuk Portal {user ? user.role == 'alumni' ? 'Alumni' : 'Admin' : 'Alumni'} <span className="text-xl">→</span>
-              </button>
-              <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
-                <div className="flex -space-x-3">
-                  {alumniList.map((i, index) => (
-                    <div key={index}>
-                      {index < 4 && (
-                        <img
-                          key={index}
-                          src={`${getImageUrl(i.foto)}`}
-                          alt="user"
-                          className="w-10 h-10 object-cover rounded-full border-2 border-fourth"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <span className="ml-9 text-sm font-bold text-primary">
-                  +{stats?.total_alumni || 0} Bergabung
-                </span>
-              </div>
-            </motion.div>
+            {/* PANGGIL KOMPONEN THUMBNAIL PORTAL DI SINI */}
+            <ThumbnailPortal 
+              user={user} 
+              alumniList={alumniList} 
+              stats={stats} 
+              itemVariants={itemVariants} 
+            />
+
           </motion.div>
 
           {/* Hero Visual - Dribbble Style Collage/Bento */}
@@ -304,15 +285,12 @@ export default function LandingPage() {
       {/* Karir & Lowongan - Sleek List */}
       <CareerSection jobList={jobList} />
 
-      {/* PERUBAHAN: Mengurangi padding-top (pt-12) dan membuang padding ganda di dalam wrapper */}
       <footer className="bg-fourth pt-12 pb-6 border-t border-[#e2e8f0]">
-        {/* Pembungkus utama (Sekarang hanya 1 lapis agar tidak double) */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Ubah ke 12 Kolom. mb-10 dikurangi menjadi mb-8 agar jarak ke garis bawah tidak terlalu jauh */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 mb-8">
 
-            {/* Kolom 1: Branding & Kontak Info (Mengambil 4 dari 12 kolom) */}
+            {/* Kolom 1: Branding & Kontak Info */}
             <div className="space-y-4 lg:col-span-4 lg:pr-8">
               <Link to="/" className="flex items-center gap-2.5 group">
                 <img
@@ -332,7 +310,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Kolom 2: Tautan Cepat (Merata ke kiri) */}
+            {/* Kolom 2: Tautan Cepat */}
             <div className="lg:col-span-2 lg:justify-self-start">
               <h3 className="text-primary font-black mb-4">Tautan Cepat</h3>
               <ul className="space-y-2.5">
@@ -356,7 +334,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Kolom 3: Untuk Alumni (Posisi di tengah) */}
+            {/* Kolom 3: Untuk Alumni */}
             <div className="lg:col-span-3 lg:justify-self-center">
               <h3 className="text-primary font-black mb-4">Untuk Alumni</h3>
               <ul className="space-y-2.5">
@@ -377,7 +355,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Kolom 4: Kontak Kami (Merata ke kanan) */}
+            {/* Kolom 4: Kontak Kami */}
             <div className="lg:col-span-3 lg:justify-self-end flex flex-col">
               <h3 className="text-primary font-black mb-4">
                 Kontak Kami

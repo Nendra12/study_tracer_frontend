@@ -8,7 +8,7 @@ const LoginButton = () => {
   return (
     <StyledWrapper>
       <button onClick={() => navigate("/login")} className="cursor-pointer items-center gap-3 flex w-full justify-center">
-        <LogIn size={19} className="font-bold"/>
+        <LogIn size={20} strokeWidth={2.5} />
         <span>Masuk</span>
       </button>
     </StyledWrapper>
@@ -17,19 +17,18 @@ const LoginButton = () => {
 
 const StyledWrapper = styled.div`
   button {
-    padding: 12px 25px;
+    padding: 12px 28px;
     border: unset;
-    border-radius: 15px;
-    /* Mengambil warna primary dari tema, default ke #3c5759 jika gagal */
-    color: var(--color-primary, #3c5759); 
+    border-radius: 15px; 
+    color: #ffffff; 
     z-index: 1;
-    /* Mengambil warna secondary dari tema, default ke #f3f4f4 jika gagal */
-    background: var(--color-secondary, #f3f4f4); 
+    background: var(--color-primary, #1E293B); 
     position: relative;
-    font-weight: 1000;
-    font-size: 14px;
-    transition: all 250ms;
+    font-weight: 800; 
+    font-size: 15px;
+    transition: all 250ms ease;
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
   }
 
   button::before {
@@ -40,18 +39,23 @@ const StyledWrapper = styled.div`
     height: 100%;
     width: 0;
     border-radius: 15px;
-    /* Background hover menggunakan warna primary */
-    background-color: var(--color-primary, #3c5759); 
+    /* PERBAIKAN: Menggunakan putih transparan agar efek sapuan terlihat jelas di background gelap */
+    background-color: rgba(255, 255, 255, 0.2); 
     z-index: -1;
-    transition: all 250ms;
+    transition: all 250ms ease;
   }
 
   button:hover {
-    color: white;
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
   }
 
   button:hover::before {
     width: 100%;
+  }
+
+  button:active {
+    transform: translateY(0); 
   }
 `;
 
