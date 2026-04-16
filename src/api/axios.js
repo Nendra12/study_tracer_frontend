@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://af6e-139-228-40-37.ngrok-free.app/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://4e2a-139-228-40-24.ngrok-free.app/api";
 
 
 export const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL;
