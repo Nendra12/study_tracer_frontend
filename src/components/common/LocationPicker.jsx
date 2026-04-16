@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import { Check, MapPin, Navigation, Search, X } from 'lucide-react';
+import { Check, MapPin, Navigation, Search, X, AlertCircle } from 'lucide-react';
 
 // Fix leaflet default icon issue on Vite builds.
 delete L.Icon.Default.prototype._getIconUrl;
@@ -43,6 +43,7 @@ export default function LocationPicker({
   title = 'Pilih Lokasi',
   selectedKota = '',
   selectedProvinsi = '',
+  initialAddress = '',
 }) {
   const mapRef = useRef(null);
   const [position, setPosition] = useState({ lat: initialLat, lng: initialLng });
@@ -50,6 +51,9 @@ export default function LocationPicker({
   const [address, setAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [geocodeResults, setGeocodeResults] = useState([]);
+  const [showGeocodeResults, setShowGeocodeResults] = useState(false);
+  const [geocodeFailed, setGeocodeFailed] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isReversing, setIsReversing] = useState(false);
   const searchTimeout = useRef(null);
@@ -65,8 +69,7 @@ export default function LocationPicker({
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  // PERBAIKAN: Fungsi Auto-zoom ini sekarang menarik data langsung dari OpenStreetMap API (Nominatim)
-  // Ini menghindari error jika API backend lokal Anda gagal membaca format Kota
+  // Geocoding dengan validasi ketat
   useEffect(() => {
     if (!isOpen) {
       hasAutoZoomed.current = false;
@@ -76,12 +79,150 @@ export default function LocationPicker({
     setAddress('');
     setSearchQuery('');
     setSearchResults([]);
+    setGeocodeResults([]);
+    setShowGeocodeResults(false);
+    setGeocodeFailed(false);
 
-    if (selectedKota && !hasAutoZoomed.current) {
+    // Prioritas 1: Jika ada initialAddress, geocode alamat tersebut
+    if (initialAddress && initialAddress.trim() && !hasAutoZoomed.current) {
+      hasAutoZoomed.current = true;
+      
+      const addressLower = initialAddress.toLowerCase();
+      const hasKota = selectedKota && addressLower.includes(selectedKota.toLowerCase());
+      const hasProv = selectedProvinsi && addressLower.includes(selectedProvinsi.toLowerCase());
+      
+      let finalQuery = initialAddress.trim();
+      if (!hasKota && !hasProv && (selectedKota || selectedProvinsi)) {
+        finalQuery = `${initialAddress.trim()}, ${selectedKota || ''}, ${selectedProvinsi || ''}, Indonesia`.replace(/,\s*,/g, ',').trim();
+      } else if (!finalQuery.toLowerCase().includes('indonesia')) {
+        finalQuery = `${finalQuery}, Indonesia`;
+      }
+      
+      const addressQuery = encodeURIComponent(finalQuery);
+      
+      console.log('🔍 Geocoding query:', finalQuery);
+      
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}&limit=10&countrycodes=id&addressdetails=1`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log('📍 Geocoding results:', data);
+          
+          if (data && data.length > 0) {
+            const kotaLower = (selectedKota || '').toLowerCase();
+            const provLower = (selectedProvinsi || '').toLowerCase();
+            
+            // Filter hasil yang sesuai dengan kota/provinsi
+            let validResults = data.filter(item => {
+              const displayLower = (item.display_name || '').toLowerCase();
+              const addressData = item.address || {};
+              
+              const matchKota = !selectedKota || 
+                displayLower.includes(kotaLower) ||
+                (addressData.city && addressData.city.toLowerCase().includes(kotaLower)) ||
+                (addressData.county && addressData.county.toLowerCase().includes(kotaLower)) ||
+                (addressData.municipality && addressData.municipality.toLowerCase().includes(kotaLower)) ||
+                (addressData.state_district && addressData.state_district.toLowerCase().includes(kotaLower));
+              
+              const matchProv = !selectedProvinsi || 
+                displayLower.includes(provLower) ||
+                (addressData.state && addressData.state.toLowerCase().includes(provLower));
+              
+              return matchKota && matchProv;
+            });
+            
+            // Filter out hasil yang terlalu general (hanya administrative/county/state)
+            const specificResults = validResults.filter(item => {
+              const generalTypes = ['administrative', 'county', 'state', 'region', 'province'];
+              return !generalTypes.includes(item.type);
+            });
+            
+            console.log('✅ Valid results:', validResults.length, '| Specific results:', specificResults.length);
+            
+            // Jika tidak ada hasil spesifik, fallback ke kota
+            if (specificResults.length === 0) {
+              console.log('⚠️ No specific results, falling back to city');
+              setGeocodeFailed(true);
+              
+              if (selectedKota && selectedProvinsi) {
+                const kotaQuery = encodeURIComponent(`${selectedKota}, ${selectedProvinsi}, Indonesia`);
+                return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${kotaQuery}&limit=1&countrycodes=id`)
+                  .then((res) => res.json())
+                  .then((kotaData) => {
+                    if (kotaData && kotaData.length > 0) {
+                      setPosition({ lat: parseFloat(kotaData[0].lat), lng: parseFloat(kotaData[0].lon) });
+                      setRecenterTarget({ lat: parseFloat(kotaData[0].lat), lng: parseFloat(kotaData[0].lon), zoom: 13 });
+                      setAddress(initialAddress);
+                    } else {
+                      setPosition({ lat: initialLat, lng: initialLng });
+                      setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
+                      setAddress(initialAddress);
+                    }
+                  });
+              }
+              return;
+            }
+            
+            // Sort hasil spesifik berdasarkan type dan importance
+            specificResults.sort((a, b) => {
+              const specificTypes = ['house', 'building', 'residential', 'road', 'amenity', 'shop', 'office'];
+              const aIsSpecific = specificTypes.includes(a.type);
+              const bIsSpecific = specificTypes.includes(b.type);
+              
+              if (aIsSpecific && !bIsSpecific) return -1;
+              if (!aIsSpecific && bIsSpecific) return 1;
+              
+              return (parseFloat(b.importance) || 0) - (parseFloat(a.importance) || 0);
+            });
+            
+            const bestMatch = specificResults[0];
+            console.log('🎯 Best match:', bestMatch.type, '-', bestMatch.display_name);
+            
+            // Simpan hasil untuk ditampilkan sebagai pilihan
+            if (specificResults.length > 1) {
+              setGeocodeResults(specificResults.slice(0, 5));
+              setShowGeocodeResults(true);
+            }
+            
+            setPosition({ lat: parseFloat(bestMatch.lat), lng: parseFloat(bestMatch.lon) });
+            setRecenterTarget({ lat: parseFloat(bestMatch.lat), lng: parseFloat(bestMatch.lon), zoom: 17 });
+            setAddress(bestMatch.display_name || initialAddress);
+            
+          } else {
+            console.log('❌ No results found, falling back to city');
+            setGeocodeFailed(true);
+            
+            if (selectedKota && selectedProvinsi) {
+              const kotaQuery = encodeURIComponent(`${selectedKota}, ${selectedProvinsi}, Indonesia`);
+              return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${kotaQuery}&limit=1&countrycodes=id`)
+                .then((res) => res.json())
+                .then((kotaData) => {
+                  if (kotaData && kotaData.length > 0) {
+                    setPosition({ lat: parseFloat(kotaData[0].lat), lng: parseFloat(kotaData[0].lon) });
+                    setRecenterTarget({ lat: parseFloat(kotaData[0].lat), lng: parseFloat(kotaData[0].lon), zoom: 13 });
+                    setAddress(initialAddress);
+                  } else {
+                    setPosition({ lat: initialLat, lng: initialLng });
+                    setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
+                    setAddress(initialAddress);
+                  }
+                });
+            }
+          }
+        })
+        .catch((err) => {
+          console.error('❌ Address geocoding failed:', err);
+          setGeocodeFailed(true);
+          setPosition({ lat: initialLat, lng: initialLng });
+          setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
+          setAddress(initialAddress);
+        });
+    }
+    // Prioritas 2: Jika tidak ada initialAddress tapi ada selectedKota, zoom ke kota
+    else if (selectedKota && !hasAutoZoomed.current) {
       hasAutoZoomed.current = true;
       const query = encodeURIComponent(`${selectedKota}, ${selectedProvinsi}, Indonesia`);
 
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`)
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&countrycodes=id`)
         .then((res) => res.json())
         .then((data) => {
           if (data && data.length > 0) {
@@ -98,7 +239,9 @@ export default function LocationPicker({
           setPosition({ lat: initialLat, lng: initialLng });
           setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
         });
-    } else if (!selectedKota) {
+    } 
+    // Prioritas 3: Default position
+    else if (!selectedKota && !initialAddress) {
       setPosition({ lat: initialLat, lng: initialLng });
       setRecenterTarget({ lat: initialLat, lng: initialLng, zoom: 13 });
     }
@@ -112,7 +255,7 @@ export default function LocationPicker({
     );
 
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [isOpen, selectedKota, selectedProvinsi, initialLat, initialLng]);
+  }, [isOpen, selectedKota, selectedProvinsi, initialAddress, initialLat, initialLng]);
 
   const reverseGeocode = useCallback(async (lat, lng) => {
     setIsReversing(true);
@@ -135,6 +278,7 @@ export default function LocationPicker({
   const handleLocationSelect = useCallback((lat, lng) => {
     setPosition({ lat, lng });
     reverseGeocode(lat, lng);
+    setGeocodeFailed(false); // Reset failed state ketika user pilih manual
   }, [reverseGeocode]);
 
   const handleSearchChange = (value) => {
@@ -148,7 +292,7 @@ export default function LocationPicker({
     searchTimeout.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5&countrycodes=id`);
         const data = await res.json();
         setSearchResults(data || []);
       } catch (err) {
@@ -165,6 +309,7 @@ export default function LocationPicker({
     setAddress(result.display_name || '');
     setSearchResults([]);
     setSearchQuery('');
+    setGeocodeFailed(false);
   };
 
   const handleUseMyLocation = () => {
@@ -176,6 +321,7 @@ export default function LocationPicker({
         setPosition({ lat: latitude, lng: longitude });
         setRecenterTarget({ lat: latitude, lng: longitude, zoom: 16 });
         reverseGeocode(latitude, longitude);
+        setGeocodeFailed(false);
       },
       (err) => { console.error('GPS error', err); },
       { enableHighAccuracy: true }
@@ -209,10 +355,85 @@ export default function LocationPicker({
           </button>
         </div>
 
-        {selectedKota && (
+        {geocodeFailed && initialAddress && (
+          <div className="mx-5 mt-3 flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-xs text-red-700">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold mb-1">Alamat tidak ditemukan secara otomatis</p>
+              <p className="text-red-600">Peta di-zoom ke {selectedKota || 'lokasi umum'}. Silakan <strong>klik peta atau drag marker</strong> untuk menentukan lokasi yang tepat.</p>
+            </div>
+          </div>
+        )}
+
+        {!geocodeFailed && (selectedKota || initialAddress) && (
           <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
             <MapPin size={12} className="shrink-0" />
-            <p>Peta sudah di-zoom ke <strong>{selectedKota}</strong>. Klik untuk pilih titik yang lebih akurat.</p>
+            <p>
+              {initialAddress && initialAddress.trim() 
+                ? `Peta sudah di-zoom ke alamat. Klik peta atau drag marker untuk menyesuaikan posisi.`
+                : `Peta sudah di-zoom ke ${selectedKota}. Klik untuk pilih titik yang lebih akurat.`
+              }
+            </p>
+          </div>
+        )}
+
+        {showGeocodeResults && geocodeResults.length > 1 && (
+          <div className="mx-5 mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold text-amber-800">
+              <AlertCircle size={14} />
+              <span>Ditemukan {geocodeResults.length} lokasi yang cocok. Pilih yang paling sesuai:</span>
+            </div>
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {geocodeResults.map((result, index) => {
+                const getBadge = (type) => {
+                  const badges = {
+                    'house': { text: 'Rumah', color: 'bg-green-100 text-green-700' },
+                    'building': { text: 'Gedung', color: 'bg-blue-100 text-blue-700' },
+                    'residential': { text: 'Perumahan', color: 'bg-purple-100 text-purple-700' },
+                    'road': { text: 'Jalan', color: 'bg-orange-100 text-orange-700' },
+                    'amenity': { text: 'Fasilitas', color: 'bg-cyan-100 text-cyan-700' },
+                    'shop': { text: 'Toko', color: 'bg-pink-100 text-pink-700' },
+                    'office': { text: 'Kantor', color: 'bg-indigo-100 text-indigo-700' },
+                  };
+                  return badges[type] || { text: type || 'Lokasi', color: 'bg-gray-100 text-gray-600' };
+                };
+                
+                const badge = getBadge(result.type);
+                
+                return (
+                  <button
+                    key={`${result.lat}-${result.lon}-${index}`}
+                    onClick={() => {
+                      setPosition({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) });
+                      setRecenterTarget({ lat: parseFloat(result.lat), lng: parseFloat(result.lon), zoom: 17 });
+                      setAddress(result.display_name);
+                      setShowGeocodeResults(false);
+                      setGeocodeFailed(false);
+                    }}
+                    className="w-full text-left rounded-lg bg-white border border-amber-100 px-3 py-2 hover:bg-amber-100 hover:border-amber-300 transition-all"
+                  >
+                    <div className="flex items-start gap-2">
+                      <MapPin size={12} className="mt-1 shrink-0 text-amber-600" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${badge.color}`}>
+                            {badge.text}
+                          </span>
+                          {index === 0 && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500 text-white">
+                              Rekomendasi
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-700 font-medium line-clamp-2 block">
+                          {result.display_name}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 

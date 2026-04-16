@@ -173,7 +173,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
     return (
       <>
-        <div className="relative z-[30] w-full">
+        <div className="relative z-[70] w-full">
           <SmoothDropdown
             label={<>Tahun Mulai <span className="text-red-500">*</span></>}
             isSearchable={true}
@@ -322,6 +322,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         if (!form.tahun_mulai) return toastWarning('Tahun mulai wajib diisi.');
       }
 
+      // console.log("Payload : ", payload)
       await alumniApi.updateCareerStatus(payload);
       setShowForm(false);
       onShowSuccess('Status karier berhasil dikirim, menunggu verifikasi admin');
@@ -456,6 +457,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     (career?.wirausaha && (!career.wirausaha.alamat || !(career.wirausaha.id_kota || career.wirausaha.kota?.id)))
   );
 
+  // console.log(pekerjaan)
+
   return (
     <div className="p-5 md:p-10 flex-1 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-6">
@@ -586,9 +589,9 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       )}
 
       {/* MAPS LOCATION PICKER */}
-      <LocationPicker isOpen={showBekerjaMap} onClose={() => setShowBekerjaMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_perusahaan: latitude, longitude_perusahaan: longitude })); setPekerjaan((prev) => ({ ...prev, jalan: address || prev.jalan })); }} initialLat={typeof form.latitude_perusahaan === 'number' ? form.latitude_perusahaan : -7.25} initialLng={typeof form.longitude_perusahaan === 'number' ? form.longitude_perusahaan : 112.75} selectedKota={kotaPekerjaanList.find(k => String(k.id) === String(form.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(form.id_provinsi))?.nama || ''} title="Pilih Lokasi Perusahaan" />
-      <LocationPicker isOpen={showUniMap} onClose={() => setShowUniMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_universitas: latitude, longitude_universitas: longitude })); setUniversitas((prev) => ({ ...prev, alamat: address || prev.alamat })); }} initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25} initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75} selectedKota={kotaKuliahList.find(k => String(k.id) === String(form.id_kota_universitas))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(form.id_provinsi_universitas))?.nama || ''} title="Pilih Lokasi Universitas" />
-      <LocationPicker isOpen={showUsahaMap} onClose={() => setShowUsahaMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_usaha: latitude, longitude_usaha: longitude })); setWirausaha((prev) => ({ ...prev, alamat: address || prev.alamat })); }} initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25} initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75} selectedKota={kotaUsahaList.find(k => String(k.id) === String(form.id_kota_usaha))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(form.id_provinsi_usaha))?.nama || ''} title="Pilih Lokasi Usaha" />
+      <LocationPicker isOpen={showBekerjaMap} onClose={() => setShowBekerjaMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_perusahaan: latitude, longitude_perusahaan: longitude })); setPekerjaan((prev) => ({ ...prev, jalan: address || prev.jalan })); }} initialLat={typeof form.latitude_perusahaan === 'number' ? form.latitude_perusahaan : -7.25} initialLng={typeof form.longitude_perusahaan === 'number' ? form.longitude_perusahaan : 112.75} selectedKota={kotaPekerjaanList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ''} initialAddress={pekerjaan.jalan || ''} title="Pilih Lokasi Perusahaan" />
+      <LocationPicker isOpen={showUniMap} onClose={() => setShowUniMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_universitas: latitude, longitude_universitas: longitude })); setUniversitas((prev) => ({ ...prev, alamat: address || prev.alamat })); }} initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25} initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75} selectedKota={kotaKuliahList.find(k => String(k.id) === String(universitas.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(universitas.id_provinsi))?.nama || ''} initialAddress={universitas.alamat || ''} title="Pilih Lokasi Universitas" />
+      <LocationPicker isOpen={showUsahaMap} onClose={() => setShowUsahaMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_usaha: latitude, longitude_usaha: longitude })); setWirausaha((prev) => ({ ...prev, alamat: address || prev.alamat })); }} initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25} initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75} selectedKota={kotaUsahaList.find(k => String(k.id) === String(wirausaha.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''} initialAddress={wirausaha.alamat || ''} title="Pilih Lokasi Usaha" />
 
       {/* PANGGIL KOMPONEN INFO KARIER SAAT INI */}
       <InfoKarierSaatIni

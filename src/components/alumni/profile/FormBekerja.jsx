@@ -94,6 +94,12 @@ export default function FormBekerja({
                   onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
                   className="w-full px-4 h-[48px] bg-white border-2 border-fourth rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
                   placeholder="Masukkan alamat lengkap perusahaan"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      setShowBekerjaMap(true);
+                    }
+                  }}
                 />
                 {form.latitude_perusahaan !== null && form.longitude_perusahaan !== null && (
                   <p className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1">

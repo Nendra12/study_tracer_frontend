@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { MapPin } from 'lucide-react';
+import { STORAGE_BASE_URL } from '../../../api/axios';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -45,6 +46,85 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
   const defaultCenter = [-2.5, 118.0];
   const defaultZoom = 5;
 
+  // Track gambar yang gagal dimuat agar tidak infinite loop
+  const [failedImages, setFailedImages] = useState(new Set());
+
+  // Fallback avatar sebagai inline SVG data URI (tidak perlu file eksternal)
+  const FALLBACK_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='20' fill='%23e5e7eb'/%3E%3Cpath d='M20 22c3.3 0 6-2.7 6-6s-2.7-6-6-6-6 2.7-6 6 2.7 6 6 6zm0 3c-4 0-12 2-12 6v2h24v-2c0-4-8-6-12-6z' fill='%239ca3af'/%3E%3C/svg%3E";
+
+  // Helper function untuk mendapatkan URL foto lengkap
+  const getPhotoUrl = useCallback((photo) => {
+    if (!photo) return null;
+    
+    // Jika sudah full URL (http/https), gunakan langsung
+    if (photo.startsWith('http://') || photo.startsWith('https://')) {
+      return photo;
+    }
+    
+    // Jika path relatif, tambahkan STORAGE_BASE_URL (bukan API_BASE_URL)
+    const cleanPath = photo.replace(/^\/?storage\//, '').replace(/^\//, '');
+    return `${STORAGE_BASE_URL}/${cleanPath}`;
+  }, []);
+
+  // Mendapatkan src final (cek apakah sudah pernah gagal)
+  const getImageSrc = useCallback((photo) => {
+    const url = getPhotoUrl(photo);
+    if (!url || failedImages.has(url)) return FALLBACK_AVATAR;
+    return url;
+  }, [getPhotoUrl, failedImages]);
+
+  // Handler saat gambar gagal dimuat
+  const handleImageError = useCallback((e) => {
+    const failedSrc = e.currentTarget.src;
+    // Jangan proses jika sudah fallback
+    if (failedSrc === FALLBACK_AVATAR) return;
+    setFailedImages(prev => {
+      const next = new Set(prev);
+      next.add(failedSrc);
+      return next;
+    });
+  }, []);
+
+  // Custom CSS untuk popup
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .leaflet-popup-pane {
+        z-index: 700 !important;
+      }
+      .leaflet-popup {
+        z-index: 700 !important;
+      }
+      .leaflet-popup-content-wrapper {
+        border-radius: 16px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+      }
+      .leaflet-popup-tip {
+        box-shadow: 0 3px 14px rgba(0,0,0,0.1) !important;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+
+
   return (
     <div className="bg-white rounded-3xl p-2 border border-gray-100 shadow-sm relative z-0">
       <div className="absolute bottom-6 right-5 z-[400] bg-white/90 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-gray-100 hidden sm:flex flex-col gap-2.5 pointer-events-none">
@@ -75,8 +155,21 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
           <MapBoundsUpdater bounds={bounds} />
           {markers.map((marker) => (
-            <Marker key={marker.id} position={[marker.latitude, marker.longitude]} icon={markerIcons[marker.type] || markerIcons.bekerja} eventHandlers={{ click: () => handleMarkerClick(marker) }}>
-              <Popup maxWidth={350} minWidth={280} className="custom-popup">
+            <Marker 
+              key={marker.id} 
+              position={[marker.latitude, marker.longitude]} 
+              icon={markerIcons[marker.type] || markerIcons.bekerja} 
+              eventHandlers={{ click: () => handleMarkerClick(marker) }}
+              zIndexOffset={selectedLocation && selectedLocation.entity?.id === marker.entity_id ? 1000 : 0}
+            >
+              <Popup 
+                maxWidth={350} 
+                minWidth={280} 
+                className="custom-popup"
+                autoPan={true}
+                autoPanPadding={[50, 50]}
+                closeButton={true}
+              >
                 <div className="p-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider text-white shadow-sm ${marker.type === 'bekerja' ? 'bg-blue-500' : marker.type === 'kuliah' ? 'bg-emerald-500' : 'bg-amber-500'}`}>
@@ -94,8 +187,15 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
                   </p>
                   {marker.alumni_preview?.length > 0 && (
                     <div className="mt-3.5 flex -space-x-2.5 pl-1 pb-1">
-                      {marker.alumni_preview.slice(0, 5).map((alumni) => (
-                        <img key={alumni.id} src={alumni.foto_thumbnail || alumni.foto || '/default-avatar.png'} alt={alumni.nama} className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm relative hover:z-10 transition-transform hover:scale-110" onError={(e) => { e.currentTarget.src = '/default-avatar.png'; }} />
+                      {marker.alumni_preview.slice(0, 5).map((alumni, idx) => (
+                        <img 
+                          key={alumni.id || idx} 
+                          src={getImageSrc(alumni.foto_thumbnail || alumni.foto)} 
+                          alt={alumni.nama || 'Alumni'} 
+                          className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm relative hover:z-10 transition-transform hover:scale-110" 
+                          loading="eager"
+                          onError={handleImageError} 
+                        />
                       ))}
                       {marker.alumni_count > 5 && (
                         <div className="w-9 h-9 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 shadow-sm relative">+{marker.alumni_count - 5}</div>
@@ -108,9 +208,15 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
                         <p className="text-xs font-medium text-gray-400 text-center py-4 animate-pulse">Memuat data detail...</p>
                       ) : (
                         <div className="space-y-3">
-                          {selectedLocation.alumni?.map((alumni) => (
-                            <div key={alumni.id_alumni || alumni.id} className="flex items-start gap-3 p-2.5 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                              <img src={alumni.foto_thumbnail || alumni.foto || '/default-avatar.png'} alt={alumni.nama} className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200 shrink-0" onError={(e) => { e.currentTarget.src = '/default-avatar.png'; }} />
+                          {selectedLocation.alumni?.map((alumni, idx) => (
+                            <div key={alumni.id_alumni || alumni.id || idx} className="flex items-start gap-3 p-2.5 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
+                              <img 
+                                src={getImageSrc(alumni.foto_thumbnail || alumni.foto)} 
+                                alt={alumni.nama || 'Alumni'} 
+                                className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200 shrink-0" 
+                                loading="eager"
+                                onError={handleImageError} 
+                              />
                               <div className="min-w-0 flex-1 pt-0.5">
                                 <p className="text-xs font-bold text-gray-800 truncate">{alumni.nama}</p>
                                 <p className="text-[10px] text-gray-500 font-medium mt-0.5">{alumni.jurusan} {alumni.tahun_masuk ? `• ${alumni.tahun_masuk}` : ''}</p>
