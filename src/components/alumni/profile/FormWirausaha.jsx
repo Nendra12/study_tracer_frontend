@@ -10,7 +10,7 @@ export default function FormWirausaha({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
       <div className="w-full relative z-[70]">
-        <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
+        <label className="text-[11px] font-bold text-primary uppercase tracking-widest mb-2.5 block">
           Nama Usaha <span className="text-red-500">*</span>
         </label>
         <input
@@ -27,10 +27,10 @@ export default function FormWirausaha({
           label={<>Bidang Usaha <span className="text-red-500">*</span></>}
           isSearchable={true}
           placeholder="Pilih Bidang Usaha"
-          options={bidangUsahaList.map(b => b.nama || b.nama_bidang)}
+          options={bidangUsahaList.map(b => b.nama || b.nama_bidang || b.nama_bidang_usaha).filter(Boolean)}
           value={Object.keys(bidangUsahaMap).find(key => bidangUsahaMap[key] === wirausaha.id_bidang) || wirausaha.id_bidang}
           onSelect={(namaBid) => {
-            const bid = bidangUsahaList.find(b => b.nama === namaBid || b.nama_bidang === namaBid);
+            const bid = bidangUsahaList.find(b => b.nama === namaBid || b.nama_bidang === namaBid || b.nama_bidang_usaha === namaBid);
             if (bid) setWirausaha(prev => ({ ...prev, id_bidang: String(bid.id) }));
           }}
         />
@@ -74,7 +74,7 @@ export default function FormWirausaha({
 
         {/* PERBAIKAN: Tombol kembali dipisah di sebelah kanan */}
         <div className="md:col-span-2 mt-2">
-          <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
+          <label className="text-[11px] font-bold text-primary uppercase tracking-widest mb-2.5 block">
             Alamat Usaha <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
