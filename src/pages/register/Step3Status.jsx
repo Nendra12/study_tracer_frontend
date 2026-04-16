@@ -190,7 +190,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
     return (
       <>
-        <div className="relative z-[10] focus-within:z-[9999]">
+        <div className="relative focus-within:z-[9999]">
           <YearsInput
             label="Tahun Mulai"
             value={data.tahun_mulai}
@@ -206,7 +206,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           />
         </div>
 
-        <div className="relative z-[10] focus-within:z-[9999]">
+        <div className="relative focus-within:z-[9999]">
           {!data.is_saat_ini ? (
             <YearsInput
               label="Tahun Selesai"
@@ -331,7 +331,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             {/* AREA LOKASI - HANYA MUNCUL JIKA PERUSAHAAN BARU */}
             {showPerusahaanLocation && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative">
                 <div className="md:col-span-2 mb-2">
                   <p className="text-[11px] font-bold text-amber-600 italic bg-amber-50 px-3 py-1.5 rounded-lg inline-block border border-amber-200/50">
                     Data perusahaan baru terdeteksi, mohon lengkapi alamat berikut:
@@ -435,7 +435,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             {/* AREA LOKASI - HANYA MUNCUL JIKA UNIVERSITAS BARU */}
             {showUnivLocation && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative">
                 <div className="md:col-span-2 mb-2">
                   <p className="text-[11px] font-bold text-amber-600 italic bg-amber-50 px-3 py-1.5 rounded-lg inline-block border border-amber-200/50">
                     Data universitas baru terdeteksi, mohon lengkapi alamat berikut:
@@ -527,7 +527,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
             {renderTahunDinamis('Wirausaha', 'Usaha')}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative z-[40]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-4 pt-4 border-t border-gray-200 relative">
               <div className="relative z-[50]">
                 <SmoothDropdown
                   label="Provinsi Usaha"
@@ -593,7 +593,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-4 relative z-10">
+      <div className="pt-4 relative z-0">
         <div className="flex justify-between">
           <button
             type="button"
