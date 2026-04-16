@@ -61,7 +61,6 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   
   // STATE MAP
   const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [mapLoading, setMapLoading] = useState(false);
   const skillDropdownRef = useRef(null);
 
   // Set Minimum Date + Click outside handler
@@ -183,39 +182,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const isExistingCompany = Boolean(formData.id_perusahaan);
 
-  // --- LOGIKA MENCARI KOORDINAT KOTA (AUTO-GEOCODING) ---
-  const handleOpenMap = async () => {
-    if (formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null) {
-      setShowLocationPicker(true);
-      return;
-    }
-
-    const cityName = kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama;
-    const provName = provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama;
-
-    if (cityName) {
-      setMapLoading(true);
-      try {
-        const query = encodeURIComponent(`${cityName}, ${provName || ''}, Indonesia`);
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-        const data = await res.json();
-
-        if (data && data.length > 0) {
-          setFormData(prev => ({
-            ...prev,
-            latitude_perusahaan: parseFloat(data[0].lat),
-            longitude_perusahaan: parseFloat(data[0].lon)
-          }));
-        }
-      } catch (err) {
-        console.error("Gagal mencari koordinat kota:", err);
-      } finally {
-        setMapLoading(false);
-        setShowLocationPicker(true);
-      }
-    } else {
-      setShowLocationPicker(true);
-    }
+  const handleOpenMap = () => {
+    setShowLocationPicker(true);
   };
 
   // --- HANDLER CUSTOM COMPANY DROPDOWN ---
@@ -664,11 +632,10 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                     <button
                       type="button"
                       onClick={handleOpenMap}
-                      disabled={mapLoading}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
                     >
-                      {mapLoading ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
-                      <span className="hidden sm:inline">{mapLoading ? 'Mencari...' : 'Pilih di Peta'}</span>
+                      <MapPin size={16} />
+                      <span className="hidden sm:inline">Pilih di Peta</span>
                     </button>
                   </div>
                   {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
@@ -789,6 +756,9 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         }}
         initialLat={typeof formData.latitude_perusahaan === 'number' ? formData.latitude_perusahaan : -7.25}
         initialLng={typeof formData.longitude_perusahaan === 'number' ? formData.longitude_perusahaan : 112.75}
+        selectedKota={kotaList.find(k => String(k.id) === String(formData.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(formData.id_provinsi))?.nama || ''}
+        initialAddress={formData.alamat_perusahaan || ''}
         title="Pilih Lokasi Perusahaan"
       />
     </div>

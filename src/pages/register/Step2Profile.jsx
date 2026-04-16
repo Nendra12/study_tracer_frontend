@@ -389,7 +389,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.tempat_lahir && <p className="text-xs text-red-500 mt-0.5">{errors.tempat_lahir}</p>}
         </div>
 
-        <div className="space-y-1 relative z-[55]">
+        <div className="space-y-1 relative z-[55] focus-within:z-[9999]">
           <DateOfBirthInput 
             isRequired={true} 
             value={formData.tanggal_lahir} 
