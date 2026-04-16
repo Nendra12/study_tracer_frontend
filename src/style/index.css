@@ -259,6 +259,17 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     filter: opacity(1);
 }
 
+/* Ensure react-datepicker poppers always appear above form sections */
+.react-datepicker-popper {
+    z-index: 99999 !important;
+}
+
+.react-datepicker__year-dropdown,
+.react-datepicker__month-dropdown,
+.react-datepicker__month-year-dropdown {
+    z-index: 99999 !important;
+}
+
 /* Leaflet map fixes for global CSS resets (e.g., Tailwind preflight). */
 .leaflet-container {
     width: 100%;
