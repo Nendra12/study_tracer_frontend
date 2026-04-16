@@ -12,10 +12,14 @@ import IdentitySection from '../../components/admin/pengaturan/IdentitySection';
 import LandingPageSection from '../../components/admin/pengaturan/LandingPageSection';
 import ThemeColorSection from '../../components/admin/pengaturan/ThemeColorSection';
 import FooterModalSection from '../../components/admin/pengaturan/FooterModalSection';
+import SkeletonPengaturan from '../../components/admin/skeleton/SkeletonPengaturan';
 
 export default function PengaturanTampilan() {
   const { theme, updateSettings, refreshFromApi } = useThemeSettings();
   const navigate = useNavigate();
+
+  // State untuk melacak initial loading
+  const [isLoading, setIsLoading] = useState(true);
 
   const [namaSekolah, setNamaSekolah] = useState(theme?.namaSekolah || 'SMKN 2 Kraksaan');
   const [primaryColor, setPrimaryColor] = useState(theme?.primaryColor || '#3C5759');
@@ -81,7 +85,7 @@ export default function PengaturanTampilan() {
   }, [theme]);
 
   useEffect(() => {
-    const fetchMeta = async () => {
+    const fetchMetaAndData = async () => {
       try {
         const res = await adminApi.getMetaData();
         const data = res.data?.data;
@@ -92,9 +96,13 @@ export default function PengaturanTampilan() {
         }
       } catch (err) {
         console.error('Failed to fetch metadata', err);
+      } finally {
+        // Matikan loading setelah data tertarik (Bisa ditambahkan delay setTimeout sedikit jika proses api terlalu cepat)
+        setIsLoading(false);
       }
     };
-    fetchMeta();
+    
+    fetchMetaAndData();
   }, []);
 
   const handleImageChange = (e, setPreview, setFile) => {
@@ -223,6 +231,11 @@ export default function PengaturanTampilan() {
     setActivePreviewTab(tabName);
     setShowPreviewModal(true);
   };
+
+  // Render Skeleton jika sedang proses fetching awal
+  if (isLoading) {
+    return <SkeletonPengaturan />;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 w-full relative">
