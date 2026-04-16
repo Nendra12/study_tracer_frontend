@@ -190,7 +190,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
     return (
       <>
-        <div className="relative z-[30]">
+        <div className="relative z-[80] focus-within:z-[9999]">
           <YearsInput
             label="Tahun Mulai"
             value={data.tahun_mulai}
@@ -206,7 +206,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           />
         </div>
 
-        <div className="relative z-[20]">
+        <div className="relative z-[70] focus-within:z-[9999]">
           {!data.is_saat_ini ? (
             <YearsInput
               label="Tahun Selesai"
@@ -639,6 +639,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         initialLng={typeof pekerjaan.longitude === 'number' && pekerjaan.longitude !== null ? pekerjaan.longitude : 112.75}
         selectedKota={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ''}
         selectedProvinsi={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ''}
+        initialAddress={pekerjaan.jalan || ''}
         title="Pilih Lokasi Perusahaan"
       />
 
@@ -657,6 +658,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         initialLng={typeof universitas.longitude === 'number' && universitas.longitude !== null ? universitas.longitude : 112.75}
         selectedKota={kotaList.find(k => String(k.id) === String(universitas.id_kota))?.nama || ''}
         selectedProvinsi={provinsiList.find(p => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
+        initialAddress={universitas.alamat || ''}
         title="Pilih Lokasi Universitas"
       />
 
@@ -675,6 +677,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         initialLng={typeof wirausaha.longitude === 'number' && wirausaha.longitude !== null ? wirausaha.longitude : 112.75}
         selectedKota={kotaList.find(k => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
         selectedProvinsi={provinsiList.find(p => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
+        initialAddress={wirausaha.alamat || ''}
         title="Pilih Lokasi Usaha"
       />
 
