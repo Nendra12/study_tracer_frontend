@@ -4,7 +4,7 @@ import { ArrowLeft, Calendar, Megaphone, Pin, X, Loader2, AlertCircle } from 'lu
 import { adminApi } from '../../api/admin';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import PengumumanDetailSkeleton from '../../components/admin/skeleton/PengumumanDetailSkeleton';
-import imgPengumuman from '../../assets/pengumuman.jpg';
+import imgPengumuman from '../../assets/pengumuman.png';
 
 // Helper untuk URL gambar
 const getImageUrl = (foto) => {
