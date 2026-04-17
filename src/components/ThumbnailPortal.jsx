@@ -19,12 +19,12 @@ export default function ThumbnailPortal({ user, alumniList = [], stats, itemVari
     >
       {/* Tombol Masuk Portal */}
       <button
-        onClick={() => user ? navigate(user.role === 'admin' ? "/admin" : "/alumni") : navigate("/login")}
+        onClick={() => user ? navigate(user.role === 'admin' ? "/wb-admin" : "/alumni") : navigate("/login")}
         className="bg-primary text-white px-8 py-4 rounded-md font-bold cursor-pointer hover:bg-primary/80 hover:-translate-y-1 transition-all duration-300 ease-in-out shadow-[0_8px_30px_rgba(60,87,89,0.3)] flex items-center gap-2"
       >
         Masuk Portal {user ? (user.role === 'admin' ? 'Admin' : 'Alumni') : 'Alumni'} <span className="text-xl">→</span>
       </button>
-      
+
       {/* Grup Foto Profil & Statistik (Tanpa background card berlebihan) */}
       <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-sm border border-white/50">
         <div className="flex -space-x-3">
@@ -41,7 +41,7 @@ export default function ThumbnailPortal({ user, alumniList = [], stats, itemVari
                     loading="lazy" // Optimasi lazy load tetap ada
                     className="w-10 h-10 object-cover rounded-full border-2 border-fourth bg-gray-200"
                     onError={(e) => {
-                      e.target.onerror = null; 
+                      e.target.onerror = null;
                       e.target.src = `https://ui-avatars.com/api/?name=${i.nama_alumni || 'A'}&background=random`;
                     }}
                   />

@@ -49,6 +49,7 @@ export default function LocationPicker({
   const [position, setPosition] = useState({ lat: initialLat, lng: initialLng });
   const [recenterTarget, setRecenterTarget] = useState({ lat: initialLat, lng: initialLng, zoom: 13 });
   const [address, setAddress] = useState('');
+  const [detectedLocation, setDetectedLocation] = useState({ province: '', city: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [geocodeResults, setGeocodeResults] = useState([]);
@@ -260,16 +261,29 @@ export default function LocationPicker({
   const reverseGeocode = useCallback(async (lat, lng) => {
     setIsReversing(true);
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
       const data = await res.json();
       if (data && data.display_name) {
         setAddress(data.display_name);
+        // Simpan data provinsi & kota dari hasil reverse geocode
+        const addr = data.address || {};
+        const province = addr.state || addr.province || '';
+        const city =
+          addr.city ||
+          addr.town ||
+          addr.county ||
+          addr.municipality ||
+          addr.state_district ||
+          '';
+        setDetectedLocation({ province, city });
       } else {
         setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        setDetectedLocation({ province: '', city: '' });
       }
     } catch (err) {
       console.error('Reverse geocode failed', err);
       setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      setDetectedLocation({ province: '', city: '' });
     } finally {
       setIsReversing(false);
     }
@@ -329,7 +343,13 @@ export default function LocationPicker({
   };
 
   const handleConfirm = () => {
-    onConfirm({ latitude: position.lat, longitude: position.lng, address });
+    onConfirm({
+      latitude: position.lat,
+      longitude: position.lng,
+      address,
+      provinceRaw: detectedLocation.province,
+      cityRaw: detectedLocation.city,
+    });
     onClose();
   };
 
