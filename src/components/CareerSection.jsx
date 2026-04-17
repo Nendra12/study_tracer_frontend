@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, MoveUpRight, X, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; 
-import { useAuth } from '../context/AuthContext'; 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { STORAGE_BASE_URL } from '../api/axios';
 import { useThemeSettings } from '../context/ThemeContext';
 
@@ -51,7 +51,7 @@ export default function CareerSection({ jobList }) {
   const { theme } = useThemeSettings();
   const navigate = useNavigate(); // <-- Inisialisasi
   const { user } = useAuth();     // <-- Inisialisasi
-  
+
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function CareerSection({ jobList }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             onClick={() => user ? navigate("/alumni/lowongan") : navigate("/login")}
-            className="group flex shrink-0 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
+            className="xl:flex group hidden border border-gray-300 shrink-0 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
           >
             Lihat Semua Lowongan
             <ArrowRight size={18} className="text-primary/70 group-hover:text-primary group-hover:translate-x-1.5 transition-all duration-300" />
@@ -119,7 +119,7 @@ export default function CareerSection({ jobList }) {
               className="group bg-white rounded-md overflow-hidden border border-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(60,87,89,0.1)] transition-all duration-500 flex flex-col"
             >
               {/* Job Banner - Dibuat bisa diklik */}
-              <div 
+              <div
                 className="h-60 w-full overflow-hidden relative cursor-pointer"
                 onClick={() => setSelectedImage(job.banner)}
               >
@@ -157,14 +157,28 @@ export default function CareerSection({ jobList }) {
                     <MapPin size={16} />
                     <span className="text-xs font-bold">{job.loc}</span>
                   </div>
-                  <button className="w-8 h-8 rounded-full bg-fourth text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all cursor-pointer">
+                  {/* <button className="w-8 h-8 rounded-full bg-fourth text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all cursor-pointer">
                     <MoveUpRight size={15} />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+        <motion.button
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          onClick={() => user ? navigate("/alumni/lowongan") : navigate("/login")}
+          className="xl:hidden flex group mt-10 mx-auto border border-gray-300 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"        >
+          Lihat Semua Lowongan
+          <ArrowRight
+            size={18}
+            strokeWidth={2.5}
+            className="text-primary/70 transition-all duration-300 group-hover:text-primary group-hover:translate-x-1 group-active:translate-x-1.5"
+          />
+        </motion.button>
       </div>
 
       {/* MODAL PREVIEW GAMBAR */}
