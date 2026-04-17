@@ -33,6 +33,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  
   // Efek deteksi section aktif berdasarkan scroll position
   useEffect(() => {
     const handleScrollSpy = () => {
@@ -228,7 +229,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                             </Link>
                             <button
                               onClick={handleLogoutClick}
-                              className="w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-md transition-all"
+                              className="cursor-pointer w-full group flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-md transition-all"
                             >
                               <LogOut size={18} />
                               Keluar Aplikasi
@@ -252,7 +253,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="xl:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-fourth rounded-full"
+              className="xl:hidden cursor-pointer w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-fourth rounded-full"
             >
               <motion.span
                 animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
@@ -322,7 +323,19 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   );
                 })}
                 {user ? (
-                  <></>
+                  <>
+                    <motion.button 
+                      onClick={handleLogoutClick} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{
+                        opacity: 1,
+                        x: 0,
+                        transition: { delay: 0.2 },
+                      }}
+                      className="relative cursor-pointer flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
+                      <LogOut size={18} /> Keluar Aplikasi
+                    </motion.button>
+                  </>
                 ) : (
                   <>
                     <hr className="border-fourth my-2" />

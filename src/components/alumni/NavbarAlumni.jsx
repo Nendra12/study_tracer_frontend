@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle, UserPen } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
@@ -115,6 +115,7 @@ export default function NavbarAlumni({ user }) {
   // 4. Mode Menciut (Ukuran mengecil): HANYA aktif saat benar-benar di-scroll
   const isShrunk = scrolled;
 
+  const namaAlumni = user?.nama_alumni || 'Alumni';
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -269,7 +270,7 @@ export default function NavbarAlumni({ user }) {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`xl:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-full ${isSolidMode ? 'bg-gray-100' : 'bg-fourth'}`}
+              className={`xl:hidden cursor-pointer w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-full ${isSolidMode ? 'bg-gray-100' : 'bg-fourth'}`}
             >
               <motion.span animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-primary block" />
               <motion.span animate={isOpen ? { opacity: 0 } : { opacity: 1 }} className="w-5 h-0.5 bg-primary block" />
@@ -286,6 +287,24 @@ export default function NavbarAlumni({ user }) {
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
                 className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/95 backdrop-blur-2xl border border-gray-100 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
               >
+                {user && (
+                  <div className="py-4 flex items-center justify-between gap-2">
+                    <div className="flex items-center">
+                      <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
+                      <div className="px-5 bg-fourth/50 border-b border-white/50">
+                        <p className="text-[10px] font-black text-third uppercase tracking-widest">
+                          Masuk sebagai
+                        </p>
+                        <p className="text-sm font-bold text-primary truncate mt-1">
+                          {namaAlumni || "Alumni"}
+                        </p>
+                      </div>
+                    </div>
+                    <button onClick={() => { navigate('/alumni/profile'); setIsOpen(false); }} className="w-10 h-10 flex items-center justify-center cursor-pointer hover:text-primary rounded-md">
+                      <UserPen size={24} />
+                    </button>
+                  </div>
+                )}
                 {navLinks.map((item, i) => {
                   const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
 
@@ -314,14 +333,11 @@ export default function NavbarAlumni({ user }) {
                 <hr className="border-gray-100 my-2" />
 
                 <div className="flex flex-col gap-2">
-                  <button onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
+                  <button onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
                     <Bell size={18} /> Notifikasi
                     {unreadCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                   </button>
-                  <button onClick={() => { navigate('/alumni/profile'); setIsOpen(false); }} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
-                    <User size={18} /> Profil Anda
-                  </button>
-                  <button onClick={handleLogoutClick} className="flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
+                  <button onClick={handleLogoutClick} className="relative cursor-pointer flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
                     <LogOut size={18} /> Keluar Aplikasi
                   </button>
                 </div>
