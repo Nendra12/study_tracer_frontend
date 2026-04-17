@@ -27,7 +27,8 @@ const ManagedTable = ({
   onDelete,
   readOnly = false,
   withJurusan = false,
-  dropdownOptions = []
+  dropdownOptions = [],
+  useTextEditActions = false,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({ nama: "", jurusan: [] });
@@ -86,9 +87,9 @@ const ManagedTable = ({
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 mb-6 shadow-sm relative">
-      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-white to-gray-50 rounded-t-lg">
+      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-linear-to-r from-white to-gray-50 rounded-t-lg">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className="p-1.5 bg-blue-100 rounded-lg text-primary flex-shrink-0">
+          <div className="p-1.5 bg-blue-100 rounded-lg text-primary shrink-0">
             {Icon && <Icon size={16} />}
           </div>
           <h3 className="font-bold text-primary text-md truncate">{title}</h3>
@@ -189,10 +190,28 @@ const ManagedTable = ({
                   {!readOnly && (
                     <td className="py-3 px-3">
                       {editId === item.id ? (
-                        <div className="flex justify-end gap-1">
-                          <button onClick={() => handleUpdate(item.id)} disabled={saving} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded"><Check size={16} /></button>
-                          <button onClick={() => { setEditId(null); resetForm(); }} className="p-1 text-slate-400 hover:bg-slate-100 rounded"><X size={16} /></button>
-                        </div>
+                        useTextEditActions ? (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => { setEditId(null); resetForm(); }}
+                              className="cursor-pointer px-2 py-1 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors"
+                            >
+                              Batal
+                            </button>
+                            <button
+                              onClick={() => handleUpdate(item.id)}
+                              disabled={saving || !formData.nama.trim()}
+                              className="cursor-pointer px-2 py-1 text-[11px] font-bold bg-primary text-white rounded shadow-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+                            >
+                              {saving && <Loader2 size={10} className="animate-spin" />} Simpan
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-1">
+                            <button onClick={() => handleUpdate(item.id)} disabled={saving} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded"><Check size={16} /></button>
+                            <button onClick={() => { setEditId(null); resetForm(); }} className="p-1 text-slate-400 hover:bg-slate-100 rounded"><X size={16} /></button>
+                          </div>
+                        )
                       ) : (
                         <div className="flex justify-end gap-1 transition-opacity">
                           <button onClick={() => startEdit(item)} className="cursor-pointer p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg active:scale-90"><Pencil size={14} /></button>
