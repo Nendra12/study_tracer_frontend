@@ -70,7 +70,7 @@ export default function AlumniSuccess({ alumniList }) {
       className="py-10 px-4 sm:px-6 sm:py-15 lg:px-8 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto relative z-10">
-        
+
         {/* --- HEADER DIPERBARUI: Judul di kiri, Tombol di Kanan --- */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
           <motion.div
@@ -93,7 +93,7 @@ export default function AlumniSuccess({ alumniList }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             onClick={() => user ? navigate("/alumni/daftar-alumni") : navigate("/login")}
-            className="group flex shrink-0 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
+            className="xl:flex hidden group mt-5 border border-gray-300 shrink-0 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
           >
             Lihat Semua Alumni
             <ArrowRight size={18} className="text-primary/70 group-hover:text-primary group-hover:translate-x-1.5 transition-all duration-300" />
@@ -104,7 +104,7 @@ export default function AlumniSuccess({ alumniList }) {
         {/* Grid Kartu Alumni */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {alumniData.map((alumni, index) => (
-             /* ... (biarkan bagian mapping card alumni sama seperti sebelumnya) ... */
+            /* ... (biarkan bagian mapping card alumni sama seperti sebelumnya) ... */
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 40 }}
@@ -152,6 +152,17 @@ export default function AlumniSuccess({ alumniList }) {
             </motion.div>
           ))}
         </div>
+        <motion.button
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          onClick={() => user ? navigate("/alumni/daftar-alumni") : navigate("/login")}
+          // Ganti justify-center dengan mx-auto
+          className="xl:hidden flex group mt-10 mx-auto border border-gray-300 items-center gap-2.5 px-6 py-3 bg-transparent text-primary rounded-xl text-sm font-bold hover:bg-primary/10 transition-all duration-300 cursor-pointer w-fit"
+        >
+          Lihat Semua Alumni
+          <ArrowRight size={18} className="text-primary/70 group-hover:text-primary group-hover:translate-x-1.5 transition-all duration-300" />
+        </motion.button>
       </div>
     </section>
   );
