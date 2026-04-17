@@ -585,6 +585,7 @@ export default function StatusKarir() {
             onCreate={(data) => handleCreate('prodi', data)}
             onUpdate={(id, data) => handleUpdate('prodi', id, data)}
             onDelete={(id) => handleDelete('prodi', id)}
+            useTextEditActions={true}
           />
           
           <ManagedTable
@@ -597,6 +598,7 @@ export default function StatusKarir() {
             onCreate={(data) => handleCreate('wirausaha', data)}
             onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
             onDelete={(id) => handleDelete('wirausaha', id)}
+            useTextEditActions={true}
           />
 
         </div>

@@ -18,6 +18,21 @@ export default function SmoothKota({
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   // Normalisasi data untuk mendukung string biasa maupun object
   const normalizedOptions = options.map(opt => {
     if (typeof opt === 'object' && opt !== null) {
@@ -26,7 +41,7 @@ export default function SmoothKota({
     return { value: opt, label: String(opt) };
   });
 
-  const selectedOption = normalizedOptions.find(opt => opt.value === value) || null;
+  const selectedOption = normalizedOptions.find((opt) => String(opt.value) === String(value)) || null;
 
   const handleSelect = (option) => {
     setIsOpen(false);
@@ -39,7 +54,7 @@ export default function SmoothKota({
     : normalizedOptions;
 
   return (
-    <div className={`space-y-1 w-full min-w-[180px] relative text-left isolate ${isOpen ? 'z-9999' : 'z-60'}`} ref={dropdownRef}>
+    <div className={`space-y-1 w-full min-w-45 relative text-left isolate ${isOpen ? 'z-9999' : 'z-60'}`} ref={dropdownRef}>
       {!hideLabel && label && (
         <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-1">
           {label} {isRequired ? <span className="text-red-500">*</span> : <span className="text-[9px] text-slate-400 italic">{message}</span>}
@@ -59,7 +74,7 @@ export default function SmoothKota({
       </button>
 
       {isOpen && (
-        <div className="absolute z-9999 w-full min-w-[240px] mt-1 bg-white opacity-100 border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="absolute z-9999 w-full min-w-60 mt-1 bg-white opacity-100 border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
           
           {isSearchable && (
             <div className="p-2 border-b border-gray-50 bg-gray-50/50 flex items-center gap-2">
@@ -77,18 +92,21 @@ export default function SmoothKota({
 
           <ul className="py-1 max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar">
             {filteredOptions.length > 0 ? (
-              filteredOptions.map((option, idx) => (
-                <li
-                  key={option.value !== undefined ? option.value : idx}
-                  onClick={() => handleSelect(option)}
-                  className="flex items-start justify-between px-3 py-2 text-xs cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors gap-2"
-                >
-                  <span className={`break-words ${value === option.value ? "font-bold text-primary" : ""}`}>
-                    {option.label}
-                  </span>
-                  {value === option.value && <Check size={14} className="text-primary shrink-0 mt-0.5" />}
-                </li>
-              ))
+              filteredOptions.map((option, idx) => {
+                const isSelected = String(value) === String(option.value);
+                return (
+                  <li
+                    key={option.value !== undefined ? option.value : idx}
+                    onClick={() => handleSelect(option)}
+                    className="flex items-start justify-between px-3 py-2 text-xs cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors gap-2"
+                  >
+                    <span className={`wrap-break-word ${isSelected ? "font-bold text-primary" : ""}`}>
+                      {option.label}
+                    </span>
+                    {isSelected && <Check size={14} className="text-primary shrink-0 mt-0.5" />}
+                  </li>
+                );
+              })
             ) : (
               <li className="px-3 py-3 text-xs text-gray-400 italic text-center">Data tidak ditemukan</li>
             )}
@@ -96,7 +114,6 @@ export default function SmoothKota({
         </div>
       )}
 
-      {isOpen && <div className="fixed inset-0 z-9990" onClick={() => setIsOpen(false)} />}
     </div>
   );
 }

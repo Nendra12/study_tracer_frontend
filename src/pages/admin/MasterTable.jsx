@@ -5,10 +5,7 @@ import {
   Plus,
   Trash2,
   Pencil,
-  Search,
-  Loader2,
-  X,
-  Check
+  Search
 } from "lucide-react";
 import { adminApi } from "../../api/admin";
 import { alertSuccess, alertError, alertConfirm, alertWarning } from "../../utilitis/alert"; 
@@ -16,7 +13,7 @@ import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 import Pagination from "../../components/admin/Pagination";
-import SmoothKota from "../../components/admin/SmoothKota"; 
+import PerusahaanEditorModal from "../../components/admin/PerusahaanEditorModal";
 import { downloadCsv, createExportFileName } from "../../utilitis/export";
 
 const PERUSAHAAN_PER_PAGE = 7;
@@ -27,10 +24,55 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({ nama_perusahaan: "", id_kota: "", jalan: "" });
+  const [formErrors, setFormErrors] = useState({ nama_perusahaan: "", id_kota: "" });
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const resetForm = () => setFormData({ nama_perusahaan: "", id_kota: "", jalan: "" });
+  const resetForm = () => {
+    setFormData({ nama_perusahaan: "", id_kota: "", jalan: "" });
+    setFormErrors({ nama_perusahaan: "", id_kota: "" });
+  };
+
+  const getKotaById = (idKota) => {
+    if (!idKota) return null;
+    return kotaList.find((k) => String(k.id) === String(idKota)) || null;
+  };
+
+  const getKotaIdFromItem = (item) => {
+    const directId = item?.id_kota || item?.kota?.id || item?.kota_id || item?.kotaId;
+    if (directId) return String(directId);
+
+    const cityName = typeof item?.kota === "string"
+      ? item.kota
+      : item?.kota?.nama || item?.nama_kota;
+
+    if (!cityName) return "";
+    const match = kotaList.find((k) => (k.nama || "").toLowerCase() === String(cityName).toLowerCase());
+    return match ? String(match.id) : "";
+  };
+
+  const resolveLocation = (item) => {
+    const kotaObj = typeof item.kota === "object" && item.kota ? item.kota : null;
+    const kotaFromList = getKotaById(item.id_kota || kotaObj?.id);
+
+    const kota = kotaObj?.nama || (typeof item.kota === "string" ? item.kota : "") || kotaFromList?.nama || "-";
+    const provinsi = kotaObj?.provinsi?.nama || item.provinsi?.nama || kotaFromList?.provinsi?.nama || kotaFromList?.nama_provinsi || "-";
+
+    return { kota, provinsi };
+  };
+
+  const selectedKota = getKotaById(formData.id_kota);
+  const selectedProvinsiLabel = selectedKota?.provinsi?.nama || selectedKota?.nama_provinsi || "-";
+
+  const validateForm = () => {
+    const errors = {
+      nama_perusahaan: formData.nama_perusahaan.trim() ? "" : "Nama perusahaan wajib diisi.",
+      id_kota: formData.id_kota ? "" : "Kota wajib dipilih.",
+    };
+
+    setFormErrors(errors);
+    return !errors.nama_perusahaan && !errors.id_kota;
+  };
 
   // Fungsi cek duplikat nama perusahaan
   const isDuplicate = (name, currentId = null) => {
@@ -41,7 +83,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
 
   const handleCreate = async () => {
     const trimmedName = formData.nama_perusahaan.trim();
-    if (!trimmedName) return;
+    if (!validateForm()) return;
 
     if (isDuplicate(trimmedName)) {
       return alertWarning(`Perusahaan "${trimmedName}" sudah ada dalam daftar.`);
@@ -49,7 +91,11 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
 
     setSaving(true);
     try {
-      await adminApi.createPerusahaan(formData);
+      await adminApi.createPerusahaan({
+        nama_perusahaan: trimmedName,
+        id_kota: formData.id_kota,
+        jalan: formData.jalan?.trim() || "",
+      });
       alertSuccess("Perusahaan berhasil ditambahkan");
       resetForm();
       setIsAdding(false);
@@ -61,7 +107,7 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
 
   const handleUpdate = async (id) => {
     const trimmedName = formData.nama_perusahaan.trim();
-    if (!trimmedName) return;
+    if (!validateForm()) return;
 
     if (isDuplicate(trimmedName, id)) {
       return alertWarning(`Nama perusahaan "${trimmedName}" sudah digunakan oleh data lain.`);
@@ -69,7 +115,11 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
 
     setSaving(true);
     try {
-      await adminApi.updatePerusahaan(id, formData);
+      await adminApi.updatePerusahaan(id, {
+        nama_perusahaan: trimmedName,
+        id_kota: formData.id_kota,
+        jalan: formData.jalan?.trim() || "",
+      });
       alertSuccess("Perusahaan berhasil diperbarui");
       setEditId(null);
       resetForm();
@@ -96,9 +146,10 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
     setIsAdding(false);
     setFormData({
       nama_perusahaan: item.nama || "",
-      id_kota: item.kota?.id || item.id_kota || "",
+      id_kota: getKotaIdFromItem(item),
       jalan: item.jalan || "",
     });
+    setFormErrors({ nama_perusahaan: "", id_kota: "" });
   };
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
@@ -110,9 +161,15 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
   const totalPages = Math.max(1, Math.ceil(filteredData.length / PERUSAHAAN_PER_PAGE));
   const paginatedData = filteredData.slice((currentPage - 1) * PERUSAHAAN_PER_PAGE, currentPage * PERUSAHAAN_PER_PAGE);
 
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   return (
     <div className="bg-white rounded-lg border border-gray-100 mb-6 overflow-hidden shadow-sm">
-      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
+      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-linear-to-r from-white to-gray-50">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <div className="p-1.5 bg-blue-100 rounded-lg text-primary"><Building2 size={16} /></div>
           <h3 className="font-bold text-primary text-md truncate">Manajemen Perusahaan</h3>
@@ -137,91 +194,30 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
           <thead>
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
               <th className="px-3 py-3 w-1/4">Nama</th>
-              <th className="px-3 py-3 w-1/4">Kota</th>
+              <th className="px-3 py-3 w-1/5">Kota</th>
+              <th className="px-3 py-3 w-1/5">Provinsi</th>
               <th className="px-3 py-3 w-1/3">Alamat</th>
               <th className="px-3 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {isAdding && (
-              <tr className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-                <td className="py-2 px-3">
-                  <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} placeholder="Nama Perusahaan" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
-                </td>
-                <td className="py-2 px-3">
-                  <td className="py-2 px-3">
-                  <SmoothKota
-                    isSearchable={true}
-                    placeholder="-- Pilih Kota --"
-                    value={formData.id_kota}
-                    options={kotaList.map(k => ({ value: k.id, label: k.nama }))}
-                    onSelect={(val) => setFormData(p => ({ ...p, id_kota: val }))}
-                  />
-                </td>
-                </td>
-                <td className="py-2 px-3">
-                  <input type="text" value={formData.jalan} onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} placeholder="Alamat" className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" />
-                </td>
-                <td className="py-2 px-3">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors">Batal</button>
-                    <button onClick={handleCreate} disabled={saving || !formData.nama_perusahaan.trim()} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold bg-primary text-white rounded shadow-sm flex items-center gap-1 hover:opacity-90 disabled:opacity-50">
-                      {saving && <Loader2 size={10} className="animate-spin" />} Simpan
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )}
-
-            {paginatedData.length === 0 && !isAdding ? (
-              <tr><td colSpan={4} className="py-6 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
+            {paginatedData.length === 0 ? (
+              <tr><td colSpan={5} className="py-6 text-center text-xs text-slate-400">Tidak ada data ditemukan.</td></tr>
             ) : (
-              paginatedData.map((item) =>
-                editId === item.id ? (
-                  <tr key={item.id} className="bg-blue-50/50 animate-in fade-in duration-300 align-top">
-                    <td className="py-2 px-3">
-                      <input type="text" value={formData.nama_perusahaan} onChange={(e) => setFormData(p => ({ ...p, nama_perusahaan: e.target.value }))} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" autoFocus />
-                    </td>
-                    <td className="py-2 px-3">
-                      <SmoothKota
-                        isSearchable={true}
-                        placeholder="-- Pilih Kota --"
-                        value={formData.id_kota}
-                        options={kotaList.map(k => ({ value: k.id, label: k.nama }))}
-                        onSelect={(val) => setFormData(p => ({ ...p, id_kota: val }))}
-                      />
-                    </td>
-                    <td className="py-2 px-3">
-                      <input 
-                        type="text" 
-                        value={formData.jalan} 
-                        onChange={(e) => setFormData(p => ({ ...p, jalan: e.target.value }))} 
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary outline-none" 
-                      />
-                    </td>
-                    <td className="py-2 px-3">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => { setEditId(null); resetForm(); }} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold text-gray-500 hover:bg-gray-200 rounded transition-colors">Batal</button>
-                        <button onClick={() => handleUpdate(item.id)} disabled={saving || !formData.nama_perusahaan.trim()} className="cursor-pointer px-2 py-1.5 text-[11px] font-bold bg-primary text-white rounded shadow-sm flex items-center gap-1 hover:opacity-90 disabled:opacity-50">
-                          {saving && <Loader2 size={10} className="animate-spin" />} Simpan
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
-                    <td className="py-3 px-3 font-medium text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
-                    <td className="py-3 px-3 text-xs text-gray-500">{item.kota?.nama || '-'}</td>
-                    <td className="py-3 px-3 text-xs text-gray-500 max-w-50 truncate">{item.jalan || '-'}</td>
-                    <td className="py-3 px-3">
-                      <div className="flex justify-end gap-1 transition-opacity">
-                        <button onClick={() => startEdit(item)} className="cursor-pointer p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg active:scale-90" title="Edit"><Pencil size={14} /></button>
-                        <button onClick={() => handleDelete(item.id, item.nama)} className="cursor-pointer p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg active:scale-90" title="Hapus"><Trash2 size={14} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              )
+              paginatedData.map((item) => (
+                <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors align-top">
+                  <td className="py-3 px-3 font-medium text-gray-700 text-sm group-hover:text-primary transition-colors">{item.nama}</td>
+                  <td className="py-3 px-3 text-xs text-gray-500">{resolveLocation(item).kota}</td>
+                  <td className="py-3 px-3 text-xs text-gray-500">{resolveLocation(item).provinsi}</td>
+                  <td className="py-3 px-3 text-xs text-gray-500 max-w-50 truncate">{item.jalan || '-'}</td>
+                  <td className="py-3 px-3">
+                    <div className="flex justify-end gap-1 transition-opacity">
+                      <button onClick={() => startEdit(item)} className="cursor-pointer p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg active:scale-90" title="Edit"><Pencil size={14} /></button>
+                      <button onClick={() => handleDelete(item.id, item.nama)} className="cursor-pointer p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg active:scale-90" title="Hapus"><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
@@ -231,6 +227,31 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
         currentPage={currentPage} 
         totalPages={totalPages} 
         onPageChange={(page) => setCurrentPage(page)} 
+      />
+
+      <PerusahaanEditorModal
+        isOpen={isAdding || editId !== null}
+        mode={isAdding ? "add" : "edit"}
+        formData={formData}
+        errors={formErrors}
+        kotaList={kotaList}
+        selectedProvinsiLabel={selectedProvinsiLabel}
+        saving={saving}
+        onNameChange={(val) => {
+          setFormData((prev) => ({ ...prev, nama_perusahaan: val }));
+          setFormErrors((prev) => ({ ...prev, nama_perusahaan: val.trim() ? "" : "Nama perusahaan wajib diisi." }));
+        }}
+        onAlamatChange={(val) => setFormData((prev) => ({ ...prev, jalan: val }))}
+        onKotaChange={(val) => {
+          setFormData((prev) => ({ ...prev, id_kota: val }));
+          setFormErrors((prev) => ({ ...prev, id_kota: "" }));
+        }}
+        onCancel={() => { setIsAdding(false); setEditId(null); resetForm(); }}
+        onSave={() => {
+          if (isAdding) return handleCreate();
+          if (editId !== null) return handleUpdate(editId);
+          return null;
+        }}
       />
     </div>
   );
@@ -287,6 +308,16 @@ export default function MasterTable() {
     return jurusanData.some(j => j.nama?.toLowerCase().trim() === name.toLowerCase().trim() && j.id !== currentId);
   };
 
+  const resolvePerusahaanLocationForExport = (item) => {
+    const kotaObj = typeof item.kota === "object" && item.kota ? item.kota : null;
+    const kotaFromList = kotaList.find((k) => String(k.id) === String(item.id_kota || kotaObj?.id));
+
+    return {
+      kota: kotaObj?.nama || (typeof item.kota === "string" ? item.kota : "") || kotaFromList?.nama || "-",
+      provinsi: kotaObj?.provinsi?.nama || item.provinsi?.nama || kotaFromList?.provinsi?.nama || kotaFromList?.nama_provinsi || "-",
+    };
+  };
+
   const handleBuatLaporan = async () => {
     setExportingReport(true);
     try {
@@ -299,8 +330,11 @@ export default function MasterTable() {
         title = 'Laporan Data Jurusan';
       } else {
         if (perusahaanData.length === 0) return alertWarning("Data Perusahaan kosong");
-        headers = ['No', 'Nama Perusahaan', 'Kota', 'Alamat'];
-        rows = perusahaanData.map((p, index) => [index + 1, p.nama || '-', p.kota?.nama || '-', p.jalan || '-']);
+        headers = ['No', 'Nama Perusahaan', 'Kota', 'Provinsi', 'Alamat'];
+        rows = perusahaanData.map((p, index) => {
+          const location = resolvePerusahaanLocationForExport(p);
+          return [index + 1, p.nama || '-', location.kota, location.provinsi, p.jalan || '-'];
+        });
         fileName = 'laporan_perusahaan';
         title = 'Laporan Data Perusahaan';
       }
@@ -361,6 +395,7 @@ export default function MasterTable() {
                 fetchJurusan(); 
               } catch (e) { alertError("Gagal menghapus jurusan"); }
             }}
+            useTextEditActions={true}
           />
           <PerusahaanTable 
             data={perusahaanData} 
