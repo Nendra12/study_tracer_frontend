@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import LoginButton from "./alumni/LoginButton";
-import Login from "../pages/Login";
 import { useAuth } from "../context/AuthContext";
-import { ChevronDown, Home, LogOut, User, UserPen } from "lucide-react";
+import { ChevronDown, LogOut, User, UserPen } from "lucide-react";
 import { STORAGE_BASE_URL } from "../api/axios";
 import { useThemeSettings } from "../context/ThemeContext";
 import { alertConfirm } from "../utilitis/alert";
@@ -87,8 +86,8 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
 
   const profile = user?.profile ?? null;
   const namaAlumni = profile?.nama || 'Alumni';
-  const canAccessAll = user?.can_access_all ?? false;
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
+  const avatarInitial = namaAlumni?.charAt(0)?.toUpperCase() || "A";
 
   const navLinks = [
     { name: "Beranda", href: "#beranda" },
@@ -103,6 +102,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
     if (!result.isConfirmed) return;
 
     setIsDropdownOpen(false);
+    setIsOpen(false);
     await logout();
     navigate('/');
   };
@@ -253,7 +253,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="xl:hidden cursor-pointer w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-fourth rounded-full"
+              className="xl:hidden relative z-60 cursor-pointer w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-fourth rounded-full"
             >
               <motion.span
                 animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
@@ -273,78 +273,100 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
           {/* Mobile Menu Dropdown */}
           <AnimatePresence>
             {isOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-4 p-4 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
-              >
-                {user && (
-                  <div className="py-4 flex items-center justify-between gap-2">
-                    <div className="flex items-center">
-                      <img src={fotoUrl} alt="foto anda" className="w-13 h-13 rounded-md" />
-                      <div className="px-5 bg-fourth/50 border-b border-white/50">
-                        <p className="text-[10px] font-black text-third uppercase tracking-widest">
-                          Masuk sebagai
-                        </p>
-                        <p className="text-sm font-bold text-primary truncate mt-1">
-                          {namaAlumni || "Alumni"}
-                        </p>
+              <>
+                <motion.button
+                  type="button"
+                  aria-label="Tutup menu"
+                  onClick={() => setIsOpen(false)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-40 xl:hidden bg-black/20 backdrop-blur-[1px]"
+                />
+
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  className="absolute z-50 top-full left-0 right-0 mt-3 p-3 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
+                >
+                  {user && (
+                    <div className="mb-1 p-3 rounded-2xl border border-slate-100 bg-slate-50/80 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {fotoUrl ? (
+                          <img src={fotoUrl} alt="foto anda" className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-primary text-white text-sm font-black flex items-center justify-center shrink-0">
+                            {avatarInitial}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black text-third uppercase tracking-widest">
+                            Masuk sebagai
+                          </p>
+                          <p className="text-lg font-black text-primary truncate leading-tight mt-1">
+                            {namaAlumni || "Alumni"}
+                          </p>
+                        </div>
                       </div>
+                      <Link
+                        to={'/alumni/profile'}
+                        onClick={() => setIsOpen(false)}
+                        className="w-10 h-10 shrink-0 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-primary hover:border-primary/30 transition-colors"
+                      >
+                        <UserPen size={20} />
+                      </Link>
                     </div>
-                    <Link to={'/alumni/profile'} className="w-10 h-10 flex items-center justify-center bg-fourth rounded-md">
-                      <UserPen size={24} />
-                    </Link>
-                  </div>
-                )}
-                {navLinks.map((item, i) => {
-                  const isActive = activeSection === item.href.replace("#", "");
-                  return (
-                    <motion.a
-                      key={i}
-                      href={item.href}
-                      onClick={(e) => {
-                        handleSmoothScroll(e, item.href);
-                        setIsOpen(false);
-                      }}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{
-                        opacity: 1,
-                        x: 0,
-                        transition: { delay: i * 0.1 },
-                      }}
-                      className={`px-6 py-4 rounded-lg font-bold transition-all ${isActive
-                        ? "bg-primary text-white"
-                        : "text-primary/80 hover:bg-fourth hover:text-primary"
-                        }`}
-                    >
-                      {item.name}
-                    </motion.a>
-                  );
-                })}
-                {user ? (
-                  <>
-                    <motion.button 
-                      onClick={handleLogoutClick} 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{
-                        opacity: 1,
-                        x: 0,
-                        transition: { delay: 0.2 },
-                      }}
-                      className="relative cursor-pointer flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
-                      <LogOut size={18} /> Keluar Aplikasi
-                    </motion.button>
-                  </>
-                ) : (
-                  <>
-                    <hr className="border-fourth my-2" />
-                    <div className="w-full">
-                      <LoginButton />
-                    </div>
-                  </>
-                )}
-              </motion.div>
+                  )}
+                  {navLinks.map((item, i) => {
+                    const isActive = activeSection === item.href.replace("#", "");
+                    return (
+                      <motion.a
+                        key={i}
+                        href={item.href}
+                        onClick={(e) => {
+                          handleSmoothScroll(e, item.href);
+                          setIsOpen(false);
+                        }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                          transition: { delay: i * 0.1 },
+                        }}
+                        className={`px-5 py-3 rounded-xl text-[15px] font-bold transition-all ${isActive
+                          ? "bg-primary text-white shadow-sm"
+                          : "text-primary/80 hover:bg-fourth hover:text-primary"
+                          }`}
+                      >
+                        {item.name}
+                      </motion.a>
+                    );
+                  })}
+                  {user ? (
+                    <>
+                      <motion.button 
+                        onClick={handleLogoutClick} 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                          transition: { delay: 0.2 },
+                        }}
+                        className="relative cursor-pointer flex items-center gap-3 px-5 py-3 rounded-xl text-[15px] font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
+                        <LogOut size={18} /> Keluar Aplikasi
+                      </motion.button>
+                    </>
+                  ) : (
+                    <>
+                      <hr className="border-fourth my-2" />
+                      <div className="w-full">
+                        <LoginButton />
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
         </div>
