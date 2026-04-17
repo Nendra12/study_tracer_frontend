@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { School, BookOpen, Store, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { School, BookOpen, Store, Plus, Pencil, Trash2 } from "lucide-react";
 import { alertSuccess, alertError, alertWarning } from "../../utilitis/alert";
 import { adminApi } from "../../api/admin";
 import { createExportFileName, downloadCsv } from "../../utilitis/export";
@@ -8,15 +8,93 @@ import { createExportFileName, downloadCsv } from "../../utilitis/export";
 import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
-import SmoothKota from "../../components/admin/SmoothKota";
+import UniversitasEditorModal from "../../components/admin/UniversitasEditorModal";
+import Pagination from "../../components/admin/Pagination";
 
-function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDelete }) {
+const ITEMS_PER_PAGE = 7;
+
+const validateUniversityName = (name = '') => {
+  const cleaned = String(name).replace(/\./g, ' ').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return 'Nama universitas wajib diisi.';
+
+  const words = cleaned.split(' ').filter(Boolean);
+  if (words.length < 2) return 'Nama universitas harus ditulis lengkap, bukan singkatan.';
+
+  const connectors = ['dan', 'di', 'of', 'the', 'for', '&'];
+  const meaningfulWords = words.filter((word) => !connectors.includes(word.toLowerCase()));
+
+  if (meaningfulWords.length === 0) return 'Nama universitas harus ditulis lengkap, bukan singkatan.';
+
+  const acronymLike = meaningfulWords.every((word) => /^[A-Z]{1,4}$/.test(word));
+  const hasLongWord = meaningfulWords.some((word) => word.length >= 4);
+
+  if (acronymLike || !hasLongWord) {
+    return 'Nama universitas harus ditulis lengkap, bukan singkatan.';
+  }
+
+  return '';
+};
+
+function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreate, onUpdate, onDelete }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({ nama_universitas: '', alamat: '', id_kota: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [formData, setFormData] = useState({ nama_universitas: '', alamat: '', id_kota: '', jurusan: [] });
+  const [formErrors, setFormErrors] = useState({ nama_universitas: '', id_kota: '' });
 
-  const resetForm = () => setFormData({ nama_universitas: '', alamat: '', id_kota: '' });
+  const totalPages = Math.max(1, Math.ceil(data.length / ITEMS_PER_PAGE));
+  const paginatedData = data.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const resetForm = () => {
+    setFormData({ nama_universitas: '', alamat: '', id_kota: '', jurusan: [] });
+    setFormErrors({ nama_universitas: '', id_kota: '' });
+  };
+
+  const validateForm = (payload) => {
+    const errors = {
+      nama_universitas: validateUniversityName(payload.nama_universitas),
+      id_kota: payload.id_kota ? '' : 'Kota wajib dipilih.',
+    };
+
+    setFormErrors(errors);
+    return !errors.nama_universitas && !errors.id_kota;
+  };
+
+  const normalizeJurusan = (list = []) => {
+    if (!Array.isArray(list)) return [];
+    return Array.from(
+      new Set(
+        list
+          .map((item) => String(item || '').trim())
+          .filter(Boolean)
+      )
+    );
+  };
+
+  const getKotaById = (idKota) => {
+    if (!idKota) return null;
+    return kotaList.find((k) => String(k.id) === String(idKota)) || null;
+  };
+
+  const resolveLocation = (item) => {
+    const kotaDetail = getKotaById(item.id_kota || item.kota_id);
+    const kotaName = item.kota && item.kota !== '-' ? item.kota : (kotaDetail?.nama || '-');
+    const provinsiName = item.provinsi && item.provinsi !== '-'
+      ? item.provinsi
+      : (kotaDetail?.provinsi?.nama || kotaDetail?.nama_provinsi || '-');
+
+    return { kotaName, provinsiName };
+  };
+
+  const selectedKota = getKotaById(formData.id_kota);
+  const selectedProvinsiLabel = selectedKota?.provinsi?.nama || selectedKota?.nama_provinsi || '-';
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const startEdit = (item) => {
     setIsAdding(false);
@@ -25,14 +103,26 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
       nama_universitas: item.nama || '',
       alamat: item.alamat || '',
       id_kota: item.id_kota ? String(item.id_kota) : (item.kota_id ? String(item.kota_id) : ''),
+      jurusan: normalizeJurusan(item.jurusan),
     });
+    setFormErrors({ nama_universitas: '', id_kota: '' });
   };
 
   const handleCreate = async () => {
-    if (!formData.nama_universitas.trim() || !formData.id_kota) return;
+    const payload = {
+      nama_universitas: formData.nama_universitas.trim(),
+      alamat: formData.alamat.trim(),
+      id_kota: formData.id_kota,
+      jurusan: normalizeJurusan(formData.jurusan),
+    };
+
+    if (!validateForm(payload)) return;
+
     setSaving(true);
     try {
-      await onCreate(formData);
+      const success = await onCreate(payload);
+      if (!success) return;
+
       resetForm();
       setIsAdding(false);
     } finally {
@@ -41,10 +131,20 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
   };
 
   const handleUpdate = async (id) => {
-    if (!formData.nama_universitas.trim() || !formData.id_kota) return;
+    const payload = {
+      nama_universitas: formData.nama_universitas.trim(),
+      alamat: formData.alamat.trim(),
+      id_kota: formData.id_kota,
+      jurusan: normalizeJurusan(formData.jurusan),
+    };
+
+    if (!validateForm(payload)) return;
+
     setSaving(true);
     try {
-      await onUpdate(id, formData);
+      const success = await onUpdate(id, payload);
+      if (!success) return;
+
       resetForm();
       setEditId(null);
     } finally {
@@ -54,7 +154,7 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 mb-6 shadow-sm overflow-hidden">
-      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-white to-gray-50">
+      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-linear-to-r from-white to-gray-50">
         <div className="flex items-center gap-2.5">
           <div className="p-1.5 bg-blue-100 rounded-lg text-primary"><School size={16} /></div>
           <h3 className="font-bold text-primary text-md">Data Universitas</h3>
@@ -76,141 +176,84 @@ function UniversitasTable({ data = [], kotaList = [], onCreate, onUpdate, onDele
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
-              <th className="px-3 py-3">Nama</th>
-              <th className="px-3 py-3">Program Studi</th>
-              <th className="px-3 py-3">Alamat</th>
-              <th className="px-3 py-3">Kota</th>
-              <th className="px-3 py-3">Provinsi</th>
-              <th className="px-3 py-3 text-right">Aksi</th>
+              <th className="px-3 py-3 w-1/5">Nama</th>
+              <th className="px-3 py-3 w-1/4">Program Studi</th>
+              <th className="px-3 py-3 w-1/5">Alamat</th>
+              <th className="px-3 py-3 w-1/6">Kota</th>
+              <th className="px-3 py-3 w-1/6">Provinsi</th>
+              <th className="px-3 py-3 text-right w-28">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {isAdding && (
-              <tr className="bg-blue-50/50 align-top">
-                <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={formData.nama_universitas}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, nama_universitas: e.target.value }))}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
-                    placeholder="Nama universitas"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <span className="text-xs text-slate-400">Diatur di tabel Program Studi</span>
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={formData.alamat}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, alamat: e.target.value }))}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
-                    placeholder="Alamat universitas"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <SmoothKota
-                    isSearchable={true}
-                    placeholder="Pilih Kota"
-                    value={formData.id_kota}
-                    options={kotaList.map((k) => ({ value: String(k.id), label: k.nama }))}
-                    onSelect={(val) => setFormData((prev) => ({ ...prev, id_kota: String(val) }))}
-                  />
-                </td>
-                <td className="px-3 py-2 text-xs text-slate-500">Otomatis dari kota</td>
-                <td className="px-3 py-2">
-                  <div className="flex justify-end gap-1">
-                    <button onClick={handleCreate} disabled={saving} className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded">
-                      <Check size={14} />
-                    </button>
-                    <button onClick={() => { setIsAdding(false); resetForm(); }} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded">
-                      <X size={14} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )}
-
-            {data.length === 0 && !isAdding ? (
+            {data.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-6 text-center text-xs text-slate-400">Tidak ada data universitas.</td>
               </tr>
             ) : (
-              data.map((item) => (
-                editId === item.id ? (
-                  <tr key={item.id} className="bg-blue-50/50 align-top">
-                    <td className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={formData.nama_universitas}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, nama_universitas: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
-                      />
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="text-xs text-slate-400">Diatur di tabel Program Studi</span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={formData.alamat}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, alamat: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded"
-                      />
-                    </td>
-                    <td className="px-3 py-2">
-                      <SmoothKota
-                        isSearchable={true}
-                        placeholder="Pilih Kota"
-                        value={formData.id_kota}
-                        options={kotaList.map((k) => ({ value: String(k.id), label: k.nama }))}
-                        onSelect={(val) => setFormData((prev) => ({ ...prev, id_kota: String(val) }))}
-                      />
-                    </td>
-                    <td className="px-3 py-2 text-xs text-slate-500">Otomatis dari kota</td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-end gap-1">
-                        <button onClick={() => handleUpdate(item.id)} disabled={saving} className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded">
-                          <Check size={14} />
-                        </button>
-                        <button onClick={() => { setEditId(null); resetForm(); }} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded">
-                          <X size={14} />
-                        </button>
+              paginatedData.map((item) => (
+                <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors">
+                  <td className="px-3 py-3 text-sm font-medium text-gray-700">{item.nama || '-'}</td>
+                  <td className="px-3 py-3 text-xs text-slate-600">
+                    {item.jurusan?.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {item.jurusan.map((j) => (
+                          <span key={`${item.id}-${j}`} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                            {j}
+                          </span>
+                        ))}
                       </div>
-                    </td>
-                  </tr>
-                ) : (
-                  <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors">
-                    <td className="px-3 py-3 text-sm font-medium text-gray-700">{item.nama || '-'}</td>
-                    <td className="px-3 py-3 text-xs text-slate-600">
-                      {item.jurusan?.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {item.jurusan.map((j) => (
-                            <span key={`${item.id}-${j}`} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                              {j}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="px-3 py-3 text-xs text-slate-600">{item.alamat || '-'}</td>
-                    <td className="px-3 py-3 text-xs text-slate-600">{item.kota || '-'}</td>
-                    <td className="px-3 py-3 text-xs text-slate-600">{item.provinsi || '-'}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex justify-end gap-1">
-                        <button onClick={() => startEdit(item)} className="p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg"><Pencil size={14} /></button>
-                        <button onClick={() => onDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg"><Trash2 size={14} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                )
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td className="px-3 py-3 text-xs text-slate-600">{item.alamat || '-'}</td>
+                  <td className="px-3 py-3 text-xs text-slate-600">{resolveLocation(item).kotaName}</td>
+                  <td className="px-3 py-3 text-xs text-slate-600">{resolveLocation(item).provinsiName}</td>
+                  <td className="px-3 py-3">
+                    <div className="flex justify-end gap-1">
+                      <button onClick={() => startEdit(item)} className="p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg"><Pencil size={14} /></button>
+                      <button onClick={() => onDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg"><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
+
+      <UniversitasEditorModal
+        isOpen={isAdding || editId !== null}
+        mode={isAdding ? "add" : "edit"}
+        formData={formData}
+        errors={formErrors}
+        kotaList={kotaList}
+        prodiOptions={prodiOptions}
+        selectedProvinsiLabel={selectedProvinsiLabel}
+        saving={saving}
+        onNameChange={(val) => {
+          setFormData((prev) => ({ ...prev, nama_universitas: val }));
+          setFormErrors((prev) => ({ ...prev, nama_universitas: validateUniversityName(val) }));
+        }}
+        onJurusanChange={(newVal) => setFormData((prev) => ({ ...prev, jurusan: newVal }))}
+        onAlamatChange={(val) => setFormData((prev) => ({ ...prev, alamat: val }))}
+        onKotaChange={(val) => {
+          setFormData((prev) => ({ ...prev, id_kota: val }));
+          setFormErrors((prev) => ({ ...prev, id_kota: '' }));
+        }}
+        onCancel={() => { setIsAdding(false); setEditId(null); resetForm(); }}
+        onSave={() => {
+          if (isAdding) return handleCreate();
+          if (editId !== null) return handleUpdate(editId);
+          return null;
+        }}
+      />
     </div>
   );
 }
@@ -238,19 +281,25 @@ export default function StatusKarir() {
       const data = res.data?.data || [];
       setUnivData(
         data.map((u) => {
-          const rawJurusan = Array.isArray(u.jurusan_kuliah)
-            ? u.jurusan_kuliah
-            : u.jurusan_kuliah
-              ? [u.jurusan_kuliah]
+          const rawJurusanSource = u.jurusan_kuliah ?? u.jurusan ?? u.prodi;
+          const rawJurusan = Array.isArray(rawJurusanSource)
+            ? rawJurusanSource
+            : rawJurusanSource
+              ? [rawJurusanSource]
               : [];
 
           return { 
             id: u.id, 
             nama: u.nama || u.nama_universitas, 
-            jurusan: rawJurusan.map((j) => j.nama || j.nama_jurusan || j.nama_prodi).filter(Boolean),
+            jurusan: rawJurusan
+              .map((j) => {
+                if (typeof j === 'string') return j;
+                return j?.nama || j?.nama_jurusan || j?.nama_prodi;
+              })
+              .filter(Boolean),
             alamat: u.alamat || u.jalan || '-',
-            id_kota: u.id_kota || u.kota?.id || '',
-            kota: u.kota?.nama || u.nama_kota || '-',
+            id_kota: u.id_kota || u.kota?.id || u.kota_id || '',
+            kota: u.kota?.nama || (typeof u.kota === 'string' ? u.kota : '') || u.nama_kota || '-',
             provinsi: u.provinsi?.nama || u.kota?.provinsi?.nama || u.nama_provinsi || '-',
           };
         })
@@ -319,20 +368,45 @@ export default function StatusKarir() {
     );
   };
 
+  const resolveKotaProvinsi = (item) => {
+    const kotaFromList = kotaList.find((k) => String(k.id) === String(item?.id_kota || item?.kota_id));
+    const kota = item?.kota && item.kota !== '-' ? item.kota : (kotaFromList?.nama || '-');
+    const provinsi = item?.provinsi && item.provinsi !== '-'
+      ? item.provinsi
+      : (kotaFromList?.provinsi?.nama || kotaFromList?.nama_provinsi || '-');
+
+    return { kota, provinsi };
+  };
+
   // --- FUNGSI CREATE, UPDATE, DELETE ---
   const handleCreate = async (category, data) => {
     try {
 
       const namaInput = data.nama_universitas || data.nama_prodi || data.nama_bidang || data.nama;
+
       if (isDuplicate(category, namaInput)) {
-        return alertWarning(`Data "${namaInput}" sudah ada dalam daftar.`);
+        alertWarning(`Data "${namaInput}" sudah ada dalam daftar.`);
+        return false;
       }
 
       if (category === "univ") {
-        await adminApi.createStatusKarierUniversitas({
+        const jurusanList = Array.isArray(data.jurusan)
+          ? data.jurusan.map((item) => String(item || '').trim()).filter(Boolean)
+          : [];
+
+        const payload = {
           nama_universitas: data.nama_universitas || data.nama,
           alamat: data.alamat || '',
           id_kota: data.id_kota,
+        };
+
+        if (jurusanList.length > 0) {
+          payload.jurusan_kuliah = jurusanList;
+          payload.jurusan = jurusanList;
+        }
+
+        await adminApi.createStatusKarierUniversitas({
+          ...payload,
         });
         fetchUniversitas();
       } else if (category === "prodi") {
@@ -343,8 +417,10 @@ export default function StatusKarir() {
         fetchWirausaha();
       }
       alertSuccess("Data berhasil ditambahkan!");
+      return true;
     } catch (err) { 
       alertError(err.response?.data?.message || "Gagal menambahkan data"); 
+      return false;
     }
   };
 
@@ -352,15 +428,27 @@ export default function StatusKarir() {
     try {
 
       const namaInput = data.nama_universitas || data.nama_prodi || data.nama_bidang || data.nama || Object.values(data)[0];
+
       if (isDuplicate(category, namaInput, id)) {
-        return alertWarning(`Nama "${namaInput}" sudah digunakan oleh data lain.`);
+        alertWarning(`Nama "${namaInput}" sudah digunakan oleh data lain.`);
+        return false;
       }
       
       if (category === "univ") {
-        await adminApi.updateStatusKarierUniversitas(id, {
+        const jurusanList = Array.isArray(data.jurusan)
+          ? data.jurusan.map((item) => String(item || '').trim()).filter(Boolean)
+          : [];
+
+        const payload = {
           nama_universitas: data.nama_universitas || data.nama || Object.values(data)[0],
           alamat: data.alamat || '',
           id_kota: data.id_kota,
+          jurusan_kuliah: jurusanList,
+          jurusan: jurusanList,
+        };
+
+        await adminApi.updateStatusKarierUniversitas(id, {
+          ...payload,
         });
         fetchUniversitas();
       } else if (category === "prodi") {
@@ -371,8 +459,10 @@ export default function StatusKarir() {
         fetchWirausaha();
       }
       alertSuccess("Data berhasil diubah!");
+      return true;
     } catch (err) { 
       alertError(err.response?.data?.message || "Gagal memperbarui data"); 
+      return false;
     }
   };
 
@@ -426,8 +516,8 @@ export default function StatusKarir() {
           item?.nama || "-",
           (item?.jurusan && item.jurusan.length > 0) ? item.jurusan.join('; ') : "-",
           item?.alamat || "-",
-          item?.kota || "-",
-          item?.provinsi || "-",
+          resolveKotaProvinsi(item).kota,
+          resolveKotaProvinsi(item).provinsi,
         ]);
       }
 
@@ -479,6 +569,7 @@ export default function StatusKarir() {
           <UniversitasTable
             data={univData}
             kotaList={kotaList}
+            prodiOptions={prodiData.map((item) => ({ nama: item.nama }))}
             onCreate={(data) => handleCreate('univ', data)}
             onUpdate={(id, data) => handleUpdate('univ', id, data)}
             onDelete={(id) => handleDelete('univ', id)}
