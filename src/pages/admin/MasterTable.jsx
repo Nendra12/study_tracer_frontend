@@ -262,7 +262,7 @@ export default function MasterTable() {
   const fetchPerusahaan = useCallback(async () => {
     setLoadingPerusahaan(true);
     try {
-      const res = await adminApi.getPerusahaan();
+      const res = await adminApi.getPerusahaan({ per_page: 2000 });
       const content = res.data.data;
       setPerusahaanData(Array.isArray(content) ? content : (content?.data || []));
     } catch { 

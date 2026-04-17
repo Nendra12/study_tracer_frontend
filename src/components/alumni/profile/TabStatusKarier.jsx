@@ -132,7 +132,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       if (target === 'pekerjaan') setKotaPekerjaanList([]);
       if (target === 'kuliah') setKotaKuliahList([]);
       if (target === 'usaha') setKotaUsahaList([]);
-      return;
+      return [];
     }
     if (target === 'pekerjaan') setLoadingKotaPekerjaan(true);
     if (target === 'kuliah') setLoadingKotaKuliah(true);
@@ -144,8 +144,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       if (target === 'pekerjaan') setKotaPekerjaanList(data);
       if (target === 'kuliah') setKotaKuliahList(data);
       if (target === 'usaha') setKotaUsahaList(data);
+      return data;
     } catch (err) {
       console.error('Failed to load kota:', err);
+      return [];
     } finally {
       if (target === 'pekerjaan') setLoadingKotaPekerjaan(false);
       if (target === 'kuliah') setLoadingKotaKuliah(false);
@@ -185,7 +187,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
     return (
       <>
-        <div className="relative z-[10] w-full focus-within:z-[9999]">
+        <div className="relative z-[70] w-full focus-within:z-[9999]">
           <SmoothDropdown
             label={<>Tahun Mulai <span className="text-red-500">*</span></>}
             isSearchable={true}
@@ -202,7 +204,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           />
         </div>
 
-        <div className="relative z-[10] w-full focus-within:z-[9999]">
+        <div className="relative z-[70] w-full focus-within:z-[9999]">
           {!data.is_saat_ini ? (
             <SmoothDropdown
               label="Tahun Selesai (opsional)"
@@ -214,10 +216,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             />
           ) : (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-primary uppercase tracking-widest block mb-2.5">
-                Tahun Selesai
+              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider">
+                Tahun Selesai (opsional)
               </label>
-              <div className="w-full bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
+              <div className="w-full mt-3 bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
                 Sedang Berlangsung
               </div>
             </div>
@@ -231,7 +233,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
                 is_saat_ini: e.target.checked, 
                 tahun_selesai: e.target.checked ? "" : data.tahun_selesai 
               })}
-              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
+              className="w-4 h-4 rounded border-gray-100 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
             />
             <span className="text-[11px] font-bold text-primary">Masih berlangsung (Saat ini)</span>
           </label>
@@ -270,13 +272,17 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             if (!activeData.jalan?.trim()) return toastWarning('Alamat perusahaan baru wajib diisi.');
           }
           
+          let finalJalan = activeData.jalan || '';
+          if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalJalan += `, ${activeData.id_kota}`;
+          if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalJalan += `, ${activeData.id_provinsi}`;
+
           payload.tahun_mulai = activeData.tahun_mulai;
           payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
           payload.pekerjaan = { 
             posisi: activeData.posisi, 
             nama_perusahaan: activeData.nama_perusahaan, 
-            id_kota: activeData.id_kota, 
-            jalan: activeData.jalan, 
+            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null, 
+            jalan: finalJalan, 
             latitude: form.latitude_perusahaan, 
             longitude: form.longitude_perusahaan 
           };
@@ -294,12 +300,16 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
              if (!activeData.alamat?.trim()) return toastWarning('Alamat universitas baru wajib diisi.');
           }
 
+          let finalAlamatUniv = activeData.alamat || '';
+          if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalAlamatUniv += `, ${activeData.id_kota}`;
+          if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalAlamatUniv += `, ${activeData.id_provinsi}`;
+
           payload.tahun_mulai = activeData.tahun_mulai;
           payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
           payload.universitas = {
             nama_universitas: activeData.nama_universitas,
-            alamat: activeData.alamat,
-            id_kota: activeData.id_kota,
+            alamat: finalAlamatUniv,
+            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
             latitude: form.latitude_universitas,
             longitude: form.longitude_universitas,
             id_jurusanKuliah: activeData.id_jurusanKuliah,
@@ -315,13 +325,17 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           if (!activeData.id_kota) return toastWarning('Kota usaha wajib dipilih.');
           if (!activeData.alamat?.trim()) return toastWarning('Alamat usaha wajib diisi.');
 
+          let finalAlamatUsaha = activeData.alamat || '';
+          if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalAlamatUsaha += `, ${activeData.id_kota}`;
+          if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalAlamatUsaha += `, ${activeData.id_provinsi}`;
+
           payload.tahun_mulai = activeData.tahun_mulai;
           payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
           payload.wirausaha = {
             id_bidang: activeData.id_bidang,
             nama_usaha: activeData.nama_usaha,
-            alamat: activeData.alamat,
-            id_kota: activeData.id_kota,
+            alamat: finalAlamatUsaha,
+            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
             latitude: form.latitude_usaha,
             longitude: form.longitude_usaha,
           };
@@ -601,9 +615,156 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       )}
 
       {/* MAPS LOCATION PICKER */}
-      <LocationPicker isOpen={showBekerjaMap} onClose={() => setShowBekerjaMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_perusahaan: latitude, longitude_perusahaan: longitude })); setPekerjaan((prev) => ({ ...prev, jalan: address || prev.jalan })); }} initialLat={typeof form.latitude_perusahaan === 'number' ? form.latitude_perusahaan : -7.25} initialLng={typeof form.longitude_perusahaan === 'number' ? form.longitude_perusahaan : 112.75} selectedKota={kotaPekerjaanList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ''} initialAddress={pekerjaan.jalan || ''} title="Pilih Lokasi Perusahaan" />
-      <LocationPicker isOpen={showUniMap} onClose={() => setShowUniMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_universitas: latitude, longitude_universitas: longitude })); setUniversitas((prev) => ({ ...prev, alamat: address || prev.alamat })); }} initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25} initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75} selectedKota={kotaKuliahList.find(k => String(k.id) === String(universitas.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(universitas.id_provinsi))?.nama || ''} initialAddress={universitas.alamat || ''} title="Pilih Lokasi Universitas" />
-      <LocationPicker isOpen={showUsahaMap} onClose={() => setShowUsahaMap(false)} onConfirm={({ latitude, longitude, address }) => { setForm((prev) => ({ ...prev, latitude_usaha: latitude, longitude_usaha: longitude })); setWirausaha((prev) => ({ ...prev, alamat: address || prev.alamat })); }} initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25} initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75} selectedKota={kotaUsahaList.find(k => String(k.id) === String(wirausaha.id_kota))?.nama || ''} selectedProvinsi={provinsiList.find(p => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''} initialAddress={wirausaha.alamat || ''} title="Pilih Lokasi Usaha" />
+      <LocationPicker
+        isOpen={showBekerjaMap}
+        onClose={() => setShowBekerjaMap(false)}
+        onConfirm={({ latitude, longitude, address, provinceRaw, cityRaw }) => {
+          setForm((prev) => ({ ...prev, latitude_perusahaan: latitude, longitude_perusahaan: longitude }));
+          setPekerjaan((prev) => ({ ...prev, jalan: address || prev.jalan }));
+          // Auto-sync provinsi & kota jika berbeda
+          if (provinceRaw) {
+            const matchedProv = provinsiList.find(p =>
+              (p.nama || p.nama_provinsi || '').toLowerCase().includes(provinceRaw.toLowerCase()) ||
+              provinceRaw.toLowerCase().includes((p.nama || p.nama_provinsi || '').toLowerCase())
+            );
+            if (matchedProv) {
+              if (String(matchedProv.id) !== String(pekerjaan.id_provinsi)) {
+                setPekerjaan((prev) => ({ ...prev, id_provinsi: String(matchedProv.id), id_kota: cityRaw || '' }));
+                loadKota(matchedProv.id, 'pekerjaan').then((kotaData) => {
+                  if (cityRaw && kotaData) {
+                    const matchedKota = kotaData.find(k =>
+                      (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
+                      cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
+                    );
+                    if (matchedKota) setPekerjaan((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
+                    else setPekerjaan((prev) => ({ ...prev, id_kota: cityRaw }));
+                  }
+                });
+              } else if (cityRaw) {
+                const matchedKota = kotaPekerjaanList.find(k =>
+                  (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
+                  cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
+                );
+                if (matchedKota) {
+                  if (String(matchedKota.id) !== String(pekerjaan.id_kota)) {
+                    setPekerjaan((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
+                  }
+                } else setPekerjaan((prev) => ({ ...prev, id_kota: cityRaw }));
+              }
+            } else {
+              setPekerjaan((prev) => ({ ...prev, id_provinsi: provinceRaw, id_kota: cityRaw || '' }));
+            }
+          } else if (cityRaw) {
+            setPekerjaan((prev) => ({ ...prev, id_kota: cityRaw }));
+          }
+        }}
+        initialLat={typeof form.latitude_perusahaan === 'number' ? form.latitude_perusahaan : -7.25}
+        initialLng={typeof form.longitude_perusahaan === 'number' ? form.longitude_perusahaan : 112.75}
+        selectedKota={kotaPekerjaanList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ''}
+        initialAddress={pekerjaan.jalan || ''}
+        title="Pilih Lokasi Perusahaan"
+      />
+      <LocationPicker
+        isOpen={showUniMap}
+        onClose={() => setShowUniMap(false)}
+        onConfirm={({ latitude, longitude, address, provinceRaw, cityRaw }) => {
+          setForm((prev) => ({ ...prev, latitude_universitas: latitude, longitude_universitas: longitude }));
+          setUniversitas((prev) => ({ ...prev, alamat: address || prev.alamat }));
+          // Auto-sync provinsi & kota jika berbeda
+          if (provinceRaw) {
+            const matchedProv = provinsiList.find(p =>
+              (p.nama || p.nama_provinsi || '').toLowerCase().includes(provinceRaw.toLowerCase()) ||
+              provinceRaw.toLowerCase().includes((p.nama || p.nama_provinsi || '').toLowerCase())
+            );
+            if (matchedProv) {
+              if (String(matchedProv.id) !== String(universitas.id_provinsi)) {
+                setUniversitas((prev) => ({ ...prev, id_provinsi: String(matchedProv.id), id_kota: cityRaw || '' }));
+                loadKota(matchedProv.id, 'kuliah').then((kotaData) => {
+                  if (cityRaw && kotaData) {
+                    const matchedKota = kotaData.find(k =>
+                      (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
+                      cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
+                    );
+                    if (matchedKota) setUniversitas((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
+                    else setUniversitas((prev) => ({ ...prev, id_kota: cityRaw }));
+                  }
+                });
+              } else if (cityRaw) {
+                const matchedKota = kotaKuliahList.find(k =>
+                  (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
+                  cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
+                );
+                if (matchedKota) {
+                  if (String(matchedKota.id) !== String(universitas.id_kota)) {
+                    setUniversitas((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
+                  }
+                } else setUniversitas((prev) => ({ ...prev, id_kota: cityRaw }));
+              }
+            } else {
+              setUniversitas((prev) => ({ ...prev, id_provinsi: provinceRaw, id_kota: cityRaw || '' }));
+            }
+          } else if (cityRaw) {
+            setUniversitas((prev) => ({ ...prev, id_kota: cityRaw }));
+          }
+        }}
+        initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25}
+        initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75}
+        selectedKota={kotaKuliahList.find(k => String(k.id) === String(universitas.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
+        initialAddress={universitas.alamat || ''}
+        title="Pilih Lokasi Universitas"
+      />
+      <LocationPicker
+        isOpen={showUsahaMap}
+        onClose={() => setShowUsahaMap(false)}
+        onConfirm={({ latitude, longitude, address, provinceRaw, cityRaw }) => {
+          setForm((prev) => ({ ...prev, latitude_usaha: latitude, longitude_usaha: longitude }));
+          setWirausaha((prev) => ({ ...prev, alamat: address || prev.alamat }));
+          // Auto-sync provinsi & kota jika berbeda
+          if (provinceRaw) {
+            const matchedProv = provinsiList.find(p =>
+              (p.nama || p.nama_provinsi || '').toLowerCase().includes(provinceRaw.toLowerCase()) ||
+              provinceRaw.toLowerCase().includes((p.nama || p.nama_provinsi || '').toLowerCase())
+            );
+            if (matchedProv) {
+              if (String(matchedProv.id) !== String(wirausaha.id_provinsi)) {
+                setWirausaha((prev) => ({ ...prev, id_provinsi: String(matchedProv.id), id_kota: cityRaw || '' }));
+                loadKota(matchedProv.id, 'usaha').then((kotaData) => {
+                  if (cityRaw && kotaData) {
+                    const matchedKota = kotaData.find(k =>
+                      (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
+                      cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
+                    );
+                    if (matchedKota) setWirausaha((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
+                    else setWirausaha((prev) => ({ ...prev, id_kota: cityRaw }));
+                  }
+                });
+              } else if (cityRaw) {
+                const matchedKota = kotaUsahaList.find(k =>
+                  (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
+                  cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
+                );
+                if (matchedKota) {
+                  if (String(matchedKota.id) !== String(wirausaha.id_kota)) {
+                    setWirausaha((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
+                  }
+                } else setWirausaha((prev) => ({ ...prev, id_kota: cityRaw }));
+              }
+            } else {
+              setWirausaha((prev) => ({ ...prev, id_provinsi: provinceRaw, id_kota: cityRaw || '' }));
+            }
+          } else if (cityRaw) {
+            setWirausaha((prev) => ({ ...prev, id_kota: cityRaw }));
+          }
+        }}
+        initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25}
+        initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75}
+        selectedKota={kotaUsahaList.find(k => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
+        selectedProvinsi={provinsiList.find(p => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
+        initialAddress={wirausaha.alamat || ''}
+        title="Pilih Lokasi Usaha"
+      />
 
       {/* PANGGIL KOMPONEN INFO KARIER SAAT INI */}
       <InfoKarierSaatIni
