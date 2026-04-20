@@ -9,37 +9,10 @@ import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
 import UniversitasEditorModal from "../../components/admin/UniversitasEditorModal";
-import WirausahaEditorModal from "../../components/admin/WirausahaEditorModal";
 import Pagination from "../../components/admin/Pagination";
+import WirausahaTable from "../../components/admin/statusKarir/WirausahaTable";
 
 const ITEMS_PER_PAGE = 7;
-
-const DUMMY_WIRAUSAHA = [
-  {
-    id: 1,
-    nama: "Fashion",
-    nama_usaha: "Fashion",
-    id_bidang: "",
-    bidang: "",
-    bidangLabel: "Fashion",
-    alamat: "Jl. Contoh No. 1",
-    id_kota: "",
-    kota: "-",
-    provinsi: "-",
-  },
-  {
-    id: 2,
-    nama: "Toko Kopi Sejahtera",
-    nama_usaha: "Toko Kopi Sejahtera",
-    id_bidang: "",
-    bidang: "",
-    bidangLabel: "Kuliner",
-    alamat: "Jl. Contoh No. 2",
-    id_kota: "",
-    kota: "-",
-    provinsi: "-",
-  },
-];
 
 const validateUniversityName = (name = '') => {
   const cleaned = String(name).replace(/\./g, ' ').replace(/\s+/g, ' ').trim();
@@ -63,9 +36,11 @@ const validateUniversityName = (name = '') => {
   return '';
 };
 
-const validateRequiredText = (value = '', label = 'Field') => {
-  if (!String(value).trim()) return `${label} wajib diisi.`;
-  return '';
+const getArrayPayload = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
 };
 
 function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreate, onUpdate, onDelete }) {
@@ -291,224 +266,6 @@ function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreat
   );
 }
 
-function WirausahaTable({
-  data = [],
-  kotaList = [],
-  bidangUsahaList = [],
-  bidangUsahaMap = {},
-  bidangUsahaIdToLabel = {},
-  onCreate,
-  onUpdate,
-}) {
-  const [isAdding, setIsAdding] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [formData, setFormData] = useState({ nama_usaha: '', id_bidang: '', alamat: '', id_kota: '' });
-  const [formErrors, setFormErrors] = useState({ nama_usaha: '', id_bidang: '', id_kota: '' });
-
-  const totalPages = Math.max(1, Math.ceil(data.length / ITEMS_PER_PAGE));
-  const paginatedData = data.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
-  const resetForm = () => {
-    setFormData({ nama_usaha: '', id_bidang: '', alamat: '', id_kota: '' });
-    setFormErrors({ nama_usaha: '', id_bidang: '', id_kota: '' });
-  };
-
-  const validateForm = (payload) => {
-    const errors = {
-      nama_usaha: validateRequiredText(payload.nama_usaha, 'Nama Usaha'),
-      id_bidang: validateRequiredText(payload.id_bidang, 'Bidang Usaha'),
-      id_kota: payload.id_kota ? '' : 'Kota wajib dipilih.',
-    };
-
-    setFormErrors(errors);
-    return !errors.nama_usaha && !errors.id_bidang && !errors.id_kota;
-  };
-
-  const getKotaById = (idKota) => {
-    if (!idKota) return null;
-    return kotaList.find((k) => String(k.id) === String(idKota)) || null;
-  };
-
-  const resolveLocation = (item) => {
-    const kotaDetail = getKotaById(item.id_kota || item.kota_id);
-    const kotaName = item.kota && item.kota !== '-' ? item.kota : (kotaDetail?.nama || '-');
-    const provinsiName = item.provinsi && item.provinsi !== '-'
-      ? item.provinsi
-      : (kotaDetail?.provinsi?.nama || kotaDetail?.nama_provinsi || '-');
-
-    return { kotaName, provinsiName };
-  };
-
-  const selectedKota = getKotaById(formData.id_kota);
-  const selectedProvinsiLabel = selectedKota?.provinsi?.nama || selectedKota?.nama_provinsi || '-';
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const startEdit = (item) => {
-    setIsAdding(false);
-    setEditId(item.id);
-    setFormData({
-      nama_usaha: item.nama_usaha || item.nama || '',
-      id_bidang: item.id_bidang ? String(item.id_bidang) : '',
-      alamat: item.alamat || '',
-      id_kota: item.id_kota ? String(item.id_kota) : (item.kota_id ? String(item.kota_id) : ''),
-    });
-    setFormErrors({ nama_usaha: '', id_bidang: '', id_kota: '' });
-  };
-
-  const handleCreate = async () => {
-    const payload = {
-      nama_usaha: formData.nama_usaha.trim(),
-      id_bidang: formData.id_bidang,
-      alamat: formData.alamat.trim(),
-      id_kota: formData.id_kota,
-    };
-
-    if (!validateForm(payload)) return;
-
-    setSaving(true);
-    try {
-      const success = await onCreate(payload);
-      if (!success) return;
-
-      resetForm();
-      setIsAdding(false);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdate = async (id) => {
-    const payload = {
-      nama_usaha: formData.nama_usaha.trim(),
-      id_bidang: formData.id_bidang,
-      alamat: formData.alamat.trim(),
-      id_kota: formData.id_kota,
-    };
-
-    if (!validateForm(payload)) return;
-
-    setSaving(true);
-    try {
-      const success = await onUpdate(id, payload);
-      if (!success) return;
-
-      resetForm();
-      setEditId(null);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-100 mb-6 shadow-sm overflow-hidden">
-      <div className="p-4 flex justify-between items-center border-b border-gray-100 bg-linear-to-r from-white to-gray-50">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 bg-blue-100 rounded-lg text-primary"><Store size={16} /></div>
-          <h3 className="font-bold text-primary text-md">Data Wirausaha</h3>
-          <span className="text-xs text-slate-400 font-medium">({data.length})</span>
-        </div>
-        <button
-          onClick={() => {
-            setEditId(null);
-            resetForm();
-            setIsAdding(true);
-          }}
-          className="text-fourth bg-primary flex items-center gap-1 text-xs font-bold hover:text-white hover:opacity-90 px-2.5 py-2 rounded-lg transition-all cursor-pointer"
-        >
-          <Plus size={12} /> Tambah Wirausaha
-        </button>
-      </div>
-
-      <div className="p-4 overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="text-slate-400 font-black text-[10px] uppercase tracking-widest border-b border-slate-200 bg-slate-50">
-              <th className="px-3 py-3 w-1/5">Nama</th>
-              <th className="px-3 py-3 w-1/5">Bidang</th>
-              <th className="px-3 py-3 w-1/4">Alamat</th>
-              <th className="px-3 py-3 w-1/6">Kota</th>
-              <th className="px-3 py-3 w-1/6">Provinsi</th>
-              <th className="px-3 py-3 text-right w-24">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {data.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-6 text-center text-xs text-slate-400">Tidak ada data wirausaha.</td>
-              </tr>
-            ) : (
-              paginatedData.map((item) => (
-                <tr key={item.id} className="group hover:bg-blue-50/30 transition-colors">
-                  <td className="px-3 py-3 text-sm font-medium text-gray-700">{item.nama_usaha || item.nama || '-'}</td>
-                  <td className="px-3 py-3 text-xs text-slate-600">
-                    {item.bidangLabel || bidangUsahaIdToLabel[String(item.id_bidang)] || item.bidang || '-'}
-                  </td>
-                  <td className="px-3 py-3 text-xs text-slate-600">{item.alamat || '-'}</td>
-                  <td className="px-3 py-3 text-xs text-slate-600">{resolveLocation(item).kotaName}</td>
-                  <td className="px-3 py-3 text-xs text-slate-600">{resolveLocation(item).provinsiName}</td>
-                  <td className="px-3 py-3">
-                    <div className="flex justify-end gap-1">
-                      <button onClick={() => startEdit(item)} className="p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg"><Pencil size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={(page) => setCurrentPage(page)}
-      />
-
-      <WirausahaEditorModal
-        isOpen={isAdding || editId !== null}
-        mode={isAdding ? "add" : "edit"}
-        formData={formData}
-        errors={formErrors}
-        kotaList={kotaList}
-        bidangUsahaList={bidangUsahaList}
-        bidangUsahaMap={bidangUsahaMap}
-        selectedProvinsiLabel={selectedProvinsiLabel}
-        saving={saving}
-        onNamaUsahaChange={(val) => {
-          setFormData((prev) => ({ ...prev, nama_usaha: val }));
-          setFormErrors((prev) => ({ ...prev, nama_usaha: validateRequiredText(val, 'Nama Usaha') }));
-        }}
-        onBidangUsahaChange={(val) => {
-          setFormData((prev) => ({ ...prev, id_bidang: val }));
-          setFormErrors((prev) => ({ ...prev, id_bidang: validateRequiredText(val, 'Bidang Usaha') }));
-        }}
-        onAlamatChange={(val) => setFormData((prev) => ({ ...prev, alamat: val }))}
-        onKotaChange={(val) => {
-          setFormData((prev) => ({ ...prev, id_kota: val }));
-          setFormErrors((prev) => ({ ...prev, id_kota: '' }));
-        }}
-        onCancel={() => {
-          setIsAdding(false);
-          setEditId(null);
-          resetForm();
-        }}
-        onSave={() => {
-          if (isAdding) return handleCreate();
-          if (editId !== null) return handleUpdate(editId);
-          return null;
-        }}
-      />
-    </div>
-  );
-}
-
 export default function StatusKarir() {
   // --- STATE UNTUK EKSPOR ---
   const [selectedFormat, setSelectedFormat] = useState("CSV");
@@ -526,7 +283,7 @@ export default function StatusKarir() {
   const [bidangUsahaIdToLabel, setBidangUsahaIdToLabel] = useState({}); // id -> label
   
   // --- STATE LOADING ---
-  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: false });
+  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true });
 
   // --- FUNGSI FETCH DATA DARI API ---
   const fetchUniversitas = useCallback(async () => {
@@ -570,7 +327,7 @@ export default function StatusKarir() {
     setLoading(prev => ({ ...prev, prodi: true }));
     try {
       const res = await adminApi.getStatusKarierProdi();
-      setProdiData((res.data?.data || []).map((p) => ({ 
+      setProdiData(getArrayPayload(res.data?.data || res.data).map((p) => ({ 
         id: p.id, 
         nama: p.nama || p.nama_jurusan 
       })));
@@ -581,18 +338,43 @@ export default function StatusKarir() {
     }
   }, []);
 
-  // NOTE: Data wirausaha sementara pakai dummy (tanpa fetch API)
+  const fetchWirausaha = useCallback(async () => {
+    setLoading(prev => ({ ...prev, wirausaha: true }));
+    try {
+      const res = await adminApi.getStatusKarierWirausaha();
+      const rows = getArrayPayload(res.data?.data || res.data);
+
+      setWirausahaData(rows.map((w) => ({
+        id: w.id,
+        nama: w.nama_usaha || w.nama || '-',
+        nama_usaha: w.nama_usaha || w.nama || '-',
+        id_bidang: w.id_bidang ? String(w.id_bidang) : '',
+        bidang: w.bidang || '-',
+        bidangLabel: w.bidang || '-',
+        alamat: w.alamat || '-',
+        id_kota: w.id_kota ? String(w.id_kota) : '',
+        kota: w.kota || '-',
+        provinsi: w.provinsi || '-',
+        id_riwayat: w.id_riwayat || null,
+      })));
+    } catch (err) {
+      console.error('Gagal memuat data wirausaha:', err);
+      setWirausahaData([]);
+    } finally {
+      setLoading(prev => ({ ...prev, wirausaha: false }));
+    }
+  }, []);
 
   const fetchBidangUsaha = useCallback(async () => {
     try {
-      const res = await adminApi.getBidangUsaha();
-      const data = res.data?.data || [];
-      const list = Array.isArray(data) ? data : [];
+      const res = await adminApi.getStatusKarierBidangUsaha();
+      const list = getArrayPayload(res.data?.data || res.data);
 
       const mapped = list
         .map((b) => {
           const nama = b.nama_bidang || b.nama;
-          return { id: b.id, nama: nama || '-' };
+          const id = b.id ?? b.id_bidang;
+          return { id, nama: nama || '-' };
         })
         .filter((x) => x.id != null);
 
@@ -620,9 +402,8 @@ export default function StatusKarir() {
   useEffect(() => {
     fetchUniversitas();
     fetchProdi();
+    fetchWirausaha();
     fetchBidangUsaha();
-
-    setWirausahaData(DUMMY_WIRAUSAHA);
 
     adminApi.getKota()
       .then((res) => {
@@ -630,7 +411,7 @@ export default function StatusKarir() {
       })
       .catch(() => setKotaList([]));
 
-  }, [fetchUniversitas, fetchProdi, fetchBidangUsaha]);
+  }, [fetchUniversitas, fetchProdi, fetchWirausaha, fetchBidangUsaha]);
 
   const handleCreateBidangUsaha = async (data) => {
     try {
@@ -643,7 +424,7 @@ export default function StatusKarir() {
         return false;
       }
 
-      await adminApi.createBidangUsaha({ nama_bidang: nama, nama });
+      await adminApi.createStatusKarierBidangUsaha({ nama_bidang: nama, nama });
       await fetchBidangUsaha();
       alertSuccess('Data berhasil ditambahkan!');
       return true;
@@ -666,7 +447,7 @@ export default function StatusKarir() {
         return false;
       }
 
-      await adminApi.updateBidangUsaha(id, { nama_bidang: nama, nama });
+      await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: nama, nama });
       await fetchBidangUsaha();
       alertSuccess('Data berhasil diubah!');
       return true;
@@ -678,7 +459,7 @@ export default function StatusKarir() {
 
   const handleDeleteBidangUsaha = async (id) => {
     try {
-      await adminApi.deleteBidangUsaha(id);
+      await adminApi.deleteStatusKarierBidangUsaha(id);
       await fetchBidangUsaha();
       alertSuccess('Data berhasil dihapus!');
     } catch (err) {
@@ -751,32 +532,24 @@ export default function StatusKarir() {
         await adminApi.createStatusKarierProdi({ nama_prodi: data.nama_prodi || data.nama }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        const namaUsaha = (data.nama_usaha || data.nama || '').trim();
-        const idBidang = data.id_bidang ? String(data.id_bidang) : '';
-        const kotaDetail = kotaList.find((k) => String(k.id) === String(data.id_kota));
-        const bidangLabel = bidangUsahaIdToLabel[String(idBidang)] || data.bidangLabel || data.bidang || '';
+        if (!data.id_riwayat) {
+          alertWarning('Data wirausaha baru harus terhubung ke riwayat status alumni (id_riwayat).');
+          return false;
+        }
 
-        setWirausahaData((prev) => {
-          const nextId =
-            prev.length > 0
-              ? Math.max(...prev.map((x) => Number(x.id) || 0)) + 1
-              : 1;
-          return [
-            {
-              id: nextId,
-              nama: namaUsaha,
-              nama_usaha: namaUsaha,
-              id_bidang: idBidang,
-              bidang: bidangLabel,
-              bidangLabel,
-              alamat: data.alamat || '-',
-              id_kota: data.id_kota || '',
-              kota: kotaDetail?.nama || '-',
-              provinsi: kotaDetail?.provinsi?.nama || kotaDetail?.nama_provinsi || '-',
-            },
-            ...prev,
-          ];
-        });
+        const payload = {
+          nama_usaha: (data.nama_usaha || data.nama || '').trim(),
+          id_bidang: data.id_bidang,
+          alamat: data.alamat || '',
+          id_kota: data.id_kota || null,
+        };
+
+        if (data.id_riwayat) {
+          payload.id_riwayat = data.id_riwayat;
+        }
+
+        await adminApi.createStatusKarierWirausaha(payload);
+        await fetchWirausaha();
       }
       alertSuccess("Data berhasil ditambahkan!");
       return true;
@@ -817,28 +590,19 @@ export default function StatusKarir() {
         await adminApi.updateStatusKarierProdi(id, { nama_prodi: data.nama_prodi || data.nama || Object.values(data)[0] }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        const namaUsaha = (data.nama_usaha || data.nama || '').trim();
-        const idBidang = data.id_bidang ? String(data.id_bidang) : '';
-        const kotaDetail = kotaList.find((k) => String(k.id) === String(data.id_kota));
-        const bidangLabel = bidangUsahaIdToLabel[String(idBidang)] || data.bidangLabel || data.bidang || '';
+        const payload = {
+          nama_usaha: (data.nama_usaha || data.nama || '').trim(),
+          id_bidang: data.id_bidang,
+          alamat: data.alamat || '',
+          id_kota: data.id_kota || null,
+        };
 
-        setWirausahaData((prev) =>
-          prev.map((item) => {
-            if (String(item.id) !== String(id)) return item;
-            return {
-              ...item,
-              nama: namaUsaha,
-              nama_usaha: namaUsaha,
-              id_bidang: idBidang,
-              bidang: bidangLabel,
-              bidangLabel,
-              alamat: data.alamat || '-',
-              id_kota: data.id_kota || '',
-              kota: kotaDetail?.nama || item.kota || '-',
-              provinsi: kotaDetail?.provinsi?.nama || kotaDetail?.nama_provinsi || item.provinsi || '-',
-            };
-          })
-        );
+        if (data.id_riwayat) {
+          payload.id_riwayat = data.id_riwayat;
+        }
+
+        await adminApi.updateStatusKarierWirausaha(id, payload);
+        await fetchWirausaha();
       }
       alertSuccess("Data berhasil diubah!");
       return true;
@@ -857,8 +621,8 @@ export default function StatusKarir() {
         await adminApi.deleteStatusKarierProdi(id); 
         fetchProdi(); 
       } else if (category === "wirausaha") { 
-        await adminApi.deleteStatusKarierBidangUsaha(id); 
-        fetchWirausaha(); 
+        await adminApi.deleteStatusKarierWirausaha(id); 
+        await fetchWirausaha(); 
       }
       alertSuccess("Data berhasil dihapus!");
     } catch (err) { 
