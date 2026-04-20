@@ -14,33 +14,6 @@ import Pagination from "../../components/admin/Pagination";
 
 const ITEMS_PER_PAGE = 7;
 
-const DUMMY_WIRAUSAHA = [
-  {
-    id: 1,
-    nama: "Fashion",
-    nama_usaha: "Fashion",
-    id_bidang: "",
-    bidang: "",
-    bidangLabel: "Fashion",
-    alamat: "Jl. Contoh No. 1",
-    id_kota: "",
-    kota: "-",
-    provinsi: "-",
-  },
-  {
-    id: 2,
-    nama: "Toko Kopi Sejahtera",
-    nama_usaha: "Toko Kopi Sejahtera",
-    id_bidang: "",
-    bidang: "",
-    bidangLabel: "Kuliner",
-    alamat: "Jl. Contoh No. 2",
-    id_kota: "",
-    kota: "-",
-    provinsi: "-",
-  },
-];
-
 const validateUniversityName = (name = '') => {
   const cleaned = String(name).replace(/\./g, ' ').replace(/\s+/g, ' ').trim();
   if (!cleaned) return 'Nama universitas wajib diisi.';
@@ -66,6 +39,13 @@ const validateUniversityName = (name = '') => {
 const validateRequiredText = (value = '', label = 'Field') => {
   if (!String(value).trim()) return `${label} wajib diisi.`;
   return '';
+};
+
+const getArrayPayload = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
 };
 
 function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreate, onUpdate, onDelete }) {
@@ -299,6 +279,7 @@ function WirausahaTable({
   bidangUsahaIdToLabel = {},
   onCreate,
   onUpdate,
+  onDelete,
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -456,6 +437,7 @@ function WirausahaTable({
                   <td className="px-3 py-3">
                     <div className="flex justify-end gap-1">
                       <button onClick={() => startEdit(item)} className="p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg"><Pencil size={14} /></button>
+                      <button onClick={() => onDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg"><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -526,7 +508,7 @@ export default function StatusKarir() {
   const [bidangUsahaIdToLabel, setBidangUsahaIdToLabel] = useState({}); // id -> label
   
   // --- STATE LOADING ---
-  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: false });
+  const [loading, setLoading] = useState({ univ: true, prodi: true, wirausaha: true });
 
   // --- FUNGSI FETCH DATA DARI API ---
   const fetchUniversitas = useCallback(async () => {
@@ -570,7 +552,7 @@ export default function StatusKarir() {
     setLoading(prev => ({ ...prev, prodi: true }));
     try {
       const res = await adminApi.getStatusKarierProdi();
-      setProdiData((res.data?.data || []).map((p) => ({ 
+      setProdiData(getArrayPayload(res.data?.data || res.data).map((p) => ({ 
         id: p.id, 
         nama: p.nama || p.nama_jurusan 
       })));
@@ -581,18 +563,43 @@ export default function StatusKarir() {
     }
   }, []);
 
-  // NOTE: Data wirausaha sementara pakai dummy (tanpa fetch API)
+  const fetchWirausaha = useCallback(async () => {
+    setLoading(prev => ({ ...prev, wirausaha: true }));
+    try {
+      const res = await adminApi.getStatusKarierWirausaha();
+      const rows = getArrayPayload(res.data?.data || res.data);
+
+      setWirausahaData(rows.map((w) => ({
+        id: w.id,
+        nama: w.nama_usaha || w.nama || '-',
+        nama_usaha: w.nama_usaha || w.nama || '-',
+        id_bidang: w.id_bidang ? String(w.id_bidang) : '',
+        bidang: w.bidang || '-',
+        bidangLabel: w.bidang || '-',
+        alamat: w.alamat || '-',
+        id_kota: w.id_kota ? String(w.id_kota) : '',
+        kota: w.kota || '-',
+        provinsi: w.provinsi || '-',
+        id_riwayat: w.id_riwayat || null,
+      })));
+    } catch (err) {
+      console.error('Gagal memuat data wirausaha:', err);
+      setWirausahaData([]);
+    } finally {
+      setLoading(prev => ({ ...prev, wirausaha: false }));
+    }
+  }, []);
 
   const fetchBidangUsaha = useCallback(async () => {
     try {
-      const res = await adminApi.getBidangUsaha();
-      const data = res.data?.data || [];
-      const list = Array.isArray(data) ? data : [];
+      const res = await adminApi.getStatusKarierBidangUsaha();
+      const list = getArrayPayload(res.data?.data || res.data);
 
       const mapped = list
         .map((b) => {
           const nama = b.nama_bidang || b.nama;
-          return { id: b.id, nama: nama || '-' };
+          const id = b.id ?? b.id_bidang;
+          return { id, nama: nama || '-' };
         })
         .filter((x) => x.id != null);
 
@@ -620,9 +627,8 @@ export default function StatusKarir() {
   useEffect(() => {
     fetchUniversitas();
     fetchProdi();
+    fetchWirausaha();
     fetchBidangUsaha();
-
-    setWirausahaData(DUMMY_WIRAUSAHA);
 
     adminApi.getKota()
       .then((res) => {
@@ -630,7 +636,7 @@ export default function StatusKarir() {
       })
       .catch(() => setKotaList([]));
 
-  }, [fetchUniversitas, fetchProdi, fetchBidangUsaha]);
+  }, [fetchUniversitas, fetchProdi, fetchWirausaha, fetchBidangUsaha]);
 
   const handleCreateBidangUsaha = async (data) => {
     try {
@@ -643,7 +649,7 @@ export default function StatusKarir() {
         return false;
       }
 
-      await adminApi.createBidangUsaha({ nama_bidang: nama, nama });
+      await adminApi.createStatusKarierBidangUsaha({ nama_bidang: nama, nama });
       await fetchBidangUsaha();
       alertSuccess('Data berhasil ditambahkan!');
       return true;
@@ -666,7 +672,7 @@ export default function StatusKarir() {
         return false;
       }
 
-      await adminApi.updateBidangUsaha(id, { nama_bidang: nama, nama });
+      await adminApi.updateStatusKarierBidangUsaha(id, { nama_bidang: nama, nama });
       await fetchBidangUsaha();
       alertSuccess('Data berhasil diubah!');
       return true;
@@ -678,7 +684,7 @@ export default function StatusKarir() {
 
   const handleDeleteBidangUsaha = async (id) => {
     try {
-      await adminApi.deleteBidangUsaha(id);
+      await adminApi.deleteStatusKarierBidangUsaha(id);
       await fetchBidangUsaha();
       alertSuccess('Data berhasil dihapus!');
     } catch (err) {
@@ -751,32 +757,24 @@ export default function StatusKarir() {
         await adminApi.createStatusKarierProdi({ nama_prodi: data.nama_prodi || data.nama }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        const namaUsaha = (data.nama_usaha || data.nama || '').trim();
-        const idBidang = data.id_bidang ? String(data.id_bidang) : '';
-        const kotaDetail = kotaList.find((k) => String(k.id) === String(data.id_kota));
-        const bidangLabel = bidangUsahaIdToLabel[String(idBidang)] || data.bidangLabel || data.bidang || '';
+        if (!data.id_riwayat) {
+          alertWarning('Data wirausaha baru harus terhubung ke riwayat status alumni (id_riwayat).');
+          return false;
+        }
 
-        setWirausahaData((prev) => {
-          const nextId =
-            prev.length > 0
-              ? Math.max(...prev.map((x) => Number(x.id) || 0)) + 1
-              : 1;
-          return [
-            {
-              id: nextId,
-              nama: namaUsaha,
-              nama_usaha: namaUsaha,
-              id_bidang: idBidang,
-              bidang: bidangLabel,
-              bidangLabel,
-              alamat: data.alamat || '-',
-              id_kota: data.id_kota || '',
-              kota: kotaDetail?.nama || '-',
-              provinsi: kotaDetail?.provinsi?.nama || kotaDetail?.nama_provinsi || '-',
-            },
-            ...prev,
-          ];
-        });
+        const payload = {
+          nama_usaha: (data.nama_usaha || data.nama || '').trim(),
+          id_bidang: data.id_bidang,
+          alamat: data.alamat || '',
+          id_kota: data.id_kota || null,
+        };
+
+        if (data.id_riwayat) {
+          payload.id_riwayat = data.id_riwayat;
+        }
+
+        await adminApi.createStatusKarierWirausaha(payload);
+        await fetchWirausaha();
       }
       alertSuccess("Data berhasil ditambahkan!");
       return true;
@@ -817,28 +815,19 @@ export default function StatusKarir() {
         await adminApi.updateStatusKarierProdi(id, { nama_prodi: data.nama_prodi || data.nama || Object.values(data)[0] }); 
         fetchProdi();
       } else if (category === "wirausaha") {
-        const namaUsaha = (data.nama_usaha || data.nama || '').trim();
-        const idBidang = data.id_bidang ? String(data.id_bidang) : '';
-        const kotaDetail = kotaList.find((k) => String(k.id) === String(data.id_kota));
-        const bidangLabel = bidangUsahaIdToLabel[String(idBidang)] || data.bidangLabel || data.bidang || '';
+        const payload = {
+          nama_usaha: (data.nama_usaha || data.nama || '').trim(),
+          id_bidang: data.id_bidang,
+          alamat: data.alamat || '',
+          id_kota: data.id_kota || null,
+        };
 
-        setWirausahaData((prev) =>
-          prev.map((item) => {
-            if (String(item.id) !== String(id)) return item;
-            return {
-              ...item,
-              nama: namaUsaha,
-              nama_usaha: namaUsaha,
-              id_bidang: idBidang,
-              bidang: bidangLabel,
-              bidangLabel,
-              alamat: data.alamat || '-',
-              id_kota: data.id_kota || '',
-              kota: kotaDetail?.nama || item.kota || '-',
-              provinsi: kotaDetail?.provinsi?.nama || kotaDetail?.nama_provinsi || item.provinsi || '-',
-            };
-          })
-        );
+        if (data.id_riwayat) {
+          payload.id_riwayat = data.id_riwayat;
+        }
+
+        await adminApi.updateStatusKarierWirausaha(id, payload);
+        await fetchWirausaha();
       }
       alertSuccess("Data berhasil diubah!");
       return true;
@@ -857,8 +846,8 @@ export default function StatusKarir() {
         await adminApi.deleteStatusKarierProdi(id); 
         fetchProdi(); 
       } else if (category === "wirausaha") { 
-        await adminApi.deleteStatusKarierBidangUsaha(id); 
-        fetchWirausaha(); 
+        await adminApi.deleteStatusKarierWirausaha(id); 
+        await fetchWirausaha(); 
       }
       alertSuccess("Data berhasil dihapus!");
     } catch (err) { 
@@ -982,6 +971,7 @@ export default function StatusKarir() {
             bidangUsahaIdToLabel={bidangUsahaIdToLabel}
             onCreate={(data) => handleCreate('wirausaha', data)}
             onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
+            onDelete={(id) => handleDelete('wirausaha', id)}
           />
 
           <ManagedTable
