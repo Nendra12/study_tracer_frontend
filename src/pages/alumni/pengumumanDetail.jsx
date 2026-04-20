@@ -91,17 +91,17 @@ export default function PengumumanDetailAlumni() {
     : '-';
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] pb-12 pt-28 px-4 sm:px-6">
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8f9fa] pb-20 pt-28">
+      <div className="relative w-full max-w-300 mx-auto px-4 sm:px-7 xl:px-0">
         
         {/* Tombol Kembali */}
         <div className="mb-6">
           <button
             onClick={() => navigate('/alumni/pengumuman')}
-            className="group cursor-pointer flex items-center gap-2 text-slate-500 hover:text-[#425A5C] transition-all font-bold text-sm bg-white px-5 py-2.5 rounded-md shadow-sm border border-slate-200 hover:shadow-md w-fit hover:-translate-x-1"
+            className="group cursor-pointer flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold w-fit transition-colors"
           >
             <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
-            Kembali ke Daftar Pengumuman
+            Kembali
           </button>
         </div>
 
@@ -114,7 +114,7 @@ export default function PengumumanDetailAlumni() {
               
               {/* Gambar Banner */}
               <div
-                className="w-full h-56 md:h-[400px] bg-slate-100 relative group cursor-pointer overflow-hidden"
+                className="w-full h-56 md:h-100 bg-slate-100 relative group cursor-pointer overflow-hidden"
                 onClick={() => setShowImageModal(true)}
               >
                 <img
@@ -126,7 +126,7 @@ export default function PengumumanDetailAlumni() {
                   }}
                 />
                 {/* Efek Hover Gambar */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent group-hover:bg-black/10 transition-colors duration-300"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent group-hover:bg-black/10 transition-colors duration-300"></div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                   <span className="bg-black/50 text-white backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold tracking-wider">
                     Lihat Gambar Penuh
@@ -146,7 +146,7 @@ export default function PengumumanDetailAlumni() {
               {/* Isi Konten */}
               <div className="p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-start gap-4 mb-6">
-                  <div className="p-3 rounded-2xl text-[#425A5C] bg-[#425A5C]/10 flex-shrink-0 shadow-sm w-fit">
+                  <div className="p-3 rounded-2xl text-[#425A5C] bg-[#425A5C]/10 shrink-0 shadow-sm w-fit">
                     <Megaphone size={24} />
                   </div>
                   <div className="pt-1">
@@ -226,7 +226,7 @@ export default function PengumumanDetailAlumni() {
       <AnimatePresence>
         {showImageModal && (
           <div
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowImageModal(false)}
           >
             <motion.div

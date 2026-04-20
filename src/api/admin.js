@@ -224,6 +224,12 @@ export const adminApi = {
   updateStatusKarierBidangUsaha(id, data) { return api.put(`/admin/status-karier/bidang-usaha/${id}`, data); },
   deleteStatusKarierBidangUsaha(id) { return api.delete(`/admin/status-karier/bidang-usaha/${id}`); },
 
+  // Data Wirausaha
+  getStatusKarierWirausaha(filters = {}) { return api.get('/admin/status-karier/wirausaha', { params: filters }); },
+  createStatusKarierWirausaha(data) { return api.post('/admin/status-karier/wirausaha', data); },
+  updateStatusKarierWirausaha(id, data) { return api.put(`/admin/status-karier/wirausaha/${id}`, data); },
+  deleteStatusKarierWirausaha(id) { return api.delete(`/admin/status-karier/wirausaha/${id}`); },
+
   // Posisi Pekerjaan (read-only)
   getStatusKarierPosisi() { return api.get('/admin/status-karier/posisi'); },
 

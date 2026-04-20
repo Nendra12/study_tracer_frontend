@@ -119,7 +119,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
       >
         <div
           className={`relative rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${scrolled
-            ? "shadow-md bg-white/70 backdrop-blur-xl px-4"
+            ? "shadow-md bg-white/70 xl:backdrop-blur-xl px-4"
             : "bg-transparant"
             }`}
         >
@@ -281,14 +281,14 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-40 xl:hidden bg-black/20 backdrop-blur-[1px]"
+                  className="fixed inset-0 z-40 xl:hidden bg-black/20"
                 />
 
                 <motion.div
                   initial={{ opacity: 0, y: -20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  className="absolute z-50 top-full left-0 right-0 mt-3 p-3 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
+                  className="absolute z-50 top-full left-0 right-0 mt-3 p-3 bg-white/95 border border-white/60 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-2"
                 >
                   {user && (
                     <div className="mb-1 p-3 rounded-2xl border border-slate-100 bg-slate-50/80 flex items-center justify-between gap-3">
@@ -304,7 +304,7 @@ export default function NavbarLanding({ setActiveSection, activeSection }) {
                           <p className="text-[10px] font-black text-third uppercase tracking-widest">
                             Masuk sebagai
                           </p>
-                          <p className="text-lg font-black text-primary truncate leading-tight mt-1">
+                          <p className="text-base font-black text-primary truncate leading-tight mt-1">
                             {namaAlumni || "Alumni"}
                           </p>
                         </div>
