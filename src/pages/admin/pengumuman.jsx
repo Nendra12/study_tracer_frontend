@@ -173,7 +173,7 @@ export default function Pengumuman() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#F8FAFC] relative z-0">
       <div className="space-y-6">
 
         {/* TOMBOL "BUAT" UNTUK TAMPILAN MOBILE */}
@@ -224,11 +224,10 @@ export default function Pengumuman() {
                   </div>
                 </div>
               ) : (
-                // PERUBAHAN: Gunakan items-start agar margin-top bawaan SmoothDropdown sejajar dengan Search Bar
-                <div className="flex flex-col md:flex-row w-full gap-3 items-start">
+                <div className="flex flex-col md:flex-row w-full gap-3">
                   
                   {/* Kolom Pencarian - Disamakan persis: mt-3, p-3, border-2, rounded-xl */}
-                  <div className="relative w-full md:flex-1 group mt-3">
+                  <div className="relative w-full md:flex-1 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={18} />
                     <input
                       type="text"
@@ -243,7 +242,7 @@ export default function Pengumuman() {
                   <div className="flex flex-row gap-3 w-full md:w-auto shrink-0">
                     
                     {/* Width dibuat minimal 180px agar tidak bentrok dengan setingan dalam SmoothDropdown */}
-                    <div className="flex-1 md:w-[180px] relative z-50">
+                    <div className="flex-1 md:w-[180px] relative">
                       <SmoothDropdown
                         options={["Terbaru", "Terlama"]}
                         value={selectedSort}
@@ -253,7 +252,7 @@ export default function Pengumuman() {
                     </div>
 
                     {/* Width diperlebar jadi 200px agar "Semua Tipe (Pin)" muat 1 baris utuh */}
-                    <div className="flex-1 md:w-[200px] relative z-40">
+                    <div className="flex-1 md:w-[200px] relative">
                       <SmoothDropdown
                         options={["Semua Tipe (Pin)", "Di-pin", "Tidak Di-pin"]}
                         value={selectedPinned}

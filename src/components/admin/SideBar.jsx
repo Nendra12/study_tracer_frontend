@@ -82,7 +82,7 @@ export default function SideBar({ active, setActive }) {
     <>
       {active && (
         <div
-          className="fixed inset-0 bg-black/40 z-21 xl:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/40 z-20 xl:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setActive(false)}
         />
       )}
