@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Search, Filter, Building2, School } from 'lucide-react';
 import { useSebaranAlumni } from '../../hooks/useSebaranAlumni';
 
@@ -74,6 +75,16 @@ export default function SebaranAlumni() {
   // LOGIKA LOADING SKELETON
   // Tampilkan skeleton JIKA sedang memuat data pertama kali DAN markers masih kosong/belum ada
   const isInitialLoading = loadingMarkers && (!markers || markers.length === 0) && (!stats);
+
+  // Alert jika hasil filter kosong
+  useEffect(() => {
+    if (!loadingMarkers && !isInitialLoading && activeFilterCount > 0 && totalMarkers === 0) {
+      toast.error('Tidak ada data yang sesuai dengan filter', {
+        id: 'empty-filter', // Mencegah toast duplikat
+        duration: 4000,
+      });
+    }
+  }, [loadingMarkers, isInitialLoading, activeFilterCount, totalMarkers]);
 
   if (isInitialLoading) {
     return <SkeletonSebaran />;

@@ -89,7 +89,7 @@ export default function SideBar({ active, setActive }) {
 
       {/* Sidebar Container */}
       <div className={`
-        fixed xl:relative z-30
+        fixed xl:relative z-100
         w-72 md:w-65
         h-dvh
         bg-white border-r border-fourth

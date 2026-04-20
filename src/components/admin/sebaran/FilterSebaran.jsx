@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import SmoothDropdown from '../SmoothDropdown';
 import SmoothKota from '../SmoothKota';
 import { adminApi } from '../../../api/admin'; 
+import Swal from 'sweetalert2';
 
 export default function FilterSebaran({
   showFilters, setShowFilters, loadingFilters, filterOptions,
@@ -32,6 +33,17 @@ export default function FilterSebaran({
         }
         
         setKotaList(cities);
+
+        // Jika user memilih provinsi tapi tidak ada data kota, tampilkan alert
+        if (activeFilters.provinsi_id && cities.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Tidak Ada Data',
+            text: 'Belum ada data kota/kabupaten untuk provinsi yang dipilih',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Tutup'
+          });
+        }
       } catch (error) {
         console.error("Gagal memuat daftar kota", error);
         setKotaList([]);
@@ -87,9 +99,17 @@ export default function FilterSebaran({
         updates.perusahaan_id = '';
         updates.universitas_id = '';
       }
-    } else if (key === 'provinsi_id' && value === '') {
-      // Jika reset Provinsi, reset Kota
+    } else if (key === 'provinsi_id') {
+      // Jika ubah Provinsi (baik ganti provinsi maupun reset), selalu reset Kota dan Entitas
       updates.kota_id = '';
+      updates.perusahaan_id = '';
+      updates.universitas_id = '';
+      updates.bidang_usaha_id = '';
+    } else if (key === 'kota_id') {
+      // Jika ubah Kota, reset Entitas terkait agar tidak bentrok
+      updates.perusahaan_id = '';
+      updates.universitas_id = '';
+      updates.bidang_usaha_id = '';
     }
 
     handleFilterChange(updates);
