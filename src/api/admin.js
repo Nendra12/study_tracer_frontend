@@ -250,7 +250,11 @@ export const adminApi = {
   deleteProvinsi(id) { return api.delete(`/admin/master/provinsi/${id}`); },
 
   // Kota
-  getKota() { return api.get('/admin/master/kota'); },
+  getKota(idProvinsi = null) { 
+    return api.get('/admin/master/kota', {
+      params: idProvinsi ? { id_provinsi: idProvinsi } : {}
+    }); 
+  },
   createKota(data) { return api.post('/admin/master/kota', data); },
   updateKota(id, data) { return api.put(`/admin/master/kota/${id}`, data); },
   deleteKota(id) { return api.delete(`/admin/master/kota/${id}`); },

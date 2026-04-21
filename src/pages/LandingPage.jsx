@@ -19,6 +19,7 @@ import FooterModals from "../components/alumni/FooterModals";
 
 // IMPORT KOMPONEN BARU
 import ThumbnailPortal from "../components/ThumbnailPortal";
+import UpButton from "../components/alumni/UpButton";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -427,6 +428,8 @@ export default function LandingPage() {
         type={modalType}
         onClose={closeModal}
       />
+
+      <UpButton />
     </div>
   );
 }

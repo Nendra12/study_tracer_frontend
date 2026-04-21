@@ -27,12 +27,12 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const [bidangUsahaList, setBidangUsahaList] = useState([]);
   const [bidangUsahaMap, setBidangUsahaMap] = useState({});
   const [jurusanKuliahList, setJurusanKuliahList] = useState([]);
-  
+
   const [loadingKotaPekerjaan, setLoadingKotaPekerjaan] = useState(false);
   const [loadingKotaKuliah, setLoadingKotaKuliah] = useState(false);
   const [loadingKotaUsaha, setLoadingKotaUsaha] = useState(false);
   const [loadingProvinsi, setLoadingProvinsi] = useState(false);
-  
+
   const [showUniMap, setShowUniMap] = useState(false);
   const [showUsahaMap, setShowUsahaMap] = useState(false);
   const [showBekerjaMap, setShowBekerjaMap] = useState(false);
@@ -120,8 +120,8 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       setPerusahaanOptions(Array.from(pSet).sort());
       setUniversitasOptions(Array.from(uSet).sort());
       setPosisiOptions(Array.from(posSet).sort());
-    } catch (err) { 
-      console.error('Failed to load master data:', err); 
+    } catch (err) {
+      console.error('Failed to load master data:', err);
     } finally {
       setLoadingProvinsi(false);
     }
@@ -228,10 +228,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             <input
               type="checkbox"
               checked={data.is_saat_ini}
-              onChange={(e) => setData({ 
-                ...data, 
-                is_saat_ini: e.target.checked, 
-                tahun_selesai: e.target.checked ? "" : data.tahun_selesai 
+              onChange={(e) => setData({
+                ...data,
+                is_saat_ini: e.target.checked,
+                tahun_selesai: e.target.checked ? "" : data.tahun_selesai
               })}
               className="w-4 h-4 rounded border-gray-100 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
             />
@@ -254,13 +254,13 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
       const payload = {
         id_status: form.id_status,
-        tahun_mulai: form.tahun_mulai, 
+        tahun_mulai: form.tahun_mulai,
         tahun_selesai: isSaatIni ? null : (form.tahun_selesai || null),
       };
 
       if (!isBelum) {
         let activeData = null;
-        
+
         if (statusName.includes('kerja') || statusName.includes('bekerja')) {
           activeData = pekerjaan;
           if (!activeData.posisi?.trim()) return toastWarning('Posisi/Pekerjaan wajib diisi.');
@@ -271,20 +271,20 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             if (!activeData.id_kota) return toastWarning('Kota perusahaan baru wajib dipilih.');
             if (!activeData.jalan?.trim()) return toastWarning('Alamat perusahaan baru wajib diisi.');
           }
-          
+
           let finalJalan = activeData.jalan || '';
           if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalJalan += `, ${activeData.id_kota}`;
           if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalJalan += `, ${activeData.id_provinsi}`;
 
           payload.tahun_mulai = activeData.tahun_mulai;
           payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
-          payload.pekerjaan = { 
-            posisi: activeData.posisi, 
-            nama_perusahaan: activeData.nama_perusahaan, 
-            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null, 
-            jalan: finalJalan, 
-            latitude: form.latitude_perusahaan, 
-            longitude: form.longitude_perusahaan 
+          payload.pekerjaan = {
+            posisi: activeData.posisi,
+            nama_perusahaan: activeData.nama_perusahaan,
+            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
+            jalan: finalJalan,
+            latitude: form.latitude_perusahaan,
+            longitude: form.longitude_perusahaan
           };
 
         } else if (statusName.includes('kuliah')) {
@@ -292,12 +292,12 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           if (!activeData.nama_universitas?.trim()) return toastWarning('Nama universitas wajib diisi.');
           if (!activeData.jenjang) return toastWarning('Jenjang kuliah wajib dipilih.');
           if (!activeData.jalur_masuk) return toastWarning('Jalur masuk kuliah wajib dipilih.');
-          
+
           const isExisting = universitasOptions.some(u => u.toLowerCase() === activeData.nama_universitas.trim().toLowerCase());
           if (!isExisting) {
-             if (!activeData.id_provinsi) return toastWarning('Provinsi universitas baru wajib dipilih.');
-             if (!activeData.id_kota) return toastWarning('Kota universitas baru wajib dipilih.');
-             if (!activeData.alamat?.trim()) return toastWarning('Alamat universitas baru wajib diisi.');
+            if (!activeData.id_provinsi) return toastWarning('Provinsi universitas baru wajib dipilih.');
+            if (!activeData.id_kota) return toastWarning('Kota universitas baru wajib dipilih.');
+            if (!activeData.alamat?.trim()) return toastWarning('Alamat universitas baru wajib diisi.');
           }
 
           let finalAlamatUniv = activeData.alamat || '';
@@ -342,7 +342,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
         }
 
         if (!payload.tahun_mulai) {
-           return toastWarning('Tahun mulai wajib diisi.');
+          return toastWarning('Tahun mulai wajib diisi.');
         }
       } else {
         if (!form.tahun_mulai) return toastWarning('Tahun mulai wajib diisi.');
@@ -476,7 +476,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     }
     return null;
   }
-  
+
   const careerInfo = getCareerDisplayInfo();
   const currentNeedsCompletion = Boolean(
     (career?.kuliah && (!career.kuliah.alamat || !(career.kuliah.id_kota || career.kuliah.kota?.id))) ||
@@ -504,6 +504,11 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
               {!isVerified ? <Lock size={14} /> : hasPendingCareer ? <Clock size={14} /> : <Plus size={14} />}
               <span className='hidden md:block'>{!isVerified ? 'Terkunci' : hasPendingCareer ? 'Menunggu Approval' : 'Tambahkan status baru'}</span>
             </button>
+            <div className="invisible absolute bottom-full left-1/2 mb-2 w-max -translate-x-1/2 rounded bg-gray-800 px-3 py-2 text-xs text-white opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 z-10">
+              Anda harus mengisi tanggal selesai terlebih dahulu!
+
+              <div className="absolute left-1/2 top-full -translate-x-1/2 border-[6px] border-transparent border-t-gray-800"></div>
+            </div>
           </div>
         )}
       </div>
@@ -526,7 +531,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
-            
+
             <div className="sm:col-span-2 relative z-[100]">
               <SmoothDropdown
                 label={<>Status <span className="text-red-500">*</span></>}
@@ -542,47 +547,47 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             </div>
 
             {statusName.includes('belum') && (
-               <>
-                  <div className="relative z-[90]">
+              <>
+                <div className="relative z-[90]">
+                  <SmoothDropdown
+                    label={<>Tahun Mulai <span className="text-red-500">*</span></>}
+                    isSearchable={true}
+                    placeholder="Pilih Tahun"
+                    options={startYearsOptions}
+                    value={form.tahun_mulai}
+                    onSelect={(val) => setForm(prev => {
+                      let newSelesai = prev.tahun_selesai;
+                      if (prev.tahun_selesai && parseInt(val) > parseInt(prev.tahun_selesai)) newSelesai = '';
+                      return { ...prev, tahun_mulai: val, tahun_selesai: newSelesai };
+                    })}
+                  />
+                </div>
+                <div className="relative z-[80]">
+                  {!isSaatIni ? (
                     <SmoothDropdown
-                      label={<>Tahun Mulai <span className="text-red-500">*</span></>}
+                      label="Tahun Selesai (opsional)"
                       isSearchable={true}
                       placeholder="Pilih Tahun"
-                      options={startYearsOptions}
-                      value={form.tahun_mulai}
-                      onSelect={(val) => setForm(prev => {
-                        let newSelesai = prev.tahun_selesai;
-                        if (prev.tahun_selesai && parseInt(val) > parseInt(prev.tahun_selesai)) newSelesai = '';
-                        return { ...prev, tahun_mulai: val, tahun_selesai: newSelesai };
-                      })}
+                      options={getEndYearsOptions(form.tahun_mulai)}
+                      value={form.tahun_selesai}
+                      onSelect={(val) => setForm(prev => ({ ...prev, tahun_selesai: val }))}
                     />
-                  </div>
-                  <div className="relative z-[80]">
-                    {!isSaatIni ? (
-                      <SmoothDropdown
-                        label="Tahun Selesai (opsional)"
-                        isSearchable={true}
-                        placeholder="Pilih Tahun"
-                        options={getEndYearsOptions(form.tahun_mulai)}
-                        value={form.tahun_selesai}
-                        onSelect={(val) => setForm(prev => ({ ...prev, tahun_selesai: val }))}
-                      />
-                    ) : (
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-primary/80 uppercase tracking-widest block mb-2.5">
-                          Tahun Selesai
-                        </label>
-                        <div className="w-full bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
-                          Sedang Berlangsung
-                        </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-primary/80 uppercase tracking-widest block mb-2.5">
+                        Tahun Selesai
+                      </label>
+                      <div className="w-full bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
+                        Sedang Berlangsung
                       </div>
-                    )}
-                    <label className="flex items-center gap-2 mt-3 cursor-pointer w-fit">
-                      <input type="checkbox" checked={isSaatIni} onChange={(e) => { setIsSaatIni(e.target.checked); if (e.target.checked) setForm(prev => ({ ...prev, tahun_selesai: '' })); }} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all" />
-                      <span className="text-[11px] font-bold text-primary">Masih berlangsung (Saat ini)</span>
-                    </label>
-                  </div>
-               </>
+                    </div>
+                  )}
+                  <label className="flex items-center gap-2 mt-3 cursor-pointer w-fit">
+                    <input type="checkbox" checked={isSaatIni} onChange={(e) => { setIsSaatIni(e.target.checked); if (e.target.checked) setForm(prev => ({ ...prev, tahun_selesai: '' })); }} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer transition-all" />
+                    <span className="text-[11px] font-bold text-primary">Masih berlangsung (Saat ini)</span>
+                  </label>
+                </div>
+              </>
             )}
 
             {!statusName.includes('belum') && (statusName.includes('kerja') || statusName.includes('bekerja')) && (
@@ -592,15 +597,15 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             )}
 
             {statusName.includes('kuliah') && (
-               <div className="sm:col-span-2">
-                  <FormKuliah form={form} setForm={setForm} universitas={universitas} setUniversitas={setUniversitas} universitasOptions={universitasOptions} provinsiList={provinsiList} kotaKuliahList={kotaKuliahList} loadingProvinsi={loadingProvinsi} loadingKotaKuliah={loadingKotaKuliah} loadKota={loadKota} renderTahunDinamis={renderTahunDinamis} setShowUniMap={setShowUniMap} />
-               </div>
+              <div className="sm:col-span-2">
+                <FormKuliah form={form} setForm={setForm} universitas={universitas} setUniversitas={setUniversitas} universitasOptions={universitasOptions} provinsiList={provinsiList} kotaKuliahList={kotaKuliahList} loadingProvinsi={loadingProvinsi} loadingKotaKuliah={loadingKotaKuliah} loadKota={loadKota} renderTahunDinamis={renderTahunDinamis} setShowUniMap={setShowUniMap} />
+              </div>
             )}
 
             {(statusName.includes('wirausaha') || statusName.includes('usaha')) && (
-               <div className="sm:col-span-2">
-                  <FormWirausaha form={form} setForm={setForm} wirausaha={wirausaha} setWirausaha={setWirausaha} bidangUsahaList={bidangUsahaList} bidangUsahaMap={bidangUsahaMap} provinsiList={provinsiList} kotaUsahaList={kotaUsahaList} loadingProvinsi={loadingProvinsi} loadingKotaUsaha={loadingKotaUsaha} loadKota={loadKota} renderTahunDinamis={renderTahunDinamis} setShowUsahaMap={setShowUsahaMap} />
-               </div>
+              <div className="sm:col-span-2">
+                <FormWirausaha form={form} setForm={setForm} wirausaha={wirausaha} setWirausaha={setWirausaha} bidangUsahaList={bidangUsahaList} bidangUsahaMap={bidangUsahaMap} provinsiList={provinsiList} kotaUsahaList={kotaUsahaList} loadingProvinsi={loadingProvinsi} loadingKotaUsaha={loadingKotaUsaha} loadKota={loadKota} renderTahunDinamis={renderTahunDinamis} setShowUsahaMap={setShowUsahaMap} />
+              </div>
             )}
 
           </div>

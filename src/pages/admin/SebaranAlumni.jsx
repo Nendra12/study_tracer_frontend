@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Search, Filter, Building2, School } from 'lucide-react';
 import { useSebaranAlumni } from '../../hooks/useSebaranAlumni';
 
@@ -26,10 +27,10 @@ export default function SebaranAlumni() {
   const handleFilterChange = (keyOrObj, value) => {
     setActiveFilters((prev) => {
       const nextFilters = typeof keyOrObj === 'object' ? { ...prev, ...keyOrObj } : { ...prev, [keyOrObj]: value };
-      
+
       // Map langsung update
       setTimeout(() => applyFilters(nextFilters), 0);
-      
+
       return nextFilters;
     });
   };
@@ -47,22 +48,22 @@ export default function SebaranAlumni() {
 
   const handleSearchSelect = (result) => {
     const filterKey = result.type === 'perusahaan' ? 'perusahaan_id' : 'universitas_id';
-    
+
     // Use the updated handler that auto-applies map update and triggers business logic if we put that logic in handleFilterChange or handle it properly.
     // Wait, the business logic will be in FilterSebaran.jsx, but since it's search select here, we should apply it too.
     const updates = { [filterKey]: result.id };
     if (result.type === 'perusahaan') {
-        updates.tipe_karir = 'bekerja';
-        updates.universitas_id = '';
-        updates.bidang_usaha_id = '';
+      updates.tipe_karir = 'bekerja';
+      updates.universitas_id = '';
+      updates.bidang_usaha_id = '';
     } else {
-        updates.tipe_karir = 'kuliah';
-        updates.perusahaan_id = '';
-        updates.bidang_usaha_id = '';
+      updates.tipe_karir = 'kuliah';
+      updates.perusahaan_id = '';
+      updates.bidang_usaha_id = '';
     }
-    
+
     handleFilterChange(updates);
-    setSearchQuery(''); 
+    setSearchQuery('');
     setSearchResults([]);
     setShowFilters(false);
   };
@@ -75,14 +76,26 @@ export default function SebaranAlumni() {
   // Tampilkan skeleton JIKA sedang memuat data pertama kali DAN markers masih kosong/belum ada
   const isInitialLoading = loadingMarkers && (!markers || markers.length === 0) && (!stats);
 
+  // Alert jika hasil filter kosong
+  useEffect(() => {
+    if (!loadingMarkers && !isInitialLoading && activeFilterCount > 0 && totalMarkers === 0) {
+      toast.error('Tidak ada data yang sesuai dengan filter', {
+        id: 'empty-filter', // Mencegah toast duplikat
+        duration: 4000,
+      });
+    }
+  }, [loadingMarkers, isInitialLoading, activeFilterCount, totalMarkers]);
+
   if (isInitialLoading) {
     return <SkeletonSebaran />;
   }
 
   return (
     <div className="space-y-6">
-      
       {/* HEADER BAR */}
+      <StatSebaran stats={stats} />
+
+
       <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col md:flex-row items-center gap-3 shadow-sm relative z-[60]">
         <div className="relative w-full flex-1">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -113,15 +126,12 @@ export default function SebaranAlumni() {
       {/* FILTER DROPDOWN COMPONENT */}
       <FilterSebaran showFilters={showFilters} setShowFilters={setShowFilters} loadingFilters={loadingFilters} filterOptions={filterOptions} activeFilters={activeFilters} handleFilterChange={handleFilterChange} handleApplyFilters={handleApplyFilters} handleResetFilters={handleResetFilters} />
 
-      {/* 4 STAT CARDS COMPONENT */}
-      <StatSebaran stats={stats} />
-
       {/* PETA LEAFLET COMPONENT */}
       <MapSebaran markers={markers} bounds={bounds} loadingMarkers={loadingMarkers} loadingDetail={loadingDetail} selectedLocation={selectedLocation} handleMarkerClick={handleMarkerClick} totalMarkers={totalMarkers} totalAlumni={totalAlumni} />
 
       {/* TOP 5 COMPONENT */}
-      <TopSebaran stats={stats} />
-      
+      <TopSebaran markers={markers} />
+
     </div>
   );
 }
