@@ -219,8 +219,8 @@ export default function LandingPage() {
           <div className="relative h-[600px] w-full hidden lg:block">
             {/* Main Image Card */}
             <motion.div
-              className="absolute top-10 right-0 w-[80%] h-[80%] bg-white rounded-md p-2 shadow-2xl shadow-third
-              /20 transform rotate-2 hover:-rotate-3 transition-transform duration-500 z-10"
+              className="absolute top-10 right-0 w-[80%] h-[80%] bg-white rounded-3xl p-2 shadow-2xl shadow-third
+              /20 transform rotate-2 hover:-rotate-2 transition-transform duration-500 z-10"
               initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
               animate={{ opacity: 1, scale: 1, rotate: 2 }}
               whileInView={{ opacity: 1, y: 0 }}
