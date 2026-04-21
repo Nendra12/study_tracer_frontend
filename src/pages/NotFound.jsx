@@ -52,7 +52,7 @@ export default function NotFound() {
                     Waduh! Halaman Tidak Ditemukan.
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-sm sm:text-base font-medium text-secondary/80">
+                <p className="mt-3 max-w-2xl text-sm sm:text-base font-medium text-primary/70 leading-relaxed">
                     Sepertinya Anda tersesat di perpustakaan digital kami yang luas. Jangan khawatir, mari kita kembali ke jalur.
                 </p>
 
@@ -60,7 +60,7 @@ export default function NotFound() {
                     <button
                         type="button"
                         onClick={() => navigate("/")}
-                        className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98]"
+                        className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98] cursor-pointer"
                     >
                         <ArrowLeft size={18} />
                         Kembali ke Beranda
