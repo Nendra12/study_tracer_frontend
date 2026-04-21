@@ -6,13 +6,6 @@ export default function SkeletonSebaran() {
 
   return (
     <div className="space-y-6 animate-pulse">
-      
-      {/* 1. HEADER BAR SKELETON (Search & Filter) */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col md:flex-row items-center gap-3 shadow-sm">
-        <div className="w-full flex-1 h-[44px] bg-slate-200 rounded-xl"></div>
-        <div className="w-full md:w-[130px] h-[44px] bg-slate-200 rounded-xl shrink-0"></div>
-      </div>
-
       {/* 2. STAT CARDS SKELETON (4 Kotak) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
@@ -25,6 +18,13 @@ export default function SkeletonSebaran() {
           </div>
         ))}
       </div>
+      
+      {/* 1. HEADER BAR SKELETON (Search & Filter) */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col md:flex-row items-center gap-3 shadow-sm">
+        <div className="w-full flex-1 h-[44px] bg-slate-200 rounded-xl"></div>
+        <div className="w-full md:w-[130px] h-[44px] bg-slate-200 rounded-xl shrink-0"></div>
+      </div>
+
 
       {/* 3. MAP SKELETON (Peta Besar) */}
       <div className="w-full h-[400px] md:h-[500px] bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
