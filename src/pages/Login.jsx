@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DefaultLoginImage from "../assets/login_image.jpg";
 import DefaultLogo from "../assets/icon.png";
-import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck, AlertCircle } from "lucide-react";
+import { Mail, MoveRight, Loader2, Eye, EyeOff, ArrowLeft, Clock, RefreshCcw, ShieldCheck, AlertCircle, MoveLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
@@ -124,9 +124,22 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-fourtd flex items-center justify-center p-4">
-
-      <div className="flex flex-col lg:flex-row w-full max-w-4xl xl:max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div className="min-h-screen w-full bg-fourtd flex items-center justify-center md:p-20 lg:p-5">
+      <div className="absolute lg:hidden realtive top-0 w-full h-80">
+        <Link
+          to="/"
+          className="absolute top-0 left-0 mt-3 ml-3 inline-flex items-center justify-center p-2 text-slate-500 rounded-full bg-slate-100 hover:text-slate-900 transition-colors duration-200"
+          title="Kembali ke Landing Page"
+        >
+          <MoveLeft />
+        </Link>
+        <img
+          src={theme?.loginBg || DefaultLoginImage}
+          alt="Login Visual"
+          className=" w-full h-full object-cover"
+        />
+      </div>
+      <div className="flex mt-50 md:mt-40 lg:mt-0 z-100 flex-col lg:flex-row w-full xl:max-w-5xl bg-white rounded-t-[80px] lg:rounded-xl shadow-2xl overflow-hidden">
 
         {/* Bagian Kiri: Banner Gambar */}
         <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-6 xl:p-8 overflow-hidden">
@@ -164,11 +177,13 @@ export default function Login() {
 
         {/* Bagian Kanan: Form Login */}
         {/* PERUBAHAN: Mengurangi padding vertikal (lg:py-4) agar lebih memadat ke atas */}
-        <div className="w-full lg:w-1/2 p-5 sm:p-8 lg:px-8 lg:py-4 xl:py-6 flex flex-col justify-center bg-white">
+        <div className="w-full lg:w-1/2 px-4 py-10 sm:p-8 lg:px-8 lg:py-4 xl:py-6 flex flex-col justify-center bg-white shadow-md">
           <div className="max-w-md mx-auto w-full">
 
             {/* Header Mobile */}
-            <div className="flex items-center gap-2.5 mb-4 lg:hidden">
+
+
+            <div className="flex items-center gap-2.5 mb-4 hidden">
               <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
                 <img src={theme?.logo || DefaultLogo} alt="logo" className="w-8 h-8 object-contain" />
               </div>
@@ -182,12 +197,12 @@ export default function Login() {
               </div>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-1 lg:text-2xl">
-              Selamat Datang
+            <h2 className="text-2xl text-center sm:text-3xl font-bold text-primary mb-1 lg:text-2xl">
+              Selamat Datang Alumni
             </h2>
             {/* PERUBAHAN: Mengurangi margin bawah (mb-3) */}
-            <p className="text-gray-500 text-xs sm:text-sm mb-4 lg:mb-3 font-medium">
-              Masukan email dan password untuk mengakses akun anda
+            <p className="text-center text-gray-500 text-xs sm:text-sm mb-4 lg:mb-3 font-medium">
+              Masuk dengan email & password
             </p>
 
             {/* Session Expired Warning */}
@@ -334,19 +349,19 @@ export default function Login() {
 
               {/* Tombol Action */}
               <div className="flex gap-3 mt-3 lg:mt-2">
-                <Link
+                {/* <Link
                   to="/"
                   className="flex lg:hidden items-center justify-center gap-1.5 px-4 shrink-0 bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm"
                   title="Kembali ke Landing Page"
                 >
                   <ArrowLeft size={16} className="shrink-0" />
                   <span className="text-xs font-bold whitespace-nowrap">Kembali</span>
-                </Link>
+                </Link> */}
 
                 <button
                   type="submit"
                   disabled={loading || googleLoading || captchaLoading || !captchaImage || !captchaToken.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
+                  className="flex-1 mt-2 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold py-3 lg:py-2.5 rounded-xl lg:rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-primary/20"
                 >
                   {loading ? (
                     <>

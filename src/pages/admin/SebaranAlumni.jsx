@@ -9,6 +9,7 @@ import FilterSebaran from '../../components/admin/sebaran/FilterSebaran';
 import MapSebaran from '../../components/admin/sebaran/MapSebaran';
 
 import SkeletonSebaran from '../../components/admin/skeleton/SkeletonSebaran';
+import UpButton from '../../components/alumni/UpButton';
 
 export default function SebaranAlumni() {
   const {
@@ -131,7 +132,6 @@ export default function SebaranAlumni() {
 
       {/* TOP 5 COMPONENT */}
       <TopSebaran markers={markers} />
-
     </div>
   );
 }
