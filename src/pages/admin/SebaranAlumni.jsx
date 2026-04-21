@@ -92,7 +92,6 @@ export default function SebaranAlumni() {
 
   return (
     <div className="space-y-6">
-      
       {/* HEADER BAR */}
       <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col md:flex-row items-center gap-3 shadow-sm relative z-[60]">
         <div className="relative w-full flex-1">

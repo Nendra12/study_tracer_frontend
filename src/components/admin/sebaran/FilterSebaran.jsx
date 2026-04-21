@@ -120,6 +120,18 @@ export default function FilterSebaran({
   const isWirausahaDisabled = activeFilters.tipe_karir === 'bekerja' || activeFilters.tipe_karir === 'kuliah' || activeFilters.perusahaan_id || activeFilters.universitas_id;
   const isBekerjaDisabled = activeFilters.tipe_karir === 'kuliah' || activeFilters.tipe_karir === 'wirausaha' || activeFilters.universitas_id || activeFilters.bidang_usaha_id;
 
+  const filteredPerusahaan = filterOptions?.perusahaan?.filter(p => {
+    if (activeFilters.kota_id && String(p.id_kota) !== String(activeFilters.kota_id)) return false;
+    if (activeFilters.provinsi_id && String(p.id_provinsi) !== String(activeFilters.provinsi_id)) return false;
+    return true;
+  }) || [];
+
+  const filteredUniversitas = filterOptions?.universitas?.filter(u => {
+    if (activeFilters.kota_id && String(u.id_kota) !== String(activeFilters.kota_id)) return false;
+    if (activeFilters.provinsi_id && String(u.id_provinsi) !== String(activeFilters.provinsi_id)) return false;
+    return true;
+  }) || [];
+
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-top-4 duration-300 relative z-[50]">
       <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
@@ -198,12 +210,12 @@ export default function FilterSebaran({
           <div className={`relative z-[40] focus-within:z-[100] w-full ${isBekerjaDisabled ? 'opacity-50 pointer-events-none' : 'transition-opacity duration-300'}`}>
             <SmoothDropdown
               label="Perusahaan"
-              options={mapOptions(filterOptions?.perusahaan)}
-              value={filterOptions?.perusahaan?.find(i => String(i.id) === String(activeFilters.perusahaan_id))?.nama || "Semua"}
+              options={mapOptions(filteredPerusahaan)}
+              value={filteredPerusahaan?.find(i => String(i.id) === String(activeFilters.perusahaan_id))?.nama || "Semua"}
               onSelect={(val) => {
                 if (val === "Semua") onFilterUpdate('perusahaan_id', '');
                 else {
-                  const found = filterOptions?.perusahaan?.find(i => i.nama === val);
+                  const found = filteredPerusahaan?.find(i => i.nama === val);
                   onFilterUpdate('perusahaan_id', found ? String(found.id) : '');
                 }
               }}
@@ -214,12 +226,12 @@ export default function FilterSebaran({
           <div className={`relative z-[30] focus-within:z-[100] w-full ${isKuliahDisabled ? 'opacity-50 pointer-events-none' : 'transition-opacity duration-300'}`}>
             <SmoothDropdown
               label="Universitas"
-              options={mapOptions(filterOptions?.universitas)}
-              value={filterOptions?.universitas?.find(i => String(i.id) === String(activeFilters.universitas_id))?.nama || "Semua"}
+              options={mapOptions(filteredUniversitas)}
+              value={filteredUniversitas?.find(i => String(i.id) === String(activeFilters.universitas_id))?.nama || "Semua"}
               onSelect={(val) => {
                 if (val === "Semua") onFilterUpdate('universitas_id', '');
                 else {
-                  const found = filterOptions?.universitas?.find(i => i.nama === val);
+                  const found = filteredUniversitas?.find(i => i.nama === val);
                   onFilterUpdate('universitas_id', found ? String(found.id) : '');
                 }
               }}
