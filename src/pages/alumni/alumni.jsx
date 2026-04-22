@@ -273,7 +273,7 @@ export default function Alumni() {
         ) : (
           <>
             {/* ALUMNI CARDS GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
               {alumniData.map((alumni) => {
                 const alumniId = getAlumniId(alumni);
                 const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
@@ -285,6 +285,17 @@ export default function Alumni() {
                   alumni={alumni} 
                   onClick={() => navigate(`/alumni/daftar-alumni/${alumniId || alumni.id}`, { state: { alumni } })}
                   onImageClick={(src) => setSelectedImage(src)}
+                  connectionBadgeSlot={(
+                    <Connection
+                      alumniId={alumniId}
+                      isSelf={isSelf}
+                      statusEntry={statusMap[String(alumniId)]}
+                      isLoading={loadingStatusMap[String(alumniId)]}
+                      compact
+                      mode="badge"
+                      className=""
+                    />
+                  )}
                   connectionSlot={(
                     <Connection
                       alumniId={alumniId}
@@ -299,6 +310,7 @@ export default function Alumni() {
                       onBlock={block}
                       onUnblock={unblock}
                       compact
+                      mode="actions"
                     />
                   )}
                 />

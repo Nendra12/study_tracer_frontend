@@ -25,6 +25,8 @@ const INITIAL_CONVERSATIONS = {
   ]
 };
 
+const MAX_FAVORITES = 3;
+
 const TenorPicker = ({ onSelectGif, onClose }) => {
   const [search, setSearch] = useState('');
   const [gifs, setGifs] = useState([]);
@@ -46,7 +48,7 @@ const TenorPicker = ({ onSelectGif, onClose }) => {
       <input
         type="text"
         placeholder="Cari GIF dari Tenor..."
-        className="w-full bg-gray-50 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-100 mb-2 transition-all"
+        className="w-full bg-gray-50 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/10 mb-2 transition-all"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
@@ -194,6 +196,15 @@ export default function MessagePage() {
 
   const toggleFavorite = (e, id) => {
     e.stopPropagation();
+    const currentFavCount = contacts.filter((c) => c.isFavorite).length;
+    const target = contacts.find((c) => c.id === id);
+    const willFavorite = !(target?.isFavorite);
+
+    if (willFavorite && currentFavCount >= MAX_FAVORITES) {
+      toast.error(`Maksimal ${MAX_FAVORITES} chat yang bisa difavoritkan.`);
+      return;
+    }
+
     setContacts(contacts.map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c));
     toast.success('Status favorit diperbarui!');
   };
@@ -217,6 +228,18 @@ export default function MessagePage() {
   };
 
   const handleBulkFavorite = () => {
+    if (!allSelectedFavorited) {
+      const currentFavCount = contacts.filter((c) => c.isFavorite).length;
+      const addCount = selectedContacts
+        .map((id) => contacts.find((c) => c.id === id))
+        .filter((c) => c && !c.isFavorite).length;
+
+      if (currentFavCount + addCount > MAX_FAVORITES) {
+        toast.error(`Maksimal ${MAX_FAVORITES} chat favorit. Hapus favorit lain dulu.`);
+        return;
+      }
+    }
+
     setContacts(contacts.map(c => selectedContacts.includes(c.id) ? { ...c, isFavorite: !allSelectedFavorited } : c));
     toast.success(`${selectedContacts.length} obrolan ${allSelectedFavorited ? 'dihapus dari favorit' : 'ditambahkan ke favorit'}`);
     setIsSelectionMode(false);
@@ -237,12 +260,14 @@ export default function MessagePage() {
 
   const getRoleIcon = (type) => {
     switch (type) {
-      case 'admin': return <Building2 size={12} className="text-indigo-500" />;
+      case 'admin': return <Building2 size={12} className="text-primary" />;
       case 'company': return <Briefcase size={12} className="text-blue-500" />;
       case 'alumni': return <GraduationCap size={12} className="text-emerald-500" />;
       default: return null;
     }
   };
+
+  const favoriteCount = contacts.filter((c) => c.isFavorite).length;
 
   const filteredContacts = contacts.filter(c => {
     const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -261,7 +286,7 @@ export default function MessagePage() {
   };
 
   return (
-    <div className="h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-indigo-500/20 overflow-hidden">
+    <div className="h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-hidden">
       <Toaster position="top-right" />
       <NewChatModal
         isOpen={isModalOpen}
@@ -343,7 +368,7 @@ export default function MessagePage() {
               <div className="pt-4 pb-4 border-b border-gray-100 shrink-0 bg-white flex gap-3">
                 <button
                   onClick={() => setFilterMode(filterMode === 'favorite' ? 'all' : 'favorite')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
                   <div className={`${filterMode === 'favorite' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
                     <Star size={16} className={filterMode === 'favorite' ? 'fill-primary' : ''} />
@@ -353,7 +378,7 @@ export default function MessagePage() {
 
                 <button
                   onClick={() => setFilterMode(filterMode === 'archived' ? 'all' : 'archived')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
                   <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
                     <Archive size={16} />
@@ -363,7 +388,7 @@ export default function MessagePage() {
 
                 <button
                   onClick={() => handleFeatureNotReady('Grup')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
                   <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
                     <UsersRound size={16} />
@@ -379,7 +404,7 @@ export default function MessagePage() {
                       setIsSelectionMode(!isSelectionMode);
                       setSelectedContacts([]);
                   }}
-                  className={`text-xs font-bold transition-colors cursor-pointer ${isSelectionMode ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`text-xs font-bold transition-colors cursor-pointer ${isSelectionMode ? 'text-primary' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   {isSelectionMode ? 'Selesai' : 'Pilih Pesan'}
                 </button>
@@ -396,14 +421,14 @@ export default function MessagePage() {
                     onClick={() => isSelectionMode ? handleToggleSelect(contact.id) : handleSelectChat(contact)}
                     className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${
                       isSelectionMode && selectedContacts.includes(contact.id) 
-                        ? 'bg-indigo-50 border-indigo-200 border' 
-                        : activeChat?.id === contact.id && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
+                        ? 'bg-primary/10 border-primary/20 border' 
+                        : activeChat?.id === contact.id && !isSelectionMode ? 'bg-primary/5 border border-transparent' : 'border border-transparent'
                     }`}
                   >
                     {isSelectionMode && (
                         <div className="shrink-0 mr-1 animate-in fade-in slide-in-from-left-2 duration-200">
                             <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
-                                selectedContacts.includes(contact.id) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300'
+                              selectedContacts.includes(contact.id) ? 'bg-primary border-primary text-white' : 'border-gray-300'
                             }`}>
                                 {selectedContacts.includes(contact.id) && <Check size={14} strokeWidth={3} />}
                             </div>
@@ -418,20 +443,35 @@ export default function MessagePage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <h3 className={`text-sm font-bold truncate pr-2 ${activeChat?.id === contact.id ? 'text-indigo-900' : 'text-gray-800'}`}>
+                        <h3 className={`text-sm font-bold truncate pr-2 ${activeChat?.id === contact.id ? 'text-primary' : 'text-gray-800'}`}>
                           {contact.name}
                         </h3>
-                        <span className="text-[11px] font-medium text-gray-400 shrink-0">{contact.time}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] font-medium text-gray-400">{contact.time}</span>
+                          {!isSelectionMode && (contact.isFavorite || favoriteCount < MAX_FAVORITES) && (
+                            <button
+                              onClick={(e) => toggleFavorite(e, contact.id)}
+                              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                                contact.isFavorite
+                                  ? 'text-yellow-400 hover:bg-yellow-50'
+                                  : 'text-gray-300 hover:bg-[#f8f9fa] hover:text-yellow-400'
+                              }`}
+                              title={contact.isFavorite ? 'Hapus dari favorit' : `Favoritkan (max ${MAX_FAVORITES})`}
+                              aria-label={contact.isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
+                            >
+                              <Star size={14} className={contact.isFavorite ? 'fill-yellow-400' : ''} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1.5 justify-between">
-                        <p className={`text-xs truncate ${activeChat?.id === contact.id && contact.unread > 0 ? 'font-bold text-indigo-700' : 'text-gray-500'}`}>
+                        <p className={`text-xs truncate ${activeChat?.id === contact.id && contact.unread > 0 ? 'font-bold text-primary' : 'text-gray-500'}`}>
                           {contact.lastMessage || 'Tidak ada pesan'}
                         </p>
 
                         <div className="flex items-center gap-1">
-                          {contact.isFavorite && <Star size={12} className="fill-yellow-400 text-yellow-400" />}
                           {contact.unread > 0 && (
-                            <div className="shrink-0 min-w-5 h-5 px-1 bg-indigo-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+                            <div className="shrink-0 min-w-5 h-5 px-1 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
                               {contact.unread}
                             </div>
                           )}
@@ -456,7 +496,7 @@ export default function MessagePage() {
                           setSelectedContacts(filteredContacts.map(c => c.id));
                       }
                   }} 
-                  className="text-indigo-600 font-bold hover:underline cursor-pointer"
+                  className="text-primary font-bold hover:underline cursor-pointer"
                 >
                   {selectedContacts.length === filteredContacts.length && filteredContacts.length > 0 ? 'Batal Pilih Semua' : 'Pilih Semua'}
                 </button>
@@ -513,12 +553,16 @@ export default function MessagePage() {
                   </div>
 
                   <div className="flex items-center">
-                    <button
-                      onClick={(e) => toggleFavorite(e, activeChat.id)}
-                      className={`p-2.5 rounded-full transition-colors ${activeChat.isFavorite ? 'text-yellow-400 hover:bg-yellow-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-yellow-400'}`}
-                    >
-                      <Star size={18} className={activeChat.isFavorite ? "fill-yellow-400" : ""} />
-                    </button>
+                    {(activeChat.isFavorite || favoriteCount < MAX_FAVORITES) && (
+                      <button
+                        onClick={(e) => toggleFavorite(e, activeChat.id)}
+                        className={`p-2.5 rounded-full transition-colors ${activeChat.isFavorite ? 'text-yellow-400 hover:bg-yellow-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-yellow-400'}`}
+                        title={activeChat.isFavorite ? 'Hapus dari favorit' : `Favoritkan (max ${MAX_FAVORITES})`}
+                        aria-label={activeChat.isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
+                      >
+                        <Star size={18} className={activeChat.isFavorite ? "fill-yellow-400" : ""} />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleFeatureNotReady('Menu Obrolan')}
                       className="p-2.5 text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
@@ -547,7 +591,7 @@ export default function MessagePage() {
                           <div
                             className={`max-w-[85%] md:max-w-[70%] rounded-[20px] relative group overflow-hidden ${
                               isMe
-                                ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
+                                ? 'bg-primary text-white rounded-br-sm shadow-sm'
                                 : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
                             } ${
                               // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
@@ -577,7 +621,7 @@ export default function MessagePage() {
                                 {msg.caption && (
                                   <div className="px-2 pt-2 pb-0.5 flex flex-col">
                                     <p className="text-[13px] leading-relaxed break-words">{msg.caption}</p>
-                                    <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                    <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
                                       {msg.time}
                                       {isMe && <CheckCheck size={14} className="text-blue-300" />}
                                     </div>
@@ -592,18 +636,18 @@ export default function MessagePage() {
                                   className={`flex items-center gap-3 p-3 rounded-xl mb-1 border hover:opacity-80 transition-opacity cursor-pointer text-left ${isMe ? 'bg-white/20 border-white/20 group-hover:bg-white/30' : 'bg-gray-50 border-gray-100 group-hover:bg-gray-100'}`}
                                   title="Unduh File"
                                 >
-                                  <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20 text-white' : 'bg-white shadow-sm text-indigo-500'}`}>
+                                  <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20 text-white' : 'bg-white shadow-sm text-primary'}`}>
                                     <Paperclip size={18} />
                                   </div>
                                   <div className="flex flex-col flex-1 min-w-0 pr-2">
                                     <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{msg.fileName}</span>
-                                    <span className={`text-[10px] mt-0.5 ${isMe ? 'text-indigo-100' : 'text-gray-400'}`}>Klik untuk unduh dokumen</span>
+                                    <span className={`text-[10px] mt-0.5 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>Klik untuk unduh dokumen</span>
                                   </div>
                                   <Download size={18} className={`shrink-0 ${isMe ? 'text-white' : 'text-gray-400'}`} />
                                 </a>
                                 <div className="flex items-center justify-between gap-4 mt-1 px-1">
                                   {msg.caption ? <p className="text-[13px]">{msg.caption}</p> : <div />}
-                                  <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                  <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
                                     {msg.time}
                                     {isMe && <CheckCheck size={14} className="text-blue-300" />}
                                   </div>
@@ -613,7 +657,7 @@ export default function MessagePage() {
                               /* PESAN TEKS: Menggunakan flex untuk merapatkan waktu ke teks */
                               <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0">
                                 <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.text}</p>
-                                <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
                                   {msg.time}
                                   {isMe && <CheckCheck size={14} className="text-blue-300" />}
                                 </div>
@@ -642,22 +686,22 @@ export default function MessagePage() {
 
                   {/* Preview Attachment sebelum dikirim */}
                   {attachmentPreview && (
-                    <div className="mb-4 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-start justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                    <div className="mb-4 p-3 bg-primary/10 rounded-2xl border border-primary/10 flex items-start justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
                       <div className="flex items-center gap-4">
                         {attachmentPreview.type === 'image' && (
-                          <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-indigo-100" alt="preview" />
+                          <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
                         )}
                         {attachmentPreview.type === 'gif' && (
-                          <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-indigo-100" alt="preview" />
+                          <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
                         )}
                         {attachmentPreview.type === 'file' && (
-                          <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-indigo-100 flex items-center justify-center text-indigo-500">
+                          <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center text-primary">
                             <Paperclip size={24} />
                           </div>
                         )}
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
-                          <span className="text-xs text-indigo-600 mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
+                          <span className="text-xs text-primary mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
                         </div>
                       </div>
                       <button
@@ -690,7 +734,7 @@ export default function MessagePage() {
                         setShowGifPicker(!showGifPicker);
                         setShowEmojiPicker(false);
                       }}
-                      className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 font-bold text-sm ${showGifPicker ? 'text-primary bg-indigo-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
+                      className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 font-bold text-sm ${showGifPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
                       title="Kirim GIF"
                     >
                       GIF
@@ -700,12 +744,12 @@ export default function MessagePage() {
                         setShowEmojiPicker(!showEmojiPicker);
                         setShowGifPicker(false);
                       }}
-                      className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 ${showEmojiPicker ? 'text-primary bg-indigo-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
+                      className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 ${showEmojiPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
                       title="Kirim Emoji"
                     >
                       <Smile size={20} />
                     </button>
-                    <div className="flex-1 bg-[#f8f9fa] rounded-full border border-transparent focus-within:border-primary focus-within:bg-white focus-within:shadow-[0_0_0_2px_rgba(79,70,229,0.05)] transition-all flex items-center pr-2 ml-1">
+                    <div className="flex-1 bg-[#f8f9fa] rounded-full border border-transparent focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 transition-all flex items-center pr-2 ml-1">
                       <input
                         type="text"
                         placeholder={attachmentPreview ? "Tambahkan caption..." : "Tulis pesan..."}
@@ -716,7 +760,7 @@ export default function MessagePage() {
                       />
                       <button
                         className={`p-2 cursor-pointer rounded-full transition-all shrink-0 ${messageInput.trim() || attachmentPreview
-                          ? 'bg-primary text-white hover:bg-indigo-700 shadow-md shadow-indigo-200'
+                          ? 'bg-primary text-white hover:bg-primary/90 shadow-md'
                           : 'bg-gray-200 text-gray-400'
                           }`}
                         onClick={handleSendMessage}

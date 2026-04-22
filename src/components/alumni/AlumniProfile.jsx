@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Building2, ArrowRight, GraduationCap, Rocket, LineChart } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -22,32 +22,43 @@ const getStatusIcon = (status) => {
   }
 };
 
-export default function AlumniProfileCard({ alumni, onClick, onImageClick, connectionSlot = null }) {
-  const imageSrc = alumni.foto ? getImageUrl(alumni.foto) : null;
+export default function AlumniProfileCard({ alumni, onClick, onImageClick, connectionSlot = null, connectionBadgeSlot = null }) {
+  const fallbackInitial = useMemo(() => (alumni?.name?.trim?.()?.charAt(0) || 'A'), [alumni?.name]);
+  const imageSrc = useMemo(() => (alumni?.foto ? getImageUrl(alumni.foto) : null), [alumni?.foto]);
+  const [imageError, setImageError] = useState(false);
 
   // console.log(alumni)
   return (
     <motion.div
       onClick={onClick}
-      className="bg-white rounded-md flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
+      className="bg-white rounded-md flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer h-full"
     >
       {/* AREA GAMBAR */}
       <div
         className="h-56 w-full bg-white relative overflow-hidden cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
-          if (imageSrc) onImageClick(imageSrc);
+          if (imageSrc && !imageError) onImageClick(imageSrc);
         }}
       >
-        {imageSrc ? (
+        {connectionBadgeSlot ? (
+          <div className="absolute top-3 right-3 z-30">
+            {connectionBadgeSlot}
+          </div>
+        ) : null}
+
+        {imageSrc && !imageError ? (
           <img 
             src={imageSrc} 
-            alt={alumni.name} 
-            className="w-full h-full object-cover transition-transform duration-700" 
+            alt={alumni?.name || 'Foto Alumni'} 
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" 
+            onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-primary/20 bg-primary/5">
-            {alumni.name?.charAt(0) || 'A'}
+          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-primary/20 bg-primary/5 select-none">
+            {fallbackInitial}
           </div>
         )}
 
@@ -101,7 +112,7 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick, conne
                 e.stopPropagation(); 
                 onClick(); 
             }}
-            className="flex items-center gap-1.5 text-[13px] font-bold text-primary hover:text-[#2A3E3F] hover:underline transition-all cursor-pointer"
+            className="flex items-center gap-1.5 text-[13px] font-bold text-primary hover:text-primary/80 hover:underline transition-all cursor-pointer"
           >
             Lihat Profil <ArrowRight size={16} />
           </button>
