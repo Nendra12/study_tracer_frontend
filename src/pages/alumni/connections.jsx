@@ -7,6 +7,8 @@ import { useConnections } from '../../hooks/useConnections';
 import Connection from '../../components/alumni/Connection';
 import Pagination from '../../components/admin/Pagination';
 
+import ConnectionImg from '../../assets/connection.png';
+
 const TABS = [
   { key: 'my', label: 'My Connections', icon: Link2 },
   { key: 'pending', label: 'Pending', icon: UserPlus },
@@ -25,6 +27,11 @@ function getImageUrl(path) {
   if (!path) return null;
   if (String(path).startsWith('http')) return path;
   return `${STORAGE_BASE_URL}/${path}`;
+}
+
+function getAvatarFallback(name) {
+  const safeName = (name || 'A').toString().trim() || 'A';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(safeName)}&background=3C5759&color=fff&size=200`;
 }
 
 function getAlumniId(entity) {
@@ -124,7 +131,7 @@ export default function ConnectionsPage() {
   const [activeTab, setActiveTab] = useState('my');
   const [items, setItems] = useState([]);
   const [error, setError] = useState('');
-  const [pageMeta, setPageMeta] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: 10 });
+  const [pageMeta, setPageMeta] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: 12 }); // PERUBAHAN: Ubah perPage ke 12 agar genap dibagi 3 kolom
 
   const isLoading = listLoading[activeTab] || false;
 
@@ -141,7 +148,7 @@ export default function ConnectionsPage() {
       const fetcher = fetcherByTab[tabKey];
       if (!fetcher) return;
 
-      const result = await fetcher({ page, per_page: 10 });
+      const result = await fetcher({ page, per_page: 12 }); // PERUBAHAN: Gunakan per_page 12
       const mapped = (result.data || []).map((item) => mapConnectionItem(item, tabKey));
 
       setItems(mapped);
@@ -149,7 +156,7 @@ export default function ConnectionsPage() {
         currentPage: result.currentPage,
         lastPage: result.lastPage,
         total: result.total,
-        perPage: result.perPage || 10,
+        perPage: result.perPage || 12, // PERUBAHAN: Update meta perPage
       });
     } catch (err) {
       setItems([]);
@@ -189,22 +196,26 @@ export default function ConnectionsPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#f8f9fa]">
-      <section className="relative pt-24 pb-18 lg:pb-10 w-full z-30 bg-primary rounded-b-[2.5rem]">
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between gap-8">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">
+      <section className="relative pt-28 pb-20 w-full z-30 bg-primary rounded-b-[2.5rem] overflow-hidden">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="max-w-2xl">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 capitalize">
               Connections
             </h1>
             <p className="text-white/80 text-sm md:text-base font-medium leading-relaxed">
               Kelola koneksi alumni, permintaan masuk, permintaan terkirim, dan daftar block dalam satu tempat.
             </p>
           </div>
+
+          <div className="hidden lg:flex items-center justify-center opacity-80">
+            <img src={ConnectionImg} alt="connections" className="w-56 xl:w-64" />
+          </div>
         </div>
       </section>
 
       <main className="w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12">
-        <div className="bg-white p-4 md:p-6 rounded-md shadow-xl border border-slate-100 mb-6">
-          <div className="flex flex-wrap gap-2">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100 mb-8">
+          <div className="flex flex-wrap gap-3">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.key;
@@ -213,7 +224,7 @@ export default function ConnectionsPage() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors cursor-pointer ${active ? 'bg-primary text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${active ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
                 >
                   <Icon size={16} />
                   {tab.label}
@@ -224,75 +235,105 @@ export default function ConnectionsPage() {
         </div>
 
         {error ? (
-          <div className="bg-white rounded-md p-10 border border-slate-100 shadow-sm text-center">
+          <div className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm text-center">
             <AlertCircle size={44} className="text-red-400 mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-600 mb-4">{error}</p>
             <button
               onClick={() => loadTabData(activeTab, pageMeta.currentPage || 1)}
-              className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-md"
             >
               Coba Lagi
             </button>
           </div>
         ) : isLoading ? (
-          <div className="bg-white rounded-md p-12 border border-slate-100 shadow-sm flex items-center justify-center gap-2 text-slate-500">
-            <Loader2 size={18} className="animate-spin" /> Memuat data koneksi...
+          <div className="bg-white rounded-2xl p-16 border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-3 text-slate-500">
+            <Loader2 size={24} className="animate-spin text-primary" /> 
+            <span className="font-semibold text-sm">Memuat data koneksi...</span>
           </div>
         ) : items.length === 0 ? (
-          <div className="bg-white rounded-md p-12 border border-slate-100 shadow-sm text-center text-slate-500 font-medium">
+          <div className="bg-white rounded-2xl p-16 border border-slate-100 shadow-sm text-center text-slate-500 font-medium">
             {emptyMessage}
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* PERUBAHAN: Layout Grid 3 Kolom & Card Horizontal */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {items.map((item) => {
                 const image = getImageUrl(item.photo);
+                const fallbackAvatar = getAvatarFallback(item.name);
                 const isSelf = String(item.id) === String(myAlumniId);
 
                 return (
-                  <div key={`${activeTab}-${item.id}-${item.connectionId || 'none'}`} className="bg-white rounded-md border border-slate-100 shadow-sm p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                        {image ? (
-                          <img src={image} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-primary/40 font-black text-lg">
-                            {item.name?.charAt(0) || 'A'}
-                          </div>
+                  <div
+                    key={`${activeTab}-${item.id}-${item.connectionId || 'none'}`}
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-row h-[180px]" // PERUBAHAN: flex-row & h-[180px]
+                  >
+                    {/* BAGIAN KIRI: FOTO (w-[40%]) */}
+                    <div className="w-[40%] h-full shrink-0 bg-slate-100 border-r border-slate-100 overflow-hidden">
+                      <img
+                        src={image || fallbackAvatar}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          if (e.currentTarget.src !== fallbackAvatar) e.currentTarget.src = fallbackAvatar;
+                        }}
+                      />
+                    </div>
+
+                    {/* BAGIAN KANAN: DATA & ACTIONS (w-[60%]) */}
+                    <div className="w-[60%] h-full p-4 flex flex-col">
+                      {/* Info Detail */}
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-black text-primary line-clamp-1 pr-1" title={item.name}>{item.name}</h3>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 line-clamp-1">
+                          {item.major} • '{item.year.toString().slice(-2)}
+                        </p>
+                        
+                        {/* Opsional: Tampilkan role/pekerjaan hanya jika datanya ada (bukan '-') */}
+                        {item.role && item.role !== '-' && (
+                           <p className="text-xs text-slate-600 font-medium line-clamp-1 leading-snug mt-1">
+                             {item.role} {item.company && item.company !== '-' ? `di ${item.company}` : ''}
+                           </p>
                         )}
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-black text-primary truncate">{item.name}</h3>
-                        <p className="text-xs text-slate-500 font-semibold mt-1">
-                          {item.major} • Angkatan {item.year}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">
-                          {item.role} {item.company && item.company !== '-' ? `di ${item.company}` : ''}
-                        </p>
+                      {/* Status & Actions - Didorong ke bawah dengan 'mt-auto' agar tidak mepet */}
+                      <div className="mt-auto mb-3 flex flex-col gap-2.5 [&_div.badge]:!p-0 [&_div.badge]:!border-0 [&_div.badge]:!bg-transparent [&_div.actions]:!mt-0">
+                        <Connection
+                          alumniId={item.id}
+                          isSelf={isSelf}
+                          statusEntry={item.statusEntry}
+                          isLoading={isLoading}
+                          compact
+                          mode="badge"
+                        />
+                        <Connection
+                          alumniId={item.id}
+                          isSelf={isSelf}
+                          statusEntry={item.statusEntry}
+                          onConnect={(alumniId) => runAndRefresh(sendRequest, alumniId)}
+                          onAccept={(alumniId) => runAndRefresh(acceptRequest, alumniId)}
+                          onReject={(alumniId) => runAndRefresh(rejectRequest, alumniId)}
+                          onRemove={(alumniId) => runAndRefresh(removeOrCancel, alumniId)}
+                          onBlock={(alumniId) => runAndRefresh(block, alumniId)}
+                          onUnblock={(alumniId) => runAndRefresh(unblock, alumniId)}
+                          isActionLoading={isLoading}
+                          compact
+                          mode="actions"
+                        />
                       </div>
 
-                      <button
-                        onClick={() => navigate(`/alumni/daftar-alumni/${item.id}`)}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline cursor-pointer"
-                      >
-                        Profil <ArrowRight size={14} />
-                      </button>
-                    </div>
-
-                    <div className="mt-4">
-                      <Connection
-                        alumniId={item.id}
-                        isSelf={isSelf}
-                        statusEntry={item.statusEntry}
-                        onConnect={(alumniId) => runAndRefresh(sendRequest, alumniId)}
-                        onAccept={(alumniId) => runAndRefresh(acceptRequest, alumniId)}
-                        onReject={(alumniId) => runAndRefresh(rejectRequest, alumniId)}
-                        onRemove={(alumniId) => runAndRefresh(removeOrCancel, alumniId)}
-                        onBlock={(alumniId) => runAndRefresh(block, alumniId)}
-                        onUnblock={(alumniId) => runAndRefresh(unblock, alumniId)}
-                        compact
-                      />
+                      {/* Link Profil di paling bawah kanan */}
+                      <div className="pt-2 border-t border-slate-100 flex justify-end">
+                        <button
+                          onClick={() => navigate(`/alumni/daftar-alumni/${item.id}`)}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/70 transition-colors cursor-pointer"
+                        >
+                          Lihat Profil <ArrowRight size={12} strokeWidth={3} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -300,7 +341,7 @@ export default function ConnectionsPage() {
             </div>
 
             {pageMeta.lastPage > 1 && (
-              <div className="mt-6 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="mt-10 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <Pagination
                   currentPage={pageMeta.currentPage}
                   totalPages={pageMeta.lastPage}
