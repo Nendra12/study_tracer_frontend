@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Footer from "../components/alumni/Footer";
 import { useAuth } from "../context/AuthContext";
 import NavbarAlumni from "../components/alumni/NavbarAlumni";
@@ -17,6 +17,8 @@ export default function AlumniLayout() {
     foto_thumbnail: profile?.foto_thumbnail,
     can_access_all: canAccessAll,
   };
+  const location = useLocation(); 
+  const isMessage = location.pathname.includes('/alumni/pesan');
 
   // Session inactivity timeout (5 jam)
   const { showWarning, remainingSeconds, extendSession, dismissWarning } = useInactivityTimeout();
@@ -30,7 +32,9 @@ export default function AlumniLayout() {
         <Outlet /> {/* Beranda akan muncul di sini */}
       </main>
 
-      <Footer />
+      {
+        !isMessage && <Footer />
+      }
 
       {/* Session Warning Modal */}
       <SessionWarningModal

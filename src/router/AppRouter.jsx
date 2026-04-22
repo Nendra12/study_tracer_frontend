@@ -6,6 +6,8 @@ import Loader from "../components/Loaders";
 import LandingPage from "../pages/LandingPage";
 import AlumniPortal from "../pages/alumni/PortalAlumni";
 
+const PublicLowonganDetail = lazy(() => import("../pages/PublicLowonganDetail"));
+
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
@@ -43,6 +45,7 @@ const KuesionerModal = lazy(() => import("../pages/alumni/KuesionerModal"));
 const LowonganDetail = lazy(() => import("../pages/alumni/lowonganDetail"));
 const Notifikasi = lazy(() => import("../pages/alumni/Notifikasi"));
 const AlumniLayout = lazy(() => import("../layouts/AlumniLayout"));
+const Message = lazy(() => import("../pages/alumni/MessagePage"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -113,8 +116,12 @@ export default function AppRouter() {
           <Route path="kuesioner/:id" element={<KuesionerModal />} />
           <Route path="profile" element={<Profil />} />
           <Route path="notifikasi" element={<Notifikasi />} />
+          <Route path="pesan" element={<Message />} />
         </Route>
       </Route>
+
+      {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}
+      <Route path="/lowongan/:id" element={<PublicLowonganDetail />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>

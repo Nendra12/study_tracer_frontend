@@ -1,56 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import {
   MapPin, Briefcase, Clock, Calendar, Building2,
-  AlertCircle, Loader2, FileText, ArrowLeft, Share2,
-  Tag, Timer, Bookmark, Lightbulb, Eye, X
+  AlertCircle, FileText, ArrowLeft, Share2,
+  Tag, Timer, Lightbulb, Eye, X, ExternalLink, Copy, Check
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../api/axios';
-import { alumniApi } from '../../api/alumni';
-import { STORAGE_BASE_URL } from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
+import { publicApi } from '../api/alumni';
+import { STORAGE_BASE_URL } from '../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { shareLowongan } from '../../utils/share';
+import { shareLowongan } from '../utils/share';
 
-import Navbar from '../../components/alumni/Navbar';
-import { LowonganDetailSkeleton } from '../../components/alumni/skeleton';
-
-// Dummy Banner
 const bannerDefault = 'https://placehold.co/800x400?text=Lowongan+Kerja';
 
-export default function LowonganDetail() {
+export default function PublicLowonganDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user: authUser } = useAuth();
-
-  const navUser = {
-    nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
-    foto: authUser?.profile?.foto || authUser?.foto
-  };
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [savingId, setSavingId] = useState(null);
-
-  // State untuk Pratinjau Gambar
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/lowongan/${id}`);
+        const res = await publicApi.getLowonganDetail(id);
         const jobData = res.data?.data || res.data;
-
-        let isSaved = false;
-        try {
-          const savedRes = await alumniApi.getSavedLowongan({ per_page: 100 });
-          const savedList = savedRes.data?.data?.data || savedRes.data?.data || [];
-          isSaved = savedList.some(item => String(item.id_lowongan || item.lowongan?.id) === String(id));
-        } catch (e) { /* Abaikan jika error fetch saved */ }
-
-        setJob({ ...jobData, is_saved: isSaved });
+        setJob(jobData);
       } catch (err) {
         setError('Lowongan tidak ditemukan atau telah dihapus.');
       } finally {
@@ -60,35 +38,96 @@ export default function LowonganDetail() {
     if (id) fetchJob();
   }, [id]);
 
-  const handleToggleSave = async () => {
+  const handleShare = () => {
+    shareLowongan({
+      id: job.id,
+      judul: job.judul,
+      perusahaan: job.perusahaan?.nama,
+    });
+  };
+
+  const handleCopyLink = async () => {
     try {
-      setSavingId(job.id);
-      await alumniApi.toggleSaveLowongan(job.id);
-      setJob(prev => ({ ...prev, is_saved: !prev.is_saved }));
-    } catch (err) {
-      console.error('Toggle save failed:', err);
-    } finally {
-      setSavingId(null);
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = window.location.href;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
+  // --- LOADING ---
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
-        <LowonganDetailSkeleton />
+        {/* Minimal Navbar */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-7 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary/10 rounded-xl animate-pulse" />
+              <div className="w-32 h-4 bg-slate-200 rounded animate-pulse" />
+            </div>
+          </div>
+        </nav>
+        <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-7 pt-28 pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div className="lg:col-span-8 space-y-6">
+              <div className="bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden">
+                <div className="w-full h-55 md:h-70 bg-slate-100 animate-pulse" />
+                <div className="p-6 md:p-8 space-y-4">
+                  <div className="w-48 h-4 bg-slate-200 rounded animate-pulse" />
+                  <div className="w-full h-8 bg-slate-200 rounded animate-pulse" />
+                  <div className="w-32 h-6 bg-slate-100 rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-4">
+              <div className="bg-white rounded-md p-6 border border-slate-100 shadow-sm space-y-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex gap-3">
+                    <div className="w-10 h-10 bg-slate-100 rounded-xl animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="w-16 h-3 bg-slate-100 rounded animate-pulse" />
+                      <div className="w-32 h-4 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
+  // --- ERROR ---
   if (error || !job) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-7 h-16 flex items-center">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold transition-colors cursor-pointer group">
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+              Kembali ke Beranda
+            </button>
+          </div>
+        </nav>
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <AlertCircle size={56} className="text-primary/30" />
           <h2 className="text-xl font-black text-primary">Lowongan Tidak Tersedia</h2>
           <p className="text-sm font-medium text-slate-500">{error || 'Data lowongan mungkin telah dihapus.'}</p>
-          <button onClick={() => navigate('/lowongan')} className="mt-4 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-md hover:bg-[#2c4042] transition-all cursor-pointer">
-            Kembali ke Bursa Kerja
+          <button onClick={() => navigate('/')} className="mt-4 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-md hover:bg-[#2c4042] transition-all cursor-pointer">
+            Kembali ke Beranda
           </button>
         </div>
       </div>
@@ -101,27 +140,53 @@ export default function LowonganDetail() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20">
+      {/* Minimal Public Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-7 h-16 flex items-center justify-between">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold transition-colors cursor-pointer group">
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            Beranda
+          </button>
+          <div className="flex items-center gap-2">
+            {/* Copy Link Button */}
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer"
+              title="Salin Link"
+            >
+              {copied ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
+              <span className="hidden sm:inline">{copied ? 'Tersalin!' : 'Salin Link'}</span>
+            </button>
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-[#2c4042] transition-all cursor-pointer shadow-sm"
+              title="Bagikan Lowongan"
+            >
+              <Share2 size={15} />
+              <span className="hidden sm:inline">Bagikan</span>
+            </button>
+            {/* Login CTA */}
+            <button
+              onClick={() => navigate('/login')}
+              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-primary text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
+            >
+              <ExternalLink size={15} />
+              <span className="hidden sm:inline">Masuk</span>
+            </button>
+          </div>
+        </div>
+      </nav>
 
-      <main className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-7 xl:px-0 pt-28 pb-20">
-
-        {/* Tombol Kembali */}
-        <button
-          onClick={() => navigate('/alumni/lowongan')}
-          className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold mb-6 transition-colors cursor-pointer w-fit group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Kembali
-        </button>
-
+      <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-7 xl:px-0 pt-28 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
 
           {/* --- KONTEN KIRI (Header & Deskripsi) --- */}
           <div className="lg:col-span-8 space-y-6">
 
-            {/* AREA HEADER BARU */}
+            {/* AREA HEADER */}
             <div className="bg-white rounded-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
-
-              {/* --- BAGIAN POSTER HEADER (Bisa Diklik Untuk Pratinjau) --- */}
+              {/* Poster */}
               <div
                 onClick={() => setShowPreviewModal(true)}
                 className="w-full h-55 md:h-70 bg-slate-50 flex items-center justify-center border-b border-slate-100 relative overflow-hidden cursor-pointer"
@@ -130,18 +195,15 @@ export default function LowonganDetail() {
                 <img
                   src={fotoUrl}
                   alt={job.judul}
-                  // object-cover object-center akan membuat gambar memotong pas di tengah tanpa ada area kosong
                   className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                   onError={(e) => { e.target.src = bannerDefault; }}
                 />
-                {/* Gradient overlay opsional agar perpindahan ke area putih di bawahnya lebih mulus */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
               </div>
 
               {/* Box Info Utama */}
               <div className="p-6 md:p-8 relative bg-white">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 mb-5">
-
                   {/* Perusahaan & Lokasi */}
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center border border-primary/10 shrink-0">
@@ -157,33 +219,14 @@ export default function LowonganDetail() {
                     </div>
                   </div>
 
-                  {/* Tombol Aksi: Share, Simpan & Pratinjau */}
+                  {/* Tombol Aksi: Share & Pratinjau */}
                   <div className="flex items-center gap-3 sm:flex-col lg:flex-row shrink-0 mt-2 sm:mt-0">
                     <button
-                      onClick={() => shareLowongan({
-                        id: job.id,
-                        judul: job.judul,
-                        perusahaan: job.perusahaan?.nama,
-                      })}
+                      onClick={handleShare}
                       className="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer"
                       title="Bagikan Lowongan"
                     >
                       <Share2 size={20} />
-                    </button>
-                    <button
-                      onClick={handleToggleSave}
-                      disabled={savingId === job.id}
-                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all shrink-0 cursor-pointer ${job.is_saved
-                          ? 'bg-primary/10 border-primary/20 text-primary'
-                          : 'bg-white border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50'
-                        } ${savingId === job.id ? 'opacity-80 cursor-not-allowed' : ''}`}
-                      title={job.is_saved ? "Hapus dari Tersimpan" : "Simpan Lowongan"}
-                    >
-                      <Bookmark
-                        size={20}
-                        fill={job.is_saved ? 'currentColor' : 'none'}
-                        className={`transition-all ${savingId === job.id ? 'animate-pulse scale-110 text-primary' : ''}`}
-                      />
                     </button>
                     <button
                       onClick={() => setShowPreviewModal(true)}
@@ -227,6 +270,23 @@ export default function LowonganDetail() {
               </div>
             </div>
 
+            {/* CTA: Login untuk melamar */}
+            <div className="bg-gradient-to-r from-primary to-[#2c4042] rounded-md p-6 md:p-8 text-white shadow-xl shadow-primary/10">
+              <div className="flex flex-col sm:flex-row items-center gap-5">
+                <div className="flex-1">
+                  <h3 className="font-black text-lg mb-1">Tertarik dengan lowongan ini?</h3>
+                  <p className="text-white/80 text-sm font-medium">
+                    Masuk ke portal alumni untuk menyimpan lowongan, melihat lebih banyak peluang kerja, dan melamar langsung.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-6 py-3 bg-white text-primary font-bold text-sm rounded-xl hover:bg-slate-50 transition-all cursor-pointer shadow-lg shrink-0"
+                >
+                  Masuk Sekarang
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* --- KONTEN KANAN (Sidebar Ringkasan) --- */}
@@ -277,10 +337,35 @@ export default function LowonganDetail() {
                 )}
               </div>
 
+              {/* Share Card */}
+              <div className="bg-white rounded-md p-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <h3 className="font-black text-primary uppercase tracking-widest text-[11px] mb-4">
+                  Bagikan Lowongan
+                </h3>
+                <p className="text-slate-500 text-xs font-medium mb-4">
+                  Bantu teman atau rekan Anda menemukan peluang karir ini.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopyLink}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
+                  >
+                    {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    {copied ? 'Tersalin!' : 'Salin Link'}
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-[#2c4042] transition-all cursor-pointer"
+                  >
+                    <Share2 size={14} />
+                    Bagikan
+                  </button>
+                </div>
+              </div>
+
               {/* TIPS MELAMAR */}
               <div className="bg-primary rounded-md p-7 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
                 <div className="relative z-10 space-y-4">
-
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 text-amber-300 shadow-sm">
                       <Lightbulb size={20} />
@@ -302,12 +387,10 @@ export default function LowonganDetail() {
                       <span>Segera daftar sebelum <strong>batas waktu pendaftaran</strong> ditutup.</span>
                     </li>
                   </ul>
-
                 </div>
 
-                {/* Hiasan Lingkaran Background */}
-                <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
-                <div className="absolute -left-8 -top-8 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+                <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute -left-8 -top-8 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
               </div>
 
             </div>
@@ -331,18 +414,15 @@ export default function LowonganDetail() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()} // Mencegah modal tutup saat gambar diklik
+              onClick={(e) => e.stopPropagation()}
               className="relative max-w-4xl w-auto max-h-[90vh] bg-white rounded-md overflow-hidden shadow-2xl p-2 flex flex-col items-center justify-center min-h-75"
             >
-              {/* Tombol Tutup Modal */}
               <button
                 onClick={() => setShowPreviewModal(false)}
                 className="absolute top-4 right-4 z-10 bg-white/90 p-2.5 rounded-full shadow-lg text-primary hover:bg-white transition-all cursor-pointer backdrop-blur-md border border-slate-100"
               >
                 <X size={20} />
               </button>
-
-              {/* Gambar Poster Penuh (Tidak terpotong sama sekali) */}
               <div className="w-full h-full overflow-y-auto rounded-xl custom-scrollbar flex items-center justify-center bg-slate-50">
                 <img
                   src={fotoUrl}
@@ -355,7 +435,6 @@ export default function LowonganDetail() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
