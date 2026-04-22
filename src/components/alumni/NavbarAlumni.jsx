@@ -7,6 +7,7 @@ import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { alertConfirm } from '../../utilitis/alert';
+import { useConnections } from '../../hooks/useConnections';
 
 import Icon from "../../assets/icon.png"
 
@@ -20,6 +21,7 @@ export default function NavbarAlumni({ user }) {
   const location = useLocation();
   const { theme } = useThemeSettings();
   const { logout } = useAuth();
+  const { pendingCount, refreshPendingCount } = useConnections();
 
   const canAccessAll = user?.can_access_all ?? false;
 
@@ -61,13 +63,23 @@ export default function NavbarAlumni({ user }) {
   useEffect(() => {
     const handleRealtimeNotification = () => {
       setUnreadCount((prev) => prev + 1);
+      refreshPendingCount();
     };
 
     window.addEventListener('reverb:notification.received', handleRealtimeNotification);
     return () => {
       window.removeEventListener('reverb:notification.received', handleRealtimeNotification);
     };
-  }, []);
+  }, [refreshPendingCount]);
+
+  useEffect(() => {
+    refreshPendingCount();
+    const interval = setInterval(() => {
+      refreshPendingCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refreshPendingCount]);
 
   const fetchUnreadCount = async () => {
     try {
@@ -94,6 +106,7 @@ export default function NavbarAlumni({ user }) {
     { name: 'Beranda', path: '/alumni', locked: false },
     { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false },
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
+    { name: 'Connections', path: '/alumni/connections', locked: !canAccessAll, badge: pendingCount },
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
   ];
 
@@ -176,12 +189,17 @@ export default function NavbarAlumni({ user }) {
                 <Link
                   key={i}
                   to={item.path}
-                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
+                  className={`relative px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
                     ? 'bg-white text-primary shadow-sm'
                     : 'text-third hover:text-primary'
                     }`}
                 >
                   {item.name}
+                  {item.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-black border-2 border-white">
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -344,9 +362,14 @@ export default function NavbarAlumni({ user }) {
                         <Link
                           to={item.path}
                           onClick={() => setIsOpen(false)}
-                          className={`block px-5 py-2.5 rounded-xl text-[15px] font-bold transition-all ${isActive ? 'bg-primary text-white shadow-sm' : 'text-primary/80 hover:bg-gray-50 hover:text-primary'}`}
+                          className={`relative block px-5 py-2.5 rounded-xl text-[15px] font-bold transition-all ${isActive ? 'bg-primary text-white shadow-sm' : 'text-primary/80 hover:bg-gray-50 hover:text-primary'}`}
                         >
                           {item.name}
+                          {item.badge > 0 && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-black">
+                              {item.badge > 99 ? '99+' : item.badge}
+                            </span>
+                          )}
                         </Link>
                       </motion.div>
                     );

@@ -109,6 +109,14 @@ export function useConnections() {
   const [loadingStatusMap, setLoadingStatusMap] = useState({});
   const [actionLoadingMap, setActionLoadingMap] = useState({});
   const [trackedIds, setTrackedIds] = useState([]);
+  const [listLoading, setListLoading] = useState({
+    my: false,
+    pending: false,
+    sent: false,
+    blocked: false,
+  });
+
+  const [pendingCount, setPendingCount] = useState(0);
 
   const setStatusEntry = useCallback((alumniId, entry) => {
     if (!alumniId) return;
@@ -258,11 +266,73 @@ export function useConnections() {
     return () => window.removeEventListener('reverb:notification.received', onNotification);
   }, [fetchStatuses, trackedIds]);
 
+  const normalizeListResponse = useCallback((response) => {
+    const payload = getPayload(response);
+    const rows = toArray(payload);
+
+    return {
+      data: rows,
+      currentPage: Number(payload?.current_page || payload?.meta?.current_page || 1),
+      lastPage: Number(payload?.last_page || payload?.meta?.last_page || 1),
+      total: Number(payload?.total || payload?.meta?.total || rows.length || 0),
+      perPage: Number(payload?.per_page || payload?.meta?.per_page || rows.length || 0),
+    };
+  }, []);
+
+  const fetchMyConnections = useCallback(async (params = {}) => {
+    setListLoading((prev) => ({ ...prev, my: true }));
+    try {
+      const response = await alumniApi.getMyConnections(params);
+      return normalizeListResponse(response);
+    } finally {
+      setListLoading((prev) => ({ ...prev, my: false }));
+    }
+  }, [normalizeListResponse]);
+
+  const fetchPendingRequests = useCallback(async (params = {}) => {
+    setListLoading((prev) => ({ ...prev, pending: true }));
+    try {
+      const response = await alumniApi.getPendingConnectionRequests(params);
+      const normalized = normalizeListResponse(response);
+      setPendingCount(normalized.total);
+      return normalized;
+    } finally {
+      setListLoading((prev) => ({ ...prev, pending: false }));
+    }
+  }, [normalizeListResponse]);
+
+  const fetchSentRequests = useCallback(async (params = {}) => {
+    setListLoading((prev) => ({ ...prev, sent: true }));
+    try {
+      const response = await alumniApi.getSentConnectionRequests(params);
+      return normalizeListResponse(response);
+    } finally {
+      setListLoading((prev) => ({ ...prev, sent: false }));
+    }
+  }, [normalizeListResponse]);
+
+  const fetchBlockedUsers = useCallback(async (params = {}) => {
+    setListLoading((prev) => ({ ...prev, blocked: true }));
+    try {
+      const response = await alumniApi.getBlockedAlumni(params);
+      return normalizeListResponse(response);
+    } finally {
+      setListLoading((prev) => ({ ...prev, blocked: false }));
+    }
+  }, [normalizeListResponse]);
+
+  const refreshPendingCount = useCallback(async () => {
+    const normalized = await fetchPendingRequests({ page: 1, per_page: 1 });
+    return normalized.total;
+  }, [fetchPendingRequests]);
+
   const api = useMemo(() => ({
     STATUS,
     statusMap,
     loadingStatusMap,
     actionLoadingMap,
+    listLoading,
+    pendingCount,
     fetchStatus,
     fetchStatuses,
     registerAlumniIds,
@@ -272,10 +342,17 @@ export function useConnections() {
     removeOrCancel,
     block,
     unblock,
+    fetchMyConnections,
+    fetchPendingRequests,
+    fetchSentRequests,
+    fetchBlockedUsers,
+    refreshPendingCount,
   }), [
     statusMap,
     loadingStatusMap,
     actionLoadingMap,
+    listLoading,
+    pendingCount,
     fetchStatus,
     fetchStatuses,
     registerAlumniIds,
@@ -285,6 +362,11 @@ export function useConnections() {
     removeOrCancel,
     block,
     unblock,
+    fetchMyConnections,
+    fetchPendingRequests,
+    fetchSentRequests,
+    fetchBlockedUsers,
+    refreshPendingCount,
   ]);
 
   return api;

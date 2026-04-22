@@ -89,9 +89,9 @@ export default function Alumni() {
       setLoading(true);
       setError(null);
 
-      const hasAngkatanFilter = selectedTahun && selectedTahun !== 'Semua Angkatan';
+      const hasAngkatanFilter = Boolean(selectedTahun && selectedTahun !== 'Semua Angkatan');
 
-      const params = { page, per_page: hasAngkatanFilter ? 100 : 8 };
+      const params = { page, per_page: 12 };
       if (searchQuery.trim()) params.search = searchQuery.trim();
       
       // Tidak mengirim param tahun ke backend karena backend tidak support filter angkatan
@@ -110,8 +110,8 @@ export default function Alumni() {
         }
 
         setAlumniData(items);
-        setTotalPages(hasAngkatanFilter ? 1 : (responseData.last_page || 1));
-        setCurrentPage(hasAngkatanFilter ? 1 : (responseData.current_page || 1));
+        setTotalPages(responseData.last_page || 1);
+        setCurrentPage(responseData.current_page || 1);
       } else if (Array.isArray(responseData)) {
         let items = responseData;
         if (hasAngkatanFilter) {
@@ -119,8 +119,11 @@ export default function Alumni() {
         }
         setAlumniData(items);
         setTotalPages(1);
+        setCurrentPage(1);
       } else {
         setAlumniData([]);
+        setTotalPages(1);
+        setCurrentPage(1);
       }
     } catch (err) {
       console.error('Failed to load alumni directory:', err);
