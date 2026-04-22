@@ -6,6 +6,8 @@ import Loader from "../components/Loaders";
 import LandingPage from "../pages/LandingPage";
 import AlumniPortal from "../pages/alumni/PortalAlumni";
 
+const PublicLowonganDetail = lazy(() => import("../pages/PublicLowonganDetail"));
+
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
@@ -117,6 +119,9 @@ export default function AppRouter() {
           <Route path="pesan" element={<Message />} />
         </Route>
       </Route>
+
+      {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}
+      <Route path="/lowongan/:id" element={<PublicLowonganDetail />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
