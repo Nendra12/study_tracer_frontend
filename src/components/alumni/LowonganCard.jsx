@@ -74,7 +74,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
 
           {skillMatchCount > 0 && (
             <div className="absolute top-3 left-3 z-20">
-              <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-300/100 to-green-400/80 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-md shadow-green-500/40">
+              <span className="flex items-center gap-1.5 bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-sm">
                 <Sparkles size={11} strokeWidth={3} /> Sesuai Skill
               </span>
             </div>
