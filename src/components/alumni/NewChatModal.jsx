@@ -18,14 +18,14 @@ export default function NewChatModal({ isOpen, onClose, onSelectContact }) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-80 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-800">Pesan Baru</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
           >
             <X size={20} />
           </button>
@@ -40,14 +40,14 @@ export default function NewChatModal({ isOpen, onClose, onSelectContact }) {
               placeholder="Cari nama, peran..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 border-none text-sm rounded-full py-2.5 pl-11 pr-4 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+              className="w-full bg-gray-50 border-none text-sm rounded-md py-2.5 pl-11 pr-4 focus:ring-2 focus:ring-primary transition-all outline-none"
             />
           </div>
         </div>
 
         {/* Contact List */}
         <div className="p-2 overflow-y-auto max-h-[60vh]">
-          <h3 className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Saran Kontak</h3>
+          <h3 className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Saran Koneksi Alumni</h3>
           
           {filteredContacts.length > 0 ? (
             <div className="space-y-1 mt-1">
@@ -68,7 +68,7 @@ export default function NewChatModal({ isOpen, onClose, onSelectContact }) {
           ) : (
             <div className="py-8 text-center flex flex-col items-center justify-center text-gray-400">
               <User size={32} className="mb-2 opacity-20" />
-              <p className="text-sm">Tidak ada kontak ditemukan</p>
+              <p className="text-sm">Tidak ada koneksi alumni yang ditemukan</p>
             </div>
           )}
         </div>
