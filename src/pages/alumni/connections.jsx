@@ -173,6 +173,13 @@ export default function ConnectionsPage() {
 
   const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
 
+  const runAndRefresh = useCallback(async (handler, alumniId) => {
+    if (!handler) return;
+    await handler(alumniId);
+    await loadTabData(activeTab, pageMeta.currentPage || 1);
+    await refreshPendingCount();
+  }, [activeTab, loadTabData, pageMeta.currentPage, refreshPendingCount]);
+
   const emptyMessage = {
     my: 'Belum ada koneksi diterima.',
     pending: 'Belum ada permintaan masuk.',
@@ -278,12 +285,12 @@ export default function ConnectionsPage() {
                         alumniId={item.id}
                         isSelf={isSelf}
                         statusEntry={item.statusEntry}
-                        onConnect={sendRequest}
-                        onAccept={acceptRequest}
-                        onReject={rejectRequest}
-                        onRemove={removeOrCancel}
-                        onBlock={block}
-                        onUnblock={unblock}
+                        onConnect={(alumniId) => runAndRefresh(sendRequest, alumniId)}
+                        onAccept={(alumniId) => runAndRefresh(acceptRequest, alumniId)}
+                        onReject={(alumniId) => runAndRefresh(rejectRequest, alumniId)}
+                        onRemove={(alumniId) => runAndRefresh(removeOrCancel, alumniId)}
+                        onBlock={(alumniId) => runAndRefresh(block, alumniId)}
+                        onUnblock={(alumniId) => runAndRefresh(unblock, alumniId)}
                         compact
                       />
                     </div>
