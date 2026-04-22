@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, AlertCircle, Users, GraduationCap } from 'lucide-react';
+import { Search, X, AlertCircle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,16 +8,33 @@ import { useAuth } from '../../context/AuthContext';
 import Pagination from '../../components/admin/Pagination';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import AlumniProfileCard from '../../components/alumni/AlumniProfile';
+import Connection from '../../components/alumni/Connection';
 import { AlumniSkeleton } from '../../components/alumni/skeleton';
 
 import AlumniImg from '../../assets/svg/people-who-support-svgrepo-com.svg'
 
 // API
 import { alumniApi } from '../../api/alumni';
+import { useConnections } from '../../hooks/useConnections';
+
+const getAlumniId = (entity) => entity?.id || entity?.id_alumni || entity?.alumni_id || null;
 
 export default function Alumni() {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
+  const {
+    statusMap,
+    loadingStatusMap,
+    actionLoadingMap,
+    fetchStatuses,
+    registerAlumniIds,
+    sendRequest,
+    acceptRequest,
+    rejectRequest,
+    removeOrCancel,
+    block,
+    unblock,
+  } = useConnections();
 
   // Data state
   const [alumniData, setAlumniData] = useState([]);
@@ -117,6 +134,18 @@ export default function Alumni() {
   useEffect(() => {
     fetchAlumni(1);
   }, [fetchAlumni]);
+
+  // Sync status koneksi pada alumni yang tampil di grid.
+  useEffect(() => {
+    const ids = alumniData
+      .map((item) => getAlumniId(item))
+      .filter((id) => id !== null && id !== undefined);
+
+    if (ids.length === 0) return;
+
+    registerAlumniIds(ids);
+    fetchStatuses(ids);
+  }, [alumniData, fetchStatuses, registerAlumniIds]);
 
   // Lock scroll when image modal is open
   useEffect(() => {
@@ -242,14 +271,36 @@ export default function Alumni() {
           <>
             {/* ALUMNI CARDS GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {alumniData.map((alumni) => (
+              {alumniData.map((alumni) => {
+                const alumniId = getAlumniId(alumni);
+                const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
+                const isSelf = String(alumniId) === String(myAlumniId);
+
+                return (
                 <AlumniProfileCard 
-                  key={alumni.id} 
+                  key={alumniId || alumni.id} 
                   alumni={alumni} 
-                  onClick={() => navigate(`/alumni/daftar-alumni/${alumni.id}`, { state: { alumni } })}
+                  onClick={() => navigate(`/alumni/daftar-alumni/${alumniId || alumni.id}`, { state: { alumni } })}
                   onImageClick={(src) => setSelectedImage(src)}
+                  connectionSlot={(
+                    <Connection
+                      alumniId={alumniId}
+                      isSelf={isSelf}
+                      statusEntry={statusMap[String(alumniId)]}
+                      isLoading={loadingStatusMap[String(alumniId)]}
+                      isActionLoading={actionLoadingMap[String(alumniId)]}
+                      onConnect={sendRequest}
+                      onAccept={acceptRequest}
+                      onReject={rejectRequest}
+                      onRemove={removeOrCancel}
+                      onBlock={block}
+                      onUnblock={unblock}
+                      compact
+                    />
+                  )}
                 />
-              ))}
+                );
+              })}
             </div>
 
             {/* --- PAGINATION --- */}

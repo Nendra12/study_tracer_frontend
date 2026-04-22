@@ -22,7 +22,7 @@ const getStatusIcon = (status) => {
   }
 };
 
-export default function AlumniProfileCard({ alumni, onClick, onImageClick }) {
+export default function AlumniProfileCard({ alumni, onClick, onImageClick, connectionSlot = null }) {
   const imageSrc = alumni.foto ? getImageUrl(alumni.foto) : null;
 
   // console.log(alumni)
@@ -88,8 +88,14 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick }) {
           </div>
         </div>
 
+        {connectionSlot ? (
+          <div className="mb-4 pb-4 border-b border-primary/10">
+            {connectionSlot}
+          </div>
+        ) : null}
+
         {/* Tombol Lihat Profil */}
-        <div className="mt-auto pt-4 border-t border-primary/10 flex items-center justify-end">
+        <div className="mt-auto pt-2 flex items-center justify-end">
           <button
             onClick={(e) => { 
                 e.stopPropagation(); 
