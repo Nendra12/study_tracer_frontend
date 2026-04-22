@@ -153,10 +153,9 @@ export default function Login() {
           <div className="relative z-10">
             <Link
               to="/"
-              className="group inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-primary transition-all duration-300 bg-white/90 backdrop-blur-md rounded-xl shadow-md hover:bg-primary hover:text-white"
+              className="absolute top-0 left-0 inline-flex items-center justify-center p-2 text-slate-500 rounded-full bg-white hover:text-slate-900 transition-colors duration-200"
             >
-              <ArrowLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" />
-              <span>Kembali Ke Landing</span>
+              <ArrowLeft size={20} className="transition-transform duration-300 group-hover:-translate-x-1" />
             </Link>
           </div>
 
@@ -178,12 +177,12 @@ export default function Login() {
         {/* Bagian Kanan: Form Login */}
         {/* PERUBAHAN: Mengurangi padding vertikal (lg:py-4) agar lebih memadat ke atas */}
         <div className="w-full lg:w-1/2 px-4 py-10 sm:p-8 lg:px-8 lg:py-4 xl:py-6 flex flex-col justify-center bg-white shadow-md">
-          <div className="max-w-md mx-auto w-full">
+          <div className="max-w-md  mx-auto w-full">
 
             {/* Header Mobile */}
 
 
-            <div className="flex items-center gap-2.5 mb-4 hidden">
+            <div className="flex items-center gap-2.5 mb-5 hidden">
               <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
                 <img src={theme?.logo || DefaultLogo} alt="logo" className="w-8 h-8 object-contain" />
               </div>
