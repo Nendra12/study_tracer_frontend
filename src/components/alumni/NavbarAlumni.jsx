@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle, UserPen } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle, UserPen, MessageSquareMore } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { alumniApi } from '../../api/alumni';
 import { useThemeSettings } from '../../context/ThemeContext';
@@ -95,6 +95,7 @@ export default function NavbarAlumni({ user }) {
     { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false },
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
+    { name: 'Pesan', path: '/alumni/pesan', locked: !canAccessAll },
   ];
 
   // --- LOGIKA WARNA DAN UKURAN DIPISAH ---
@@ -104,9 +105,10 @@ export default function NavbarAlumni({ user }) {
   const isKuesionerPage = location.pathname.includes('/alumni/kuesioner');
   const isPengumumanDetail = location.pathname.startsWith('/alumni/pengumuman/') && location.pathname !== '/alumni/pengumuman';
   const isLowonganDetail = location.pathname.startsWith('/alumni/lowongan/') && location.pathname !== '/alumni/lowongan';
+  const isPesan = location.pathname.includes('/alumni/pesan');
 
   // 2. Logika Warna Teks & Ikon (Gunakan warna Primary/Gelap saat halaman di-scroll ATAU di halaman dengan background terang)
-  const isSolidMode = scrolled || isProfilePage || isKuesionerPage || isPengumumanDetail || isLowonganDetail;
+  const isSolidMode = scrolled || isProfilePage || isKuesionerPage || isPengumumanDetail || isLowonganDetail || isPesan;
 
   // 3. Logika Background Navbar (Gunakan background putih hanya saat discroll atau di profil/kuesioner)
   // Untuk pengumuman detail, biarkan transparan (sesuai permintaan "hanya warna text nya saja")
@@ -177,8 +179,8 @@ export default function NavbarAlumni({ user }) {
                   key={i}
                   to={item.path}
                   className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-third hover:text-primary'
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-third hover:text-primary"
                     }`}
                 >
                   {item.name}
@@ -191,6 +193,20 @@ export default function NavbarAlumni({ user }) {
           <div className="flex items-center gap-3">
             {/* Desktop Actions */}
             <div className="hidden xl:flex items-center gap-2">
+              <button
+                onClick={() => navigate('/alumni/pesan')}
+                className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
+              >
+                <MessageSquareMore size={20} />
+                <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
+                  10
+                </span>
+                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                    10 Pesan Baru
+                  </div>
+                </div>
+              </button>
               <button
                 onClick={() => navigate('/alumni/notifikasi')}
                 className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
