@@ -116,6 +116,71 @@ export const alumniApi = {
     return api.get(`/alumni/directory/${id}`);
   },
 
+  // Alumni Connections (mutual connection + block)
+  sendConnectionRequest(alumniId) {
+    return api.post(`/alumni/connections/${alumniId}/request`);
+  },
+
+  acceptConnectionRequest(connectionId) {
+    return api.post(`/alumni/connections/${connectionId}/accept`);
+  },
+
+  rejectConnectionRequest(connectionId) {
+    return api.post(`/alumni/connections/${connectionId}/reject`);
+  },
+
+  removeConnectionOrCancelRequest(alumniId) {
+    return api.delete(`/alumni/connections/${alumniId}`);
+  },
+
+  getMyConnections(params = {}) {
+    return api.get('/alumni/connections', { params });
+  },
+
+  getPendingConnectionRequests(params = {}) {
+    return api.get('/alumni/connections/pending', { params });
+  },
+
+  getSentConnectionRequests(params = {}) {
+    return api.get('/alumni/connections/sent', { params });
+  },
+
+  getAlumniConnections(alumniId, params = {}) {
+    return api.get(`/alumni/connections/${alumniId}/connections`, { params });
+  },
+
+  getMyConnectionStats() {
+    return api.get('/alumni/connections/stats');
+  },
+
+  getAlumniConnectionStats(alumniId) {
+    return api.get(`/alumni/connections/${alumniId}/stats`);
+  },
+
+  getConnectionStatus(alumniId) {
+    return api.get(`/alumni/connections/${alumniId}/status`);
+  },
+
+  getMutualConnections(alumniId, params = {}) {
+    return api.get(`/alumni/connections/mutual/${alumniId}`, { params });
+  },
+
+  getConnectionSuggestions(params = {}) {
+    return api.get('/alumni/connections/suggestions', { params });
+  },
+
+  blockAlumni(alumniId) {
+    return api.post(`/alumni/connections/${alumniId}/block`);
+  },
+
+  unblockAlumni(alumniId) {
+    return api.delete(`/alumni/connections/${alumniId}/block`);
+  },
+
+  getBlockedAlumni(params = {}) {
+    return api.get('/alumni/connections/blocked', { params });
+  },
+
   // Deskripsi Karier
   addDeskripsiKarier(data) {
     return api.post('/alumni/deskripsi-karier', data);

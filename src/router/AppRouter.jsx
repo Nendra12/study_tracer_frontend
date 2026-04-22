@@ -36,6 +36,7 @@ const PengumumanAlumni = lazy(() => import("../pages/alumni/pengumuman"));
 const PengumumanDetailAlumni = lazy(() => import("../pages/alumni/pengumumanDetail"));
 const Alumni = lazy(() => import("../pages/alumni/alumni"));
 const AlumniDetail = lazy(() => import("../pages/alumni/alumniDetail"));
+const Connections = lazy(() => import("../pages/alumni/connections"));
 const Lowongan = lazy(() => import("../pages/alumni/lowongan"));
 const Profil = lazy(() => import("../pages/alumni/profil"));
 const KuesionerModal = lazy(() => import("../pages/alumni/KuesionerModal"));
@@ -106,6 +107,7 @@ export default function AppRouter() {
           <Route path="pengumuman/:id" element={<PengumumanDetailAlumni />} />
           <Route path="daftar-alumni" element={<Alumni />} />
           <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
+          <Route path="connections" element={<Connections />} />
           <Route path="lowongan" element={<Lowongan />} />
           <Route path="lowongan/:id" element={<LowonganDetail />} />
           <Route path="kuesioner/:id" element={<KuesionerModal />} />
