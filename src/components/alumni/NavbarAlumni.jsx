@@ -108,7 +108,6 @@ export default function NavbarAlumni({ user }) {
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
     { name: 'Connections', path: '/alumni/connections', locked: !canAccessAll, badge: pendingCount },
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
-    { name: 'Pesan', path: '/alumni/pesan', locked: !canAccessAll },
   ];
 
   // --- LOGIKA WARNA DAN UKURAN DIPISAH ---

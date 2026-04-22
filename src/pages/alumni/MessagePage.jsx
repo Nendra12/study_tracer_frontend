@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download } from 'lucide-react';
+import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
@@ -74,6 +74,8 @@ export default function MessagePage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all');
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -166,11 +168,18 @@ export default function MessagePage() {
   };
 
   const handleSendGif = (url) => {
-    setAttachmentPreview({
+    const newGifMessage = {
+      id: Date.now(),
       type: 'gif',
+      text: undefined,
+      caption: undefined,
       fileName: 'GIF dari Tenor',
       url: url,
-    });
+      sender: 'me',
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    pushMessage(newGifMessage, '🎬 Mengirim GIF');
     setShowGifPicker(false);
   };
 
@@ -187,6 +196,43 @@ export default function MessagePage() {
     e.stopPropagation();
     setContacts(contacts.map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c));
     toast.success('Status favorit diperbarui!');
+  };
+
+  const handleToggleSelect = (contactId) => {
+    if (selectedContacts.includes(contactId)) {
+      setSelectedContacts(selectedContacts.filter(id => id !== contactId));
+    } else {
+      setSelectedContacts([...selectedContacts, contactId]);
+    }
+  };
+
+  const allSelectedArchived = selectedContacts.length > 0 && selectedContacts.every(id => contacts.find(c => c.id === id)?.isArchived);
+  const allSelectedFavorited = selectedContacts.length > 0 && selectedContacts.every(id => contacts.find(c => c.id === id)?.isFavorite);
+
+  const handleBulkArchive = () => {
+    setContacts(contacts.map(c => selectedContacts.includes(c.id) ? { ...c, isArchived: !allSelectedArchived } : c));
+    toast.success(`${selectedContacts.length} obrolan ${allSelectedArchived ? 'batal diarsipkan' : 'diarsipkan'}`);
+    setIsSelectionMode(false);
+    setSelectedContacts([]);
+  };
+
+  const handleBulkFavorite = () => {
+    setContacts(contacts.map(c => selectedContacts.includes(c.id) ? { ...c, isFavorite: !allSelectedFavorited } : c));
+    toast.success(`${selectedContacts.length} obrolan ${allSelectedFavorited ? 'dihapus dari favorit' : 'ditambahkan ke favorit'}`);
+    setIsSelectionMode(false);
+    setSelectedContacts([]);
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Hapus ${selectedContacts.length} obrolan? (Tindakan ini permanen)`)) {
+      setContacts(contacts.filter(c => !selectedContacts.includes(c.id)));
+      toast.success(`${selectedContacts.length} obrolan dihapus`);
+      if (selectedContacts.includes(activeChat?.id)) {
+         setActiveChat(null);
+      }
+      setIsSelectionMode(false);
+      setSelectedContacts([]);
+    }
   };
 
   const getRoleIcon = (type) => {
@@ -264,7 +310,7 @@ export default function MessagePage() {
         <div className="flex-1 min-h-0 flex bg-white md:rounded-2xl md:shadow-xl md:border md:border-gray-100 overflow-hidden">
 
           {/* KIRI: List Kontak */}
-          <div className={`w-full md:w-80 lg:w-[400px] flex-col border-r border-gray-100 bg-white ${showChatArea ? 'hidden md:flex' : 'flex'}`}>
+          <div className={`w-full md:w-80 lg:w-[400px] flex-col border-r border-gray-100 bg-white relative ${showChatArea ? 'hidden md:flex' : 'flex'}`}>
             <div className="p-5 md:pt-6 px-6 shrink-0">
               <div className="flex justify-between items-center mb-5">
                 <h1 className="text-2xl font-extrabold text-primary">Pesan</h1>
@@ -314,19 +360,55 @@ export default function MessagePage() {
                   </div>
                   Arsip
                 </button>
+
+                <button
+                  onClick={() => handleFeatureNotReady('Grup')}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                >
+                  <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
+                    <UsersRound size={16} />
+                  </div>
+                  Grup
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between px-4 py-2 bg-gray-50/80 border-b border-gray-100 shrink-0">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Daftar Obrolan</span>
+                <button
+                  onClick={() => {
+                      setIsSelectionMode(!isSelectionMode);
+                      setSelectedContacts([]);
+                  }}
+                  className={`text-xs font-bold transition-colors cursor-pointer ${isSelectionMode ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  {isSelectionMode ? 'Selesai' : 'Pilih Pesan'}
+                </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar">
+            <div className={`flex-1 overflow-y-auto px-3 pt-3 transition-all duration-300 custom-scrollbar ${isSelectionMode && selectedContacts.length > 0 ? 'pb-40' : 'pb-3'}`}>
               {filteredContacts.length === 0 ? (
                 <div className="text-center text-gray-400 mt-10 text-sm">Tidak ada kontak ditemukan</div>
               ) : (
                 filteredContacts.map((contact) => (
                   <button
                     key={contact.id}
-                    onClick={() => handleSelectChat(contact)}
-                    className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${activeChat?.id === contact.id ? 'bg-indigo-50/60' : ''}`}
+                    onClick={() => isSelectionMode ? handleToggleSelect(contact.id) : handleSelectChat(contact)}
+                    className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${
+                      isSelectionMode && selectedContacts.includes(contact.id) 
+                        ? 'bg-indigo-50 border-indigo-200 border' 
+                        : activeChat?.id === contact.id && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
+                    }`}
                   >
+                    {isSelectionMode && (
+                        <div className="shrink-0 mr-1 animate-in fade-in slide-in-from-left-2 duration-200">
+                            <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
+                                selectedContacts.includes(contact.id) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300'
+                            }`}>
+                                {selectedContacts.includes(contact.id) && <Check size={14} strokeWidth={3} />}
+                            </div>
+                        </div>
+                    )}
                     <div className="relative shrink-0">
                       <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full object-cover" />
                       {contact.online && (
@@ -360,6 +442,51 @@ export default function MessagePage() {
                 ))
               )}
             </div>
+
+          {/* Action Overlay */}
+          {isSelectionMode && selectedContacts.length > 0 && (
+            <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_4px_30px_rgb(0,0,0,0.1)] border border-gray-100 p-3 z-20 flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4">
+              <div className="flex items-center justify-between text-sm px-1">
+                <span className="font-bold text-gray-800 bg-white px-2.5 py-1 rounded-lg border border-gray-100 shadow-sm">{selectedContacts.length} dipilih</span>
+                <button 
+                  onClick={() => {
+                      if (selectedContacts.length === filteredContacts.length) {
+                          setSelectedContacts([]);
+                      } else {
+                          setSelectedContacts(filteredContacts.map(c => c.id));
+                      }
+                  }} 
+                  className="text-indigo-600 font-bold hover:underline cursor-pointer"
+                >
+                  {selectedContacts.length === filteredContacts.length && filteredContacts.length > 0 ? 'Batal Pilih Semua' : 'Pilih Semua'}
+                </button>
+              </div>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBulkFavorite}
+                  className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 shadow-sm"
+                >
+                  <Star size={14} className={allSelectedFavorited ? "fill-yellow-600" : ""} /> {allSelectedFavorited ? 'Batal' : 'Favorit'}
+                </button>
+
+                <button
+                  onClick={handleBulkArchive}
+                  className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 shadow-sm"
+                >
+                  <Archive size={14} /> {allSelectedArchived ? 'Batal' : 'Arsip'}
+                </button>
+
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
+                >
+                  <Trash2 size={14} /> Hapus
+                </button>
+              </div>
+            </div>
+          )}
+
           </div>
 
           {/* KANAN: Ruang Obrolan */}
