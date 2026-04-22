@@ -6,6 +6,8 @@ import Loader from "../components/Loaders";
 import LandingPage from "../pages/LandingPage";
 import AlumniPortal from "../pages/alumni/PortalAlumni";
 
+const PublicLowonganDetail = lazy(() => import("../pages/PublicLowonganDetail"));
+
 const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
@@ -36,6 +38,7 @@ const PengumumanAlumni = lazy(() => import("../pages/alumni/pengumuman"));
 const PengumumanDetailAlumni = lazy(() => import("../pages/alumni/pengumumanDetail"));
 const Alumni = lazy(() => import("../pages/alumni/alumni"));
 const AlumniDetail = lazy(() => import("../pages/alumni/alumniDetail"));
+const Connections = lazy(() => import("../pages/alumni/connections"));
 const Lowongan = lazy(() => import("../pages/alumni/lowongan"));
 const Profil = lazy(() => import("../pages/alumni/profil"));
 const KuesionerModal = lazy(() => import("../pages/alumni/KuesionerModal"));
@@ -107,6 +110,7 @@ export default function AppRouter() {
           <Route path="pengumuman/:id" element={<PengumumanDetailAlumni />} />
           <Route path="daftar-alumni" element={<Alumni />} />
           <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
+          <Route path="connections" element={<Connections />} />
           <Route path="lowongan" element={<Lowongan />} />
           <Route path="lowongan/:id" element={<LowonganDetail />} />
           <Route path="kuesioner/:id" element={<KuesionerModal />} />
@@ -115,6 +119,9 @@ export default function AppRouter() {
           <Route path="pesan" element={<Message />} />
         </Route>
       </Route>
+
+      {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}
+      <Route path="/lowongan/:id" element={<PublicLowonganDetail />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>

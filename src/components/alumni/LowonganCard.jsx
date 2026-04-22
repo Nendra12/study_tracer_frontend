@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, Bookmark, ArrowRight, Clock, Sparkles } from 'lucide-react';
+import { Building2, MapPin, Bookmark, ArrowRight, Clock, Sparkles, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
 import LockOverlay from './LockOverlay';
+import { shareLowongan } from '../../utils/share';
 
 function getImageUrl(path) {
   if (!path) return null;
@@ -129,6 +130,22 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
             <span className="text-[11px] text-slate-400 font-bold italic">{data.tipe_pekerjaan || ''}</span>
             {!locked && (
               <div className="flex gap-2">
+                {/* Tombol Share */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    shareLowongan({
+                      id: data.id,
+                      judul: data.judul,
+                      perusahaan: data.perusahaan?.nama,
+                    });
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Bagikan Lowongan"
+                >
+                  <Share2 size={15} className="text-slate-300 hover:text-primary" />
+                </button>
+
                 {/* Tombol Simpan (Bookmark) */}
                 <button
                   onClick={(e) => { e.stopPropagation(); onToggleSave(data.id); }}

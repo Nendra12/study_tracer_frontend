@@ -7,14 +7,21 @@ import {
 import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import PublicProfileBar from '../../components/alumni/PublicProfileBar';
+import Connection from '../../components/alumni/Connection';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { AlumniDetailSkeleton } from '../../components/alumni/skeleton';
+import { useConnections } from '../../hooks/useConnections';
 
 function getImageUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
   return `${STORAGE_BASE_URL}/${path}`;
+}
+
+function getAlumniId(entity) {
+  if (!entity) return null;
+  return entity.id || entity.id_alumni || entity.alumni_id || null;
 }
 
 const getStatusIcon = (status) => {
@@ -49,10 +56,33 @@ export default function AlumniDetail() {
   const [alumni, setAlumni] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const {
+    statusMap,
+    loadingStatusMap,
+    actionLoadingMap,
+    fetchStatus,
+    registerAlumniIds,
+    sendRequest,
+    acceptRequest,
+    rejectRequest,
+    removeOrCancel,
+    block,
+    unblock,
+  } = useConnections();
 
   useEffect(() => {
     fetchAlumniProfile();
   }, [id]);
+
+  useEffect(() => {
+    const profileId = getAlumniId(alumni) || id;
+    const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
+
+    if (!profileId || String(profileId) === String(myAlumniId)) return;
+
+    registerAlumniIds([profileId]);
+    fetchStatus(profileId);
+  }, [alumni, id, authUser, fetchStatus, registerAlumniIds]);
 
   async function fetchAlumniProfile() {
     try {
@@ -105,6 +135,9 @@ export default function AlumniDetail() {
   }
 
   const imageSrc = getImageUrl(alumni.foto);
+  const profileId = getAlumniId(alumni) || id;
+  const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
+  const isSelfProfile = String(profileId) === String(myAlumniId);
   const currentCareer = alumni.current_career;
   const skills = alumni.skills || [];
   const riwayat = alumni.riwayat_status || [];
@@ -241,6 +274,23 @@ export default function AlumniDetail() {
                 )}
 
               </div>
+
+              {!isSelfProfile && (
+                <div className="mt-5 md:mt-6">
+                  <Connection
+                    alumniId={profileId}
+                    statusEntry={statusMap[String(profileId)]}
+                    isLoading={loadingStatusMap[String(profileId)]}
+                    isActionLoading={actionLoadingMap[String(profileId)]}
+                    onConnect={sendRequest}
+                    onAccept={acceptRequest}
+                    onReject={rejectRequest}
+                    onRemove={removeOrCancel}
+                    onBlock={block}
+                    onUnblock={unblock}
+                  />
+                </div>
+              )}
             </div>
 
           </div>
