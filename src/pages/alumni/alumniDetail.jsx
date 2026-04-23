@@ -88,6 +88,26 @@ export default function AlumniDetail() {
     try {
       setLoading(true);
       setError(null);
+
+      // If the profile owner has blocked the current user, do not show any detail.
+      const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
+      const requestedId = id;
+      const isSelf = myAlumniId && requestedId && String(myAlumniId) === String(requestedId);
+
+      if (!isSelf) {
+        try {
+          const statusEntry = await fetchStatus(requestedId, { force: true });
+          if (statusEntry?.status === 'blocked_by_them') {
+            setAlumni(null);
+            setError('Anda tidak dapat melihat profil ini.');
+            return;
+          }
+        } catch (statusErr) {
+          // If status check fails, continue loading profile as fallback.
+          console.warn('Failed to check connection status before profile load:', statusErr);
+        }
+      }
+
       const res = await alumniApi.getAlumniPublicProfile(id);
       setAlumni(res.data.data);
     } catch (err) {
