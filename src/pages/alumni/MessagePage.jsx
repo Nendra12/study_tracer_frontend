@@ -70,6 +70,7 @@ export default function MessagePage() {
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showAttachments, setShowAttachments] = useState(false);
   const [attachmentPreview, setAttachmentPreview] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -334,6 +335,7 @@ export default function MessagePage() {
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
+                    title
                   >
                     <MessageSquarePlus size={20} className="stroke-[2.5]" />
                   </button>
@@ -364,7 +366,6 @@ export default function MessagePage() {
                   <LayoutGrid size={14} />
                   Semua
                 </button>
-                
                 <button
                   onClick={() => setFilterMode(filterMode === 'unread' ? 'all' : 'unread')}
                   className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'unread' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
@@ -932,35 +933,80 @@ export default function MessagePage() {
                         </div>
                       )}
 
-                      <div className="flex items-center max-w-4xl gap-1 mx-auto">
-                        <button
-                          onClick={() => imageInputRef.current?.click()}
-                          className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
-                          title="Kirim Gambar"
-                        >
-                          <ImagePlus size={20} />
-                        </button>
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
-                          title="Kirim File"
-                        >
-                          <Paperclip size={20} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowGifPicker(!showGifPicker);
-                            setShowEmojiPicker(false);
-                          }}
-                          className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 font-bold text-sm ${showGifPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
-                          title="Kirim GIF"
-                        >
-                          GIF
-                        </button>
+                      <div className="flex items-center max-w-4xl gap-1 mx-auto relative">
+                        {/* Mobile Plus Button */}
+                        <div className="relative md:hidden shrink-0">
+                          <button
+                            onClick={() => setShowAttachments(!showAttachments)}
+                            className={`p-2 cursor-pointer rounded-full transition-colors ${showAttachments ? 'bg-primary text-white' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
+                          >
+                            <Plus size={20} className={showAttachments ? "rotate-45 transition-transform" : "transition-transform"} />
+                          </button>
+                          
+                          {showAttachments && (
+                            <div className="absolute bottom-full left-0 mb-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 flex flex-col gap-2 z-50 animate-in fade-in zoom-in-95">
+                              <button
+                                onClick={() => { imageInputRef.current?.click(); setShowAttachments(false); }}
+                                className="p-3 cursor-pointer rounded-xl bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary transition-colors flex justify-center"
+                                title="Kirim Gambar"
+                              >
+                                <ImagePlus size={20} />
+                              </button>
+                              <button
+                                onClick={() => { fileInputRef.current?.click(); setShowAttachments(false); }}
+                                className="p-3 cursor-pointer rounded-xl bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary transition-colors flex justify-center"
+                                title="Kirim File"
+                              >
+                                <Paperclip size={20} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowGifPicker(!showGifPicker);
+                                  setShowEmojiPicker(false);
+                                  setShowAttachments(false);
+                                }}
+                                className={`p-3 cursor-pointer rounded-xl transition-colors font-bold text-sm flex justify-center ${showGifPicker ? 'text-primary bg-primary/10' : 'bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary'}`}
+                                title="Kirim GIF"
+                              >
+                                GIF
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Desktop Inline Icons */}
+                        <div className="hidden md:flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => imageInputRef.current?.click()}
+                            className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
+                            title="Kirim Gambar"
+                          >
+                            <ImagePlus size={20} />
+                          </button>
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
+                            title="Kirim File"
+                          >
+                            <Paperclip size={20} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowGifPicker(!showGifPicker);
+                              setShowEmojiPicker(false);
+                            }}
+                            className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 font-bold text-sm ${showGifPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
+                            title="Kirim GIF"
+                          >
+                            GIF
+                          </button>
+                        </div>
+                        
                         <button
                           onClick={() => {
                             setShowEmojiPicker(!showEmojiPicker);
                             setShowGifPicker(false);
+                            setShowAttachments(false);
                           }}
                           className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 ${showEmojiPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
                           title="Kirim Emoji"
