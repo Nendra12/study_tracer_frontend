@@ -270,6 +270,97 @@ export const alumniApi = {
   getPengumumanDetail(id) {
     return api.get(`/alumni/pengumuman/${id}`);
   },
+
+  // =====================
+  // MESSAGING (Real-time Chat)
+  // =====================
+
+  // Conversations
+  getConversations(params = {}) {
+    return api.get('/alumni/messages/conversations', { params });
+  },
+
+  getConversation(id) {
+    return api.get(`/alumni/messages/conversations/${id}`);
+  },
+
+  getOrCreatePrivateConversation(idAlumni) {
+    return api.post('/alumni/messages/conversations/private', { id_alumni: idAlumni });
+  },
+
+  createGroupConversation(data) {
+    if (data instanceof FormData) {
+      return api.post('/alumni/messages/conversations/group', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.post('/alumni/messages/conversations/group', data);
+  },
+
+  updateGroupConversation(id, data) {
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return api.post(`/alumni/messages/conversations/${id}/group`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.put(`/alumni/messages/conversations/${id}/group`, data);
+  },
+
+  leaveConversation(id) {
+    return api.post(`/alumni/messages/conversations/${id}/leave`);
+  },
+
+  deleteConversation(id) {
+    return api.delete(`/alumni/messages/conversations/${id}`);
+  },
+
+  // Conversation Settings
+  togglePinConversation(id) {
+    return api.post(`/alumni/messages/conversations/${id}/pin`);
+  },
+
+  toggleMuteConversation(id) {
+    return api.post(`/alumni/messages/conversations/${id}/mute`);
+  },
+
+  // Messages
+  getMessages(conversationId, params = {}) {
+    return api.get(`/alumni/messages/conversations/${conversationId}/messages`, { params });
+  },
+
+  sendMessage(conversationId, data) {
+    if (data instanceof FormData) {
+      return api.post(`/alumni/messages/conversations/${conversationId}/messages`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.post(`/alumni/messages/conversations/${conversationId}/messages`, data);
+  },
+
+  deleteMessage(id) {
+    return api.delete(`/alumni/messages/${id}`);
+  },
+
+  // Read Receipts & Typing
+  markConversationAsRead(conversationId) {
+    return api.post(`/alumni/messages/conversations/${conversationId}/read`);
+  },
+
+  sendTypingIndicator(conversationId, isTyping) {
+    return api.post(`/alumni/messages/conversations/${conversationId}/typing`, {
+      is_typing: isTyping,
+    });
+  },
+
+  // Stats & Contacts
+  getMessageUnreadCount() {
+    return api.get('/alumni/messages/unread-count');
+  },
+
+  getMessageContacts(params = {}) {
+    return api.get('/alumni/messages/contacts', { params });
+  },
 };
 
 // Public endpoints

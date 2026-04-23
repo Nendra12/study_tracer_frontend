@@ -215,14 +215,6 @@ export default function NavbarAlumni({ user }) {
                 className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
               >
                 <MessageSquareMore size={20} />
-                <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
-                  10
-                </span>
-                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                  <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                    10 Pesan Baru
-                  </div>
-                </div>
               </button>
               <button
                 onClick={() => navigate('/alumni/notifikasi')}
