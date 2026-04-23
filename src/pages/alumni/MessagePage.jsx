@@ -178,7 +178,7 @@ export default function MessagePage() {
       sender: 'me',
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
     };
-    
+
     pushMessage(newGifMessage, '🎬 Mengirim GIF');
     setShowGifPicker(false);
   };
@@ -228,7 +228,7 @@ export default function MessagePage() {
       setContacts(contacts.filter(c => !selectedContacts.includes(c.id)));
       toast.success(`${selectedContacts.length} obrolan dihapus`);
       if (selectedContacts.includes(activeChat?.id)) {
-         setActiveChat(null);
+        setActiveChat(null);
       }
       setIsSelectionMode(false);
       setSelectedContacts([]);
@@ -275,32 +275,32 @@ export default function MessagePage() {
 
       {/* Image Preview Modal */}
       {previewImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setPreviewImage(null)}
         >
           <div className="absolute top-6 right-6 flex gap-4 z-50">
-            <a 
-              href={previewImage.url} 
-              download={previewImage.fileName || 'image.png'} 
+            <a
+              href={previewImage.url}
+              download={previewImage.fileName || 'image.png'}
               onClick={(e) => e.stopPropagation()}
               className="p-3 text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors"
               title="Unduh Gambar"
             >
               <Download size={24} />
             </a>
-            <button 
-              className="p-3 text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors" 
+            <button
+              className="p-3 text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors"
               onClick={() => setPreviewImage(null)}
               title="Tutup Preview"
             >
               <X size={24} />
             </button>
           </div>
-          <img 
-            src={previewImage.url} 
-            className="max-w-full max-h-full object-contain rounded-md" 
-            onClick={(e) => e.stopPropagation()} 
+          <img
+            src={previewImage.url}
+            className="max-w-full max-h-full object-contain rounded-md"
+            onClick={(e) => e.stopPropagation()}
             alt="Preview"
           />
         </div>
@@ -376,8 +376,8 @@ export default function MessagePage() {
                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Daftar Obrolan</span>
                 <button
                   onClick={() => {
-                      setIsSelectionMode(!isSelectionMode);
-                      setSelectedContacts([]);
+                    setIsSelectionMode(!isSelectionMode);
+                    setSelectedContacts([]);
                   }}
                   className={`text-xs font-bold transition-colors cursor-pointer ${isSelectionMode ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
@@ -394,20 +394,18 @@ export default function MessagePage() {
                   <button
                     key={contact.id}
                     onClick={() => isSelectionMode ? handleToggleSelect(contact.id) : handleSelectChat(contact)}
-                    className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${
-                      isSelectionMode && selectedContacts.includes(contact.id) 
-                        ? 'bg-indigo-50 border-indigo-200 border' 
+                    className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(contact.id)
+                        ? 'bg-indigo-50 border-indigo-200 border'
                         : activeChat?.id === contact.id && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
-                    }`}
+                      }`}
                   >
                     {isSelectionMode && (
-                        <div className="shrink-0 mr-1 animate-in fade-in slide-in-from-left-2 duration-200">
-                            <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
-                                selectedContacts.includes(contact.id) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300'
-                            }`}>
-                                {selectedContacts.includes(contact.id) && <Check size={14} strokeWidth={3} />}
-                            </div>
+                      <div className="shrink-0 mr-1 animate-in fade-in slide-in-from-left-2 duration-200">
+                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${selectedContacts.includes(contact.id) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300'
+                          }`}>
+                          {selectedContacts.includes(contact.id) && <Check size={14} strokeWidth={3} />}
                         </div>
+                      </div>
                     )}
                     <div className="relative shrink-0">
                       <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full object-cover" />
@@ -443,49 +441,49 @@ export default function MessagePage() {
               )}
             </div>
 
-          {/* Action Overlay */}
-          {isSelectionMode && selectedContacts.length > 0 && (
-            <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_4px_30px_rgb(0,0,0,0.1)] border border-gray-100 p-3 z-20 flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex items-center justify-between text-sm px-1">
-                <span className="font-bold text-gray-800 bg-white px-2.5 py-1 rounded-lg border border-gray-100 shadow-sm">{selectedContacts.length} dipilih</span>
-                <button 
-                  onClick={() => {
+            {/* Action Overlay */}
+            {isSelectionMode && selectedContacts.length > 0 && (
+              <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_4px_30px_rgb(0,0,0,0.1)] border border-gray-100 p-3 z-20 flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4">
+                <div className="flex items-center justify-between text-sm px-1">
+                  <span className="font-bold text-gray-800 bg-white px-2.5 py-1 rounded-lg border border-gray-100 shadow-sm">{selectedContacts.length} dipilih</span>
+                  <button
+                    onClick={() => {
                       if (selectedContacts.length === filteredContacts.length) {
-                          setSelectedContacts([]);
+                        setSelectedContacts([]);
                       } else {
-                          setSelectedContacts(filteredContacts.map(c => c.id));
+                        setSelectedContacts(filteredContacts.map(c => c.id));
                       }
-                  }} 
-                  className="text-indigo-600 font-bold hover:underline cursor-pointer"
-                >
-                  {selectedContacts.length === filteredContacts.length && filteredContacts.length > 0 ? 'Batal Pilih Semua' : 'Pilih Semua'}
-                </button>
-              </div>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={handleBulkFavorite}
-                  className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 shadow-sm"
-                >
-                  <Star size={14} className={allSelectedFavorited ? "fill-yellow-600" : ""} /> {allSelectedFavorited ? 'Batal' : 'Favorit'}
-                </button>
+                    }}
+                    className="text-indigo-600 font-bold hover:underline cursor-pointer"
+                  >
+                    {selectedContacts.length === filteredContacts.length && filteredContacts.length > 0 ? 'Batal Pilih Semua' : 'Pilih Semua'}
+                  </button>
+                </div>
 
-                <button
-                  onClick={handleBulkArchive}
-                  className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 shadow-sm"
-                >
-                  <Archive size={14} /> {allSelectedArchived ? 'Batal' : 'Arsip'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBulkFavorite}
+                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 shadow-sm"
+                  >
+                    <Star size={14} className={allSelectedFavorited ? "fill-yellow-600" : ""} /> {allSelectedFavorited ? 'Batal' : 'Favorit'}
+                  </button>
 
-                <button
-                  onClick={handleBulkDelete}
-                  className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
-                >
-                  <Trash2 size={14} /> Hapus
-                </button>
+                  <button
+                    onClick={handleBulkArchive}
+                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 shadow-sm"
+                  >
+                    <Archive size={14} /> {allSelectedArchived ? 'Batal' : 'Arsip'}
+                  </button>
+
+                  <button
+                    onClick={handleBulkDelete}
+                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
+                  >
+                    <Trash2 size={14} /> Hapus
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           </div>
 
@@ -545,14 +543,13 @@ export default function MessagePage() {
                       return (
                         <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
                           <div
-                            className={`max-w-[85%] md:max-w-[70%] rounded-[20px] relative group overflow-hidden ${
-                              isMe
+                            className={`max-w-[85%] md:max-w-[70%] rounded-[20px] relative group overflow-hidden ${isMe
                                 ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
                                 : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
-                            } ${
+                              } ${
                               // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
                               (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'px-4 py-3'
-                            }`}
+                              }`}
                           >
                             {/* --- RENDER CONTENT --- */}
                             {(msg.type === 'image' || msg.type === 'gif') ? (
@@ -586,7 +583,7 @@ export default function MessagePage() {
                               </div>
                             ) : msg.type === 'file' ? (
                               <>
-                                <a 
+                                <a
                                   href={msg.url}
                                   download={msg.fileName || 'dokumen'}
                                   className={`flex items-center gap-3 p-3 rounded-xl mb-1 border hover:opacity-80 transition-opacity cursor-pointer text-left ${isMe ? 'bg-white/20 border-white/20 group-hover:bg-white/30' : 'bg-gray-50 border-gray-100 group-hover:bg-gray-100'}`}
