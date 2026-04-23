@@ -164,7 +164,7 @@ export default function NavbarAlumni({ user }) {
           </Link>
 
           {/* Desktop Menu */}
-          <div className={`hidden xl:flex p-1 rounded-md ${isSolidMode ? 'bg-gray-100/80' : 'bg-fourth/80'}`}>
+          <div className={`hidden xl:flex p-1 rounded-md ${isPesan ? 'bg-white backdrop-blur-sm border border-gray-200' : isSolidMode ? 'bg-gray-100/80' : 'bg-fourth/80'}`}>
             {navLinks.map((item, i) => {
               const isActive = location.pathname === item.path || (item.path !== '/alumni' && location.pathname.startsWith(item.path));
 
@@ -192,7 +192,7 @@ export default function NavbarAlumni({ user }) {
                   to={item.path}
                   className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
                     ? "bg-white text-primary shadow-sm"
-                    : "text-third hover:text-primary"
+                    : "text-primary hover:text-secondary"
                     }`}
                 >
                   {item.name}
@@ -393,13 +393,17 @@ export default function NavbarAlumni({ user }) {
                   <hr className="border-gray-100 my-0.5" />
 
                   <div className="flex flex-col gap-1">
-                    <button onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
+                    <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 6 * 0.08 } }} onClick={() => { navigate('/alumni/pesan'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
+                      Chat
+                      {unreadCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                    </motion.button>
+                    <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 7 * 0.08 } }} onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
                       Notifikasi
                       {unreadCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>}
-                    </button>
-                    <button onClick={handleLogoutClick} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
+                    </motion.button>
+                    <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 8 * 0.08 } }} onClick={handleLogoutClick} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-all">
                       <LogOut size={18} /> Keluar Aplikasi
-                    </button>
+                    </motion.button>
                   </div>
                 </motion.div>
               </>
