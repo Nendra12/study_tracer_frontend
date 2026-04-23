@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis } from 'lucide-react';
+import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis, MessageCircle, LayoutGrid } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
@@ -8,9 +8,9 @@ import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
 import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
 
 const INITIAL_CONTACTS = [
-  { id: 1, name: 'Pusat Karir (Bu Rina)', role: 'Admin', type: 'admin', lastMessage: 'Jangan lupa update portofolio ya.', time: '10:30', unread: 2, online: true, avatar: 'https://ui-avatars.com/api/?name=Pusat+Karir&background=e0e7ff&color=4f46e5', isFavorite: true, isArchived: false },
-  { id: 2, name: 'HRD PT. Teknologi', role: 'Perusahaan', type: 'company', lastMessage: 'Bisa jadwalkan interview?', time: 'Kemarin', unread: 0, online: false, avatar: 'https://ui-avatars.com/api/?name=HRD+Tech&background=f1f5f9&color=64748b', isFavorite: false, isArchived: false },
-  { id: 3, name: 'Budi Santoso', role: 'Alumni 2020', type: 'alumni', lastMessage: 'Wah, selamat atas pekerjaan barunya!', time: 'Senin', unread: 0, online: true, avatar: 'https://ui-avatars.com/api/?name=Budi+S&background=ecfdf5&color=10b981', isFavorite: false, isArchived: false },
+  { id: 1, name: 'Yasmine', role: 'Admin', type: 'admin', lastMessage: 'Jangan lupa update portofolio ya.', time: '10:30', unread: 2, online: true, avatar: 'https://ui-avatars.com/api/?name=Pusat+Karir&background=e0e7ff&color=4f46e5', isFavorite: true, isArchived: false },
+  { id: 2, name: 'Wiwich', role: 'Perusahaan', type: 'company', lastMessage: 'Bisa jadwalkan interview?', time: 'Kemarin', unread: 0, online: false, avatar: 'https://ui-avatars.com/api/?name=HRD+Tech&background=f1f5f9&color=64748b', isFavorite: false, isArchived: false },
+  { id: 3, name: 'Nicka', role: 'Alumni 2020', type: 'alumni', lastMessage: 'Wah, selamat atas pekerjaan barunya!', time: 'Senin', unread: 0, online: true, avatar: 'https://ui-avatars.com/api/?name=Budi+S&background=ecfdf5&color=10b981', isFavorite: false, isArchived: false },
 ];
 
 const INITIAL_CONVERSATIONS = {
@@ -394,12 +394,15 @@ export default function MessagePage() {
   };
 
   const favoriteCount = contacts.filter((c) => c.isFavorite).length;
+  const archivedCount = contacts.filter((c) => c.isArchived).length;
+  const unreadCount = contacts.filter((c) => c.unread > 0 && !c.isArchived).length;
 
   const filteredContacts = contacts.filter(c => {
     const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (c.lastMessage && c.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()));
     if (filterMode === 'favorite') return matchSearch && c.isFavorite;
     if (filterMode === 'archived') return matchSearch && c.isArchived;
+    if (filterMode === 'unread') return matchSearch && c.unread > 0 && !c.isArchived;
     return matchSearch && !c.isArchived;
   });
 
@@ -499,35 +502,53 @@ export default function MessagePage() {
                   className="w-full bg-[#f8f9fa] border-none text-sm rounded-md py-3 pl-11 pr-4 focus:ring-2 focus:ring-primary transition-all outline-none"
                 />
               </div>
-              <div className="pt-4 pb-4 border-b border-gray-100 shrink-0 bg-white flex gap-3">
+              <div className="pt-4 pb-4 border-b border-gray-100 shrink-0 bg-white flex gap-2 overflow-x-auto custom-scrollbar px-1">
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'all' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                >
+                  <LayoutGrid size={14} />
+                  Semua
+                </button>
+                
+                <button
+                  onClick={() => setFilterMode(filterMode === 'unread' ? 'all' : 'unread')}
+                  className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'unread' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                >
+                  <MessageCircle size={14} className={filterMode === 'unread' ? 'fill-primary/20' : ''} />
+                  Belum dibaca
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                
                 <button
                   onClick={() => setFilterMode(filterMode === 'favorite' ? 'all' : 'favorite')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
-                  <div className={`${filterMode === 'favorite' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
-                    <Pin size={16} className={filterMode === 'favorite' ? 'fill-primary' : ''} />
-                  </div>
+                  <Pin size={14} className={filterMode === 'favorite' ? 'fill-primary' : ''} />
                   Disematkan
+                  {favoriteCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                      {favoriteCount}
+                    </span>
+                  )}
                 </button>
+
 
                 <button
                   onClick={() => setFilterMode(filterMode === 'archived' ? 'all' : 'archived')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
-                  <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
-                    <Archive size={16} />
-                  </div>
+                  <Archive size={14} />
                   Arsip
-                </button>
-
-                <button
-                  onClick={() => handleFeatureNotReady('Grup')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
-                >
-                  <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
-                    <UsersRound size={16} />
-                  </div>
-                  Grup
+                  {archivedCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                      {archivedCount}
+                    </span>
+                  )}
                 </button>
               </div>
 
