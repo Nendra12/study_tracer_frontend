@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check } from 'lucide-react';
+import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
+import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
+import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
 
 const INITIAL_CONTACTS = [
   { id: 1, name: 'Pusat Karir (Bu Rina)', role: 'Admin', type: 'admin', lastMessage: 'Jangan lupa update portofolio ya.', time: '10:30', unread: 2, online: true, avatar: 'https://ui-avatars.com/api/?name=Pusat+Karir&background=e0e7ff&color=4f46e5', isFavorite: true, isArchived: false },
@@ -13,7 +15,7 @@ const INITIAL_CONTACTS = [
 const INITIAL_CONVERSATIONS = {
   1: [
     { id: 1, type: 'text', text: 'Halo, apakah data tracer study-nya sudah diisi?', sender: 'them', time: '10:25' },
-    { id: 2, type: 'text', text: 'Halo Bu. Sudah saya isi sebagian, untuk riwayat pekerjaan sedang saya lengkapi.', sender: 'me', time: '10:28' },
+    { id: 2, type: 'text', text: 'Halo Bu. Sudah saya isi sebagian, untuk riwayat pekerjaan sedang saya lengkapi.', sender: 'me', time: '10:28', status: 'read' },
     { id: 3, type: 'text', text: 'Baik, ditunggu ya batas waktunya Jumat. Jangan lupa update portofolio ya.', sender: 'them', time: '10:30' },
   ],
   2: [
@@ -24,6 +26,8 @@ const INITIAL_CONVERSATIONS = {
     { id: 1, type: 'text', text: 'Wah, selamat atas pekerjaan barunya!', sender: 'them', time: 'Senin' },
   ]
 };
+
+const MAX_FAVORITES = 3;
 
 const TenorPicker = ({ onSelectGif, onClose }) => {
   const [search, setSearch] = useState('');
@@ -41,12 +45,12 @@ const TenorPicker = ({ onSelectGif, onClose }) => {
     <div className="absolute bottom-16 left-4 md:left-24 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-3xl w-72 p-3 z-50">
       <div className="flex items-center justify-between mb-2 px-1">
         <h4 className="text-xs font-bold text-gray-500 uppercase">Cari GIF</h4>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+        <button onClick={onClose} className="cursor-pointer text-gray-400 hover:text-gray-600"><X size={16} /></button>
       </div>
       <input
         type="text"
         placeholder="Cari GIF dari Tenor..."
-        className="w-full bg-gray-50 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-100 mb-2 transition-all"
+        className="w-full bg-gray-50 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/10 mb-2 transition-all"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
@@ -83,12 +87,37 @@ export default function MessagePage() {
   const [attachmentPreview, setAttachmentPreview] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
+  const [isSearchMessageOpen, setIsSearchMessageOpen] = useState(false);
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  const [isChatMenuOpen, setIsChatMenuOpen] = useState(false);
+
+  const [isMessageSelectionMode, setIsMessageSelectionMode] = useState(false);
+  const [selectedMessageIds, setSelectedMessageIds] = useState([]);
+  const [activeMessageMenuId, setActiveMessageMenuId] = useState(null);
+  const [replyingToMessage, setReplyingToMessage] = useState(null);
+
   const messagesEndRef = useRef(null);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const scrollToMessage = (msgId) => {
+    setHighlightedMessageId(msgId);
+    setTimeout(() => {
+      const element = document.getElementById(`message-${msgId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+
+    // Remove highlight after 2.5 seconds
+    setTimeout(() => {
+      setHighlightedMessageId(null);
+    }, 2500);
   };
 
   useEffect(() => {
@@ -103,9 +132,30 @@ export default function MessagePage() {
     setShowEmojiPicker(false);
     setShowGifPicker(false);
     setAttachmentPreview(null);
+    setIsSearchMessageOpen(false);
+    setMessageSearchQuery('');
+    setIsChatMenuOpen(false);
+    setIsMessageSelectionMode(false);
+    setSelectedMessageIds([]);
+    setActiveMessageMenuId(null);
+    setReplyingToMessage(null);
   };
 
   const currentMessages = conversations[activeChat?.id] || [];
+
+  const renderMessageStatus = (status, isMe) => {
+    if (!isMe) return null;
+    switch(status) {
+      case 'sending':
+        return <Clock size={12} className="opacity-70" />;
+      case 'sent':
+        return <CircleCheck size={14} className="opacity-70" />;
+      case 'read':
+      default:
+        // Hijau terang agar terlihat di background biru/gelap
+        return <CircleCheck size={14} className="text-green-300 fill-green-300/20" />;
+    }
+  };
 
   const pushMessage = (msgObj, notificationText) => {
     setConversations(prev => ({
@@ -123,16 +173,22 @@ export default function MessagePage() {
   const handleSendMessage = () => {
     if (!messageInput.trim() && !attachmentPreview) return;
 
+    const messageId = Date.now();
     const newMessage = {
-      id: Date.now(),
+      id: messageId,
       type: attachmentPreview ? attachmentPreview.type : 'text',
       text: attachmentPreview ? undefined : messageInput.trim(),
       caption: attachmentPreview ? messageInput.trim() : undefined,
       fileName: attachmentPreview ? attachmentPreview.fileName : undefined,
       url: attachmentPreview ? attachmentPreview.url : undefined,
       sender: 'me',
-      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      status: 'sending'
     };
+
+    if (replyingToMessage) {
+      newMessage.replyTo = replyingToMessage;
+    }
 
     let brief = messageInput.trim() || 'Kirim Lampiran';
     if (attachmentPreview) {
@@ -146,6 +202,33 @@ export default function MessagePage() {
     setMessageInput('');
     setAttachmentPreview(null);
     setShowEmojiPicker(false);
+    setReplyingToMessage(null);
+
+    // Simulate sending -> sent -> read
+    const currentActiveChatId = activeChat.id;
+    const isOnline = activeChat.online;
+    
+    setTimeout(() => {
+      setConversations(prev => {
+        const chatMsgs = prev[currentActiveChatId] || [];
+        return {
+          ...prev,
+          [currentActiveChatId]: chatMsgs.map(m => m.id === messageId ? { ...m, status: 'sent' } : m)
+        };
+      });
+      
+      if (isOnline) {
+        setTimeout(() => {
+          setConversations(prev => {
+            const chatMsgs = prev[currentActiveChatId] || [];
+            return {
+              ...prev,
+              [currentActiveChatId]: chatMsgs.map(m => m.id === messageId ? { ...m, status: 'read' } : m)
+            };
+          });
+        }, 1500);
+      }
+    }, 1000);
   };
 
   const handleSendAttachment = (e, type) => {
@@ -194,8 +277,43 @@ export default function MessagePage() {
 
   const toggleFavorite = (e, id) => {
     e.stopPropagation();
+    const currentFavCount = contacts.filter((c) => c.isFavorite).length;
+    const target = contacts.find((c) => c.id === id);
+    const willFavorite = !(target?.isFavorite);
+
+    if (willFavorite && currentFavCount >= MAX_FAVORITES) {
+      toast.error(`Maksimal ${MAX_FAVORITES} chat yang bisa disematkan. Hapus chat yang disematkan lain dulu.`);
+      return;
+    }
+
     setContacts(contacts.map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c));
-    toast.success('Status favorit diperbarui!');
+    toast.success(willFavorite ? 'Obrolan berhasil disematkan' : 'Obrolan batal disematkan');
+  };
+
+  const handleClearChat = () => {
+    if (window.confirm('Bersihkan semua pesan dalam obrolan ini?')) {
+      setConversations(prev => ({
+        ...prev,
+        [activeChat.id]: []
+      }));
+      setContacts(prev => prev.map(c => 
+        c.id === activeChat.id ? { ...c, lastMessage: '', time: '' } : c
+      ));
+      toast.success('Obrolan dibersihkan');
+    }
+  };
+
+  const handleDeleteChat = () => {
+    if (window.confirm('Hapus chat ini secara permanen?')) {
+      setConversations(prev => {
+        const newConversations = { ...prev };
+        delete newConversations[activeChat.id];
+        return newConversations;
+      });
+      setContacts(prev => prev.filter(c => c.id !== activeChat.id));
+      setShowChatArea(false);
+      toast.success('Chat dihapus');
+    }
   };
 
   const handleToggleSelect = (contactId) => {
@@ -217,8 +335,20 @@ export default function MessagePage() {
   };
 
   const handleBulkFavorite = () => {
+    if (!allSelectedFavorited) {
+      const currentFavCount = contacts.filter((c) => c.isFavorite).length;
+      const addCount = selectedContacts
+        .map((id) => contacts.find((c) => c.id === id))
+        .filter((c) => c && !c.isFavorite).length;
+
+      if (currentFavCount + addCount > MAX_FAVORITES) {
+        toast.error(`Maksimal ${MAX_FAVORITES} chat yang bisa disematkan. Hapus chat yang disematkan lain dulu.`);
+        return;
+      }
+    }
+
     setContacts(contacts.map(c => selectedContacts.includes(c.id) ? { ...c, isFavorite: !allSelectedFavorited } : c));
-    toast.success(`${selectedContacts.length} obrolan ${allSelectedFavorited ? 'dihapus dari favorit' : 'ditambahkan ke favorit'}`);
+    toast.success(`${selectedContacts.length} obrolan ${allSelectedFavorited ? 'batal disematkan' : 'berhasil disematkan'}`);
     setIsSelectionMode(false);
     setSelectedContacts([]);
   };
@@ -237,12 +367,14 @@ export default function MessagePage() {
 
   const getRoleIcon = (type) => {
     switch (type) {
-      case 'admin': return <Building2 size={12} className="text-indigo-500" />;
+      case 'admin': return <Building2 size={12} className="text-primary" />;
       case 'company': return <Briefcase size={12} className="text-blue-500" />;
       case 'alumni': return <GraduationCap size={12} className="text-emerald-500" />;
       default: return null;
     }
   };
+
+  const favoriteCount = contacts.filter((c) => c.isFavorite).length;
 
   const filteredContacts = contacts.filter(c => {
     const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -260,8 +392,16 @@ export default function MessagePage() {
     setMessageInput(prev => prev + emojiObject.emoji);
   };
 
+  const messageSearchResults = messageSearchQuery.trim() === ''
+    ? []
+    : currentMessages.filter(msg =>
+      (msg.text && msg.text.toLowerCase().includes(messageSearchQuery.toLowerCase())) ||
+      (msg.caption && msg.caption.toLowerCase().includes(messageSearchQuery.toLowerCase())) ||
+      (msg.fileName && msg.fileName.toLowerCase().includes(messageSearchQuery.toLowerCase()))
+    );
+
   return (
-    <div className="h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-indigo-500/20 overflow-hidden">
+    <div className="h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-hidden">
       <Toaster position="top-right" />
       <NewChatModal
         isOpen={isModalOpen}
@@ -343,17 +483,17 @@ export default function MessagePage() {
               <div className="pt-4 pb-4 border-b border-gray-100 shrink-0 bg-white flex gap-3">
                 <button
                   onClick={() => setFilterMode(filterMode === 'favorite' ? 'all' : 'favorite')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
                   <div className={`${filterMode === 'favorite' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
-                    <Star size={16} className={filterMode === 'favorite' ? 'fill-primary' : ''} />
+                    <Pin size={16} className={filterMode === 'favorite' ? 'fill-primary' : ''} />
                   </div>
-                  Favorit
+                  Disematkan
                 </button>
 
                 <button
                   onClick={() => setFilterMode(filterMode === 'archived' ? 'all' : 'archived')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
                   <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
                     <Archive size={16} />
@@ -363,7 +503,7 @@ export default function MessagePage() {
 
                 <button
                   onClick={() => handleFeatureNotReady('Grup')}
-                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-indigo-50 border-indigo-200 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  className={`flex justify-center cursor-pointer border items-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
                   <div className={`${filterMode === 'archived' ? 'text-primary' : 'text-gray-500 group-hover:text-primary'} transition`}>
                     <UsersRound size={16} />
@@ -379,7 +519,7 @@ export default function MessagePage() {
                     setIsSelectionMode(!isSelectionMode);
                     setSelectedContacts([]);
                   }}
-                  className={`text-xs font-bold transition-colors cursor-pointer ${isSelectionMode ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`text-xs font-bold transition-colors cursor-pointer ${isSelectionMode ? 'text-primary' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   {isSelectionMode ? 'Selesai' : 'Pilih Pesan'}
                 </button>
@@ -395,8 +535,8 @@ export default function MessagePage() {
                     key={contact.id}
                     onClick={() => isSelectionMode ? handleToggleSelect(contact.id) : handleSelectChat(contact)}
                     className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(contact.id)
-                        ? 'bg-indigo-50 border-indigo-200 border'
-                        : activeChat?.id === contact.id && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
+                      ? 'bg-indigo-50 border-indigo-200 border'
+                      : activeChat?.id === contact.id && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
                       }`}
                   >
                     {isSelectionMode && (
@@ -416,20 +556,36 @@ export default function MessagePage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <h3 className={`text-sm font-bold truncate pr-2 ${activeChat?.id === contact.id ? 'text-indigo-900' : 'text-gray-800'}`}>
+                        <h3 className={`text-sm font-bold truncate pr-2 ${activeChat?.id === contact.id ? 'text-primary' : 'text-gray-800'}`}>
                           {contact.name}
                         </h3>
-                        <span className="text-[11px] font-medium text-gray-400 shrink-0">{contact.time}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] font-medium text-gray-400">{contact.time}</span>
+                          {!isSelectionMode && (contact.isFavorite || favoriteCount < MAX_FAVORITES) && (
+                            <button
+                              onClick={(e) => toggleFavorite(e, contact.id)}
+                              className={`p-1.5 rounded-full transition-colors cursor-pointer ${contact.isFavorite
+                                ? 'text-yellow-400 hover:bg-yellow-50'
+                                : 'text-gray-300 hover:bg-[#f8f9fa] hover:text-yellow-400'
+                                }`}
+                              title={contact.isFavorite ? 'Hapus dari favorit' : `Favoritkan (max ${MAX_FAVORITES})`}
+                              aria-label={contact.isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
+                            >
+                              {
+                                contact.isFavorite && <Pin size={14} className='text-primary' />
+                              }
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1.5 justify-between">
-                        <p className={`text-xs truncate ${activeChat?.id === contact.id && contact.unread > 0 ? 'font-bold text-indigo-700' : 'text-gray-500'}`}>
+                        <p className={`text-xs truncate ${activeChat?.id === contact.id && contact.unread > 0 ? 'font-bold text-primary' : 'text-gray-500'}`}>
                           {contact.lastMessage || 'Tidak ada pesan'}
                         </p>
 
                         <div className="flex items-center gap-1">
-                          {contact.isFavorite && <Star size={12} className="fill-yellow-400 text-yellow-400" />}
                           {contact.unread > 0 && (
-                            <div className="shrink-0 min-w-5 h-5 px-1 bg-indigo-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+                            <div className="shrink-0 min-w-5 h-5 px-1 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
                               {contact.unread}
                             </div>
                           )}
@@ -463,14 +619,14 @@ export default function MessagePage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleBulkFavorite}
-                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 shadow-sm"
+                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-white text-primary border-primary/20 text-primary/50 hover:border-primary/40 hover:text-primary hover:bg-primary/5 border border-primary shadow-sm"
                   >
-                    <Star size={14} className={allSelectedFavorited ? "fill-yellow-600" : ""} /> {allSelectedFavorited ? 'Batal' : 'Favorit'}
+                    <Pin size={14} className={allSelectedFavorited ? "fill-primary" : ""} /> {allSelectedFavorited ? 'Batal' : 'Sematkan'}
                   </button>
 
                   <button
                     onClick={handleBulkArchive}
-                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 shadow-sm"
+                    className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-white text-primary border-primary/20 text-primary/50 hover:border-primary/40 hover:text-primary hover:bg-primary/5 border border-primary shadow-sm"
                   >
                     <Archive size={14} /> {allSelectedArchived ? 'Batal' : 'Arsip'}
                   </button>
@@ -488,242 +644,444 @@ export default function MessagePage() {
           </div>
 
           {/* KANAN: Ruang Obrolan */}
-          <div className={`flex-1 flex-col bg-[#fdfdfd] relative ${!showChatArea ? 'hidden md:flex' : 'flex'}`}>
+          <div className={`flex-1 flex flex-row bg-[#fdfdfd] relative ${!showChatArea ? 'hidden md:flex' : 'flex'}`}>
             {activeChat ? (
               <>
-                <div className="h-[76px] px-4 md:px-6 border-b border-gray-100 bg-white/80 backdrop-blur-md flex items-center justify-between shrink-0 sticky top-0 z-10">
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <button
-                      onClick={() => setShowChatArea(false)}
-                      className="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      <ArrowLeft size={20} />
-                    </button>
+                <div className="flex-1 flex flex-col min-w-0 relative">
+                  <div className="h-[76px] px-4 md:px-6 border-b border-gray-100 bg-white/80 backdrop-blur-md flex items-center justify-between shrink-0 sticky top-0 z-10">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <button
+                        onClick={() => setShowChatArea(false)}
+                        className="md:hidden cursor-pointer p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+                      >
+                        <ArrowLeft size={20} />
+                      </button>
 
-                    <img src={activeChat.avatar} alt={activeChat.name} className="w-10 h-10 rounded-full" />
-                    <div>
-                      <h2 className="text-sm font-bold text-gray-800 leading-tight">{activeChat.name}</h2>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        {getRoleIcon(activeChat.type)}
-                        <p className="text-[11px] font-medium text-gray-500">{activeChat.role}</p>
+                      <img src={activeChat.avatar} alt={activeChat.name} className="w-10 h-10 rounded-full" />
+                      <div>
+                        <h2 className="text-sm font-bold text-gray-800 leading-tight">{activeChat.name}</h2>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {activeChat.online ? (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                              <p className="text-[11px] font-medium text-green-600">Online</p>
+                            </>
+                          ) : (
+                            <p className="text-[11px] font-medium text-gray-500">Terakhir dilihat {activeChat.time}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setIsSearchMessageOpen(!isSearchMessageOpen)}
+                        className={`p-2.5 cursor-pointer rounded-full transition-colors ${isSearchMessageOpen ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700'}`}
+                        title="Cari Pesan"
+                      >
+                        <Search size={18} />
+                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={() => setIsChatMenuOpen(!isChatMenuOpen)}
+                          className={`p-2.5 cursor-pointer rounded-full transition-colors ${isChatMenuOpen ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700'}`}
+                        >
+                          <MoreVertical size={18} />
+                        </button>
+
+                        {isChatMenuOpen && (
+                          <ChatMenuOptions
+                            isChatMenuOpen={isChatMenuOpen}
+                            setIsChatMenuOpen={setIsChatMenuOpen}
+                            handleFeatureNotReady={handleFeatureNotReady}
+                            setIsMessageSelectionMode={setIsMessageSelectionMode}
+                            toggleFavorite={toggleFavorite}
+                            activeChat={activeChat}
+                            handleClearChat={handleClearChat}
+                            handleDeleteChat={handleDeleteChat}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center">
-                    <button
-                      onClick={(e) => toggleFavorite(e, activeChat.id)}
-                      className={`p-2.5 rounded-full transition-colors ${activeChat.isFavorite ? 'text-yellow-400 hover:bg-yellow-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-yellow-400'}`}
-                    >
-                      <Star size={18} className={activeChat.isFavorite ? "fill-yellow-400" : ""} />
-                    </button>
-                    <button
-                      onClick={() => handleFeatureNotReady('Menu Obrolan')}
-                      className="p-2.5 text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar">
-                  <div className="text-center mb-2">
-                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
-                      OBROLAN DIMULAI
-                    </span>
-                  </div>
-
-                  {currentMessages.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-                      Kirim pesan untuk memulai obrolan
+                  <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar">
+                    <div className="text-center mb-2">
+                      <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
+                        OBROLAN DIMULAI
+                      </span>
                     </div>
-                  ) : (
-                    currentMessages.map((msg) => {
-                      const isMe = msg.sender === 'me';
-                      return (
-                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
-                          <div
-                            className={`max-w-[85%] md:max-w-[70%] rounded-[20px] relative group overflow-hidden ${isMe
-                                ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
-                                : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
-                              } ${
-                              // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
-                              (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'px-4 py-3'
-                              }`}
-                          >
-                            {/* --- RENDER CONTENT --- */}
-                            {(msg.type === 'image' || msg.type === 'gif') ? (
-                              <div className="relative flex flex-col group/img">
-                                <img
-                                  src={msg.url}
-                                  alt="content"
-                                  onClick={() => setPreviewImage(msg)}
-                                  className="w-64 sm:w-72 max-w-full max-h-72 object-cover block rounded-[16px] cursor-pointer hover:opacity-95 transition-opacity"
-                                  title="Klik untuk memperbesar"
-                                />
 
-                                {/* Waktu di atas gambar jika tidak ada caption */}
-                                {!msg.caption && (
-                                  <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm flex items-center gap-1 text-[10px] text-white shadow-sm pointer-events-none">
-                                    {msg.time}
-                                    {isMe && <CheckCheck size={12} className="text-blue-300" />}
+                    {currentMessages.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                        Kirim pesan untuk memulai obrolan
+                      </div>
+                    ) : (
+                      currentMessages.map((msg) => {
+                        const isMe = msg.sender === 'me';
+                        const isHighlighted = highlightedMessageId === msg.id;
+                        const isSelected = selectedMessageIds.includes(msg.id);
+                        return (
+                          <div
+                            key={msg.id}
+                            id={`message-${msg.id}`}
+                            onClick={() => {
+                              if (isMessageSelectionMode) {
+                                if (isSelected) {
+                                  setSelectedMessageIds(selectedMessageIds.filter(id => id !== msg.id));
+                                } else {
+                                  setSelectedMessageIds([...selectedMessageIds, msg.id]);
+                                }
+                              }
+                            }}
+                            className={`flex items-center w-full mb-4 transition-all duration-700 rounded-2xl ${isHighlighted ? 'ring-4 ring-primary/40 bg-primary/10 p-2 -m-2 z-10' : ''} ${isMessageSelectionMode ? 'cursor-pointer hover:bg-gray-50 p-2 -mx-2' : ''}`}
+                          >
+                            {isMessageSelectionMode && (
+                              <div className="shrink-0 mr-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-200">
+                                <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'}`}>
+                                  {isSelected && <Check size={14} strokeWidth={3} />}
+                                </div>
+                              </div>
+                            )}
+                            <div className={`flex flex-1 ${isMe ? 'justify-end' : 'justify-start'} min-w-0 group/msg`}>
+
+                              <div
+                                className={`max-w-[85%] md:max-w-[70%] rounded-[20px] relative ${isMe
+                                  ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
+                                  : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
+                                  } ${
+                                  // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
+                                  (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'pl-4 pr-7 py-3'
+                                  }`}
+                              >
+                                {/* Menu Trigger inside the bubble (Absolutely positioned at top-right) */}
+                                <div className={`absolute top-1 right-1 opacity-0 group-hover/msg:opacity-100 transition-opacity flex flex-col items-end justify-start z-20`}>
+                                  <div className="relative">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveMessageMenuId(activeMessageMenuId === msg.id ? null : msg.id);
+                                      }}
+                                      className={`p-1 rounded-full transition-colors cursor-pointer backdrop-blur-sm ${isMe ? 'text-white/90 hover:bg-black/10' : 'text-gray-500 hover:bg-gray-100'}`}
+                                    >
+                                      <ChevronDown size={18} />
+                                    </button>
+
+                                    {activeMessageMenuId === msg.id && (
+                                      <>
+                                        <div className="fixed inset-0 z-30 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveMessageMenuId(null); }} />
+                                        <div className={`absolute top-full mt-1 right-0 w-36 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.1)] border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 text-gray-700`}>
+                                          <button
+                                            onClick={(e) => { 
+                                              e.stopPropagation(); 
+                                              setReplyingToMessage(msg); 
+                                              setActiveMessageMenuId(null); 
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                          >
+                                            <Reply size={14} /> Balas
+                                          </button>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setActiveMessageMenuId(null);
+                                              if (window.confirm('Hapus pesan ini?')) {
+                                                setConversations(prev => ({
+                                                  ...prev,
+                                                  [activeChat.id]: prev[activeChat.id].filter(m => m.id !== msg.id)
+                                                }));
+                                                toast.success('Pesan dihapus');
+                                              }
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
+                                          >
+                                            <Trash2 size={14} /> Hapus
+                                          </button>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* --- RENDER CONTENT --- */}
+                                {msg.replyTo && (
+                                  <div 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      scrollToMessage(msg.replyTo.id);
+                                    }}
+                                    className={`mb-1.5 p-2 rounded-lg border-l-4 cursor-pointer text-xs transition-colors ${
+                                      isMe 
+                                        ? 'bg-white/10 border-blue-200 hover:bg-white/20' 
+                                        : 'bg-gray-100 border-primary hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1.5 mb-1 font-semibold">
+                                      {msg.replyTo.sender === 'me' ? 'Anda' : activeChat.name}
+                                    </div>
+                                    <div className="truncate opacity-80 max-w-[200px] md:max-w-[300px]">
+                                      {msg.replyTo.type === 'image' || msg.replyTo.type === 'gif' ? (
+                                        <span className="flex items-center gap-1"><ImagePlus size={12} /> Foto</span>
+                                      ) : msg.replyTo.type === 'file' ? (
+                                        <span className="flex items-center gap-1"><Paperclip size={12} /> {msg.replyTo.fileName}</span>
+                                      ) : (
+                                        msg.replyTo.text
+                                      )}
+                                    </div>
                                   </div>
                                 )}
 
-                                {/* FIX: Penyesuaian padding caption agar lebih rapat dan proporsional */}
-                                {msg.caption && (
-                                  <div className="px-2 pt-2 pb-0.5 flex flex-col">
-                                    <p className="text-[13px] leading-relaxed break-words">{msg.caption}</p>
-                                    <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                {(msg.type === 'image' || msg.type === 'gif') ? (
+                                  <div className="relative flex flex-col group/img">
+                                    <img
+                                      src={msg.url}
+                                      alt="content"
+                                      onClick={() => setPreviewImage(msg)}
+                                      className="w-64 sm:w-72 max-w-full max-h-72 object-cover block rounded-[16px] cursor-pointer hover:opacity-95 transition-opacity"
+                                      title="Klik untuk memperbesar"
+                                    />
+
+                                    {/* Waktu di atas gambar jika tidak ada caption */}
+                                    {!msg.caption && (
+                                      <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm flex items-center gap-1 text-[10px] text-white shadow-sm pointer-events-none z-10">
+                                        {msg.time}
+                                        {renderMessageStatus(msg.status, isMe)}
+                                      </div>
+                                    )}
+
+                                    {/* FIX: Penyesuaian padding caption agar lebih rapat dan proporsional */}
+                                    {msg.caption && (
+                                      <div className="px-2 pt-2 pb-0.5 flex flex-col">
+                                        <p className="text-[13px] leading-relaxed break-words">{msg.caption}</p>
+                                        <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                          {msg.time}
+                                          {renderMessageStatus(msg.status, isMe)}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : msg.type === 'file' ? (
+                                  <>
+                                    <a
+                                      href={msg.url}
+                                      download={msg.fileName || 'dokumen'}
+                                      className={`flex items-center gap-3 p-3 rounded-xl mb-1 border hover:opacity-80 transition-opacity cursor-pointer text-left ${isMe ? 'bg-white/20 border-white/20 group-hover:bg-white/30' : 'bg-gray-50 border-gray-100 group-hover:bg-gray-100'}`}
+                                      title="Unduh File"
+                                    >
+                                      <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20 text-white' : 'bg-white shadow-sm text-primary'}`}>
+                                        <Paperclip size={18} />
+                                      </div>
+                                      <div className="flex flex-col flex-1 min-w-0 pr-2">
+                                        <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{msg.fileName}</span>
+                                        <span className={`text-[10px] mt-0.5 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>Klik untuk unduh dokumen</span>
+                                      </div>
+                                      <Download size={18} className={`shrink-0 ${isMe ? 'text-white' : 'text-gray-400'}`} />
+                                    </a>
+                                    <div className="flex items-center justify-between gap-4 mt-1 px-1">
+                                      {msg.caption ? <p className="text-[13px]">{msg.caption}</p> : <div />}
+                                      <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                        {msg.time}
+                                        {renderMessageStatus(msg.status, isMe)}
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  /* PESAN TEKS: Menggunakan flex untuk merapatkan waktu ke teks */
+                                  <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0">
+                                    <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.text}</p>
+                                    <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
                                       {msg.time}
-                                      {isMe && <CheckCheck size={14} className="text-blue-300" />}
+                                      {renderMessageStatus(msg.status, isMe)}
                                     </div>
                                   </div>
                                 )}
                               </div>
-                            ) : msg.type === 'file' ? (
-                              <>
-                                <a
-                                  href={msg.url}
-                                  download={msg.fileName || 'dokumen'}
-                                  className={`flex items-center gap-3 p-3 rounded-xl mb-1 border hover:opacity-80 transition-opacity cursor-pointer text-left ${isMe ? 'bg-white/20 border-white/20 group-hover:bg-white/30' : 'bg-gray-50 border-gray-100 group-hover:bg-gray-100'}`}
-                                  title="Unduh File"
-                                >
-                                  <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20 text-white' : 'bg-white shadow-sm text-indigo-500'}`}>
-                                    <Paperclip size={18} />
-                                  </div>
-                                  <div className="flex flex-col flex-1 min-w-0 pr-2">
-                                    <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{msg.fileName}</span>
-                                    <span className={`text-[10px] mt-0.5 ${isMe ? 'text-indigo-100' : 'text-gray-400'}`}>Klik untuk unduh dokumen</span>
-                                  </div>
-                                  <Download size={18} className={`shrink-0 ${isMe ? 'text-white' : 'text-gray-400'}`} />
-                                </a>
-                                <div className="flex items-center justify-between gap-4 mt-1 px-1">
-                                  {msg.caption ? <p className="text-[13px]">{msg.caption}</p> : <div />}
-                                  <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
-                                    {msg.time}
-                                    {isMe && <CheckCheck size={14} className="text-blue-300" />}
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              /* PESAN TEKS: Menggunakan flex untuk merapatkan waktu ke teks */
-                              <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0">
-                                <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.text}</p>
-                                <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
-                                  {msg.time}
-                                  {isMe && <CheckCheck size={14} className="text-blue-300" />}
-                                </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {isMessageSelectionMode ? (
+                    <div className="p-4 md:p-5 bg-white border-t border-gray-100 shrink-0 flex items-center justify-between shadow-[0_-4px_20px_rgb(0,0,0,0.05)] z-20">
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => {
+                            setIsMessageSelectionMode(false);
+                            setSelectedMessageIds([]);
+                          }}
+                          className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                        >
+                          <X size={20} />
+                        </button>
+                        <span className="font-bold text-gray-800">{selectedMessageIds.length} dipilih</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            if (selectedMessageIds.length > 0) {
+                              if (window.confirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`)) {
+                                setConversations(prev => ({
+                                  ...prev,
+                                  [activeChat.id]: prev[activeChat.id].filter(msg => !selectedMessageIds.includes(msg.id))
+                                }));
+                                toast.success(`${selectedMessageIds.length} pesan dihapus`);
+                                setIsMessageSelectionMode(false);
+                                setSelectedMessageIds([]);
+                              }
+                            }
+                          }}
+                          disabled={selectedMessageIds.length === 0}
+                          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${selectedMessageIds.length > 0 ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
+                        >
+                          <Trash2 size={16} /> Hapus
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 md:p-5 bg-white border-t border-gray-100 shrink-0 relative">
+
+                      {/* Absolute pickers */}
+                      {showEmojiPicker && (
+                        <div className="absolute bottom-[calc(100%+10px)] right-4 md:right-10 z-50 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                          <EmojiPicker onEmojiClick={onEmojiClick} searchDisabled />
+                        </div>
+                      )}
+
+                      {showGifPicker && (
+                        <TenorPicker onSelectGif={handleSendGif} onClose={() => setShowGifPicker(false)} />
+                      )}
+
+                      {/* Preview Replying Message */}
+                      {replyingToMessage && (
+                        <div className="mb-4 p-3 bg-gray-50 rounded-2xl border-l-4 border-l-primary border-y border-r border-gray-100 flex items-start justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                          <div className="flex flex-col min-w-0 pr-2">
+                            <span className="text-sm font-bold text-primary mb-0.5">
+                              Membalas {replyingToMessage.sender === 'me' ? 'Anda' : activeChat.name}
+                            </span>
+                            <span className="text-xs text-gray-500 truncate max-w-[200px] md:max-w-sm">
+                              {replyingToMessage.type === 'image' || replyingToMessage.type === 'gif' ? (
+                                <span className="flex items-center gap-1"><ImagePlus size={12} /> Foto</span>
+                              ) : replyingToMessage.type === 'file' ? (
+                                <span className="flex items-center gap-1"><Paperclip size={12} /> {replyingToMessage.fileName}</span>
+                              ) : (
+                                replyingToMessage.text
+                              )}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setReplyingToMessage(null)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-gray-200 rounded-full transition-colors"
+                            title="Batal membalas"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Preview Attachment sebelum dikirim */}
+                      {attachmentPreview && (
+                        <div className="mb-4 p-3 bg-primary/10 rounded-2xl border border-primary/10 flex items-start justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                          <div className="flex items-center gap-4">
+                            {attachmentPreview.type === 'image' && (
+                              <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
+                            )}
+                            {attachmentPreview.type === 'gif' && (
+                              <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
+                            )}
+                            {attachmentPreview.type === 'file' && (
+                              <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center text-primary">
+                                <Paperclip size={24} />
                               </div>
                             )}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
+                              <span className="text-xs text-primary mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
+                            </div>
                           </div>
+                          <button
+                            onClick={() => setAttachmentPreview(null)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white rounded-full transition-colors shadow-sm bg-gray-50/50 backdrop-blur"
+                            title="Batal lampiran"
+                          >
+                            <X size={18} />
+                          </button>
                         </div>
-                      );
-                    })
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
+                      )}
 
-                <div className="p-4 md:p-5 bg-white border-t border-gray-100 shrink-0 relative">
-
-                  {/* Absolute pickers */}
-                  {showEmojiPicker && (
-                    <div className="absolute bottom-[calc(100%+10px)] right-4 md:right-10 z-50 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-                      <EmojiPicker onEmojiClick={onEmojiClick} searchDisabled />
-                    </div>
-                  )}
-
-                  {showGifPicker && (
-                    <TenorPicker onSelectGif={handleSendGif} onClose={() => setShowGifPicker(false)} />
-                  )}
-
-                  {/* Preview Attachment sebelum dikirim */}
-                  {attachmentPreview && (
-                    <div className="mb-4 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-start justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                      <div className="flex items-center gap-4">
-                        {attachmentPreview.type === 'image' && (
-                          <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-indigo-100" alt="preview" />
-                        )}
-                        {attachmentPreview.type === 'gif' && (
-                          <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-indigo-100" alt="preview" />
-                        )}
-                        {attachmentPreview.type === 'file' && (
-                          <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-indigo-100 flex items-center justify-center text-indigo-500">
-                            <Paperclip size={24} />
-                          </div>
-                        )}
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
-                          <span className="text-xs text-indigo-600 mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
+                      <div className="flex items-center max-w-4xl gap-1 mx-auto">
+                        <button
+                          onClick={() => imageInputRef.current?.click()}
+                          className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
+                          title="Kirim Gambar"
+                        >
+                          <ImagePlus size={20} />
+                        </button>
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
+                          title="Kirim File"
+                        >
+                          <Paperclip size={20} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowGifPicker(!showGifPicker);
+                            setShowEmojiPicker(false);
+                          }}
+                          className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 font-bold text-sm ${showGifPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
+                          title="Kirim GIF"
+                        >
+                          GIF
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowEmojiPicker(!showEmojiPicker);
+                            setShowGifPicker(false);
+                          }}
+                          className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 ${showEmojiPicker ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
+                          title="Kirim Emoji"
+                        >
+                          <Smile size={20} />
+                        </button>
+                        <div className="flex-1 bg-[#f8f9fa] rounded-full border border-transparent focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 transition-all flex items-center pr-2 ml-1">
+                          <input
+                            type="text"
+                            placeholder={attachmentPreview ? "Tambahkan caption..." : "Tulis pesan..."}
+                            className="w-full bg-transparent text-sm py-3 px-4 focus:outline-none text-primary"
+                            value={messageInput}
+                            onChange={(e) => setMessageInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                          />
+                          <button
+                            className={`p-2 cursor-pointer rounded-full transition-all shrink-0 ${messageInput.trim() || attachmentPreview
+                              ? 'bg-primary text-white hover:bg-primary/90 shadow-md'
+                              : 'bg-gray-200 text-gray-400'
+                              }`}
+                            onClick={handleSendMessage}
+                            disabled={!messageInput.trim() && !attachmentPreview}
+                          >
+                            <SendHorizontal size={16} className={messageInput.trim() || attachmentPreview ? "ml-0.5" : ""} />
+                          </button>
                         </div>
                       </div>
-                      <button
-                        onClick={() => setAttachmentPreview(null)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white rounded-full transition-colors shadow-sm bg-gray-50/50 backdrop-blur"
-                        title="Batal lampiran"
-                      >
-                        <X size={18} />
-                      </button>
                     </div>
                   )}
-
-                  <div className="flex items-center max-w-4xl gap-1 mx-auto">
-                    <button
-                      onClick={() => imageInputRef.current?.click()}
-                      className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
-                      title="Kirim Gambar"
-                    >
-                      <ImagePlus size={20} />
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
-                      title="Kirim File"
-                    >
-                      <Paperclip size={20} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowGifPicker(!showGifPicker);
-                        setShowEmojiPicker(false);
-                      }}
-                      className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 font-bold text-sm ${showGifPicker ? 'text-primary bg-indigo-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
-                      title="Kirim GIF"
-                    >
-                      GIF
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEmojiPicker(!showEmojiPicker);
-                        setShowGifPicker(false);
-                      }}
-                      className={`p-2 cursor-pointer rounded-full transition-colors shrink-0 ${showEmojiPicker ? 'text-primary bg-indigo-50' : 'text-gray-400 hover:bg-[#f8f9fa] hover:text-primary'}`}
-                      title="Kirim Emoji"
-                    >
-                      <Smile size={20} />
-                    </button>
-                    <div className="flex-1 bg-[#f8f9fa] rounded-full border border-transparent focus-within:border-primary focus-within:bg-white focus-within:shadow-[0_0_0_2px_rgba(79,70,229,0.05)] transition-all flex items-center pr-2 ml-1">
-                      <input
-                        type="text"
-                        placeholder={attachmentPreview ? "Tambahkan caption..." : "Tulis pesan..."}
-                        className="w-full bg-transparent text-sm py-3 px-4 focus:outline-none text-primary"
-                        value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      />
-                      <button
-                        className={`p-2 cursor-pointer rounded-full transition-all shrink-0 ${messageInput.trim() || attachmentPreview
-                          ? 'bg-primary text-white hover:bg-indigo-700 shadow-md shadow-indigo-200'
-                          : 'bg-gray-200 text-gray-400'
-                          }`}
-                        onClick={handleSendMessage}
-                        disabled={!messageInput.trim() && !attachmentPreview}
-                      >
-                        <SendHorizontal size={16} className={messageInput.trim() || attachmentPreview ? "ml-0.5" : ""} />
-                      </button>
-                    </div>
-                  </div>
                 </div>
+
+                {/* Sidebar Search Messages */}
+                {isSearchMessageOpen && (
+                  <SideBarSearchChat
+                    messageSearchQuery={messageSearchQuery}
+                    setMessageSearchQuery={setMessageSearchQuery}
+                    messageSearchResults={messageSearchResults}
+                    scrollToMessage={scrollToMessage}
+                    activeChat={activeChat}
+                    setIsSearchMessageOpen={setIsSearchMessageOpen}
+                  />
+                )}
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">

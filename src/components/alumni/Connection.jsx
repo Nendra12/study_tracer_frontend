@@ -32,6 +32,7 @@ export default function Connection({
   onBlock,
   onUnblock,
   compact = false,
+  mode = 'full',
   className = '',
 }) {
   const status = statusEntry?.status || 'none';
@@ -60,22 +61,25 @@ export default function Connection({
   };
 
   const buttonBase = compact
-    ? 'h-8 px-3 text-[11px] font-bold rounded-lg border transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5'
+    ? 'h-8 px-3 text-[11px] font-bold rounded-lg border transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 w-full'
     : 'h-10 px-4 text-xs font-bold rounded-xl border transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2';
 
-  return (
-    <div className={wrapperClass} onClick={(e) => e.stopPropagation()}>
-      <div className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getBadgeStyle(status)}`}>
-        {isLoading ? (
-          <span className="inline-flex items-center gap-1.5">
-            <Loader2 size={12} className="animate-spin" /> Sinkron...
-          </span>
-        ) : (
-          STATUS_LABEL[status] || STATUS_LABEL.none
-        )}
-      </div>
+  const actionsLayoutClass = compact ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2';
 
-      <div className="flex flex-wrap gap-2">
+  const badgeEl = (
+    <div className={`inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider w-max ${compact ? 'mx-auto' : ''} ${getBadgeStyle(status)}`}>
+      {isLoading ? (
+        <span className="inline-flex items-center gap-1.5">
+          <Loader2 size={12} className="animate-spin" /> Sinkron...
+        </span>
+      ) : (
+        STATUS_LABEL[status] || STATUS_LABEL.none
+      )}
+    </div>
+  );
+
+  const actionsEl = (
+    <div className={actionsLayoutClass}>
         {status === 'none' || status === 'rejected' ? (
           <>
             <button
@@ -143,7 +147,7 @@ export default function Connection({
               type="button"
               disabled={isActionLoading}
               onClick={() => withConfirm('Alumni ini akan diblokir. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
-              className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
+              className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50 ${compact ? 'col-span-2' : ''}`}
             >
               <Ban size={14} /> Block
             </button>
@@ -177,13 +181,35 @@ export default function Connection({
             type="button"
             disabled={isActionLoading}
             onClick={() => withConfirm('Buka blokir alumni ini?', () => onUnblock?.(alumniId), 'Blokir berhasil dibuka.')}
-            className={`${buttonBase} bg-white text-primary border-primary/30 hover:bg-primary/5`}
+            className={`${buttonBase} bg-white text-primary border-primary/30 hover:bg-primary/5 ${compact ? 'col-span-2' : ''}`}
           >
             {isActionLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldOff size={14} />}
             Unblock
           </button>
         ) : null}
+    </div>
+  );
+
+  if (mode === 'badge') {
+    return (
+      <div className={wrapperClass} onClick={(e) => e.stopPropagation()}>
+        {badgeEl}
       </div>
+    );
+  }
+
+  if (mode === 'actions') {
+    return (
+      <div className={wrapperClass} onClick={(e) => e.stopPropagation()}>
+        {actionsEl}
+      </div>
+    );
+  }
+
+  return (
+    <div className={wrapperClass} onClick={(e) => e.stopPropagation()}>
+      {badgeEl}
+      {actionsEl}
     </div>
   );
 }

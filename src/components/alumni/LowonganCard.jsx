@@ -74,7 +74,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
 
           {skillMatchCount > 0 && (
             <div className="absolute top-3 left-3 z-20">
-              <span className="flex items-center gap-1.5 bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-md">
+              <span className="flex items-center gap-1.5 bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-sm">
                 <Sparkles size={11} strokeWidth={3} /> Sesuai Skill
               </span>
             </div>
@@ -140,22 +140,25 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
                       perusahaan: data.perusahaan?.nama,
                     });
                   }}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+                  aria-label="Bagikan lowongan"
+                  className="group w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
                   title="Bagikan Lowongan"
                 >
-                  <Share2 size={15} className="text-slate-300 hover:text-primary" />
+                  <Share2 size={16} className="text-slate-600 group-hover:text-primary" />
                 </button>
 
                 {/* Tombol Simpan (Bookmark) */}
                 <button
                   onClick={(e) => { e.stopPropagation(); onToggleSave(data.id); }}
                   disabled={savingId === data.id}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+                  className={`group w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                    data.is_saved ? 'bg-primary/10 border-primary/20 hover:bg-primary/15' : ''
+                  }`}
                 >
                   {data.is_saved ? (
                     <Bookmark size={16} className="text-primary" fill="currentColor" />
                   ) : (
-                    <Bookmark size={16} className="text-slate-300 hover:text-primary" />
+                    <Bookmark size={16} className="text-slate-600 group-hover:text-primary" />
                   )}
                 </button>
                 

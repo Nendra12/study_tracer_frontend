@@ -60,7 +60,6 @@ export default function NewChatModal({ isOpen, onClose, onSelectContact }) {
                   <img src={contact.avatar} alt={contact.name} className="w-10 h-10 rounded-full object-cover" />
                   <div>
                     <h4 className="text-sm font-bold text-gray-800">{contact.name}</h4>
-                    <p className="text-xs text-gray-500">{contact.role}</p>
                   </div>
                 </button>
               ))}
