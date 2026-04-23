@@ -4,11 +4,21 @@ import toast from 'react-hot-toast';
 // Gunakan variabel CSS yang disuntikkan oleh ThemeContext
 const primaryColor = 'var(--color-primary, #3C5759)';
 
+const blurActiveElement = () => {
+  try {
+    const active = document?.activeElement;
+    if (active && typeof active.blur === 'function') active.blur();
+  } catch {
+    // no-op
+  }
+};
+
 /* ==========================================
    1. ALERT ADMIN (MENGGUNAKAN SWEETALERT2)
    ========================================== */
 
 export const alertSuccess = (message) => {
+  blurActiveElement();
   Swal.fire({
     icon: 'success',
     title: 'Berhasil',
@@ -18,6 +28,7 @@ export const alertSuccess = (message) => {
 };
 
 export const alertError = (message) => {
+  blurActiveElement();
   Swal.fire({
     icon: 'error',
     title: 'Gagal',
@@ -27,6 +38,7 @@ export const alertError = (message) => {
 };
 
 export const alertWarning = (message) => {
+  blurActiveElement();
   Swal.fire({
     icon: 'warning',
     title: 'Peringatan',
@@ -36,6 +48,7 @@ export const alertWarning = (message) => {
 };
 
 export const alertConfirm = async (message) => {
+  blurActiveElement();
   return await Swal.fire({
     title: 'Apakah Anda yakin?',
     text: message,

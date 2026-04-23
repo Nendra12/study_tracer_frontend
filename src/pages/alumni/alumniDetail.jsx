@@ -274,24 +274,26 @@ export default function AlumniDetail() {
                 )}
 
               </div>
-
-              {!isSelfProfile && (
-                <div className="mt-5 md:mt-6">
-                  <Connection
-                    alumniId={profileId}
-                    statusEntry={statusMap[String(profileId)]}
-                    isLoading={loadingStatusMap[String(profileId)]}
-                    isActionLoading={actionLoadingMap[String(profileId)]}
-                    onConnect={sendRequest}
-                    onAccept={acceptRequest}
-                    onReject={rejectRequest}
-                    onRemove={removeOrCancel}
-                    onBlock={block}
-                    onUnblock={unblock}
-                  />
-                </div>
-              )}
             </div>
+
+            {/* BAGIAN AKSI (kolom kanan di desktop, di bawah di mobile) */}
+            {!isSelfProfile && (
+              <div className="w-full md:w-auto md:ml-auto mt-4 md:mt-0 flex justify-center md:justify-end">
+                <Connection
+                  alumniId={profileId}
+                  statusEntry={statusMap[String(profileId)]}
+                  isLoading={loadingStatusMap[String(profileId)]}
+                  isActionLoading={actionLoadingMap[String(profileId)]}
+                  onConnect={sendRequest}
+                  onAccept={acceptRequest}
+                  onReject={rejectRequest}
+                  onRemove={removeOrCancel}
+                  onBlock={block}
+                  onUnblock={unblock}
+                  className="md:flex md:flex-col md:items-end"
+                />
+              </div>
+            )}
 
           </div>
         </div>
