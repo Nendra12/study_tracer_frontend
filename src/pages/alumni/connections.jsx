@@ -180,9 +180,9 @@ export default function ConnectionsPage() {
 
   const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
 
-  const runAndRefresh = useCallback(async (handler, alumniId) => {
+  const runAndRefresh = useCallback(async (handler, ...handlerArgs) => {
     if (!handler) return;
-    await handler(alumniId);
+    await handler(...handlerArgs);
     await loadTabData(activeTab, pageMeta.currentPage || 1);
     await refreshPendingCount();
   }, [activeTab, loadTabData, pageMeta.currentPage, refreshPendingCount]);
@@ -313,12 +313,12 @@ export default function ConnectionsPage() {
                           alumniId={item.id}
                           isSelf={isSelf}
                           statusEntry={item.statusEntry}
-                          onConnect={(alumniId) => runAndRefresh(sendRequest, alumniId)}
-                          onAccept={(alumniId) => runAndRefresh(acceptRequest, alumniId)}
-                          onReject={(alumniId) => runAndRefresh(rejectRequest, alumniId)}
-                          onRemove={(alumniId) => runAndRefresh(removeOrCancel, alumniId)}
-                          onBlock={(alumniId) => runAndRefresh(block, alumniId)}
-                          onUnblock={(alumniId) => runAndRefresh(unblock, alumniId)}
+                          onConnect={(...args) => runAndRefresh(sendRequest, ...args)}
+                          onAccept={(...args) => runAndRefresh(acceptRequest, ...args)}
+                          onReject={(...args) => runAndRefresh(rejectRequest, ...args)}
+                          onRemove={(...args) => runAndRefresh(removeOrCancel, ...args)}
+                          onBlock={(...args) => runAndRefresh(block, ...args)}
+                          onUnblock={(...args) => runAndRefresh(unblock, ...args)}
                           isActionLoading={isLoading}
                           compact
                           mode="actions"

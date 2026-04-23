@@ -187,9 +187,9 @@ export function useConnections() {
     });
   }, [fetchStatus, setStatusEntry, withActionLoading]);
 
-  const acceptRequest = useCallback(async (alumniId) => {
+  const acceptRequest = useCallback(async (alumniId, providedConnectionId = null) => {
     return withActionLoading(alumniId, async () => {
-      let connectionId = statusMap[String(alumniId)]?.connectionId;
+      let connectionId = providedConnectionId ?? statusMap[String(alumniId)]?.connectionId;
       if (!connectionId) {
         connectionId = await getPendingConnectionIdByAlumni(alumniId);
       }
@@ -203,9 +203,9 @@ export function useConnections() {
     });
   }, [fetchStatus, getPendingConnectionIdByAlumni, setStatusEntry, statusMap, withActionLoading]);
 
-  const rejectRequest = useCallback(async (alumniId) => {
+  const rejectRequest = useCallback(async (alumniId, providedConnectionId = null) => {
     return withActionLoading(alumniId, async () => {
-      let connectionId = statusMap[String(alumniId)]?.connectionId;
+      let connectionId = providedConnectionId ?? statusMap[String(alumniId)]?.connectionId;
       if (!connectionId) {
         connectionId = await getPendingConnectionIdByAlumni(alumniId);
       }
