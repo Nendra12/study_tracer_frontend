@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck } from 'lucide-react';
+import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
 import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
@@ -49,7 +50,7 @@ const TenorPicker = ({ onSelectGif, onClose }) => {
       </div>
       <input
         type="text"
-        placeholder="Cari GIF dari Tenor..."
+        placeholder="Cari GIF..."
         className="w-full bg-gray-50 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/10 mb-2 transition-all"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -81,6 +82,8 @@ export default function MessagePage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeSidebarMenuId, setActiveSidebarMenuId] = useState(null);
+  const navigate = useNavigate();
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -125,9 +128,8 @@ export default function MessagePage() {
   }, [conversations, activeChat]);
 
   const handleSelectChat = (contact) => {
-    setContacts(contacts.map(c => c.id === contact.id ? { ...c, unread: 0 } : c));
-    const currentContact = contacts.find(c => c.id === contact.id) || contact;
-    setActiveChat(currentContact);
+    setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, unread: 0 } : c));
+    setActiveChat(contact);
     setShowChatArea(true);
     setShowEmojiPicker(false);
     setShowGifPicker(false);
@@ -267,51 +269,68 @@ export default function MessagePage() {
   };
 
   const handleAddContact = (newContact) => {
-    const exists = contacts.find(c => c.id === newContact.id);
-    if (!exists) {
-      setContacts([{ ...newContact, lastMessage: '', time: '', unread: 0, isFavorite: false, isArchived: false }, ...contacts]);
-    }
-    handleSelectChat(newContact);
+    const defaultProps = { ...newContact, lastMessage: '', time: '', unread: 0, isFavorite: false, isArchived: false };
+    setContacts(prev => {
+      const exists = prev.find(c => c.id === newContact.id);
+      if (!exists) {
+        return [defaultProps, ...prev];
+      }
+      return prev;
+    });
+    handleSelectChat(defaultProps);
     setIsModalOpen(false);
   };
 
   const toggleFavorite = (e, id) => {
-    e.stopPropagation();
-    const currentFavCount = contacts.filter((c) => c.isFavorite).length;
-    const target = contacts.find((c) => c.id === id);
-    const willFavorite = !(target?.isFavorite);
+    if (e) e.stopPropagation();
+    setContacts(prev => {
+      const currentFavCount = prev.filter((c) => c.isFavorite).length;
+      const target = prev.find((c) => c.id === id);
+      const willFavorite = !(target?.isFavorite);
 
-    if (willFavorite && currentFavCount >= MAX_FAVORITES) {
-      toast.error(`Maksimal ${MAX_FAVORITES} chat yang bisa disematkan. Hapus chat yang disematkan lain dulu.`);
-      return;
-    }
+      if (willFavorite && currentFavCount >= MAX_FAVORITES) {
+        toast.error(`Maksimal ${MAX_FAVORITES} chat yang bisa disematkan. Hapus chat yang disematkan lain dulu.`);
+        return prev;
+      }
 
-    setContacts(contacts.map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c));
-    toast.success(willFavorite ? 'Obrolan berhasil disematkan' : 'Obrolan batal disematkan');
+      setTimeout(() => toast.success(willFavorite ? 'Obrolan berhasil disematkan' : 'Obrolan batal disematkan'), 0);
+      return prev.map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c);
+    });
   };
 
-  const handleClearChat = () => {
+  const handleArchiveChat = (chatId) => {
+    setContacts(prev => prev.map(c => c.id === chatId ? { ...c, isArchived: !c.isArchived } : c));
+    toast.success('Status arsip diubah');
+  };
+
+  const handleClearChat = (chatId) => {
+    const targetId = chatId || activeChat?.id;
+    if (!targetId) return;
     if (window.confirm('Bersihkan semua pesan dalam obrolan ini?')) {
       setConversations(prev => ({
         ...prev,
-        [activeChat.id]: []
+        [targetId]: []
       }));
       setContacts(prev => prev.map(c => 
-        c.id === activeChat.id ? { ...c, lastMessage: '', time: '' } : c
+        c.id === targetId ? { ...c, lastMessage: '', time: '' } : c
       ));
       toast.success('Obrolan dibersihkan');
     }
   };
 
-  const handleDeleteChat = () => {
+  const handleDeleteChat = (chatId) => {
+    const targetId = chatId || activeChat?.id;
+    if (!targetId) return;
     if (window.confirm('Hapus chat ini secara permanen?')) {
       setConversations(prev => {
         const newConversations = { ...prev };
-        delete newConversations[activeChat.id];
+        delete newConversations[targetId];
         return newConversations;
       });
-      setContacts(prev => prev.filter(c => c.id !== activeChat.id));
-      setShowChatArea(false);
+      setContacts(prev => prev.filter(c => c.id !== targetId));
+      if (activeChat?.id === targetId) {
+        setShowChatArea(false);
+      }
       toast.success('Chat dihapus');
     }
   };
@@ -534,7 +553,7 @@ export default function MessagePage() {
                   <button
                     key={contact.id}
                     onClick={() => isSelectionMode ? handleToggleSelect(contact.id) : handleSelectChat(contact)}
-                    className={`w-full flex items-center gap-3.5 p-3 rounded-2xl text-left transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(contact.id)
+                    className={`w-full cursor-pointer flex items-center gap-3.5 p-3 rounded-2xl text-left group transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(contact.id)
                       ? 'bg-indigo-50 border-indigo-200 border'
                       : activeChat?.id === contact.id && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
                       }`}
@@ -556,11 +575,63 @@ export default function MessagePage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <h3 className={`text-sm font-bold truncate pr-2 ${activeChat?.id === contact.id ? 'text-primary' : 'text-gray-800'}`}>
+                        <h3 className={`text-sm mb-1.5 font-bold truncate pr-2 ${activeChat?.id === contact.id ? 'text-primary' : 'text-gray-800'}`}>
                           {contact.name}
                         </h3>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[11px] font-medium text-gray-400">{contact.time}</span>
+                          <span className={`text-[11px] font-medium text-gray-400 ${activeSidebarMenuId === contact.id ? 'hidden' : 'group-hover:hidden'}`}>{contact.time}</span>
+                          <div className={`relative ${activeSidebarMenuId === contact.id ? 'block' : 'group-hover:block hidden'}`}>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveSidebarMenuId(activeSidebarMenuId === contact.id ? null : contact.id);
+                              }}
+                              className="p-1 hover:bg-gray-200 rounded-full transition-colors text-gray-500 hover:text-primary cursor-pointer"
+                            >
+                              <Ellipsis size={16} />
+                            </button>
+                            
+                            {activeSidebarMenuId === contact.id && (
+                              <>
+                                <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveSidebarMenuId(null); }} />
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); navigate("/alumni/daftar-alumni/104"); setActiveSidebarMenuId(null); }}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                    >
+                                        <Info size={16} /> Info alumni
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleArchiveChat(contact.id); setActiveSidebarMenuId(null); }}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                    >
+                                        <Archive size={16} /> {contact.isArchived ? 'Batal Arsipkan' : 'Arsip chat'}
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); toggleFavorite(e, contact.id); setActiveSidebarMenuId(null); }}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                    >
+                                        <Pin size={16} className={contact?.isFavorite ? "fill-primary text-primary" : ""} /> {contact?.isFavorite ? 'Batal Sematkan' : 'Sematkan chat'}
+                                    </button>
+                                    
+                                    <div className="h-px bg-gray-100 my-1.5 mx-3"></div>
+                                    
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleClearChat(contact.id); setActiveSidebarMenuId(null); }}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center gap-3 cursor-pointer"
+                                    >
+                                        <Eraser size={16} /> Bersihkan obrolan
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteChat(contact.id); setActiveSidebarMenuId(null); }}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
+                                    >
+                                        <Trash2 size={16} /> Hapus chat
+                                    </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
                           {!isSelectionMode && (contact.isFavorite || favoriteCount < MAX_FAVORITES) && (
                             <button
                               onClick={(e) => toggleFavorite(e, contact.id)}
