@@ -155,7 +155,6 @@ export default function MessagePage() {
         return <CircleCheck size={14} className="opacity-70" />;
       case 'read':
       default:
-        // Hijau terang agar terlihat di background biru/gelap
         return <CircleCheck size={14} className="text-green-300 fill-green-300/20" />;
     }
   };
