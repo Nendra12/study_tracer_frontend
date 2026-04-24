@@ -6,7 +6,13 @@ import toast from 'react-hot-toast';
 export function getImageUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  return `${STORAGE_BASE_URL}/${path}`;
+
+  const base = (STORAGE_BASE_URL || '').replace(/\/+$/, '');
+  const normalizedPath = String(path)
+    .replace(/^\/+/, '')
+    .replace(/^storage\//, '');
+
+  return `${base}/${normalizedPath}`;
 }
 
 export function getAvatarUrl(conversation) {
