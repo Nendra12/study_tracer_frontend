@@ -10,6 +10,7 @@ export default function ChatMenuOptions({
   onToggleMute,
   onDeleteChat,
   onLeaveGroup,
+  onOpenGroupInfo,
 }) {
   const navigate = useNavigate();
   const isPinned = activeChat?.settings?.is_pinned;
@@ -27,6 +28,14 @@ export default function ChatMenuOptions({
             className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
           >
             <Info size={16} /> Info alumni
+          </button>
+        )}
+        {isGroup && (
+          <button
+            onClick={() => { onOpenGroupInfo?.(); setIsChatMenuOpen(false); }}
+            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+          >
+            <Info size={16} /> Info grup
           </button>
         )}
         <button

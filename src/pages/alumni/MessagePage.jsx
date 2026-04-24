@@ -6,6 +6,7 @@ import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
 import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
 import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
+import GroupInfoModal from '../../components/alumni/GroupInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, formatTime, getImageUrl } from '../../hooks/useMessaging';
 
@@ -78,6 +79,8 @@ export default function MessagePage() {
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const [isChatMenuOpen, setIsChatMenuOpen] = useState(false);
+  const [isGroupInfoOpen, setIsGroupInfoOpen] = useState(false);
+  const [savingGroupInfo, setSavingGroupInfo] = useState(false);
 
   const [isMessageSelectionMode, setIsMessageSelectionMode] = useState(false);
   const [selectedMessageIds, setSelectedMessageIds] = useState([]);
@@ -145,8 +148,11 @@ export default function MessagePage() {
 
   useEffect(() => { scrollToBottom(); }, [currentMessages, activeChat]);
 
-  const handleSelectChat = (conv) => {
-    messaging.selectConversation(conv);
+  const handleSelectChat = async (conv) => {
+    await messaging.selectConversation(conv);
+    if (conv?.type === 'group') {
+      messaging.refreshConversationDetail(conv.id_conversation);
+    }
     setShowChatArea(true);
     setShowEmojiPicker(false);
     setShowGifPicker(false);
@@ -222,6 +228,26 @@ export default function MessagePage() {
     setIsModalOpen(false);
   };
 
+  const handleOpenGroupInfo = async () => {
+    if (!activeChat || activeChat.type !== 'group') return;
+    await messaging.refreshConversationDetail(activeChat.id_conversation);
+    setIsGroupInfoOpen(true);
+  };
+
+  const handleSaveGroupInfo = async (data) => {
+    if (!activeChat?.id_conversation) return;
+    setSavingGroupInfo(true);
+    try {
+      await messaging.updateGroupConversation(activeChat.id_conversation, data);
+      await messaging.refreshConversationDetail(activeChat.id_conversation);
+      setIsGroupInfoOpen(false);
+    } catch {
+      // Toast is handled inside messaging hook.
+    } finally {
+      setSavingGroupInfo(false);
+    }
+  };
+
   const toggleFavorite = (e, convId) => {
     if (e) e.stopPropagation();
     messaging.togglePin(convId);
@@ -284,6 +310,13 @@ export default function MessagePage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelectContact={handleAddContact}
+      />
+      <GroupInfoModal
+        isOpen={isGroupInfoOpen}
+        onClose={() => setIsGroupInfoOpen(false)}
+        conversation={activeChat}
+        onSubmit={handleSaveGroupInfo}
+        saving={savingGroupInfo}
       />
 
       {/* Hidden file inputs */}
@@ -627,6 +660,7 @@ export default function MessagePage() {
                             setIsChatMenuOpen={setIsChatMenuOpen}
                             setIsMessageSelectionMode={setIsMessageSelectionMode}
                             activeChat={activeChat}
+                            onOpenGroupInfo={handleOpenGroupInfo}
                             onTogglePin={() => messaging.togglePin(activeChat.id_conversation)}
                             onToggleMute={() => messaging.toggleMute(activeChat.id_conversation)}
                             onDeleteChat={() => handleDeleteChat(activeChat.id_conversation)}
