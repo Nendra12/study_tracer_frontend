@@ -216,7 +216,7 @@ export default function Alumni() {
               </div>
               <button 
                 type="submit" 
-                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-primary/80 transition-colors cursor-pointer border-l-2 border-gray-100"
               >
                 Cari
               </button>
