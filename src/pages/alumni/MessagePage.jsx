@@ -59,6 +59,7 @@ export default function MessagePage() {
 
   const [messageInput, setMessageInput] = useState('');
   const [showChatArea, setShowChatArea] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all');
@@ -89,6 +90,7 @@ export default function MessagePage() {
   const messagesEndRef = useRef(null);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const isAutoScrolling = useRef(false);
 
   // Fetch conversations on mount
   useEffect(() => { messaging.fetchConversations(); }, []);
@@ -131,7 +133,23 @@ export default function MessagePage() {
   const currentMessages = messaging.messages;
 
   const scrollToBottom = () => {
+    isAutoScrolling.current = true;
+    setShowScrollButton(false);
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      isAutoScrolling.current = false;
+    }, 800);
+  };
+
+  const handleScrollMessages = (e) => {
+    if (isAutoScrolling.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop - clientHeight > 200) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
   };
 
   const scrollToMessage = (msgId) => {
@@ -422,7 +440,19 @@ export default function MessagePage() {
             </div>
 
             <div className={`flex-1 overflow-y-auto px-3 pt-3 transition-all duration-300 custom-scrollbar ${isSelectionMode && selectedContacts.length > 0 ? 'pb-40' : 'pb-3'}`}>
-              {filteredContacts.length === 0 ? (
+              {messaging.loadingConversations ? (
+                <div className="flex flex-col gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3.5 p-3 rounded-2xl">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full shrink-0 animate-pulse"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                        <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredContacts.length === 0 ? (
                 <div className="text-center text-gray-400 mt-10 text-sm">Tidak ada kontak ditemukan</div>
               ) : (
                 filteredContacts.map((contact) => {
@@ -629,14 +659,25 @@ export default function MessagePage() {
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar">
+                  <div 
+                    className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar"
+                    onScroll={handleScrollMessages}
+                  >
                     <div className="text-center mb-2">
                       <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
                         OBROLAN DIMULAI
                       </span>
                     </div>
 
-                    {currentMessages.length === 0 ? (
+                    {messaging.loadingMessages ? (
+                      <div className="flex-1 flex flex-col gap-4 py-4 w-full">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className={`flex w-full gap-2 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`w-2/3 md:w-1/2 h-16 rounded-2xl bg-gray-200 animate-pulse ${i % 2 === 0 ? 'rounded-br-sm' : 'rounded-bl-sm'}`}></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : currentMessages.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         Kirim pesan untuk memulai obrolan
                       </div>
@@ -826,6 +867,16 @@ export default function MessagePage() {
                     )}
                     <div ref={messagesEndRef} />
                   </div>
+
+                  {showScrollButton && (
+                    <button
+                      onClick={scrollToBottom}
+                      className="absolute bottom-20 md:bottom-[88px] right-6 p-2.5 md:p-3 bg-white border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.15)] rounded-full text-primary hover:bg-gray-50 transition-all z-20 animate-in fade-in zoom-in slide-in-from-bottom-5 cursor-pointer"
+                      title="Ke pesan terbaru"
+                    >
+                      <ChevronDown size={20} className="stroke-[2.5]" />
+                    </button>
+                  )}
 
                   {isMessageSelectionMode ? (
                     <div className="p-4 md:p-5 bg-white border-t border-gray-100 shrink-0 flex items-center justify-between shadow-[0_-4px_20px_rgb(0,0,0,0.05)] z-20">
