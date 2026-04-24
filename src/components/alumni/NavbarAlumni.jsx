@@ -40,6 +40,27 @@ export default function NavbarAlumni({ user }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Tutup menu saat ukuran layar berubah (mencegah state nyangkut saat mobile -> desktop)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsOpen(false);
+      setIsDropdownOpen(false);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
+  // Tutup menu saat pindah route
+  useEffect(() => {
+    setIsOpen(false);
+    setIsDropdownOpen(false);
+  }, [location.pathname]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -124,7 +145,7 @@ export default function NavbarAlumni({ user }) {
 
   // 3. Logika Background Navbar (Gunakan background putih hanya saat discroll atau di profil/kuesioner)
   // Untuk pengumuman detail, biarkan transparan (sesuai permintaan "hanya warna text nya saja")
-  const hasSolidBg = scrolled;
+  const hasSolidBg = scrolled || isPesan;
 
   // 4. Mode Menciut (Ukuran mengecil): HANYA aktif saat benar-benar di-scroll
   const isShrunk = scrolled;
@@ -172,7 +193,7 @@ export default function NavbarAlumni({ user }) {
                 return (
                   <div
                     key={i}
-                    className="group flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold text-slate-400 cursor-not-allowed opacity-50"
+                    className="group relative flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold text-slate-400 cursor-not-allowed opacity-50"
                   >
                     <Lock size={14} />
                     {item.name}
@@ -190,9 +211,9 @@ export default function NavbarAlumni({ user }) {
                 <Link
                   key={i}
                   to={item.path}
-                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${isActive
-                    ? "bg-white text-primary shadow-sm"
-                    : "text-primary hover:text-secondary"
+                  className={`relative px-5 py-2 rounded-md text-sm font-semibold transition-all no-underline ${isActive
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-third hover:text-primary hover:bg-transparent hover:no-underline'
                     }`}
                 >
                   {item.name}
@@ -369,7 +390,7 @@ export default function NavbarAlumni({ user }) {
                         <Link
                           to={item.path}
                           onClick={() => setIsOpen(false)}
-                          className={`relative block px-5 py-2.5 rounded-xl text-[15px] font-bold transition-all ${isActive ? 'bg-primary text-white shadow-sm' : 'text-primary/80 hover:bg-gray-50 hover:text-primary'}`}
+                          className={`relative block px-5 py-2.5 rounded-xl text-[15px] font-bold transition-all no-underline ${isActive ? 'bg-primary text-white shadow-sm' : 'text-primary/80 hover:bg-fourth hover:text-primary'}`}
                         >
                           {item.name}
                           {item.badge > 0 && (

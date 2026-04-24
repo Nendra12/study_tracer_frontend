@@ -232,9 +232,9 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 is_saat_ini: e.target.checked, 
                 tahun_selesai: e.target.checked ? "" : data.tahun_selesai 
               })}
-              className="w-5 h-5 accent-[#1E293B] cursor-pointer"
+              className="w-5 h-5 accent-primary cursor-pointer"
             />
-            <span className="text-[11px] font-bold text-[#1E293B] uppercase">Masih berlangsung (Saat ini)</span>
+            <span className="text-[11px] font-bold text-primary uppercase">Masih berlangsung (Saat ini)</span>
           </label>
         </div>
       </>
@@ -606,7 +606,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             type="button"
             disabled={loading}
             onClick={() => setShowCaptchaModal(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-[#1E293B] text-white rounded-xl text-xs md:text-sm font-bold hover:bg-[#0F172A] transition-all cursor-pointer disabled:opacity-60"
+            className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:bg-[#0F172A] transition-all cursor-pointer disabled:opacity-60"
           >
             {loading ? (
               <>

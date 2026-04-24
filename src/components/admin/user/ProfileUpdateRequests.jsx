@@ -347,10 +347,10 @@ export default function ProfileUpdateRequests() {
     return (
       <div className="mt-12 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-xl font-black text-[#425A5C] tracking-tight">Permintaan Pembaruan Profil</h2>
+          <h2 className="text-xl font-black text-primary tracking-tight">Permintaan Pembaruan Profil</h2>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={24} className="animate-spin text-[#425A5C]" />
+          <Loader2 size={24} className="animate-spin text-primary" />
         </div>
       </div>
     );
@@ -363,11 +363,15 @@ export default function ProfileUpdateRequests() {
       <div className="mt-12 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-black text-[#425A5C] tracking-tight">Permintaan Pembaruan Profil</h2>
-            <span className="px-3 py-1 bg-[#425A5C]/10 text-[#425A5C] text-xs font-black rounded-full">0 Menunggu</span>
+            <h2 className="text-xl font-black text-primary tracking-tight">Permintaan Pembaruan Profil</h2>
+            <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-black rounded-full">0 Menunggu</span>
           </div>
-          <button onClick={refreshAll} className="text-sm font-bold text-[#425A5C] hover:underline cursor-pointer flex items-center gap-1">
-            <RefreshCw size={14} /> Refresh
+          <button 
+            onClick={refreshAll} 
+            className="group flex items-center gap-1 text-sm font-bold text-primary cursor-pointer transition-all duration-200 hover:opacity-70 active:scale-95 no-underline hover:no-underline"
+          >
+            <RefreshCw size={14} className="transition-transform duration-300 group-hover:rotate-180" /> 
+            Refresh
           </button>
         </div>
         <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm text-center">
@@ -382,19 +386,19 @@ export default function ProfileUpdateRequests() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-black text-[#425A5C] tracking-tight">Permintaan Pembaruan Profil</h2>
-          <span className="px-3 py-1 bg-[#425A5C]/10 text-[#425A5C] text-xs font-black rounded-full">
+          <h2 className="text-xl font-black text-primary tracking-tight">Permintaan Pembaruan Profil</h2>
+          <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-black rounded-full">
             {totalPending} Menunggu
           </span>
         </div>
-        <button onClick={refreshAll} className="text-sm font-bold text-[#425A5C] hover:underline cursor-pointer flex items-center gap-1">
+        <button onClick={refreshAll} className="text-sm font-bold text-primary hover:underline cursor-pointer flex items-center gap-1">
           <RefreshCw size={14} /> Refresh
         </button>
       </div>
 
       {groupedRequests.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-sm font-black text-[#425A5C]/60 uppercase tracking-widest mb-4">Daftar User Dengan Request</h3>
+          <h3 className="text-sm font-black text-primary/60 uppercase tracking-widest mb-4">Daftar User Dengan Request</h3>
           <div className="space-y-4">
             {groupedRequests.map((group) => {
               const isExpanded = expandedUserKey === group.userKey;
@@ -414,7 +418,7 @@ export default function ProfileUpdateRequests() {
                         {group.image ? (
                           <img src={group.image} alt={group.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-50 shrink-0" />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-[#425A5C]/10 text-[#425A5C] flex items-center justify-center font-black text-lg border-2 border-slate-50 shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-lg border-2 border-slate-50 shrink-0">
                             {group.initials || (group.name || 'A').substring(0, 2).toUpperCase()}
                           </div>
                         )}
@@ -427,7 +431,7 @@ export default function ProfileUpdateRequests() {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-[#425A5C]/10 text-[#425A5C]">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-primary/10 text-primary">
                           {group.requestCount} Request
                         </span>
                         {group.careerCount > 0 && (
@@ -462,7 +466,7 @@ export default function ProfileUpdateRequests() {
                           <button
                             onClick={() => confirmBulkActionByUser(group, 'approve')}
                             disabled={actionLoading === `bulk-reject-${group.userKey}` || actionLoading === `bulk-approve-${group.userKey}`}
-                            className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
+                            className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-primary shadow-md shadow-primary/20 hover:bg-primary/80 transition-colors cursor-pointer text-xs disabled:opacity-50"
                           >
                             {actionLoading === `bulk-approve-${group.userKey}` ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima Semua
                           </button>
@@ -480,7 +484,7 @@ export default function ProfileUpdateRequests() {
                             <div key={`${req.requestType}-${req.id}`} className="rounded-2xl border border-slate-100 p-4 bg-slate-50/40">
                               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-[#425A5C]">
+                                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-primary">
                                     <SectionIcon size={12} /> {meta.label}
                                   </span>
                                   {isCareer ? (
@@ -503,7 +507,7 @@ export default function ProfileUpdateRequests() {
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => (isCareer ? setSelectedCareerDetail(req) : setSelectedProfileDetail(req))}
-                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-[#425A5C] bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer text-xs"
+                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-primary bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer text-xs"
                                   >
                                     <Eye size={14} strokeWidth={2.5} /> Lihat Detail
                                   </button>
@@ -517,7 +521,7 @@ export default function ProfileUpdateRequests() {
                                   <button
                                     onClick={() => (isCareer ? handleCareerApprove(req.id) : handleProfileApprove(req.id))}
                                     disabled={actionLoading === loadingKey}
-                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md shadow-[#425A5C]/20 hover:bg-[#2e4042] transition-colors cursor-pointer text-xs disabled:opacity-50"
+                                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-white bg-primary shadow-md shadow-primary/20 hover:bg-primary transition-colors cursor-pointer text-xs disabled:opacity-50"
                                   >
                                     {actionLoading === loadingKey ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Terima
                                   </button>

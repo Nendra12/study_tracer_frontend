@@ -180,7 +180,7 @@ export default function ProfileUpdateDetailModal({
               <button
                 onClick={() => onApprove(detail.id)}
                 disabled={isActionLoading}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-[#425A5C] shadow-md hover:bg-[#2e4042] transition-colors cursor-pointer text-sm disabled:opacity-50"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-primary shadow-md hover:bg-primary/80 transition-colors cursor-pointer text-sm disabled:opacity-50"
               >
                 {isActionLoading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} strokeWidth={3} />} Terima
               </button>

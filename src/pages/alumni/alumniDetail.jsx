@@ -88,6 +88,26 @@ export default function AlumniDetail() {
     try {
       setLoading(true);
       setError(null);
+
+      // If the profile owner has blocked the current user, do not show any detail.
+      const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
+      const requestedId = id;
+      const isSelf = myAlumniId && requestedId && String(myAlumniId) === String(requestedId);
+
+      if (!isSelf) {
+        try {
+          const statusEntry = await fetchStatus(requestedId, { force: true });
+          if (statusEntry?.status === 'blocked_by_them') {
+            setAlumni(null);
+            setError('Anda tidak dapat melihat profil ini.');
+            return;
+          }
+        } catch (statusErr) {
+          // If status check fails, continue loading profile as fallback.
+          console.warn('Failed to check connection status before profile load:', statusErr);
+        }
+      }
+
       const res = await alumniApi.getAlumniPublicProfile(id);
       setAlumni(res.data.data);
     } catch (err) {
@@ -274,24 +294,26 @@ export default function AlumniDetail() {
                 )}
 
               </div>
-
-              {!isSelfProfile && (
-                <div className="mt-5 md:mt-6">
-                  <Connection
-                    alumniId={profileId}
-                    statusEntry={statusMap[String(profileId)]}
-                    isLoading={loadingStatusMap[String(profileId)]}
-                    isActionLoading={actionLoadingMap[String(profileId)]}
-                    onConnect={sendRequest}
-                    onAccept={acceptRequest}
-                    onReject={rejectRequest}
-                    onRemove={removeOrCancel}
-                    onBlock={block}
-                    onUnblock={unblock}
-                  />
-                </div>
-              )}
             </div>
+
+            {/* BAGIAN AKSI (kolom kanan di desktop, di bawah di mobile) */}
+            {!isSelfProfile && (
+              <div className="w-full md:w-auto md:ml-auto mt-4 md:mt-0 flex justify-center md:justify-end">
+                <Connection
+                  alumniId={profileId}
+                  statusEntry={statusMap[String(profileId)]}
+                  isLoading={loadingStatusMap[String(profileId)]}
+                  isActionLoading={actionLoadingMap[String(profileId)]}
+                  onConnect={sendRequest}
+                  onAccept={acceptRequest}
+                  onReject={rejectRequest}
+                  onRemove={removeOrCancel}
+                  onBlock={block}
+                  onUnblock={unblock}
+                  className="md:flex md:flex-col md:items-end"
+                />
+              </div>
+            )}
 
           </div>
         </div>

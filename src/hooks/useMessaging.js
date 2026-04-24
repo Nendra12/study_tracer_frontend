@@ -204,8 +204,10 @@ export function useMessaging(currentUserId) {
         setMessages([]);
       }
       toast.success('Percakapan dihapus');
+      return true;
     } catch (err) {
       toast.error('Gagal menghapus');
+      return false;
     }
   }, [activeConversation]);
 
