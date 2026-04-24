@@ -95,9 +95,9 @@ export default function NewChatModal({ isOpen, onClose, onSelectContact }) {
     try {
       const formData = new FormData();
       formData.append('group_name', groupName.trim());
-      selectedMemberIds.forEach((id) => formData.append('participant_ids[]', id));
+      selectedMemberIds.forEach((id) => formData.append('participants[]', id));
       if (groupAvatarFile) {
-        formData.append('group_avatar', groupAvatarFile);
+        formData.append('avatar', groupAvatarFile);
       }
 
       const res = await alumniApi.createGroupConversation(formData);

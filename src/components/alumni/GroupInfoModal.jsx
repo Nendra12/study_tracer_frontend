@@ -47,7 +47,7 @@ export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit
   const handleSave = async () => {
     await onSubmit?.({
       group_name: groupName.trim(),
-      group_avatar: avatarFile || undefined,
+      avatar: avatarFile || undefined,
     });
   };
 

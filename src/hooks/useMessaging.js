@@ -165,12 +165,12 @@ export function useMessaging(currentUserId) {
     }
   }, [sortConversations]);
 
-  const createGroupConversation = useCallback(async ({ group_name, participant_ids = [], group_avatar }) => {
+  const createGroupConversation = useCallback(async ({ group_name, participant_ids = [], group_avatar, avatar }) => {
     try {
       const formData = new FormData();
       formData.append('group_name', group_name);
-      participant_ids.forEach((id) => formData.append('participant_ids[]', id));
-      if (group_avatar) formData.append('group_avatar', group_avatar);
+      participant_ids.forEach((id) => formData.append('participants[]', id));
+      if (avatar || group_avatar) formData.append('avatar', avatar || group_avatar);
 
       const res = await alumniApi.createGroupConversation(formData);
       const conversation = res.data?.data;
@@ -185,14 +185,14 @@ export function useMessaging(currentUserId) {
     }
   }, [sortConversations]);
 
-  const updateGroupConversation = useCallback(async (convId, { group_name, participant_ids, group_avatar }) => {
+  const updateGroupConversation = useCallback(async (convId, { group_name, participant_ids, group_avatar, avatar }) => {
     try {
       const formData = new FormData();
       if (group_name !== undefined) formData.append('group_name', group_name);
       if (Array.isArray(participant_ids)) {
-        participant_ids.forEach((id) => formData.append('participant_ids[]', id));
+        participant_ids.forEach((id) => formData.append('participants[]', id));
       }
-      if (group_avatar) formData.append('group_avatar', group_avatar);
+      if (avatar || group_avatar) formData.append('avatar', avatar || group_avatar);
 
       const res = await alumniApi.updateGroupConversation(convId, formData);
       const updatedConversation = res.data?.data;
