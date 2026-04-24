@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis, Loader2, BellOff, LayoutGrid, MessageCircle } from 'lucide-react';
-import { Toaster, toast } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
@@ -8,6 +8,7 @@ import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
 import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
 import { useAuth } from '../../context/AuthContext';
 import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, formatTime, getImageUrl } from '../../hooks/useMessaging';
+import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
 
 
 const MAX_FAVORITES = 3;
@@ -56,6 +57,13 @@ export default function MessagePage() {
   const { user } = useAuth();
   const currentUserId = user?.id_users || user?.id;
   const messaging = useMessaging(currentUserId);
+
+  const confirmThen = async (message, action) => {
+    const result = await alertConfirm(message);
+    if (!result?.isConfirmed) return false;
+    await action?.();
+    return true;
+  };
 
   const [messageInput, setMessageInput] = useState('');
   const [showChatArea, setShowChatArea] = useState(false);
@@ -166,9 +174,15 @@ export default function MessagePage() {
   };
 
   const handleSendMessage = async () => {
-    if (!messageInput.trim() && !attachmentPreview) return;
+    if (!messageInput.trim() && !attachmentPreview) {
+      toastWarning('Tulis pesan atau pilih lampiran dulu.');
+      return;
+    }
     const convId = activeChat?.id_conversation;
-    if (!convId) return;
+    if (!convId) {
+      toastWarning('Pilih chat dulu untuk mengirim pesan.');
+      return;
+    }
 
     let data;
     if (attachmentPreview?.file) {
@@ -210,7 +224,10 @@ export default function MessagePage() {
 
   const handleSendGif = (url) => {
     const convId = activeChat?.id_conversation;
-    if (!convId) return;
+    if (!convId) {
+      toastWarning('Pilih chat dulu untuk mengirim GIF.');
+      return;
+    }
     messaging.sendMessage(convId, { type: 'gif', gif_url: url }).catch(() => {});
     setShowGifPicker(false);
   };
@@ -220,6 +237,7 @@ export default function MessagePage() {
     messaging.selectConversation(conversation);
     setShowChatArea(true);
     setIsModalOpen(false);
+    toastSuccess('Obrolan siap digunakan.');
   };
 
   const toggleFavorite = (e, convId) => {
@@ -227,13 +245,14 @@ export default function MessagePage() {
     messaging.togglePin(convId);
   };
 
-  const handleDeleteChat = (convId) => {
+  const handleDeleteChat = async (convId) => {
     const targetId = convId || activeChat?.id_conversation;
     if (!targetId) return;
-    if (window.confirm('Hapus chat ini?')) {
-      messaging.deleteConversation(targetId);
-      if (activeChat?.id_conversation === targetId) setShowChatArea(false);
-    }
+    const ok = await confirmThen('Chat ini akan dihapus. Lanjutkan?', async () => {
+      const success = await messaging.deleteConversation(targetId);
+      if (success && activeChat?.id_conversation === targetId) setShowChatArea(false);
+    });
+    if (!ok) return;
   };
 
   const handleToggleSelect = (contactId) => {
@@ -340,7 +359,7 @@ export default function MessagePage() {
                     <MessageSquarePlus size={20} className="stroke-[2.5]" />
                   </button>
                   <button
-                    onClick={() => toast('Fitur Pengaturan akan segera hadir!', { icon: '🚧' })}
+                    onClick={() => toastWarning('Fitur Pengaturan akan segera hadir!')}
                     className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
                   >
                     <MoreVertical size={20} className="stroke-[2.5]" />
@@ -553,11 +572,11 @@ export default function MessagePage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
+                    onClick={() => confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, () => {
                       selectedContacts.forEach(id => messaging.deleteConversation(id));
                       setIsSelectionMode(false);
                       setSelectedContacts([]);
-                    }}
+                    })}
                     className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
                   >
                     <Trash2 size={14} /> Hapus
@@ -622,7 +641,7 @@ export default function MessagePage() {
                             onTogglePin={() => messaging.togglePin(activeChat.id_conversation)}
                             onToggleMute={() => messaging.toggleMute(activeChat.id_conversation)}
                             onDeleteChat={() => handleDeleteChat(activeChat.id_conversation)}
-                            onLeaveGroup={() => messaging.leaveGroup(activeChat.id_conversation)}
+                            onLeaveGroup={() => confirmThen('Keluar dari grup ini?', () => messaging.leaveGroup(activeChat.id_conversation))}
                           />
                         )}
                       </div>
@@ -711,9 +730,7 @@ export default function MessagePage() {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setActiveMessageMenuId(null);
-                                                if (window.confirm('Hapus pesan ini?')) {
-                                                  messaging.deleteMessage(msg.id_message);
-                                                }
+                                                confirmThen('Pesan ini akan dihapus. Lanjutkan?', () => messaging.deleteMessage(msg.id_message));
                                               }}
                                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
                                             >
@@ -846,13 +863,13 @@ export default function MessagePage() {
                         <button
                           onClick={async () => {
                             if (selectedMessageIds.length > 0) {
-                              if (window.confirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`)) {
-                                for (const id of selectedMessageIds) {
-                                  await messaging.deleteMessage(id);
-                                }
-                                setIsMessageSelectionMode(false);
-                                setSelectedMessageIds([]);
+                              const result = await alertConfirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`);
+                              if (!result?.isConfirmed) return;
+                              for (const id of selectedMessageIds) {
+                                await messaging.deleteMessage(id);
                               }
+                              setIsMessageSelectionMode(false);
+                              setSelectedMessageIds([]);
                             }
                           }}
                           disabled={selectedMessageIds.length === 0}

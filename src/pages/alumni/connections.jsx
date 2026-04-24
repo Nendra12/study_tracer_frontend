@@ -39,7 +39,23 @@ function getAlumniId(entity) {
   return entity.id || entity.id_alumni || entity.alumni_id || entity.id_users || null;
 }
 
+function isBlockedByThem(item) {
+  if (!item) return false;
+  const candidate = item?.data ?? item;
+  return Boolean(
+    candidate?.is_blocked_by_them ??
+    candidate?.blocked_by_them ??
+    candidate?.blocked_by_addressee ??
+    candidate?.blocked_by_target ??
+    candidate?.relationship?.blocked_by_them ??
+    candidate?.connection?.blocked_by_them ??
+    false
+  );
+}
+
 function mapConnectionItem(item, tabKey) {
+  if (isBlockedByThem(item)) return null;
+
   const profile =
     item.alumni ||
     item.profile ||
@@ -115,6 +131,7 @@ export default function ConnectionsPage() {
   const { user: authUser } = useAuth();
   const {
     listLoading,
+    actionLoadingMap,
     fetchMyConnections,
     fetchPendingRequests,
     fetchSentRequests,
@@ -149,7 +166,7 @@ export default function ConnectionsPage() {
       if (!fetcher) return;
 
       const result = await fetcher({ page, per_page: 12 }); // PERUBAHAN: Gunakan per_page 12
-      const mapped = (result.data || []).map((item) => mapConnectionItem(item, tabKey));
+      const mapped = (result.data || []).map((item) => mapConnectionItem(item, tabKey)).filter(Boolean);
 
       setItems(mapped);
       setPageMeta({
@@ -319,7 +336,7 @@ export default function ConnectionsPage() {
                           onRemove={(...args) => runAndRefresh(removeOrCancel, ...args)}
                           onBlock={(...args) => runAndRefresh(block, ...args)}
                           onUnblock={(...args) => runAndRefresh(unblock, ...args)}
-                          isActionLoading={isLoading}
+                          isActionLoading={actionLoadingMap[String(item.id)]}
                           compact
                           mode="actions"
                         />

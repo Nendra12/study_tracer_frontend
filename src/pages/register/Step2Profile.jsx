@@ -395,16 +395,18 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
             value={formData.tanggal_lahir} 
             onChange={(val) => { 
               updateFormData({ tanggal_lahir: val }); 
-              setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
-
               if (formData.tahun_masuk) {
                 const birthYear = new Date(val).getFullYear();
                 const entryYear = parseInt(formData.tahun_masuk);
-                
+
                 if (entryYear - birthYear < 14) {
                   alertError('Peringatan: Tanggal lahir harus minimal 14 tahun di bawah tahun masuk.');
                   setErrors(prev => ({ ...prev, tanggal_lahir: 'Usia tidak mencukupi (minimal 14 tahun)' }));
+                } else {
+                  setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
                 }
+              } else {
+                setErrors(prev => ({ ...prev, tanggal_lahir: undefined }));
               }
             }} 
           />
