@@ -335,7 +335,7 @@ export default function MessagePage() {
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
-                    title
+                    title="Chat baru"
                   >
                     <MessageSquarePlus size={20} className="stroke-[2.5]" />
                   </button>
@@ -432,9 +432,17 @@ export default function MessagePage() {
                   const isPinned = contact.settings?.is_pinned;
                   const isActive = activeChat?.id_conversation === cId;
                   return (
-                  <button
+                  <div
                     key={cId}
                     onClick={() => isSelectionMode ? handleToggleSelect(cId) : handleSelectChat(contact)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        isSelectionMode ? handleToggleSelect(cId) : handleSelectChat(contact);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
                     className={`w-full cursor-pointer flex items-center gap-3.5 p-3 rounded-2xl text-left group transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(cId)
                       ? 'bg-indigo-50 border-indigo-200 border'
                       : isActive && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
@@ -526,7 +534,7 @@ export default function MessagePage() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                   );
                 })
               )}
