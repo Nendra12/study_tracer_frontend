@@ -165,6 +165,24 @@ export function AuthProvider({ children }) {
       });
     }
 
+    // Subscribe to private messaging channel for real-time chat
+    let chatChannel = null;
+    if (authUserId) {
+      chatChannel = echoRef.current.private(`chat.${authUserId}`);
+      chatChannel.listen('.message.sent', (data) => {
+        window.dispatchEvent(new CustomEvent('reverb:message.sent', { detail: data }));
+      });
+      chatChannel.listen('.message.deleted', (data) => {
+        window.dispatchEvent(new CustomEvent('reverb:message.deleted', { detail: data }));
+      });
+      chatChannel.listen('.message.read', (data) => {
+        window.dispatchEvent(new CustomEvent('reverb:message.read', { detail: data }));
+      });
+      chatChannel.listen('.typing.indicator', (data) => {
+        window.dispatchEvent(new CustomEvent('reverb:typing.indicator', { detail: data }));
+      });
+    }
+
     if (user.role === 'admin') {
       adminChannel = echoRef.current.private('admin');
       adminChannel.listen('.dashboard.stats-updated', (data) => {
@@ -175,6 +193,7 @@ export function AuthProvider({ children }) {
     return () => {
       if (echoRef.current && authUserId) {
         echoRef.current.leave(`private-user.${authUserId}`);
+        echoRef.current.leave(`private-chat.${authUserId}`);
       }
       if (echoRef.current && user.role === 'alumni') {
         echoRef.current.leave('private-alumni');

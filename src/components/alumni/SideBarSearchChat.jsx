@@ -1,6 +1,8 @@
 import { Search, X } from "lucide-react";
 
-export default function SideBarSearchChat({ messageSearchQuery, setMessageSearchQuery, messageSearchResults, scrollToMessage, activeChat, setIsSearchMessageOpen }) {
+import { formatTime, getDisplayName } from '../../hooks/useMessaging';
+
+export default function SideBarSearchChat({ messageSearchQuery, setMessageSearchQuery, messageSearchResults, scrollToMessage, activeChat, setIsSearchMessageOpen, currentUserId }) {
     return (
         <div className="w-full md:w-80 lg:w-[320px] border-l border-gray-100 bg-white flex flex-col absolute md:relative inset-y-0 right-0 z-20 shadow-xl md:shadow-none animate-in slide-in-from-right-8 duration-300">
             <div className="h-[76px] px-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
@@ -29,7 +31,7 @@ export default function SideBarSearchChat({ messageSearchQuery, setMessageSearch
                 {messageSearchQuery.trim() === '' ? (
                     <div className="flex flex-col items-center justify-center h-full text-center p-6">
                         <Search size={40} className="text-gray-200 mb-3" />
-                        <p className="text-sm text-gray-400">Ketik kata kunci untuk mencari pesan dalam obrolan dengan {activeChat.name}</p>
+                        <p className="text-sm text-gray-400">Ketik kata kunci untuk mencari pesan dalam obrolan dengan {getDisplayName(activeChat)}</p>
                     </div>
                 ) : messageSearchResults.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center p-6">
@@ -44,11 +46,11 @@ export default function SideBarSearchChat({ messageSearchQuery, setMessageSearch
                                 className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer group"
                             >
                                 <div className="flex justify-between items-start mb-1">
-                                    <span className="text-[11px] font-bold text-gray-500">{msg.sender === 'me' ? 'Anda' : activeChat.name}</span>
-                                    <span className="text-[10px] text-gray-400">{msg.time}</span>
+                                    <span className="text-[11px] font-bold text-gray-500">{msg.sender?.id_users === currentUserId ? 'Anda' : (msg.sender?.nama_alumni || 'User')}</span>
+                                    <span className="text-[10px] text-gray-400">{formatTime(msg.created_at)}</span>
                                 </div>
                                 <p className="text-sm text-gray-700 line-clamp-2">
-                                    {msg.text || msg.caption || msg.fileName}
+                                    {msg.body || msg.file_name}
                                 </p>
                             </div>
                         ))}

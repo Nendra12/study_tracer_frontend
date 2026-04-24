@@ -36,6 +36,12 @@ export default function Connection({
   className = '',
 }) {
   const status = statusEntry?.status || 'none';
+  const connectionId =
+    statusEntry?.connectionId ??
+    statusEntry?.raw?.id_connection ??
+    statusEntry?.raw?.connection_id ??
+    statusEntry?.raw?.id ??
+    null;
 
   const wrapperClass = useMemo(() => {
     if (compact) return `space-y-2 ${className}`.trim();
@@ -129,7 +135,7 @@ export default function Connection({
             <button
               type="button"
               disabled={isActionLoading}
-              onClick={() => runAction(() => onAccept?.(alumniId), 'Permintaan koneksi diterima.')}
+              onClick={() => runAction(() => onAccept?.(alumniId, connectionId), 'Permintaan koneksi diterima.')}
               className={`${buttonBase} bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700`}
             >
               {isActionLoading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
@@ -138,7 +144,7 @@ export default function Connection({
             <button
               type="button"
               disabled={isActionLoading}
-              onClick={() => runAction(() => onReject?.(alumniId), 'Permintaan koneksi ditolak.')}
+              onClick={() => runAction(() => onReject?.(alumniId, connectionId), 'Permintaan koneksi ditolak.')}
               className={`${buttonBase} bg-white text-amber-700 border-amber-200 hover:bg-amber-50`}
             >
               <UserX size={14} /> Tolak
