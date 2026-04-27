@@ -283,6 +283,7 @@ export default function MessagePage() {
     const matchSearch = name.includes(searchQuery.toLowerCase());
     if (filterMode === 'favorite') return matchSearch && c.settings?.is_pinned;
     if (filterMode === 'archived') return matchSearch && c.settings?.is_archived;
+    if (filterMode === 'unread') return matchSearch && (c.unread_count || 0) > 0 && !c.settings?.is_archived;
     return matchSearch && !c.settings?.is_archived;
   });
 

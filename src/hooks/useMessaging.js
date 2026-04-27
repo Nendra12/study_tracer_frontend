@@ -65,6 +65,29 @@ export function useMessaging(currentUserId) {
   const [sending, setSending] = useState(false);
   const typingTimerRef = useRef(null);
 
+  const sortConversations = useCallback((list = []) => {
+    return [...list].sort((a, b) => {
+      const aPin = a.settings?.is_pinned ? 1 : 0;
+      const bPin = b.settings?.is_pinned ? 1 : 0;
+      if (aPin !== bPin) return bPin - aPin;
+      const aTime = a.last_message?.created_at || a.created_at || '';
+      const bTime = b.last_message?.created_at || b.created_at || '';
+      return bTime.localeCompare(aTime);
+    });
+  }, []);
+
+  const updateConversationInState = useCallback((convId, updater) => {
+    setConversations(prev => {
+      const next = prev.map(c => (c.id_conversation === convId ? updater(c) : c));
+      return sortConversations(next);
+    });
+
+    setActiveConversation(prev => {
+      if (!prev || prev.id_conversation !== convId) return prev;
+      return updater(prev);
+    });
+  }, [sortConversations]);
+
   const fetchConversations = useCallback(async (search = '') => {
     setLoadingConversations(true);
     try {
@@ -130,14 +153,7 @@ export function useMessaging(currentUserId) {
             }
             return c;
           });
-          return updated.sort((a, b) => {
-            const aPin = a.settings?.is_pinned ? 1 : 0;
-            const bPin = b.settings?.is_pinned ? 1 : 0;
-            if (aPin !== bPin) return bPin - aPin;
-            const aTime = a.last_message?.created_at || a.created_at || '';
-            const bTime = b.last_message?.created_at || b.created_at || '';
-            return bTime.localeCompare(aTime);
-          });
+          return sortConversations(updated);
         });
       }
       return msg;
@@ -147,7 +163,64 @@ export function useMessaging(currentUserId) {
     } finally {
       setSending(false);
     }
-  }, []);
+  }, [sortConversations]);
+
+  const createGroupConversation = useCallback(async ({ group_name, participant_ids = [], group_avatar, avatar }) => {
+    try {
+      const formData = new FormData();
+      formData.append('group_name', group_name);
+      participant_ids.forEach((id) => formData.append('participants[]', id));
+      if (avatar || group_avatar) formData.append('avatar', avatar || group_avatar);
+
+      const res = await alumniApi.createGroupConversation(formData);
+      const conversation = res.data?.data;
+      if (conversation) {
+        setConversations(prev => sortConversations([conversation, ...prev.filter(c => c.id_conversation !== conversation.id_conversation)]));
+      }
+      toast.success('Grup berhasil dibuat');
+      return conversation;
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal membuat grup');
+      throw err;
+    }
+  }, [sortConversations]);
+
+  const updateGroupConversation = useCallback(async (convId, { group_name, participant_ids, group_avatar, avatar }) => {
+    try {
+      const formData = new FormData();
+      if (group_name !== undefined) formData.append('group_name', group_name);
+      if (Array.isArray(participant_ids)) {
+        participant_ids.forEach((id) => formData.append('participants[]', id));
+      }
+      if (avatar || group_avatar) formData.append('avatar', avatar || group_avatar);
+
+      const res = await alumniApi.updateGroupConversation(convId, formData);
+      const updatedConversation = res.data?.data;
+      if (updatedConversation) {
+        updateConversationInState(convId, (c) => ({ ...c, ...updatedConversation }));
+      }
+      toast.success('Informasi grup diperbarui');
+      return updatedConversation;
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal memperbarui grup');
+      throw err;
+    }
+  }, [updateConversationInState]);
+
+  const refreshConversationDetail = useCallback(async (convId) => {
+    try {
+      const res = await alumniApi.getConversation(convId);
+      const detail = res.data?.data;
+      if (!detail) return null;
+
+      setConversations(prev => sortConversations(prev.map(c => c.id_conversation === convId ? { ...c, ...detail } : c)));
+      setActiveConversation(prev => prev?.id_conversation === convId ? { ...prev, ...detail } : prev);
+      return detail;
+    } catch (err) {
+      console.error('Failed to refresh conversation detail:', err);
+      return null;
+    }
+  }, [sortConversations]);
 
   const deleteMessage = useCallback(async (msgId) => {
     try {
@@ -163,37 +236,23 @@ export function useMessaging(currentUserId) {
     try {
       const res = await alumniApi.togglePinConversation(convId);
       const isPinned = res.data?.data?.is_pinned;
-      setConversations(prev => prev.map(c =>
-        c.id_conversation === convId
-          ? { ...c, settings: { ...c.settings, is_pinned: isPinned } }
-          : c
-      ));
-      if (activeConversation?.id_conversation === convId) {
-        setActiveConversation(prev => ({ ...prev, settings: { ...prev.settings, is_pinned: isPinned } }));
-      }
+      updateConversationInState(convId, (c) => ({ ...c, settings: { ...c.settings, is_pinned: isPinned } }));
       toast.success(isPinned ? 'Disematkan' : 'Sematan dihapus');
     } catch (err) {
       toast.error('Gagal mengubah pin');
     }
-  }, [activeConversation]);
+  }, [updateConversationInState]);
 
   const toggleMute = useCallback(async (convId) => {
     try {
       const res = await alumniApi.toggleMuteConversation(convId);
       const isMuted = res.data?.data?.is_muted;
-      setConversations(prev => prev.map(c =>
-        c.id_conversation === convId
-          ? { ...c, settings: { ...c.settings, is_muted: isMuted } }
-          : c
-      ));
-      if (activeConversation?.id_conversation === convId) {
-        setActiveConversation(prev => ({ ...prev, settings: { ...prev.settings, is_muted: isMuted } }));
-      }
+      updateConversationInState(convId, (c) => ({ ...c, settings: { ...c.settings, is_muted: isMuted } }));
       toast.success(isMuted ? 'Notifikasi dimatikan' : 'Notifikasi diaktifkan');
     } catch (err) {
       toast.error('Gagal mengubah notifikasi');
     }
-  }, [activeConversation]);
+  }, [updateConversationInState]);
 
   const deleteConversation = useCallback(async (convId) => {
     try {
@@ -282,6 +341,7 @@ export function useMessaging(currentUserId) {
   return {
     conversations, messages, activeConversation, loadingConversations, loadingMessages, sending, msgPagination,
     fetchConversations, fetchMessages, selectConversation, sendMessage, deleteMessage,
+    createGroupConversation, updateGroupConversation, refreshConversationDetail,
     togglePin, toggleMute, deleteConversation, leaveGroup, handleTypingInput,
     handleRealtimeMessage, handleRealtimeDelete, handleRealtimeRead,
     setActiveConversation, setMessages, setConversations,
