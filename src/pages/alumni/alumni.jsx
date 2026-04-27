@@ -279,6 +279,9 @@ export default function Alumni() {
                 const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
                 const isSelf = String(alumniId) === String(myAlumniId);
 
+                const status = statusMap[String(alumniId)]?.status;
+                if (status === 'blocked_by_them') return null;
+
                 return (
                 <AlumniProfileCard 
                   key={alumniId || alumni.id} 

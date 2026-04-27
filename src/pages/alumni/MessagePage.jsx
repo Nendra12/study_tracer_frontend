@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis, Loader2, BellOff, LayoutGrid, MessageCircle } from 'lucide-react';
-import { Toaster, toast } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
 import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
 import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
-import GroupInfoModal from '../../components/alumni/GroupInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, formatTime, getImageUrl } from '../../hooks/useMessaging';
+import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
 
 
 const MAX_FAVORITES = 3;
@@ -58,8 +58,16 @@ export default function MessagePage() {
   const currentUserId = user?.id_users || user?.id;
   const messaging = useMessaging(currentUserId);
 
+  const confirmThen = async (message, action) => {
+    const result = await alertConfirm(message);
+    if (!result?.isConfirmed) return false;
+    await action?.();
+    return true;
+  };
+
   const [messageInput, setMessageInput] = useState('');
   const [showChatArea, setShowChatArea] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all');
@@ -79,8 +87,6 @@ export default function MessagePage() {
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const [isChatMenuOpen, setIsChatMenuOpen] = useState(false);
-  const [isGroupInfoOpen, setIsGroupInfoOpen] = useState(false);
-  const [savingGroupInfo, setSavingGroupInfo] = useState(false);
 
   const [isMessageSelectionMode, setIsMessageSelectionMode] = useState(false);
   const [selectedMessageIds, setSelectedMessageIds] = useState([]);
@@ -92,6 +98,7 @@ export default function MessagePage() {
   const messagesEndRef = useRef(null);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const isAutoScrolling = useRef(false);
 
   // Fetch conversations on mount
   useEffect(() => { messaging.fetchConversations(); }, []);
@@ -134,7 +141,23 @@ export default function MessagePage() {
   const currentMessages = messaging.messages;
 
   const scrollToBottom = () => {
+    isAutoScrolling.current = true;
+    setShowScrollButton(false);
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      isAutoScrolling.current = false;
+    }, 800);
+  };
+
+  const handleScrollMessages = (e) => {
+    if (isAutoScrolling.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop - clientHeight > 200) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
   };
 
   const scrollToMessage = (msgId) => {
@@ -148,11 +171,8 @@ export default function MessagePage() {
 
   useEffect(() => { scrollToBottom(); }, [currentMessages, activeChat]);
 
-  const handleSelectChat = async (conv) => {
-    await messaging.selectConversation(conv);
-    if (conv?.type === 'group') {
-      messaging.refreshConversationDetail(conv.id_conversation);
-    }
+  const handleSelectChat = (conv) => {
+    messaging.selectConversation(conv);
     setShowChatArea(true);
     setShowEmojiPicker(false);
     setShowGifPicker(false);
@@ -172,9 +192,15 @@ export default function MessagePage() {
   };
 
   const handleSendMessage = async () => {
-    if (!messageInput.trim() && !attachmentPreview) return;
+    if (!messageInput.trim() && !attachmentPreview) {
+      toastWarning('Tulis pesan atau pilih lampiran dulu.');
+      return;
+    }
     const convId = activeChat?.id_conversation;
-    if (!convId) return;
+    if (!convId) {
+      toastWarning('Pilih chat dulu untuk mengirim pesan.');
+      return;
+    }
 
     let data;
     if (attachmentPreview?.file) {
@@ -198,7 +224,7 @@ export default function MessagePage() {
 
     try {
       await messaging.sendMessage(convId, data);
-    } catch {}
+    } catch { }
   };
 
   const handleSendAttachment = (e, type) => {
@@ -217,7 +243,7 @@ export default function MessagePage() {
   const handleSendGif = (url) => {
     const convId = activeChat?.id_conversation;
     if (!convId) return;
-    messaging.sendMessage(convId, { type: 'gif', gif_url: url }).catch(() => {});
+    messaging.sendMessage(convId, { type: 'gif', gif_url: url }).catch(() => { });
     setShowGifPicker(false);
   };
 
@@ -226,26 +252,7 @@ export default function MessagePage() {
     messaging.selectConversation(conversation);
     setShowChatArea(true);
     setIsModalOpen(false);
-  };
-
-  const handleOpenGroupInfo = async () => {
-    if (!activeChat || activeChat.type !== 'group') return;
-    await messaging.refreshConversationDetail(activeChat.id_conversation);
-    setIsGroupInfoOpen(true);
-  };
-
-  const handleSaveGroupInfo = async (data) => {
-    if (!activeChat?.id_conversation) return;
-    setSavingGroupInfo(true);
-    try {
-      await messaging.updateGroupConversation(activeChat.id_conversation, data);
-      await messaging.refreshConversationDetail(activeChat.id_conversation);
-      setIsGroupInfoOpen(false);
-    } catch {
-      // Toast is handled inside messaging hook.
-    } finally {
-      setSavingGroupInfo(false);
-    }
+    toastSuccess('Obrolan siap digunakan.');
   };
 
   const toggleFavorite = (e, convId) => {
@@ -253,13 +260,14 @@ export default function MessagePage() {
     messaging.togglePin(convId);
   };
 
-  const handleDeleteChat = (convId) => {
+  const handleDeleteChat = async (convId) => {
     const targetId = convId || activeChat?.id_conversation;
     if (!targetId) return;
-    if (window.confirm('Hapus chat ini?')) {
-      messaging.deleteConversation(targetId);
-      if (activeChat?.id_conversation === targetId) setShowChatArea(false);
-    }
+    const ok = await confirmThen('Chat ini akan dihapus. Lanjutkan?', async () => {
+      const success = await messaging.deleteConversation(targetId);
+      if (success && activeChat?.id_conversation === targetId) setShowChatArea(false);
+    });
+    if (!ok) return;
   };
 
   const handleToggleSelect = (contactId) => {
@@ -275,6 +283,7 @@ export default function MessagePage() {
     const matchSearch = name.includes(searchQuery.toLowerCase());
     if (filterMode === 'favorite') return matchSearch && c.settings?.is_pinned;
     if (filterMode === 'archived') return matchSearch && c.settings?.is_archived;
+    if (filterMode === 'unread') return matchSearch && (c.unread_count || 0) > 0 && !c.settings?.is_archived;
     return matchSearch && !c.settings?.is_archived;
   });
 
@@ -310,13 +319,6 @@ export default function MessagePage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelectContact={handleAddContact}
-      />
-      <GroupInfoModal
-        isOpen={isGroupInfoOpen}
-        onClose={() => setIsGroupInfoOpen(false)}
-        conversation={activeChat}
-        onSubmit={handleSaveGroupInfo}
-        saving={savingGroupInfo}
       />
 
       {/* Hidden file inputs */}
@@ -368,12 +370,12 @@ export default function MessagePage() {
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
-                    title="Chat baru"
+                    title
                   >
                     <MessageSquarePlus size={20} className="stroke-[2.5]" />
                   </button>
                   <button
-                    onClick={() => toast('Fitur Pengaturan akan segera hadir!', { icon: '🚧' })}
+                    onClick={() => toastWarning('Fitur Pengaturan akan segera hadir!')}
                     className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
                   >
                     <MoreVertical size={20} className="stroke-[2.5]" />
@@ -411,7 +413,7 @@ export default function MessagePage() {
                     </span>
                   )}
                 </button>
-                
+
                 <button
                   onClick={() => setFilterMode(filterMode === 'favorite' ? 'all' : 'favorite')}
                   className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'favorite' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
@@ -455,119 +457,123 @@ export default function MessagePage() {
             </div>
 
             <div className={`flex-1 overflow-y-auto px-3 pt-3 transition-all duration-300 custom-scrollbar ${isSelectionMode && selectedContacts.length > 0 ? 'pb-40' : 'pb-3'}`}>
-              {filteredContacts.length === 0 ? (
+              {messaging.loadingConversations ? (
+                <div className="flex flex-col gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3.5 p-3 rounded-2xl">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full shrink-0 animate-pulse"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                        <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredContacts.length === 0 ? (
                 <div className="text-center text-gray-400 mt-10 text-sm">Tidak ada kontak ditemukan</div>
               ) : (
-               filteredContacts.map((contact) => {
+                filteredContacts.map((contact) => {
                   const cId = contact.id_conversation;
                   const cName = getDisplayName(contact);
                   const cAvatar = getAvatarUrl(contact);
                   const isPinned = contact.settings?.is_pinned;
                   const isActive = activeChat?.id_conversation === cId;
                   return (
-                  <div
-                    key={cId}
-                    onClick={() => isSelectionMode ? handleToggleSelect(cId) : handleSelectChat(contact)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        isSelectionMode ? handleToggleSelect(cId) : handleSelectChat(contact);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    className={`w-full cursor-pointer flex items-center gap-3.5 p-3 rounded-2xl text-left group transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(cId)
-                      ? 'bg-indigo-50 border-indigo-200 border'
-                      : isActive && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
-                      }`}
-                  >
-                    {isSelectionMode && (
-                      <div className="shrink-0 mr-1 animate-in fade-in slide-in-from-left-2 duration-200">
-                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${selectedContacts.includes(cId) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300'
-                          }`}>
-                          {selectedContacts.includes(cId) && <Check size={14} strokeWidth={3} />}
+                    <button
+                      key={cId}
+                      onClick={() => isSelectionMode ? handleToggleSelect(cId) : handleSelectChat(contact)}
+                      className={`w-full cursor-pointer flex items-center gap-3.5 p-3 rounded-2xl text-left group transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(cId)
+                        ? 'bg-indigo-50 border-indigo-200 border'
+                        : isActive && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
+                        }`}
+                    >
+                      {isSelectionMode && (
+                        <div className="shrink-0 mr-1 animate-in fade-in slide-in-from-left-2 duration-200">
+                          <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${selectedContacts.includes(cId) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300'
+                            }`}>
+                            {selectedContacts.includes(cId) && <Check size={14} strokeWidth={3} />}
+                          </div>
                         </div>
+                      )}
+                      <div className="relative shrink-0">
+                        <img src={cAvatar} alt={cName} className="w-12 h-12 rounded-full object-cover" />
                       </div>
-                    )}
-                    <div className="relative shrink-0">
-                      <img src={cAvatar} alt={cName} className="w-12 h-12 rounded-full object-cover" />
-                    </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center mb-1">
-                        <h3 className={`text-sm mb-1.5 font-bold truncate pr-2 ${isActive ? 'text-primary' : 'text-gray-800'}`}>
-                          {cName}
-                        </h3>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className={`text-[11px] font-medium text-gray-400 ${activeSidebarMenuId === cId ? 'hidden' : 'group-hover:hidden'}`}>{formatTime(contact.last_message?.created_at || contact.created_at)}</span>
-                          <div className={`relative ${activeSidebarMenuId === cId ? 'block' : 'group-hover:block hidden'}`}>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveSidebarMenuId(activeSidebarMenuId === cId ? null : cId);
-                              }}
-                              className="p-1 hover:bg-gray-200 rounded-full transition-colors text-gray-500 hover:text-primary cursor-pointer"
-                            >
-                              <Ellipsis size={16} />
-                            </button>
-                            
-                            {activeSidebarMenuId === cId && (
-                              <>
-                                <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveSidebarMenuId(null); }} />
-                                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <h3 className={`text-sm mb-1.5 font-bold truncate pr-2 ${isActive ? 'text-primary' : 'text-gray-800'}`}>
+                            {cName}
+                          </h3>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-[11px] font-medium text-gray-400 ${activeSidebarMenuId === cId ? 'hidden' : 'group-hover:hidden'}`}>{formatTime(contact.last_message?.created_at || contact.created_at)}</span>
+                            <div className={`relative ${activeSidebarMenuId === cId ? 'block' : 'group-hover:block hidden'}`}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSidebarMenuId(activeSidebarMenuId === cId ? null : cId);
+                                }}
+                                className="p-1 hover:bg-gray-200 rounded-full transition-colors text-gray-500 hover:text-primary cursor-pointer"
+                              >
+                                <Ellipsis size={16} />
+                              </button>
+
+                              {activeSidebarMenuId === cId && (
+                                <>
+                                  <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveSidebarMenuId(null); }} />
+                                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
                                     {contact.type === 'private' && contact.contact?.id_alumni && (
-                                    <button
+                                      <button
                                         onClick={(e) => { e.stopPropagation(); navigate(`/alumni/daftar-alumni/${contact.contact.id_alumni}`); setActiveSidebarMenuId(null); }}
                                         className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
-                                    >
+                                      >
                                         <Info size={16} /> Info alumni
-                                    </button>
+                                      </button>
                                     )}
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); toggleFavorite(e, cId); setActiveSidebarMenuId(null); }}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                      onClick={(e) => { e.stopPropagation(); toggleFavorite(e, cId); setActiveSidebarMenuId(null); }}
+                                      className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
                                     >
-                                        <Pin size={16} className={isPinned ? "fill-primary text-primary" : ""} /> {isPinned ? 'Batal Sematkan' : 'Sematkan chat'}
+                                      <Pin size={16} className={isPinned ? "fill-primary text-primary" : ""} /> {isPinned ? 'Batal Sematkan' : 'Sematkan chat'}
                                     </button>
-                                    
+
                                     <div className="h-px bg-gray-100 my-1.5 mx-3"></div>
-                                    
+
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteChat(cId); setActiveSidebarMenuId(null); }}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
+                                      onClick={(e) => { e.stopPropagation(); handleDeleteChat(cId); setActiveSidebarMenuId(null); }}
+                                      className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
                                     >
-                                        <Trash2 size={16} /> Hapus chat
+                                      <Trash2 size={16} /> Hapus chat
                                     </button>
-                                </div>
-                              </>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            {!isSelectionMode && isPinned && (
+                              <button
+                                onClick={(e) => toggleFavorite(e, cId)}
+                                className="p-1.5 rounded-full transition-colors cursor-pointer text-primary"
+                                title="Disematkan"
+                              >
+                                <Pin size={14} className='text-primary fill-primary' />
+                              </button>
                             )}
                           </div>
-                          {!isSelectionMode && isPinned && (
-                            <button
-                              onClick={(e) => toggleFavorite(e, cId)}
-                              className="p-1.5 rounded-full transition-colors cursor-pointer text-primary"
-                              title="Disematkan"
-                            >
-                              <Pin size={14} className='text-primary fill-primary' />
-                            </button>
-                          )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1.5 justify-between">
-                        <p className={`text-xs truncate ${isActive && (contact.unread_count || 0) > 0 ? 'font-bold text-primary' : 'text-gray-500'}`}>
-                          {getLastMessagePreview(contact) || 'Tidak ada pesan'}
-                        </p>
+                        <div className="flex items-center gap-1.5 justify-between">
+                          <p className={`text-xs truncate ${isActive && (contact.unread_count || 0) > 0 ? 'font-bold text-primary' : 'text-gray-500'}`}>
+                            {getLastMessagePreview(contact) || 'Tidak ada pesan'}
+                          </p>
 
-                        <div className="flex items-center gap-1">
-                          {(contact.unread_count || 0) > 0 && (
-                            <div className="shrink-0 min-w-5 h-5 px-1 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                              {contact.unread_count}
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1">
+                            {(contact.unread_count || 0) > 0 && (
+                              <div className="shrink-0 min-w-5 h-5 px-1 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+                                {contact.unread_count}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </button>
                   );
                 })
               )}
@@ -594,11 +600,11 @@ export default function MessagePage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
+                    onClick={() => confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, () => {
                       selectedContacts.forEach(id => messaging.deleteConversation(id));
                       setIsSelectionMode(false);
                       setSelectedContacts([]);
-                    }}
+                    })}
                     className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
                   >
                     <Trash2 size={14} /> Hapus
@@ -660,25 +666,35 @@ export default function MessagePage() {
                             setIsChatMenuOpen={setIsChatMenuOpen}
                             setIsMessageSelectionMode={setIsMessageSelectionMode}
                             activeChat={activeChat}
-                            onOpenGroupInfo={handleOpenGroupInfo}
                             onTogglePin={() => messaging.togglePin(activeChat.id_conversation)}
                             onToggleMute={() => messaging.toggleMute(activeChat.id_conversation)}
                             onDeleteChat={() => handleDeleteChat(activeChat.id_conversation)}
-                            onLeaveGroup={() => messaging.leaveGroup(activeChat.id_conversation)}
+                            onLeaveGroup={() => confirmThen('Keluar dari grup ini?', () => messaging.leaveGroup(activeChat.id_conversation))}
                           />
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar">
+                  <div 
+                    className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar"
+                    onScroll={handleScrollMessages}
+                  >
                     <div className="text-center mb-2">
                       <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
                         OBROLAN DIMULAI
                       </span>
                     </div>
 
-                    {currentMessages.length === 0 ? (
+                    {messaging.loadingMessages ? (
+                      <div className="flex-1 flex flex-col gap-4 py-4 w-full">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className={`flex w-full gap-2 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`w-2/3 md:w-1/2 h-16 rounded-2xl bg-gray-200 animate-pulse ${i % 2 === 0 ? 'rounded-br-sm' : 'rounded-bl-sm'}`}></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : currentMessages.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         Kirim pesan untuk memulai obrolan
                       </div>
@@ -739,10 +755,10 @@ export default function MessagePage() {
                                         <div className="fixed inset-0 z-30 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveMessageMenuId(null); }} />
                                         <div className={`absolute top-full mt-1 right-0 w-36 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.1)] border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 text-gray-700`}>
                                           <button
-                                            onClick={(e) => { 
-                                              e.stopPropagation(); 
-                                              setReplyingToMessage(msg); 
-                                              setActiveMessageMenuId(null); 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setReplyingToMessage(msg);
+                                              setActiveMessageMenuId(null);
                                             }}
                                             className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
                                           >
@@ -753,9 +769,7 @@ export default function MessagePage() {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setActiveMessageMenuId(null);
-                                                if (window.confirm('Hapus pesan ini?')) {
-                                                  messaging.deleteMessage(msg.id_message);
-                                                }
+                                                confirmThen('Pesan ini akan dihapus. Lanjutkan?', () => messaging.deleteMessage(msg.id_message));
                                               }}
                                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
                                             >
@@ -770,16 +784,15 @@ export default function MessagePage() {
 
                                 {/* --- RENDER CONTENT --- */}
                                 {msg.reply_to && (
-                                  <div 
+                                  <div
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       scrollToMessage(msg.reply_to.id_message);
                                     }}
-                                    className={`mb-1.5 p-2 rounded-lg border-l-4 cursor-pointer text-xs transition-colors ${
-                                      isMe 
-                                        ? 'bg-white/10 border-blue-200 hover:bg-white/20' 
+                                    className={`mb-1.5 p-2 rounded-lg border-l-4 cursor-pointer text-xs transition-colors ${isMe
+                                        ? 'bg-white/10 border-blue-200 hover:bg-white/20'
                                         : 'bg-gray-100 border-primary hover:bg-gray-200'
-                                    }`}
+                                      }`}
                                   >
                                     <div className="flex items-center gap-1.5 mb-1 font-semibold">
                                       {msg.reply_to.sender?.nama_alumni || 'User'}
@@ -870,6 +883,16 @@ export default function MessagePage() {
                     <div ref={messagesEndRef} />
                   </div>
 
+                  {showScrollButton && (
+                    <button
+                      onClick={scrollToBottom}
+                      className="absolute bottom-20 md:bottom-[88px] right-6 p-2.5 md:p-3 bg-white border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.15)] rounded-full text-primary hover:bg-gray-50 transition-all z-20 animate-in fade-in zoom-in slide-in-from-bottom-5 cursor-pointer"
+                      title="Ke pesan terbaru"
+                    >
+                      <ChevronDown size={20} className="stroke-[2.5]" />
+                    </button>
+                  )}
+
                   {isMessageSelectionMode ? (
                     <div className="p-4 md:p-5 bg-white border-t border-gray-100 shrink-0 flex items-center justify-between shadow-[0_-4px_20px_rgb(0,0,0,0.05)] z-20">
                       <div className="flex items-center gap-4">
@@ -888,13 +911,13 @@ export default function MessagePage() {
                         <button
                           onClick={async () => {
                             if (selectedMessageIds.length > 0) {
-                              if (window.confirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`)) {
-                                for (const id of selectedMessageIds) {
-                                  await messaging.deleteMessage(id);
-                                }
-                                setIsMessageSelectionMode(false);
-                                setSelectedMessageIds([]);
+                              const result = await alertConfirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`);
+                              if (!result?.isConfirmed) return;
+                              for (const id of selectedMessageIds) {
+                                await messaging.deleteMessage(id);
                               }
+                              setIsMessageSelectionMode(false);
+                              setSelectedMessageIds([]);
                             }
                           }}
                           disabled={selectedMessageIds.length === 0}
@@ -984,7 +1007,7 @@ export default function MessagePage() {
                           >
                             <Plus size={20} className={showAttachments ? "rotate-45 transition-transform" : "transition-transform"} />
                           </button>
-                          
+
                           {showAttachments && (
                             <div className="absolute bottom-full left-0 mb-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 flex flex-col gap-2 z-50 animate-in fade-in zoom-in-95">
                               <button
@@ -1043,7 +1066,7 @@ export default function MessagePage() {
                             GIF
                           </button>
                         </div>
-                        
+
                         <button
                           onClick={() => {
                             setShowEmojiPicker(!showEmojiPicker);

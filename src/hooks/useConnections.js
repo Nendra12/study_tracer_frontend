@@ -104,6 +104,31 @@ const getId = (entity) => {
   return entity.id ?? entity.id_alumni ?? entity.alumni_id ?? entity.id_users ?? null;
 };
 
+const getErrorMessage = (err) =>
+  err?.response?.data?.message || err?.message || '';
+
+const inferBlockedStatusFromError = (err) => {
+  const raw = getErrorMessage(err);
+  const msg = String(raw || '').toLowerCase();
+
+  // Common backend messages (ID):
+  // - "Alumni sudah di-block sebelumnya" => blocked_by_me
+  // - "Anda diblokir ..." => blocked_by_them
+  if (msg.includes('sudah') && (msg.includes('di-block') || msg.includes('di block') || msg.includes('diblok'))) {
+    return STATUS.BLOCKED_BY_ME;
+  }
+
+  if (msg.includes('anda diblokir') || msg.includes('kamu diblokir') || msg.includes('diblokir oleh') || msg.includes('diblokir alumni')) {
+    return STATUS.BLOCKED_BY_THEM;
+  }
+
+  if (msg.includes('blocked by') || msg.includes('you are blocked')) {
+    return STATUS.BLOCKED_BY_THEM;
+  }
+
+  return null;
+};
+
 export function useConnections() {
   const [statusMap, setStatusMap] = useState({});
   const [loadingStatusMap, setLoadingStatusMap] = useState({});
@@ -129,9 +154,9 @@ export function useConnections() {
     }));
   }, []);
 
-  const withActionLoading = useCallback(async (alumniId, action) => {
+  const withActionLoading = useCallback(async (alumniId, actionName, action) => {
     const key = String(alumniId);
-    setActionLoadingMap((prev) => ({ ...prev, [key]: true }));
+    setActionLoadingMap((prev) => ({ ...prev, [key]: actionName || true }));
     try {
       return await action();
     } finally {
@@ -153,6 +178,15 @@ export function useConnections() {
       const normalized = normalizeStatus(getPayload(response));
       setStatusEntry(alumniId, normalized);
       return normalized;
+    } catch (err) {
+      const inferred = inferBlockedStatusFromError(err);
+      if (inferred) {
+        const normalized = { status: inferred, connectionId: null, raw: { inferredFromError: true } };
+        setStatusEntry(alumniId, normalized);
+        return normalized;
+      }
+      // swallow non-block errors to avoid breaking Promise.all in fetchStatuses
+      return null;
     } finally {
       setLoadingStatusMap((prev) => ({ ...prev, [key]: false }));
     }
@@ -180,15 +214,23 @@ export function useConnections() {
   }, []);
 
   const sendRequest = useCallback(async (alumniId) => {
-    return withActionLoading(alumniId, async () => {
-      await alumniApi.sendConnectionRequest(alumniId);
-      setStatusEntry(alumniId, { status: STATUS.PENDING_SENT });
-      await fetchStatus(alumniId, { force: true });
+    return withActionLoading(alumniId, 'connect', async () => {
+      try {
+        await alumniApi.sendConnectionRequest(alumniId);
+        setStatusEntry(alumniId, { status: STATUS.PENDING_SENT });
+        await fetchStatus(alumniId, { force: true });
+      } catch (err) {
+        const inferred = inferBlockedStatusFromError(err);
+        if (inferred) {
+          setStatusEntry(alumniId, { status: inferred, connectionId: null, raw: { inferredFromError: true } });
+        }
+        throw err;
+      }
     });
   }, [fetchStatus, setStatusEntry, withActionLoading]);
 
   const acceptRequest = useCallback(async (alumniId, providedConnectionId = null) => {
-    return withActionLoading(alumniId, async () => {
+    return withActionLoading(alumniId, 'accept', async () => {
       let connectionId = providedConnectionId ?? statusMap[String(alumniId)]?.connectionId;
       if (!connectionId) {
         connectionId = await getPendingConnectionIdByAlumni(alumniId);
@@ -204,7 +246,7 @@ export function useConnections() {
   }, [fetchStatus, getPendingConnectionIdByAlumni, setStatusEntry, statusMap, withActionLoading]);
 
   const rejectRequest = useCallback(async (alumniId, providedConnectionId = null) => {
-    return withActionLoading(alumniId, async () => {
+    return withActionLoading(alumniId, 'reject', async () => {
       let connectionId = providedConnectionId ?? statusMap[String(alumniId)]?.connectionId;
       if (!connectionId) {
         connectionId = await getPendingConnectionIdByAlumni(alumniId);
@@ -220,7 +262,7 @@ export function useConnections() {
   }, [fetchStatus, getPendingConnectionIdByAlumni, setStatusEntry, statusMap, withActionLoading]);
 
   const removeOrCancel = useCallback(async (alumniId) => {
-    return withActionLoading(alumniId, async () => {
+    return withActionLoading(alumniId, 'remove', async () => {
       await alumniApi.removeConnectionOrCancelRequest(alumniId);
       setStatusEntry(alumniId, { status: STATUS.NONE, connectionId: null });
       await fetchStatus(alumniId, { force: true });
@@ -228,15 +270,23 @@ export function useConnections() {
   }, [fetchStatus, setStatusEntry, withActionLoading]);
 
   const block = useCallback(async (alumniId) => {
-    return withActionLoading(alumniId, async () => {
-      await alumniApi.blockAlumni(alumniId);
-      setStatusEntry(alumniId, { status: STATUS.BLOCKED_BY_ME, connectionId: null });
-      await fetchStatus(alumniId, { force: true });
+    return withActionLoading(alumniId, 'block', async () => {
+      try {
+        await alumniApi.blockAlumni(alumniId);
+        setStatusEntry(alumniId, { status: STATUS.BLOCKED_BY_ME, connectionId: null });
+        await fetchStatus(alumniId, { force: true });
+      } catch (err) {
+        const inferred = inferBlockedStatusFromError(err);
+        if (inferred === STATUS.BLOCKED_BY_ME) {
+          setStatusEntry(alumniId, { status: STATUS.BLOCKED_BY_ME, connectionId: null, raw: { inferredFromError: true } });
+        }
+        throw err;
+      }
     });
   }, [fetchStatus, setStatusEntry, withActionLoading]);
 
   const unblock = useCallback(async (alumniId) => {
-    return withActionLoading(alumniId, async () => {
+    return withActionLoading(alumniId, 'unblock', async () => {
       await alumniApi.unblockAlumni(alumniId);
       setStatusEntry(alumniId, { status: STATUS.NONE, connectionId: null });
       await fetchStatus(alumniId, { force: true });
