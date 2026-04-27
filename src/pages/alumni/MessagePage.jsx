@@ -97,7 +97,6 @@ export default function MessagePage() {
 
   const messagesEndRef = useRef(null);
   const imageInputRef = useRef(null);
-  const fileInputRef = useRef(null);
   const isAutoScrolling = useRef(false);
 
   // Fetch conversations on mount
@@ -230,6 +229,13 @@ export default function MessagePage() {
   const handleSendAttachment = (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (type === 'image' && !file.type.startsWith('image/')) {
+      toastWarning('Hanya file gambar yang diperbolehkan.');
+      e.target.value = null;
+      return;
+    }
+
     setShowEmojiPicker(false);
     setShowGifPicker(false);
     const reader = new FileReader();
@@ -354,7 +360,6 @@ export default function MessagePage() {
 
       {/* Hidden file inputs */}
       <input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleSendAttachment(e, 'image')} />
-      <input type="file" accept="*" ref={fileInputRef} className="hidden" onChange={(e) => handleSendAttachment(e, 'file')} />
 
       {/* Image Preview Modal */}
       {previewImage && (
@@ -995,11 +1000,11 @@ export default function MessagePage() {
                             {attachmentPreview.type === 'gif' && (
                               <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
                             )}
-                            {attachmentPreview.type === 'file' && (
+                            {/* {attachmentPreview.type === 'file' && (
                               <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center text-primary">
                                 <Paperclip size={24} />
                               </div>
-                            )}
+                            )} */}
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
                               <span className="text-xs text-primary mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
@@ -1034,13 +1039,13 @@ export default function MessagePage() {
                               >
                                 <ImagePlus size={20} />
                               </button>
-                              <button
+                              {/* <button
                                 onClick={() => { fileInputRef.current?.click(); setShowAttachments(false); }}
                                 className="p-3 cursor-pointer rounded-xl bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary transition-colors flex justify-center"
                                 title="Kirim File"
                               >
                                 <Paperclip size={20} />
-                              </button>
+                              </button> */}
                               <button
                                 onClick={() => {
                                   setShowGifPicker(!showGifPicker);
@@ -1065,13 +1070,13 @@ export default function MessagePage() {
                           >
                             <ImagePlus size={20} />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => fileInputRef.current?.click()}
                             className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
                             title="Kirim File"
                           >
                             <Paperclip size={20} />
-                          </button>
+                          </button> */}
                           <button
                             onClick={() => {
                               setShowGifPicker(!showGifPicker);
