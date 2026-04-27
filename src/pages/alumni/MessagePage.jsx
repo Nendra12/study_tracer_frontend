@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis, Loader2, BellOff, LayoutGrid, MessageCircle } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -52,6 +52,55 @@ const TenorPicker = ({ onSelectGif, onClose }) => {
     </div>
   );
 };
+
+function toDateKey(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getMessageDate(msg) {
+  const raw = msg?.created_at || msg?.createdAt || msg?.sent_at || msg?.timestamp || null;
+  if (!raw) return null;
+  const dt = new Date(raw);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+function getDayLabel(date) {
+  if (!date) return '';
+
+  const now = new Date();
+  const todayKey = toDateKey(now);
+  const dateKey = toDateKey(date);
+  if (!dateKey) return '';
+
+  if (dateKey === todayKey) return 'Hari ini';
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (dateKey === toDateKey(yesterday)) return 'Kemarin';
+
+  // Older than yesterday: show weekday name, but if it falls on the same weekday as today
+  // (e.g., last week), show the date to avoid ambiguity.
+  if (date.getDay() === now.getDay()) {
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  return date.toLocaleDateString('id-ID', { weekday: 'long' });
+}
+
+function DaySeparator({ label }) {
+  if (!label) return null;
+  return (
+    <div className="text-center my-2">
+      <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export default function MessagePage() {
   const { user } = useAuth();
@@ -139,6 +188,11 @@ export default function MessagePage() {
   const activeChat = messaging.activeConversation;
   const currentMessages = messaging.messages;
 
+  const visibleMessages = useMemo(
+    () => (currentMessages || []).filter((m) => !m?.is_deleted),
+    [currentMessages]
+  );
+
   const scrollToBottom = () => {
     isAutoScrolling.current = true;
     setShowScrollButton(false);
@@ -168,7 +222,10 @@ export default function MessagePage() {
     setTimeout(() => setHighlightedMessageId(null), 2500);
   };
 
-  useEffect(() => { scrollToBottom(); }, [currentMessages, activeChat]);
+  useEffect(() => {
+    const t = setTimeout(() => scrollToBottom(), 0);
+    return () => clearTimeout(t);
+  }, [currentMessages, activeChat]);
 
   const handleSelectChat = (conv) => {
     messaging.selectConversation(conv);
@@ -223,7 +280,9 @@ export default function MessagePage() {
 
     try {
       await messaging.sendMessage(convId, data);
-    } catch { }
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
   };
 
   const handleSendAttachment = (e, type) => {
@@ -726,31 +785,40 @@ export default function MessagePage() {
                           </div>
                         ))}
                       </div>
-                    ) : currentMessages.length === 0 ? (
+                    ) : visibleMessages.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         Kirim pesan untuk memulai obrolan
                       </div>
                     ) : (
-                      currentMessages.map((msg) => {
-                        if (msg.is_deleted) return null;
-                        const isMe = msg.sender?.id_users === currentUserId;
-                        const isHighlighted = highlightedMessageId === msg.id_message;
-                        const isSelected = selectedMessageIds.includes(msg.id_message);
-                        return (
-                          <div
-                            key={msg.id_message}
-                            id={`message-${msg.id_message}`}
-                            onClick={() => {
-                              if (isMessageSelectionMode) {
-                                if (isSelected) {
-                                  setSelectedMessageIds(selectedMessageIds.filter(id => id !== msg.id_message));
-                                } else {
-                                  setSelectedMessageIds([...selectedMessageIds, msg.id_message]);
-                                }
-                              }
-                            }}
-                            className={`flex items-center w-full mb-4 transition-all duration-700 rounded-2xl ${isHighlighted ? 'ring-4 ring-primary/40 bg-primary/10 p-2 -m-2 z-10' : ''} ${isMessageSelectionMode ? 'cursor-pointer hover:bg-gray-50 p-2 -mx-2' : ''}`}
-                          >
+                      <>
+                        <DaySeparator label={getDayLabel(getMessageDate(visibleMessages[0]))} />
+                        {visibleMessages.map((msg, index) => {
+                          const isMe = msg.sender?.id_users === currentUserId;
+                          const isHighlighted = highlightedMessageId === msg.id_message;
+                          const isSelected = selectedMessageIds.includes(msg.id_message);
+
+                          const msgDate = getMessageDate(msg);
+                          const msgKey = toDateKey(msgDate);
+                          const prevDate = index > 0 ? getMessageDate(visibleMessages[index - 1]) : null;
+                          const prevKey = toDateKey(prevDate);
+                          const showSeparator = index > 0 && msgKey && prevKey && msgKey !== prevKey;
+
+                          return (
+                            <React.Fragment key={msg.id_message}>
+                              {showSeparator && <DaySeparator label={getDayLabel(msgDate)} />}
+                              <div
+                                id={`message-${msg.id_message}`}
+                                onClick={() => {
+                                  if (isMessageSelectionMode) {
+                                    if (isSelected) {
+                                      setSelectedMessageIds(selectedMessageIds.filter(id => id !== msg.id_message));
+                                    } else {
+                                      setSelectedMessageIds([...selectedMessageIds, msg.id_message]);
+                                    }
+                                  }
+                                }}
+                                className={`flex items-center w-full mb-4 transition-all duration-700 rounded-2xl ${isHighlighted ? 'ring-4 ring-primary/40 bg-primary/10 p-2 -m-2 z-10' : ''} ${isMessageSelectionMode ? 'cursor-pointer hover:bg-gray-50 p-2 -mx-2' : ''}`}
+                              >
                             {isMessageSelectionMode && (
                               <div className="shrink-0 mr-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-200">
                                 <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'}`}>
@@ -908,9 +976,11 @@ export default function MessagePage() {
                                 )}
                               </div>
                             </div>
-                          </div>
-                        );
-                      })
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </>
                     )}
                     <div ref={messagesEndRef} />
                   </div>
