@@ -41,8 +41,8 @@ export default function SideBarSearchChat({ messageSearchQuery, setMessageSearch
                     <div className="flex flex-col">
                         {messageSearchResults.map((msg) => (
                             <div
-                                key={msg.id}
-                                onClick={() => { scrollToMessage(msg.id); setIsSearchMessageOpen(false); }}
+                                key={msg.id_message}
+                                onClick={() => { scrollToMessage(msg.id_message); setIsSearchMessageOpen(false); }}
                                 className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer group"
                             >
                                 <div className="flex justify-between items-start mb-1">

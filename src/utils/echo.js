@@ -9,14 +9,21 @@ window.Pusher = Pusher;
  */
 export function createEcho(authToken) {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-  const browserHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  const rawHost = import.meta.env.VITE_REVERB_HOST || browserHost;
+  const parsedApiUrl = new URL(apiUrl);
+  const browserHost = typeof window !== 'undefined' ? window.location.hostname : parsedApiUrl.hostname;
+  const rawHost = import.meta.env.VITE_REVERB_HOST || parsedApiUrl.hostname || browserHost;
   const wsHost = (rawHost === 'localhost' && browserHost !== 'localhost' && browserHost !== '127.0.0.1')
     ? browserHost
     : rawHost;
-  const wsPort = Number(import.meta.env.VITE_REVERB_PORT ?? 8080);
-  const wssPort = Number(import.meta.env.VITE_REVERB_PORT ?? 443);
-  const forceTLS = (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https';
+  const reverbScheme = import.meta.env.VITE_REVERB_SCHEME || parsedApiUrl.protocol.replace(':', '') || 'http';
+  const forceTLS = reverbScheme === 'https';
+
+  const envPort = Number(import.meta.env.VITE_REVERB_PORT);
+  const fallbackPort = Number(parsedApiUrl.port) || (forceTLS ? 443 : 80);
+  const resolvedPort = Number.isFinite(envPort) && envPort > 0 ? envPort : fallbackPort;
+
+  const wsPort = resolvedPort;
+  const wssPort = resolvedPort;
 
   return new Echo({
     broadcaster: 'reverb',
