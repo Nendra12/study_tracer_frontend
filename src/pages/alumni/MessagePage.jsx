@@ -270,6 +270,37 @@ export default function MessagePage() {
     if (!ok) return;
   };
 
+  const handleDeleteSelectedChats = async () => {
+    if (!selectedContacts?.length) return;
+    const ok = await confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, async () => {
+      for (const id of selectedContacts) {
+        await messaging.deleteConversation(id);
+      }
+    });
+    if (!ok) return;
+    setIsSelectionMode(false);
+    setSelectedContacts([]);
+  };
+
+  const handleDeleteMessage = async (msgId) => {
+    if (!msgId) return;
+    await confirmThen('Pesan ini akan dihapus. Lanjutkan?', async () => {
+      await messaging.deleteMessage(msgId);
+    });
+  };
+
+  const handleDeleteSelectedMessages = async () => {
+    if (!selectedMessageIds?.length) return;
+    const ok = await confirmThen(`Hapus ${selectedMessageIds.length} pesan secara permanen?`, async () => {
+      for (const id of selectedMessageIds) {
+        await messaging.deleteMessage(id);
+      }
+    });
+    if (!ok) return;
+    setIsMessageSelectionMode(false);
+    setSelectedMessageIds([]);
+  };
+
   const handleToggleSelect = (contactId) => {
     if (selectedContacts.includes(contactId)) {
       setSelectedContacts(selectedContacts.filter(id => id !== contactId));
@@ -600,11 +631,7 @@ export default function MessagePage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, () => {
-                      selectedContacts.forEach(id => messaging.deleteConversation(id));
-                      setIsSelectionMode(false);
-                      setSelectedContacts([]);
-                    })}
+                    onClick={handleDeleteSelectedChats}
                     className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
                   >
                     <Trash2 size={14} /> Hapus
@@ -769,7 +796,7 @@ export default function MessagePage() {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setActiveMessageMenuId(null);
-                                                confirmThen('Pesan ini akan dihapus. Lanjutkan?', () => messaging.deleteMessage(msg.id_message));
+                                                handleDeleteMessage(msg.id_message);
                                               }}
                                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
                                             >
@@ -909,17 +936,7 @@ export default function MessagePage() {
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={async () => {
-                            if (selectedMessageIds.length > 0) {
-                              const result = await alertConfirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`);
-                              if (!result?.isConfirmed) return;
-                              for (const id of selectedMessageIds) {
-                                await messaging.deleteMessage(id);
-                              }
-                              setIsMessageSelectionMode(false);
-                              setSelectedMessageIds([]);
-                            }
-                          }}
+                          onClick={handleDeleteSelectedMessages}
                           disabled={selectedMessageIds.length === 0}
                           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${selectedMessageIds.length > 0 ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
                         >
