@@ -771,11 +771,7 @@ export default function MessagePage() {
                     className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar"
                     onScroll={handleScrollMessages}
                   >
-                    <div className="text-center mb-2">
-                      <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
-                        OBROLAN DIMULAI
-                      </span>
-                    </div>
+
 
                     {messaging.loadingMessages ? (
                       <div className="flex-1 flex flex-col gap-4 py-4 w-full">
