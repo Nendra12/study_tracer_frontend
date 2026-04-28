@@ -194,7 +194,7 @@ export default function NewChatPane({ onSelectContact, onCancel }) {
         {loading ? (
           <div className="py-12 flex flex-col items-center justify-center text-primary gap-3">
             <Loader2 size={28} className="animate-spin" />
-            <span className="text-sm font-medium text-gray-500">Memuat kontak...</span>
+            <span className="text-sm font-medium text-gray-500">Memuat alumni...</span>
           </div>
         ) : contacts.length > 0 ? (
           <div className="space-y-4 mt-2 pb-20">
