@@ -183,6 +183,18 @@ export function AuthProvider({ children }) {
       });
     }
 
+    // Subscribe to private feed channel for real-time Mini Medsos updates
+    let feedChannel = null;
+    if (authUserId) {
+      feedChannel = echoRef.current.private(`feed.${authUserId}`);
+      feedChannel.listen('.post.created', (data) => {
+        window.dispatchEvent(new CustomEvent('reverb:post.created', { detail: data }));
+      });
+      feedChannel.listen('.post.interaction', (data) => {
+        window.dispatchEvent(new CustomEvent('reverb:post.interaction', { detail: data }));
+      });
+    }
+
     if (user.role === 'admin') {
       adminChannel = echoRef.current.private('admin');
       adminChannel.listen('.dashboard.stats-updated', (data) => {
@@ -194,6 +206,7 @@ export function AuthProvider({ children }) {
       if (echoRef.current && authUserId) {
         echoRef.current.leave(`private-user.${authUserId}`);
         echoRef.current.leave(`private-chat.${authUserId}`);
+        echoRef.current.leave(`private-feed.${authUserId}`);
       }
       if (echoRef.current && user.role === 'alumni') {
         echoRef.current.leave('private-alumni');
