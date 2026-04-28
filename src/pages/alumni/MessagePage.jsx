@@ -3,7 +3,7 @@ import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase
 import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
-import NewChatModal from '../../components/alumni/NewChatModal';
+import NewChatPane from '../../components/alumni/NewChatPane';
 import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
 import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
 import GroupInfoModal from '../../components/alumni/GroupInfoModal';
@@ -123,7 +123,7 @@ export default function MessagePage() {
   const [filterMode, setFilterMode] = useState('all');
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddingChat, setIsAddingChat] = useState(false);
   const [activeSidebarMenuId, setActiveSidebarMenuId] = useState(null);
   const navigate = useNavigate();
 
@@ -207,7 +207,7 @@ export default function MessagePage() {
 
   const handleScrollMessages = (e) => {
     if (isAutoScrolling.current) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     if (scrollHeight - scrollTop - clientHeight > 200) {
       setShowScrollButton(true);
@@ -246,9 +246,30 @@ export default function MessagePage() {
     setReplyingToMessage(null);
   };
 
+  const handleOpenGroupInfo = () => {
+    setIsGroupInfoOpen(true);
+    setIsChatMenuOpen(false);
+  };
+
   const renderMessageStatus = (msg, isMe) => {
     if (!isMe) return null;
-    return <CircleCheck size={14} className="text-green-300 fill-green-300/20" />;
+    
+    let isRead = false;
+    if (activeChat?.type === 'private') {
+      const contactReadAt = activeChat.contact?.last_read_at;
+      if (contactReadAt && new Date(msg.created_at) <= new Date(contactReadAt)) {
+        isRead = true;
+      }
+    } else if (activeChat?.type === 'group') {
+      const participants = activeChat.participants || [];
+      const others = participants.filter(p => p.id_users !== currentUserId);
+      isRead = others.some(p => p.last_read_at && new Date(msg.created_at) <= new Date(p.last_read_at));
+    }
+
+    if (isRead) {
+      return <Check size={14} className="text-green-300" title="Sudah dibaca" />;
+    }
+    return <Check size={14} className="text-white/70" title="Terkirim" />;
   };
 
   const handleSendMessage = async () => {
@@ -320,7 +341,7 @@ export default function MessagePage() {
     messaging.fetchConversations();
     messaging.selectConversation(conversation);
     setShowChatArea(true);
-    setIsModalOpen(false);
+    setIsAddingChat(false);
     toastSuccess('Obrolan siap digunakan.');
   };
 
@@ -384,12 +405,14 @@ export default function MessagePage() {
     if (filterMode === 'favorite') return matchSearch && c.settings?.is_pinned;
     if (filterMode === 'archived') return matchSearch && c.settings?.is_archived;
     if (filterMode === 'unread') return matchSearch && (c.unread_count || 0) > 0 && !c.settings?.is_archived;
+    if (filterMode === 'group') return matchSearch && c.type === 'group' && !c.settings?.is_archived;
     return matchSearch && !c.settings?.is_archived;
   });
 
   const favoriteCount = messaging.conversations.filter(c => c.settings?.is_pinned).length;
   const unreadCount = messaging.conversations.filter(c => (c.unread_count || 0) > 0 && !c.settings?.is_archived).length;
   const archivedCount = messaging.conversations.filter(c => c.settings?.is_archived).length;
+  const groupCount = messaging.conversations.filter(c => c.type === 'group' && !c.settings?.is_archived).length;
 
   const onEmojiClick = (emojiObject) => {
     setMessageInput(prev => prev + emojiObject.emoji);
@@ -431,12 +454,6 @@ export default function MessagePage() {
   return (
     <div className="h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-hidden">
       <Toaster position="top-right" />
-      <NewChatModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSelectContact={handleAddContact}
-      />
-
       {/* Hidden file inputs */}
       <input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleSendAttachment(e, 'image')} />
 
@@ -483,23 +500,20 @@ export default function MessagePage() {
                 <h1 className="text-2xl font-extrabold text-primary">Pesan</h1>
                 <div className="flex gap-2 items-center">
                   <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                      setIsAddingChat(true);
+                      setShowChatArea(true);
+                    }}
                     className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
                     title
                   >
                     <MessageSquarePlus size={20} className="stroke-[2.5]" />
                   </button>
-                  <button
-                    onClick={() => toastWarning('Fitur Pengaturan akan segera hadir!')}
-                    className="p-2.5 cursor-pointer text-gray-400 hover:bg-[#f8f9fa] hover:text-gray-700 rounded-full transition-colors"
-                  >
-                    <MoreVertical size={20} className="stroke-[2.5]" />
-                  </button>
                 </div>
               </div>
 
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary" size={18} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-primary" size={18} />
                 <input
                   type="text"
                   placeholder="Cari pesan atau nama..."
@@ -544,17 +558,18 @@ export default function MessagePage() {
 
 
                 <button
-                  onClick={() => setFilterMode(filterMode === 'archived' ? 'all' : 'archived')}
-                  className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'archived' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
+                  onClick={() => setFilterMode(filterMode === 'group' ? 'all' : 'group')}
+                  className={`relative flex-shrink-0 flex justify-center cursor-pointer border items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 group ${filterMode === 'group' ? 'bg-primary/10 border-primary/20 text-primary' : 'border-primary/20 text-primary/50 hover:text-primary hover:bg-gray-100'}`}
                 >
-                  <Archive size={14} />
-                  Arsip
-                  {archivedCount > 0 && (
+                  <UsersRound size={14} className={filterMode === 'group' ? 'fill-primary/20' : ''} />
+                  Grup
+                  {groupCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
-                      {archivedCount}
+                      {groupCount}
                     </span>
                   )}
                 </button>
+
               </div>
 
               <div className="flex items-center justify-between px-4 py-2 bg-gray-50/80 border-b border-gray-100 shrink-0">
@@ -728,7 +743,21 @@ export default function MessagePage() {
 
           {/* KANAN: Ruang Obrolan */}
           <div className={`flex-1 flex flex-row bg-[#fdfdfd] relative ${!showChatArea ? 'hidden md:flex' : 'flex'}`}>
-            {activeChat ? (
+            {isAddingChat ? (
+              <div className="flex-1 w-full relative h-full">
+                <NewChatPane
+                  onSelectContact={(conversation) => {
+                    messaging.selectConversation(conversation);
+                    setIsAddingChat(false);
+                    setShowChatArea(true);
+                  }}
+                  onCancel={() => {
+                    setIsAddingChat(false);
+                    if (!activeChat) setShowChatArea(false); // Back to list on mobile if no active chat
+                  }}
+                />
+              </div>
+            ) : activeChat ? (
               <>
                 <div className="flex-1 flex flex-col min-w-0 relative">
                   <div className="h-[76px] px-4 md:px-6 border-b border-gray-100 bg-white/80 backdrop-blur-md flex items-center justify-between shrink-0 sticky top-0 z-10">
@@ -788,15 +817,11 @@ export default function MessagePage() {
                     </div>
                   </div>
 
-                  <div 
+                  <div
                     className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 bg-white relative custom-scrollbar"
                     onScroll={handleScrollMessages}
                   >
-                    <div className="text-center mb-2">
-                      <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
-                        OBROLAN DIMULAI
-                      </span>
-                    </div>
+
 
                     {messaging.loadingMessages ? (
                       <div className="flex-1 flex flex-col gap-4 py-4 w-full">
@@ -842,170 +867,179 @@ export default function MessagePage() {
                                 }}
                                 className={`flex items-center w-full mb-4 transition-all duration-700 rounded-2xl ${isHighlighted ? 'ring-4 ring-primary/40 bg-primary/10 p-2 -m-2 z-10' : ''} ${isMessageSelectionMode ? 'cursor-pointer hover:bg-gray-50 p-2 -mx-2' : ''}`}
                               >
-                            {isMessageSelectionMode && (
-                              <div className="shrink-0 mr-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-200">
-                                <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'}`}>
-                                  {isSelected && <Check size={14} strokeWidth={3} />}
-                                </div>
-                              </div>
-                            )}
-                            <div className={`flex flex-1 ${isMe ? 'justify-end' : 'justify-start'} min-w-0 group/msg`}>
-                              <div className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                {isGroupMessage && msg.type !== 'system' && (
-                                  <span className={`text-[11px] font-semibold mb-1 px-1 ${isMe ? 'text-primary/80' : 'text-gray-500'}`}>
-                                    {senderName}
-                                  </span>
+                                {isMessageSelectionMode && (
+                                  <div className="shrink-0 mr-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-200">
+                                    <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'}`}>
+                                      {isSelected && <Check size={14} strokeWidth={3} />}
+                                    </div>
+                                  </div>
                                 )}
+                                <div className={`flex flex-1 ${isMe ? 'justify-end' : 'justify-start'} min-w-0 group/msg`}>
+                                  <div className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                    {isGroupMessage && msg.type !== 'system' && (
+                                      <span className={`text-[11px] font-semibold mb-1 px-1 ${isMe ? 'text-primary/80' : 'text-gray-500'}`}>
+                                        {senderName}
+                                      </span>
+                                    )}
 
-                                <div
-                                  className={`w-full rounded-[20px] relative ${isMe
-                                    ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
-                                    : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
-                                    } ${
-                                    // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
-                                    (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'pl-4 pr-7 py-3'
-                                    }`}
-                                >
-                                {/* Menu Trigger inside the bubble (Absolutely positioned at top-right) */}
-                                <div className={`absolute top-1 right-1 opacity-0 group-hover/msg:opacity-100 transition-opacity flex flex-col items-end justify-start z-20`}>
-                                  <div className="relative">
-                                    <button
-                                      onClick={(e) => {
+                                    <div
+                                      onContextMenu={(e) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
-                                        setActiveMessageMenuId(activeMessageMenuId === msg.id_message ? null : msg.id_message);
+                                        setActiveMessageMenuId(msg.id_message);
                                       }}
-                                      className={`p-1 rounded-full transition-colors cursor-pointer backdrop-blur-sm ${isMe ? 'text-white/90 hover:bg-black/10' : 'text-gray-500 hover:bg-gray-100'}`}
+                                      onDoubleClick={(e) => {
+                                        e.stopPropagation();
+                                        if (msg.type !== 'system') setReplyingToMessage(msg);
+                                      }}
+                                      className={`w-full rounded-[20px] relative ${isMe
+                                        ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
+                                        : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
+                                        } ${
+                                        // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
+                                        (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'pl-4 pr-7 py-3'
+                                        }`}
                                     >
-                                      <ChevronDown size={18} />
-                                    </button>
-
-                                    {activeMessageMenuId === msg.id_message && (
-                                      <>
-                                        <div className="fixed inset-0 z-30 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveMessageMenuId(null); }} />
-                                        <div className={`absolute top-full mt-1 right-0 w-36 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.1)] border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 text-gray-700`}>
+                                      {/* Menu Trigger inside the bubble (Absolutely positioned at top-right) */}
+                                      <div className={`absolute top-1 right-1 opacity-0 group-hover/msg:opacity-100 transition-opacity flex flex-col items-end justify-start z-20`}>
+                                        <div className="relative">
                                           <button
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              setReplyingToMessage(msg);
-                                              setActiveMessageMenuId(null);
+                                              setActiveMessageMenuId(activeMessageMenuId === msg.id_message ? null : msg.id_message);
                                             }}
-                                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                            className={`p-1 rounded-full transition-colors cursor-pointer backdrop-blur-sm ${isMe ? 'text-white/90 hover:bg-black/10' : 'text-gray-500 hover:bg-gray-100'}`}
                                           >
-                                            <Reply size={14} /> Balas
+                                            <ChevronDown size={18} />
                                           </button>
-                                          {isMe && (
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setActiveMessageMenuId(null);
-                                                handleDeleteMessage(msg.id_message);
-                                              }}
-                                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
-                                            >
-                                              <Trash2 size={14} /> Hapus
-                                            </button>
+
+                                          {activeMessageMenuId === msg.id_message && (
+                                            <>
+                                              <div className="fixed inset-0 z-30 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveMessageMenuId(null); }} />
+                                              <div className={`absolute top-full mt-1 right-0 w-36 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.1)] border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 text-gray-700`}>
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setReplyingToMessage(msg);
+                                                    setActiveMessageMenuId(null);
+                                                  }}
+                                                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 cursor-pointer"
+                                                >
+                                                  <Reply size={14} /> Balas
+                                                </button>
+                                                {isMe && (
+                                                  <button
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setActiveMessageMenuId(null);
+                                                      handleDeleteMessage(msg.id_message);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
+                                                  >
+                                                    <Trash2 size={14} /> Hapus
+                                                  </button>
+                                                )}
+                                              </div>
+                                            </>
                                           )}
                                         </div>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
+                                      </div>
 
-                                {/* --- RENDER CONTENT --- */}
-                                {msg.reply_to && (
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      scrollToMessage(msg.reply_to.id_message);
-                                    }}
-                                    className={`mb-1.5 p-2 rounded-lg border-l-4 cursor-pointer text-xs transition-colors ${isMe
-                                        ? 'bg-white/10 border-blue-200 hover:bg-white/20'
-                                        : 'bg-gray-100 border-primary hover:bg-gray-200'
-                                      }`}
-                                  >
-                                    <div className="flex items-center gap-1.5 mb-1 font-semibold">
-                                      {msg.reply_to.sender?.nama_alumni || 'User'}
-                                    </div>
-                                    <div className="truncate opacity-80 max-w-[200px] md:max-w-[300px]">
-                                      {msg.reply_to.type === 'image' || msg.reply_to.type === 'gif' ? (
-                                        <span className="flex items-center gap-1"><ImagePlus size={12} /> Foto</span>
-                                      ) : msg.reply_to.type === 'file' ? (
-                                        <span className="flex items-center gap-1"><Paperclip size={12} /> File</span>
+                                      {/* --- RENDER CONTENT --- */}
+                                      {msg.reply_to && (
+                                        <div
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            scrollToMessage(msg.reply_to.id_message);
+                                          }}
+                                          className={`mb-1.5 p-2 rounded-lg border-l-4 cursor-pointer text-xs transition-colors ${isMe
+                                            ? 'bg-white/10 border-blue-200 hover:bg-white/20'
+                                            : 'bg-gray-100 border-primary hover:bg-gray-200'
+                                            }`}
+                                        >
+                                          <div className="flex items-center gap-1.5 mb-1 font-semibold">
+                                            {msg.reply_to.sender?.nama_alumni || 'User'}
+                                          </div>
+                                          <div className="truncate opacity-80 max-w-[200px] md:max-w-[300px]">
+                                            {msg.reply_to.type === 'image' || msg.reply_to.type === 'gif' ? (
+                                              <span className="flex items-center gap-1"><ImagePlus size={12} /> Foto</span>
+                                            ) : msg.reply_to.type === 'file' ? (
+                                              <span className="flex items-center gap-1"><Paperclip size={12} /> File</span>
+                                            ) : (
+                                              msg.reply_to.body
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {(msg.type === 'image' || msg.type === 'gif') ? (
+                                        <div className="relative flex flex-col group/img">
+                                          <img
+                                            src={getImageUrl(msg.file_url)}
+                                            alt="content"
+                                            onClick={() => setPreviewImage(msg)}
+                                            className="w-64 sm:w-72 max-w-full max-h-72 object-cover block rounded-[16px] cursor-pointer hover:opacity-95 transition-opacity"
+                                            title="Klik untuk memperbesar"
+                                          />
+
+                                          {!msg.body && (
+                                            <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm flex items-center gap-1 text-[10px] text-white shadow-sm pointer-events-none z-10">
+                                              {formatTime(msg.created_at)}
+                                              {renderMessageStatus(msg, isMe)}
+                                            </div>
+                                          )}
+
+                                          {msg.body && (
+                                            <div className="px-2 pt-2 pb-0.5 flex flex-col">
+                                              <p className="text-[13px] leading-relaxed break-words">{msg.body}</p>
+                                              <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                                {formatTime(msg.created_at)}
+                                                {renderMessageStatus(msg, isMe)}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ) : msg.type === 'file' ? (
+                                        <>
+                                          <a
+                                            href={getImageUrl(msg.file_url)}
+                                            download={msg.file_name || 'dokumen'}
+                                            className={`flex items-center gap-3 p-3 rounded-xl mb-1 border hover:opacity-80 transition-opacity cursor-pointer text-left ${isMe ? 'bg-white/20 border-white/20 group-hover:bg-white/30' : 'bg-gray-50 border-gray-100 group-hover:bg-gray-100'}`}
+                                            title="Unduh File"
+                                          >
+                                            <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20 text-white' : 'bg-white shadow-sm text-primary'}`}>
+                                              <Paperclip size={18} />
+                                            </div>
+                                            <div className="flex flex-col flex-1 min-w-0 pr-2">
+                                              <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{msg.file_name}</span>
+                                              <span className={`text-[10px] mt-0.5 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>Klik untuk unduh dokumen</span>
+                                            </div>
+                                            <Download size={18} className={`shrink-0 ${isMe ? 'text-white' : 'text-gray-400'}`} />
+                                          </a>
+                                          <div className="flex items-center justify-between gap-4 mt-1 px-1">
+                                            {msg.body ? <p className="text-[13px]">{msg.body}</p> : <div />}
+                                            <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                              {formatTime(msg.created_at)}
+                                              {renderMessageStatus(msg, isMe)}
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : msg.type === 'system' ? (
+                                        <div className="w-full text-center">
+                                          <span className="text-[11px] text-gray-400 bg-gray-100/80 px-3 py-1 rounded-full">{msg.body}</span>
+                                        </div>
                                       ) : (
-                                        msg.reply_to.body
+                                        <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0">
+                                          <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
+                                          <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                            {formatTime(msg.created_at)}
+                                            {renderMessageStatus(msg, isMe)}
+                                          </div>
+                                        </div>
                                       )}
                                     </div>
                                   </div>
-                                )}
-
-                                {(msg.type === 'image' || msg.type === 'gif') ? (
-                                  <div className="relative flex flex-col group/img">
-                                    <img
-                                      src={getImageUrl(msg.file_url)}
-                                      alt="content"
-                                      onClick={() => setPreviewImage(msg)}
-                                      className="w-64 sm:w-72 max-w-full max-h-72 object-cover block rounded-[16px] cursor-pointer hover:opacity-95 transition-opacity"
-                                      title="Klik untuk memperbesar"
-                                    />
-
-                                    {!msg.body && (
-                                      <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm flex items-center gap-1 text-[10px] text-white shadow-sm pointer-events-none z-10">
-                                        {formatTime(msg.created_at)}
-                                        {renderMessageStatus(msg, isMe)}
-                                      </div>
-                                    )}
-
-                                    {msg.body && (
-                                      <div className="px-2 pt-2 pb-0.5 flex flex-col">
-                                        <p className="text-[13px] leading-relaxed break-words">{msg.body}</p>
-                                        <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                          {formatTime(msg.created_at)}
-                                          {renderMessageStatus(msg, isMe)}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                ) : msg.type === 'file' ? (
-                                  <>
-                                    <a
-                                      href={getImageUrl(msg.file_url)}
-                                      download={msg.file_name || 'dokumen'}
-                                      className={`flex items-center gap-3 p-3 rounded-xl mb-1 border hover:opacity-80 transition-opacity cursor-pointer text-left ${isMe ? 'bg-white/20 border-white/20 group-hover:bg-white/30' : 'bg-gray-50 border-gray-100 group-hover:bg-gray-100'}`}
-                                      title="Unduh File"
-                                    >
-                                      <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20 text-white' : 'bg-white shadow-sm text-primary'}`}>
-                                        <Paperclip size={18} />
-                                      </div>
-                                      <div className="flex flex-col flex-1 min-w-0 pr-2">
-                                        <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{msg.file_name}</span>
-                                        <span className={`text-[10px] mt-0.5 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>Klik untuk unduh dokumen</span>
-                                      </div>
-                                      <Download size={18} className={`shrink-0 ${isMe ? 'text-white' : 'text-gray-400'}`} />
-                                    </a>
-                                    <div className="flex items-center justify-between gap-4 mt-1 px-1">
-                                      {msg.body ? <p className="text-[13px]">{msg.body}</p> : <div />}
-                                      <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                        {formatTime(msg.created_at)}
-                                        {renderMessageStatus(msg, isMe)}
-                                      </div>
-                                    </div>
-                                  </>
-                                ) : msg.type === 'system' ? (
-                                  <div className="w-full text-center">
-                                    <span className="text-[11px] text-gray-400 bg-gray-100/80 px-3 py-1 rounded-full">{msg.body}</span>
-                                  </div>
-                                ) : (
-                                  <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0">
-                                    <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
-                                    <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                      {formatTime(msg.created_at)}
-                                      {renderMessageStatus(msg, isMe)}
-                                    </div>
-                                  </div>
-                                )}
                                 </div>
-                              </div>
-                            </div>
                               </div>
                             </React.Fragment>
                           );
