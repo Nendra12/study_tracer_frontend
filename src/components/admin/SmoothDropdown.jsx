@@ -9,7 +9,8 @@ export default function SmoothDropdown({
   value = null,
   message = '',
   onSelect,
-  isSearchable = false // Tambahkan prop ini sebagai default false
+  isSearchable = false, // Tambahkan prop ini sebagai default false
+  disabled = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -40,6 +41,10 @@ export default function SmoothDropdown({
     setSelected(value);
   }, [value]);
 
+  useEffect(() => {
+    if (disabled && isOpen) setIsOpen(false);
+  }, [disabled, isOpen]);
+
   const handleSelect = (optionValue) => {
     setSelected(optionValue);
     setIsOpen(false);
@@ -62,8 +67,9 @@ export default function SmoothDropdown({
 
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`cursor-pointer ${label ? 'mt-3' : ''} w-full p-3 bg-white border-2 border-gray-100 flex items-center justify-between rounded-xl text-sm transition-all outline-none`}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`cursor-pointer ${label ? 'mt-3' : ''} w-full p-3 border-2 border-gray-100 flex items-center justify-between rounded-xl text-sm transition-all outline-none ${disabled ? 'opacity-70 cursor-not-allowed bg-slate-50' : 'bg-white'}`}
       >
         <span className={selected ? 'text-primary/80 font-medium' : 'text-gray-400'}>
           {selectedLabel}

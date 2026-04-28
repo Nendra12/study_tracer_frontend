@@ -14,6 +14,98 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [captchaImage, setCaptchaImage] = useState('');
   const [captchaLoading, setCaptchaLoading] = useState(false);
 
+  const normalizeLocationName = (value) => {
+    return (value || '')
+      .toString()
+      .toLowerCase()
+      .replace(/[.,/\\-]/g, ' ')
+      .replace(/\b(indonesia|provinsi|province|daerah|khusus|istimewa|kota|kabupaten|kab\.?|city|regency)\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const matchByName = (list, rawName) => {
+    const raw = normalizeLocationName(rawName);
+    if (!raw) return null;
+    return (
+      list.find((item) => {
+        const name = normalizeLocationName(
+          item?.nama ||
+          item?.nama_provinsi ||
+          item?.nama_kota ||
+          item?.nama_kabupaten ||
+          item?.nama_kota_kabupaten ||
+          item?.nama_kotaKabupaten ||
+          ''
+        );
+        return name && (name.includes(raw) || raw.includes(name));
+      }) || null
+    );
+  };
+
+  const syncProvinsiKotaFromMap = async ({ provinceRaw, cityRaw, mode, fallbackProvId = '' }) => {
+    if (!provinceRaw && !cityRaw) return { provId: '', kotaId: '' };
+
+    const setState =
+      mode === 'pekerjaan' ? setPekerjaan :
+      mode === 'universitas' ? setUniversitas :
+      setWirausaha;
+
+    let provList = provinsiList;
+    if (provinceRaw && (!Array.isArray(provList) || provList.length === 0)) {
+      try {
+        const provRes = await masterDataApi.getProvinsi();
+        provList = provRes?.data?.data || provRes?.data || [];
+        if (Array.isArray(provList) && provList.length > 0) setProvinsiList(provList);
+      } catch (err) {
+        console.error('Gagal mengambil provinsi untuk sinkronisasi map:', err);
+      }
+    }
+
+    const matchedProv = provinceRaw ? matchByName(Array.isArray(provList) ? provList : [], provinceRaw) : null;
+    const nextProvId = matchedProv?.id ? String(matchedProv.id) : '';
+
+    // Override pilihan lama: jika provinsi berubah -> reset kota.
+    // Jika provinsi sama tapi user memilih titik map di kota lain -> reset kota juga (akan diisi ulang dari map).
+    setState((prev) => {
+      const prevProvId = String(prev.id_provinsi || '');
+      const shouldSetProv = nextProvId && prevProvId !== nextProvId;
+      const shouldResetKota = !!cityRaw && String(prev.id_kota || '') !== '';
+
+      if (!shouldSetProv && !shouldResetKota) return prev;
+      return {
+        ...prev,
+        ...(shouldSetProv ? { id_provinsi: nextProvId } : null),
+        ...(shouldSetProv || shouldResetKota ? { id_kota: '' } : null),
+      };
+    });
+
+    let nextKotaId = '';
+
+    // Jika ada kota, coba cari ID kota berdasarkan provinsi yang terdeteksi.
+    if (cityRaw) {
+      const targetProvId = nextProvId || String(fallbackProvId || '');
+      let kotaData = kotaList;
+      if (targetProvId) {
+        try {
+          const res = await masterDataApi.getKota(targetProvId);
+          kotaData = res?.data?.data || res?.data || [];
+        } catch (err) {
+          // Fallback: gunakan kotaList yang sedang tersedia
+          console.error('Gagal mengambil kota untuk sinkronisasi map:', err);
+        }
+      }
+
+      const matchedKota = matchByName(Array.isArray(kotaData) ? kotaData : [], cityRaw);
+      if (matchedKota?.id) {
+        nextKotaId = String(matchedKota.id);
+        setState((prev) => ({ ...prev, id_kota: nextKotaId }));
+      }
+    }
+
+    return { provId: nextProvId, kotaId: nextKotaId };
+  };
+
   // 1. Sinkronisasi Status Awal dari formData
   const getInitialStatus = () => {
     if (formData.pekerjaan) return 'Bekerja';
@@ -38,6 +130,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [showUniMap, setShowUniMap] = useState(false);
   const [showUsahaMap, setShowUsahaMap] = useState(false);
   const [showBekerjaMap, setShowBekerjaMap] = useState(false);
+
+  const [locationLock, setLocationLock] = useState({ pekerjaan: false, universitas: false, wirausaha: false });
 
   // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { 
@@ -343,6 +437,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     label="Provinsi"
                     isSearchable={true}
                     isRequired={true}
+                    disabled={locationLock.pekerjaan}
                     placeholder={loadingProvinsi ? "Memuat..." : "Pilih Provinsi"}
                     options={provinsiList.map(p => p.nama)}
                     value={provinsiList.find(p => String(p.id) === String(pekerjaan.id_provinsi))?.nama || ""}
@@ -360,6 +455,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     label="Kota / Kabupaten"
                     isSearchable={true}
                     isRequired={true}
+                    disabled={locationLock.pekerjaan}
                     placeholder={!pekerjaan.id_provinsi ? "Pilih provinsi dulu" : loadingKota ? "Memuat..." : "Pilih Kota"}
                     options={kotaList.map(k => k.nama)}
                     value={kotaList.find(k => String(k.id) === String(pekerjaan.id_kota))?.nama || ""}
@@ -385,7 +481,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     <button
                       type="button"
                       onClick={() => setShowBekerjaMap(true)}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E293B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0F172A] cursor-pointer"
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer"
                     >
                       <MapPin size={16} />
                       Peta
@@ -447,6 +543,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     label="Provinsi Universitas"
                     isSearchable={true}
                     isRequired={true}
+                    disabled={locationLock.universitas}
                     placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
                     options={provinsiList.map((p) => p.nama)}
                     value={provinsiList.find((p) => String(p.id) === String(universitas.id_provinsi))?.nama || ''}
@@ -464,6 +561,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     label="Kota Universitas"
                     isSearchable={true}
                     isRequired={true}
+                    disabled={locationLock.universitas}
                     placeholder={!universitas.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
                     options={kotaList.map((k) => k.nama)}
                     value={kotaList.find((k) => String(k.id) === String(universitas.id_kota))?.nama || ''}
@@ -489,7 +587,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                     <button
                       type="button"
                       onClick={() => setShowUniMap(true)}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E293B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0F172A] cursor-pointer"
+                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer"
                     >
                       <MapPin size={16} />
                       Peta
@@ -533,6 +631,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                   label="Provinsi Usaha"
                   isSearchable={true}
                   isRequired={true}
+                  disabled={locationLock.wirausaha}
                   placeholder={loadingProvinsi ? 'Memuat...' : 'Pilih Provinsi'}
                   options={provinsiList.map((p) => p.nama)}
                   value={provinsiList.find((p) => String(p.id) === String(wirausaha.id_provinsi))?.nama || ''}
@@ -550,6 +649,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                   label="Kota Usaha"
                   isSearchable={true}
                   isRequired={true}
+                  disabled={locationLock.wirausaha}
                   placeholder={!wirausaha.id_provinsi ? 'Pilih provinsi dulu' : loadingKota ? 'Memuat...' : 'Pilih Kota'}
                   options={kotaList.map((k) => k.nama)}
                   value={kotaList.find((k) => String(k.id) === String(wirausaha.id_kota))?.nama || ''}
@@ -575,7 +675,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                   <button
                     type="button"
                     onClick={() => setShowUsahaMap(true)}
-                    className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E293B] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0F172A] cursor-pointer"
+                    className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer"
                   >
                     <MapPin size={16} />
                     Peta
@@ -606,7 +706,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             type="button"
             disabled={loading}
             onClick={() => setShowCaptchaModal(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:bg-[#0F172A] transition-all cursor-pointer disabled:opacity-60"
+          className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-xs md:text-sm font-bold hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -627,13 +727,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       <LocationPicker
         isOpen={showBekerjaMap}
         onClose={() => setShowBekerjaMap(false)}
-        onConfirm={({ latitude, longitude, address }) => {
+        onConfirm={async ({ latitude, longitude, address, provinceRaw, cityRaw }) => {
           setPekerjaan((prev) => ({
             ...prev,
             jalan: address || prev.jalan,
             latitude,
             longitude,
           }));
+          const { provId, kotaId } = await syncProvinsiKotaFromMap({ provinceRaw, cityRaw, mode: 'pekerjaan', fallbackProvId: pekerjaan.id_provinsi });
+          if (provId && kotaId) setLocationLock((prev) => ({ ...prev, pekerjaan: true }));
         }}
         initialLat={typeof pekerjaan.latitude === 'number' && pekerjaan.latitude !== null ? pekerjaan.latitude : -7.25}
         initialLng={typeof pekerjaan.longitude === 'number' && pekerjaan.longitude !== null ? pekerjaan.longitude : 112.75}
@@ -646,13 +748,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       <LocationPicker
         isOpen={showUniMap}
         onClose={() => setShowUniMap(false)}
-        onConfirm={({ latitude, longitude, address }) => {
+        onConfirm={async ({ latitude, longitude, address, provinceRaw, cityRaw }) => {
           setUniversitas((prev) => ({
             ...prev,
             alamat: address || prev.alamat,
             latitude,
             longitude,
           }));
+          const { provId, kotaId } = await syncProvinsiKotaFromMap({ provinceRaw, cityRaw, mode: 'universitas', fallbackProvId: universitas.id_provinsi });
+          if (provId && kotaId) setLocationLock((prev) => ({ ...prev, universitas: true }));
         }}
         initialLat={typeof universitas.latitude === 'number' && universitas.latitude !== null ? universitas.latitude : -7.25}
         initialLng={typeof universitas.longitude === 'number' && universitas.longitude !== null ? universitas.longitude : 112.75}
@@ -665,13 +769,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       <LocationPicker
         isOpen={showUsahaMap}
         onClose={() => setShowUsahaMap(false)}
-        onConfirm={({ latitude, longitude, address }) => {
+        onConfirm={async ({ latitude, longitude, address, provinceRaw, cityRaw }) => {
           setWirausaha((prev) => ({
             ...prev,
             alamat: address || prev.alamat,
             latitude,
             longitude,
           }));
+          const { provId, kotaId } = await syncProvinsiKotaFromMap({ provinceRaw, cityRaw, mode: 'wirausaha', fallbackProvId: wirausaha.id_provinsi });
+          if (provId && kotaId) setLocationLock((prev) => ({ ...prev, wirausaha: true }));
         }}
         initialLat={typeof wirausaha.latitude === 'number' && wirausaha.latitude !== null ? wirausaha.latitude : -7.25}
         initialLng={typeof wirausaha.longitude === 'number' && wirausaha.longitude !== null ? wirausaha.longitude : 112.75}

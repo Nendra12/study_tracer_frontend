@@ -264,26 +264,37 @@ export default function LocationPicker({
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
       const data = await res.json();
       if (data && data.display_name) {
-        setAddress(data.display_name);
         // Simpan data provinsi & kota dari hasil reverse geocode
         const addr = data.address || {};
         const province = addr.state || addr.province || '';
+        // NOTE: Untuk Indonesia, Nominatim sering mengisi level kabupaten/kota di `county`/`municipality`,
+        // sementara `town`/`village` bisa berisi kecamatan/kelurahan (tidak match ke master kota).
         const city =
           addr.city ||
-          addr.town ||
-          addr.county ||
           addr.municipality ||
+          addr.county ||
+          addr.city_district ||
           addr.state_district ||
+          addr.town ||
+          addr.village ||
           '';
+
+        setAddress(data.display_name);
         setDetectedLocation({ province, city });
-      } else {
-        setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-        setDetectedLocation({ province: '', city: '' });
+
+        return { address: data.display_name, province, city };
       }
+
+      const fallbackAddress = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      setAddress(fallbackAddress);
+      setDetectedLocation({ province: '', city: '' });
+      return { address: fallbackAddress, province: '', city: '' };
     } catch (err) {
       console.error('Reverse geocode failed', err);
-      setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      const fallbackAddress = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      setAddress(fallbackAddress);
       setDetectedLocation({ province: '', city: '' });
+      return { address: fallbackAddress, province: '', city: '' };
     } finally {
       setIsReversing(false);
     }
@@ -318,12 +329,16 @@ export default function LocationPicker({
   };
 
   const handleSelectResult = (result) => {
-    setPosition({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) });
-    setRecenterTarget({ lat: parseFloat(result.lat), lng: parseFloat(result.lon), zoom: 16 });
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    setPosition({ lat, lng });
+    setRecenterTarget({ lat, lng, zoom: 16 });
     setAddress(result.display_name || '');
     setSearchResults([]);
     setSearchQuery('');
     setGeocodeFailed(false);
+    // Pastikan provinsi & kota terisi juga
+    void reverseGeocode(lat, lng);
   };
 
   const handleUseMyLocation = () => {
@@ -342,13 +357,26 @@ export default function LocationPicker({
     );
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    let finalAddress = address;
+    let provinceRaw = detectedLocation.province;
+    let cityRaw = detectedLocation.city;
+
+    // Jika user memilih via search/initial state, detectedLocation bisa kosong.
+    // Pastikan reverse-geocode untuk posisi terakhir sebelum kirim ke parent.
+    if ((!provinceRaw && !cityRaw) || !finalAddress) {
+      const geo = await reverseGeocode(position.lat, position.lng);
+      finalAddress = geo?.address || finalAddress;
+      provinceRaw = geo?.province || provinceRaw;
+      cityRaw = geo?.city || cityRaw;
+    }
+
     onConfirm({
       latitude: position.lat,
       longitude: position.lng,
-      address,
-      provinceRaw: detectedLocation.province,
-      cityRaw: detectedLocation.city,
+      address: finalAddress,
+      provinceRaw,
+      cityRaw,
     });
     onClose();
   };
