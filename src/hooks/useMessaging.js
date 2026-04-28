@@ -335,7 +335,37 @@ export function useMessaging(currentUserId) {
   }, []);
 
   const handleRealtimeRead = useCallback((data) => {
-    // Could update read receipts UI here
+    const convId = data?.conversation_id;
+    const readerId = data?.read_by_user_id;
+    const readAt = data?.read_at;
+    if (!convId || !readerId || !readAt) return;
+
+    setConversations(prev => prev.map(c => {
+      if (c.id_conversation === convId) {
+        if (c.type === 'private' && c.contact?.id_users === readerId) {
+          return { ...c, contact: { ...c.contact, last_read_at: readAt } };
+        } else if (c.type === 'group') {
+          return {
+            ...c,
+            participants: c.participants?.map(p => p.id_users === readerId ? { ...p, last_read_at: readAt } : p)
+          };
+        }
+      }
+      return c;
+    }));
+
+    setActiveConversation(prev => {
+      if (!prev || prev.id_conversation !== convId) return prev;
+      if (prev.type === 'private' && prev.contact?.id_users === readerId) {
+        return { ...prev, contact: { ...prev.contact, last_read_at: readAt } };
+      } else if (prev.type === 'group') {
+        return {
+          ...prev,
+          participants: prev.participants?.map(p => p.id_users === readerId ? { ...p, last_read_at: readAt } : p)
+        };
+      }
+      return prev;
+    });
   }, []);
 
   return {
