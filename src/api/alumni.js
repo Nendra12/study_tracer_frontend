@@ -361,6 +361,86 @@ export const alumniApi = {
   getMessageContacts(params = {}) {
     return api.get('/alumni/messages/contacts', { params });
   },
+
+  // =====================
+  // MINI MEDSOS (Social Feed)
+  // =====================
+
+  // Feed & Posts
+  getPostFeed(params = {}) {
+    return api.get('/alumni/posts/feed', { params });
+  },
+
+  getMyPosts(params = {}) {
+    return api.get('/alumni/posts/my', { params });
+  },
+
+  getAlumniPosts(alumniId, params = {}) {
+    return api.get(`/alumni/posts/alumni/${alumniId}`, { params });
+  },
+
+  getPost(postId) {
+    return api.get(`/alumni/posts/${postId}`);
+  },
+
+  createPost(data) {
+    // Always use FormData for multipart (images support)
+    if (data instanceof FormData) {
+      return api.post('/alumni/posts', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.post('/alumni/posts', data);
+  },
+
+  updatePost(postId, data) {
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return api.post(`/alumni/posts/${postId}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.put(`/alumni/posts/${postId}`, data);
+  },
+
+  deletePost(postId) {
+    return api.delete(`/alumni/posts/${postId}`);
+  },
+
+  // Likes
+  togglePostLike(postId) {
+    return api.post(`/alumni/posts/${postId}/like`);
+  },
+
+  getPostLikers(postId, params = {}) {
+    return api.get(`/alumni/posts/${postId}/likers`, { params });
+  },
+
+  // Comments
+  getPostComments(postId, params = {}) {
+    return api.get(`/alumni/posts/${postId}/comments`, { params });
+  },
+
+  addPostComment(postId, data) {
+    return api.post(`/alumni/posts/${postId}/comments`, data);
+  },
+
+  getCommentReplies(commentId, params = {}) {
+    return api.get(`/alumni/posts/comments/${commentId}/replies`, { params });
+  },
+
+  updatePostComment(commentId, data) {
+    return api.put(`/alumni/posts/comments/${commentId}`, data);
+  },
+
+  deletePostComment(commentId) {
+    return api.delete(`/alumni/posts/comments/${commentId}`);
+  },
+
+  // Report
+  reportPost(postId, data) {
+    return api.post(`/alumni/posts/${postId}/report`, data);
+  },
 };
 
 // Public endpoints
