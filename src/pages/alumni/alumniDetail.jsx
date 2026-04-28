@@ -13,6 +13,9 @@ import { STORAGE_BASE_URL } from '../../api/axios';
 import { AlumniDetailSkeleton } from '../../components/alumni/skeleton';
 import { useConnections } from '../../hooks/useConnections';
 
+const MotionButton = motion.button;
+const MotionDiv = motion.div;
+
 function getImageUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
@@ -118,12 +121,6 @@ export default function AlumniDetail() {
     }
   }
 
-  const user = {
-    nama_alumni: authUser?.profile?.nama || authUser?.nama || 'Alumni',
-    foto: authUser?.profile?.foto || authUser?.foto,
-    can_access_all: true,
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
@@ -213,21 +210,21 @@ export default function AlumniDetail() {
         </svg>
       </div>
 
-      {/* --- MAIN CONTENT AREA --- */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 -mt-32 pb-20">
+        {/* --- MAIN CONTENT AREA --- */}
+        <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 -mt-32 pb-20">
 
         {/* BAR PROFIL PUBLIK (hanya muncul jika dari halaman profil) */}
         {fromProfile && <PublicProfileBar alumniData={alumni} />}
 
         {/* Tombol Kembali (hanya muncul jika dari direktori alumni) */}
         {!fromProfile && (
-          <motion.button
+          <MotionButton
             whileHover={{ x: -3 }}
             onClick={() => navigate('/alumni/daftar-alumni')}
             className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest mb-4 transition-all cursor-pointer"
           >
             <ArrowLeft size={14} /> Kembali ke Direktori
-          </motion.button>
+          </MotionButton>
         )}
 
         {/* PROFILE HEADER CARD */}
@@ -235,7 +232,7 @@ export default function AlumniDetail() {
           <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center w-full">
 
             {/* BAGIAN FOTO */}
-            <motion.div
+            <MotionDiv
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="relative shrink-0 mx-auto md:mx-0"
@@ -256,7 +253,7 @@ export default function AlumniDetail() {
                   {currentStatus}
                 </div>
               )}
-            </motion.div>
+            </MotionDiv>
 
             {/* BAGIAN TEKS */}
             <div className="flex-1 text-center md:text-left w-full mt-2 md:mt-0">
@@ -310,7 +307,7 @@ export default function AlumniDetail() {
                   onRemove={removeOrCancel}
                   onBlock={block}
                   onUnblock={unblock}
-                  className="md:flex md:flex-col md:items-end"
+                  className="w-full max-w-md md:max-w-none md:flex md:flex-col md:items-end [&>div:nth-child(2)]:w-full [&>div:nth-child(2)]:justify-center [&_button]:flex-1 [&_button]:min-w-40 md:[&>div:nth-child(2)]:w-auto md:[&>div:nth-child(2)]:justify-end md:[&_button]:flex-none md:[&_button]:min-w-fit"
                 />
               </div>
             )}
@@ -319,13 +316,13 @@ export default function AlumniDetail() {
         </div>
 
         {/* 2-COLUMN CONTENT */}
-        <div data-pdf-section className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div data-pdf-section className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
 
           {/* SIDEBAR KIRI */}
           <div className="lg:col-span-4 space-y-8">
             {/* Status Karier Card */}
             {currentCareer && (
-              <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
                 <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   {getStatusIcon(currentStatus)} Status Karier Saat Ini
                 </h2>
@@ -377,7 +374,7 @@ export default function AlumniDetail() {
             )}
 
             {/* Info Akademik */}
-            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
               <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                 <GraduationCap size={14} /> Informasi Akademik
               </h2>
@@ -426,7 +423,7 @@ export default function AlumniDetail() {
 
             {/* Skills */}
             {skills.length > 0 && (
-              <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
                 <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   <Award size={14} /> Keahlian
                 </h2>
@@ -442,7 +439,7 @@ export default function AlumniDetail() {
 
             {/* Social Media */}
             {(alumni.instagram || alumni.linkedin || alumni.github || alumni.facebook || alumni.website) && (
-              <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
                 <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                   <Globe size={14} /> Media Sosial
                 </h2>
@@ -482,11 +479,11 @@ export default function AlumniDetail() {
 
             {/* --- SEKSI: RIWAYAT KARIER --- */}
             {riwayat.length > 0 && (
-              <div className="bg-white rounded-md p-8 md:p-10 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-6 md:p-10 border border-slate-100 shadow-sm">
                 <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-10">
                   <Briefcase size={22} /> Riwayat Karier
                 </h2>
-                <div className="relative pl-8 border-l-2 border-slate-100 space-y-12">
+                <div className="relative pl-6 sm:pl-8 border-l-2 border-slate-100 space-y-10 sm:space-y-12">
                   {riwayat.map((item, idx) => {
                     let title = item.status?.nama || '-';
                     let subtitle = '';
@@ -514,7 +511,7 @@ export default function AlumniDetail() {
                     return (
                       <div key={item.id || idx} className="relative w-full">
                         {/* Dot / Lingkaran Timeline */}
-                        <div className="absolute -left-[2.6rem] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-[#2A3E3F] z-10" />
+                        <div className="absolute -left-[2.2rem] sm:-left-[2.6rem] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-[#2A3E3F] z-10" />
 
                         {/* Wrapper Flex: Info di Kiri, Tanggal di Kanan */}
                         <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4 w-full">
@@ -553,7 +550,7 @@ export default function AlumniDetail() {
 
             {/* --- SEKSI: PORTOFOLIO / PENGALAMAN --- */}
             {portofolioList.length > 0 && (
-              <div className="bg-white rounded-md p-8 md:p-10 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-md p-6 md:p-10 border border-slate-100 shadow-sm">
                 <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-8">
                   <Layout size={22} /> Portofolio & Pengalaman
                 </h2>

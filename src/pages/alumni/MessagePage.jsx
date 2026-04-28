@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { Search, Send, Paperclip, MoreVertical, CheckCheck, ArrowLeft, Briefcase, GraduationCap, Building2, Plus, Star, Archive, MessageSquarePlus, EllipsisIcon, ImagePlus, Smile, Gift, SendHorizontal, X, Download, UsersRound, ListChecks, Trash2, Check, Pin, Info, Eraser, ChevronDown, Reply, Clock, CircleCheck, Ellipsis, Loader2, BellOff, LayoutGrid, MessageCircle } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -54,6 +54,55 @@ const TenorPicker = ({ onSelectGif, onClose }) => {
   );
 };
 
+function toDateKey(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getMessageDate(msg) {
+  const raw = msg?.created_at || msg?.createdAt || msg?.sent_at || msg?.timestamp || null;
+  if (!raw) return null;
+  const dt = new Date(raw);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+function getDayLabel(date) {
+  if (!date) return '';
+
+  const now = new Date();
+  const todayKey = toDateKey(now);
+  const dateKey = toDateKey(date);
+  if (!dateKey) return '';
+
+  if (dateKey === todayKey) return 'Hari ini';
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (dateKey === toDateKey(yesterday)) return 'Kemarin';
+
+  // Older than yesterday: show weekday name, but if it falls on the same weekday as today
+  // (e.g., last week), show the date to avoid ambiguity.
+  if (date.getDay() === now.getDay()) {
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  return date.toLocaleDateString('id-ID', { weekday: 'long' });
+}
+
+function DaySeparator({ label }) {
+  if (!label) return null;
+  return (
+    <div className="text-center my-2">
+      <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 backdrop-blur px-3 py-1 rounded-full">
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function MessagePage() {
   const { user } = useAuth();
   const currentUserId = user?.id_users || user?.id;
@@ -100,7 +149,6 @@ export default function MessagePage() {
 
   const messagesEndRef = useRef(null);
   const imageInputRef = useRef(null);
-  const fileInputRef = useRef(null);
   const isAutoScrolling = useRef(false);
 
   // Fetch conversations on mount
@@ -143,6 +191,11 @@ export default function MessagePage() {
   const activeChat = messaging.activeConversation;
   const currentMessages = messaging.messages;
 
+  const visibleMessages = useMemo(
+    () => (currentMessages || []).filter((m) => !m?.is_deleted),
+    [currentMessages]
+  );
+
   const scrollToBottom = () => {
     isAutoScrolling.current = true;
     setShowScrollButton(false);
@@ -172,7 +225,10 @@ export default function MessagePage() {
     setTimeout(() => setHighlightedMessageId(null), 2500);
   };
 
-  useEffect(() => { scrollToBottom(); }, [currentMessages, activeChat]);
+  useEffect(() => {
+    const t = setTimeout(() => scrollToBottom(), 0);
+    return () => clearTimeout(t);
+  }, [currentMessages, activeChat]);
 
   const handleSelectChat = (conv) => {
     messaging.selectConversation(conv);
@@ -228,12 +284,21 @@ export default function MessagePage() {
 
     try {
       await messaging.sendMessage(convId, data);
-    } catch { }
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
   };
 
   const handleSendAttachment = (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (type === 'image' && !file.type.startsWith('image/')) {
+      toastWarning('Hanya file gambar yang diperbolehkan.');
+      e.target.value = null;
+      return;
+    }
+
     setShowEmojiPicker(false);
     setShowGifPicker(false);
     const reader = new FileReader();
@@ -274,24 +339,35 @@ export default function MessagePage() {
     if (!ok) return;
   };
 
-  const handleOpenGroupInfo = async () => {
-    if (!activeChat || activeChat.type !== 'group') return;
-    await messaging.refreshConversationDetail(activeChat.id_conversation);
-    setIsGroupInfoOpen(true);
+  const handleDeleteSelectedChats = async () => {
+    if (!selectedContacts?.length) return;
+    const ok = await confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, async () => {
+      for (const id of selectedContacts) {
+        await messaging.deleteConversation(id);
+      }
+    });
+    if (!ok) return;
+    setIsSelectionMode(false);
+    setSelectedContacts([]);
   };
 
-  const handleSubmitGroupInfo = async (payload) => {
-    const convId = activeChat?.id_conversation;
-    if (!convId) return;
+  const handleDeleteMessage = async (msgId) => {
+    if (!msgId) return;
+    await confirmThen('Pesan ini akan dihapus. Lanjutkan?', async () => {
+      await messaging.deleteMessage(msgId);
+    });
+  };
 
-    setIsSavingGroupInfo(true);
-    try {
-      await messaging.updateGroupConversation(convId, payload);
-      await messaging.refreshConversationDetail(convId);
-      setIsGroupInfoOpen(false);
-    } finally {
-      setIsSavingGroupInfo(false);
-    }
+  const handleDeleteSelectedMessages = async () => {
+    if (!selectedMessageIds?.length) return;
+    const ok = await confirmThen(`Hapus ${selectedMessageIds.length} pesan secara permanen?`, async () => {
+      for (const id of selectedMessageIds) {
+        await messaging.deleteMessage(id);
+      }
+    });
+    if (!ok) return;
+    setIsMessageSelectionMode(false);
+    setSelectedMessageIds([]);
   };
 
   const handleToggleSelect = (contactId) => {
@@ -335,6 +411,22 @@ export default function MessagePage() {
     return `${names.join(', ')} sedang mengetik...`;
   };
 
+  const handleSubmitGroupInfo = async ({ group_name, avatar }) => {
+    const convId = activeChat?.id_conversation;
+    if (!convId) return;
+
+    setIsSavingGroupInfo(true);
+    try {
+      await messaging.updateGroupConversation(convId, { group_name, avatar });
+      await messaging.refreshConversationDetail?.(convId);
+      setIsGroupInfoOpen(false);
+    } catch (err) {
+      console.error('Failed to update group info:', err);
+    } finally {
+      setIsSavingGroupInfo(false);
+    }
+  };
+
 
   return (
     <div className="h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20 overflow-hidden">
@@ -347,7 +439,6 @@ export default function MessagePage() {
 
       {/* Hidden file inputs */}
       <input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleSendAttachment(e, 'image')} />
-      <input type="file" accept="*" ref={fileInputRef} className="hidden" onChange={(e) => handleSendAttachment(e, 'file')} />
 
       {/* Image Preview Modal */}
       {previewImage && (
@@ -624,11 +715,7 @@ export default function MessagePage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, () => {
-                      selectedContacts.forEach(id => messaging.deleteConversation(id));
-                      setIsSelectionMode(false);
-                      setSelectedContacts([]);
-                    })}
+                    onClick={handleDeleteSelectedChats}
                     className="flex-1 cursor-pointer flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
                   >
                     <Trash2 size={14} /> Hapus
@@ -719,33 +806,42 @@ export default function MessagePage() {
                           </div>
                         ))}
                       </div>
-                    ) : currentMessages.length === 0 ? (
+                    ) : visibleMessages.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
                         Kirim pesan untuk memulai obrolan
                       </div>
                     ) : (
-                      currentMessages.map((msg) => {
-                        if (msg.is_deleted) return null;
-                        const isMe = msg.sender?.id_users === currentUserId;
-                        const isGroupMessage = activeChat?.type === 'group';
-                        const senderName = msg.sender?.nama_alumni || msg.sender?.name || (isMe ? 'Anda' : 'User');
-                        const isHighlighted = highlightedMessageId === msg.id_message;
-                        const isSelected = selectedMessageIds.includes(msg.id_message);
-                        return (
-                          <div
-                            key={msg.id_message}
-                            id={`message-${msg.id_message}`}
-                            onClick={() => {
-                              if (isMessageSelectionMode) {
-                                if (isSelected) {
-                                  setSelectedMessageIds(selectedMessageIds.filter(id => id !== msg.id_message));
-                                } else {
-                                  setSelectedMessageIds([...selectedMessageIds, msg.id_message]);
-                                }
-                              }
-                            }}
-                            className={`flex items-center w-full mb-4 transition-all duration-700 rounded-2xl ${isHighlighted ? 'ring-4 ring-primary/40 bg-primary/10 p-2 -m-2 z-10' : ''} ${isMessageSelectionMode ? 'cursor-pointer hover:bg-gray-50 p-2 -mx-2' : ''}`}
-                          >
+                      <>
+                        <DaySeparator label={getDayLabel(getMessageDate(visibleMessages[0]))} />
+                        {visibleMessages.map((msg, index) => {
+                          const isMe = msg.sender?.id_users === currentUserId;
+                          const isHighlighted = highlightedMessageId === msg.id_message;
+                          const isSelected = selectedMessageIds.includes(msg.id_message);
+                          const isGroupMessage = activeChat?.type === 'group' && !isMe;
+                          const senderName = msg.sender?.nama_alumni || msg.sender?.name || 'User';
+
+                          const msgDate = getMessageDate(msg);
+                          const msgKey = toDateKey(msgDate);
+                          const prevDate = index > 0 ? getMessageDate(visibleMessages[index - 1]) : null;
+                          const prevKey = toDateKey(prevDate);
+                          const showSeparator = index > 0 && msgKey && prevKey && msgKey !== prevKey;
+
+                          return (
+                            <React.Fragment key={msg.id_message}>
+                              {showSeparator && <DaySeparator label={getDayLabel(msgDate)} />}
+                              <div
+                                id={`message-${msg.id_message}`}
+                                onClick={() => {
+                                  if (isMessageSelectionMode) {
+                                    if (isSelected) {
+                                      setSelectedMessageIds(selectedMessageIds.filter(id => id !== msg.id_message));
+                                    } else {
+                                      setSelectedMessageIds([...selectedMessageIds, msg.id_message]);
+                                    }
+                                  }
+                                }}
+                                className={`flex items-center w-full mb-4 transition-all duration-700 rounded-2xl ${isHighlighted ? 'ring-4 ring-primary/40 bg-primary/10 p-2 -m-2 z-10' : ''} ${isMessageSelectionMode ? 'cursor-pointer hover:bg-gray-50 p-2 -mx-2' : ''}`}
+                              >
                             {isMessageSelectionMode && (
                               <div className="shrink-0 mr-3 flex items-center animate-in fade-in slide-in-from-left-2 duration-200">
                                 <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-300'}`}>
@@ -802,7 +898,7 @@ export default function MessagePage() {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setActiveMessageMenuId(null);
-                                                confirmThen('Pesan ini akan dihapus. Lanjutkan?', () => messaging.deleteMessage(msg.id_message));
+                                                handleDeleteMessage(msg.id_message);
                                               }}
                                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
                                             >
@@ -910,9 +1006,11 @@ export default function MessagePage() {
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </>
                     )}
                     <div ref={messagesEndRef} />
                   </div>
@@ -943,17 +1041,7 @@ export default function MessagePage() {
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={async () => {
-                            if (selectedMessageIds.length > 0) {
-                              const result = await alertConfirm(`Hapus ${selectedMessageIds.length} pesan secara permanen?`);
-                              if (!result?.isConfirmed) return;
-                              for (const id of selectedMessageIds) {
-                                await messaging.deleteMessage(id);
-                              }
-                              setIsMessageSelectionMode(false);
-                              setSelectedMessageIds([]);
-                            }
-                          }}
+                          onClick={handleDeleteSelectedMessages}
                           disabled={selectedMessageIds.length === 0}
                           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${selectedMessageIds.length > 0 ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
                         >
@@ -1012,11 +1100,11 @@ export default function MessagePage() {
                             {attachmentPreview.type === 'gif' && (
                               <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
                             )}
-                            {attachmentPreview.type === 'file' && (
+                            {/* {attachmentPreview.type === 'file' && (
                               <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center text-primary">
                                 <Paperclip size={24} />
                               </div>
-                            )}
+                            )} */}
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
                               <span className="text-xs text-primary mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
@@ -1051,13 +1139,13 @@ export default function MessagePage() {
                               >
                                 <ImagePlus size={20} />
                               </button>
-                              <button
+                              {/* <button
                                 onClick={() => { fileInputRef.current?.click(); setShowAttachments(false); }}
                                 className="p-3 cursor-pointer rounded-xl bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary transition-colors flex justify-center"
                                 title="Kirim File"
                               >
                                 <Paperclip size={20} />
-                              </button>
+                              </button> */}
                               <button
                                 onClick={() => {
                                   setShowGifPicker(!showGifPicker);
@@ -1082,13 +1170,13 @@ export default function MessagePage() {
                           >
                             <ImagePlus size={20} />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => fileInputRef.current?.click()}
                             className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
                             title="Kirim File"
                           >
                             <Paperclip size={20} />
-                          </button>
+                          </button> */}
                           <button
                             onClick={() => {
                               setShowGifPicker(!showGifPicker);

@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ArrowRight, Ban, Link2, Loader2, Send, UserPlus } from 'lucide-react';
+import { AlertCircle, ArrowRight, Ban, Link2, Loader2, Search, Send, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { useConnections } from '../../hooks/useConnections';
 import Connection from '../../components/alumni/Connection';
 import Pagination from '../../components/admin/Pagination';
+import SmoothDropdown from '../../components/admin/SmoothDropdown';
 
 import ConnectionImg from '../../assets/connection.png';
 
@@ -150,6 +151,13 @@ export default function ConnectionsPage() {
   const [error, setError] = useState('');
   const [pageMeta, setPageMeta] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: 12 }); // PERUBAHAN: Ubah perPage ke 12 agar genap dibagi 3 kolom
 
+  const [searchName, setSearchName] = useState('');
+  const [nameSort, setNameSort] = useState('az'); // 'az' | 'za'
+
+  const handleSearchSubmit = useCallback((e) => {
+    e.preventDefault();
+  }, []);
+
   const isLoading = listLoading[activeTab] || false;
 
   const fetcherByTab = useMemo(() => ({
@@ -182,7 +190,15 @@ export default function ConnectionsPage() {
   }, [fetcherByTab]);
 
   useEffect(() => {
-    loadTabData(activeTab, 1);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      loadTabData(activeTab, 1);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, loadTabData]);
 
   useEffect(() => {
@@ -211,6 +227,26 @@ export default function ConnectionsPage() {
     blocked: 'Belum ada alumni yang diblokir.',
   }[activeTab];
 
+  const visibleItems = useMemo(() => {
+    const normalizedQuery = (searchName || '').trim().toLowerCase();
+
+    let next = items;
+    if (normalizedQuery) {
+      next = next.filter((it) => (it?.name || '').toString().toLowerCase().includes(normalizedQuery));
+    }
+
+    next = [...next].sort((a, b) => {
+      const an = (a?.name || '').toString();
+      const bn = (b?.name || '').toString();
+      const base = an.localeCompare(bn, 'id', { sensitivity: 'base' });
+      return nameSort === 'za' ? -base : base;
+    });
+
+    return next;
+  }, [items, nameSort, searchName]);
+
+  const isFiltering = Boolean((searchName || '').trim());
+
   return (
     <div className="w-full min-h-screen bg-[#f8f9fa]">
       <section className="relative pt-28 pb-20 w-full z-30 bg-primary rounded-b-[2.5rem] overflow-hidden">
@@ -231,8 +267,44 @@ export default function ConnectionsPage() {
       </section>
 
       <main className="w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-40 -mt-10 pb-12">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-xl border border-slate-100 mb-8">
-          <div className="flex flex-wrap gap-3">
+        <div className="bg-white p-4 md:p-6 rounded-md shadow-xl border border-slate-100 mb-8">
+          {/* SEARCH & FILTER FORM (standar alumni) */}
+          <div className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex h-11.75 w-full lg:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
+            >
+              <div className="relative flex-1 flex items-center">
+                <Search className="absolute left-3 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan nama alumni..."
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-primary/80 transition-colors cursor-pointer border-l-2 border-gray-100"
+              >
+                Cari
+              </button>
+            </form>
+
+            <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
+              <div className="w-full lg:w-48 relative z-50">
+                <SmoothDropdown
+                  options={['A - Z', 'Z - A']}
+                  value={nameSort === 'za' ? 'Z - A' : 'A - Z'}
+                  onSelect={(val) => setNameSort(val === 'Z - A' ? 'za' : 'az')}
+                  placeholder="Urutkan Nama"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap mt-4">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.key;
@@ -241,10 +313,10 @@ export default function ConnectionsPage() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${active ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+                  className={`w-full md:w-auto inline-flex items-center justify-center md:justify-start gap-1.5 md:gap-2 px-3.5 md:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${active ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:text-primary hover:bg-slate-100 border border-slate-200'}`}
                 >
                   <Icon size={16} />
-                  {tab.label}
+                  <span className="whitespace-nowrap">{tab.label}</span>
                 </button>
               );
             })}
@@ -252,7 +324,7 @@ export default function ConnectionsPage() {
         </div>
 
         {error ? (
-          <div className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm text-center">
+          <div className="bg-white rounded-md p-10 border border-slate-100 shadow-sm text-center">
             <AlertCircle size={44} className="text-red-400 mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-600 mb-4">{error}</p>
             <button
@@ -263,19 +335,19 @@ export default function ConnectionsPage() {
             </button>
           </div>
         ) : isLoading ? (
-          <div className="bg-white rounded-2xl p-16 border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-3 text-slate-500">
+          <div className="bg-white rounded-md p-16 border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-3 text-slate-500">
             <Loader2 size={24} className="animate-spin text-primary" /> 
             <span className="font-semibold text-sm">Memuat data koneksi...</span>
           </div>
-        ) : items.length === 0 ? (
-          <div className="bg-white rounded-2xl p-16 border border-slate-100 shadow-sm text-center text-slate-500 font-medium">
-            {emptyMessage}
+        ) : visibleItems.length === 0 ? (
+          <div className="bg-white rounded-md p-16 border border-slate-100 shadow-sm text-center text-slate-500 font-medium">
+            {isFiltering ? 'Tidak ada hasil yang cocok.' : emptyMessage}
           </div>
         ) : (
           <>
             {/* PERUBAHAN: Layout Grid 3 Kolom & Card Horizontal */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {items.map((item) => {
+              {visibleItems.map((item) => {
                 const image = getImageUrl(item.photo);
                 const fallbackAvatar = getAvatarFallback(item.name);
                 const isSelf = String(item.id) === String(myAlumniId);
@@ -283,10 +355,10 @@ export default function ConnectionsPage() {
                 return (
                   <div
                     key={`${activeTab}-${item.id}-${item.connectionId || 'none'}`}
-                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-row h-[180px]" // PERUBAHAN: flex-row & h-[180px]
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row md:h-45" // mobile: vertical, desktop: horizontal
                   >
                     {/* BAGIAN KIRI: FOTO (w-[40%]) */}
-                    <div className="w-[40%] h-full shrink-0 bg-slate-100 border-r border-slate-100 overflow-hidden">
+                    <div className="w-full h-40 md:h-full md:w-[40%] shrink-0 bg-slate-100 md:border-r border-slate-100 overflow-hidden">
                       <img
                         src={image || fallbackAvatar}
                         alt={item.name}
@@ -300,7 +372,7 @@ export default function ConnectionsPage() {
                     </div>
 
                     {/* BAGIAN KANAN: DATA & ACTIONS (w-[60%]) */}
-                    <div className="w-[60%] h-full p-4 flex flex-col">
+                    <div className="w-full md:w-[60%] p-4 flex flex-col">
                       {/* Info Detail */}
                       <div className="space-y-1">
                         <h3 className="text-sm font-black text-primary line-clamp-1 pr-1" title={item.name}>{item.name}</h3>
@@ -317,7 +389,7 @@ export default function ConnectionsPage() {
                       </div>
 
                       {/* Status & Actions - Didorong ke bawah dengan 'mt-auto' agar tidak mepet */}
-                      <div className="mt-auto mb-3 flex flex-col gap-2.5 [&_div.badge]:!p-0 [&_div.badge]:!border-0 [&_div.badge]:!bg-transparent [&_div.actions]:!mt-0">
+                      <div className="mt-4 md:mt-auto mb-3 flex flex-col gap-2.5 [&_div.badge]:p-0! [&_div.badge]:border-0! [&_div.badge]:bg-transparent! [&_div.actions]:mt-0!">
                         <Connection
                           alumniId={item.id}
                           isSelf={isSelf}
@@ -343,7 +415,7 @@ export default function ConnectionsPage() {
                       </div>
 
                       {/* Link Profil di paling bawah kanan */}
-                      <div className="pt-2 border-t border-slate-100 flex justify-end">
+                      <div className="pt-2 border-t border-slate-100 flex justify-end md:justify-end">
                         <button
                           onClick={() => navigate(`/alumni/daftar-alumni/${item.id}`)}
                           className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/70 transition-colors cursor-pointer"
@@ -358,7 +430,7 @@ export default function ConnectionsPage() {
             </div>
 
             {pageMeta.lastPage > 1 && (
-              <div className="mt-10 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="mt-10 bg-white rounded-md shadow-sm border border-slate-100 overflow-hidden">
                 <Pagination
                   currentPage={pageMeta.currentPage}
                   totalPages={pageMeta.lastPage}
