@@ -6,6 +6,7 @@ import EmojiPicker from 'emoji-picker-react';
 import NewChatModal from '../../components/alumni/NewChatModal';
 import SideBarSearchChat from '../../components/alumni/SideBarSearchChat';
 import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
+import GroupInfoModal from '../../components/alumni/GroupInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, formatTime, getImageUrl } from '../../hooks/useMessaging';
 import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
@@ -87,6 +88,8 @@ export default function MessagePage() {
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
   const [isChatMenuOpen, setIsChatMenuOpen] = useState(false);
+  const [isGroupInfoOpen, setIsGroupInfoOpen] = useState(false);
+  const [isSavingGroupInfo, setIsSavingGroupInfo] = useState(false);
 
   const [isMessageSelectionMode, setIsMessageSelectionMode] = useState(false);
   const [selectedMessageIds, setSelectedMessageIds] = useState([]);
@@ -174,6 +177,7 @@ export default function MessagePage() {
   const handleSelectChat = (conv) => {
     messaging.selectConversation(conv);
     setShowChatArea(true);
+    setIsGroupInfoOpen(false);
     setShowEmojiPicker(false);
     setShowGifPicker(false);
     setAttachmentPreview(null);
@@ -268,6 +272,26 @@ export default function MessagePage() {
       if (success && activeChat?.id_conversation === targetId) setShowChatArea(false);
     });
     if (!ok) return;
+  };
+
+  const handleOpenGroupInfo = async () => {
+    if (!activeChat || activeChat.type !== 'group') return;
+    await messaging.refreshConversationDetail(activeChat.id_conversation);
+    setIsGroupInfoOpen(true);
+  };
+
+  const handleSubmitGroupInfo = async (payload) => {
+    const convId = activeChat?.id_conversation;
+    if (!convId) return;
+
+    setIsSavingGroupInfo(true);
+    try {
+      await messaging.updateGroupConversation(convId, payload);
+      await messaging.refreshConversationDetail(convId);
+      setIsGroupInfoOpen(false);
+    } finally {
+      setIsSavingGroupInfo(false);
+    }
   };
 
   const handleToggleSelect = (contactId) => {
@@ -666,6 +690,7 @@ export default function MessagePage() {
                             setIsChatMenuOpen={setIsChatMenuOpen}
                             setIsMessageSelectionMode={setIsMessageSelectionMode}
                             activeChat={activeChat}
+                            onOpenGroupInfo={handleOpenGroupInfo}
                             onTogglePin={() => messaging.togglePin(activeChat.id_conversation)}
                             onToggleMute={() => messaging.toggleMute(activeChat.id_conversation)}
                             onDeleteChat={() => handleDeleteChat(activeChat.id_conversation)}
@@ -702,6 +727,8 @@ export default function MessagePage() {
                       currentMessages.map((msg) => {
                         if (msg.is_deleted) return null;
                         const isMe = msg.sender?.id_users === currentUserId;
+                        const isGroupMessage = activeChat?.type === 'group';
+                        const senderName = msg.sender?.nama_alumni || msg.sender?.name || (isMe ? 'Anda' : 'User');
                         const isHighlighted = highlightedMessageId === msg.id_message;
                         const isSelected = selectedMessageIds.includes(msg.id_message);
                         return (
@@ -727,16 +754,22 @@ export default function MessagePage() {
                               </div>
                             )}
                             <div className={`flex flex-1 ${isMe ? 'justify-end' : 'justify-start'} min-w-0 group/msg`}>
+                              <div className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                {isGroupMessage && msg.type !== 'system' && (
+                                  <span className={`text-[11px] font-semibold mb-1 px-1 ${isMe ? 'text-primary/80' : 'text-gray-500'}`}>
+                                    {senderName}
+                                  </span>
+                                )}
 
-                              <div
-                                className={`max-w-[85%] md:max-w-[70%] rounded-[20px] relative ${isMe
-                                  ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
-                                  : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
-                                  } ${
-                                  // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
-                                  (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'pl-4 pr-7 py-3'
-                                  }`}
-                              >
+                                <div
+                                  className={`w-full rounded-[20px] relative ${isMe
+                                    ? 'bg-primary text-white rounded-br-sm shadow-md shadow-indigo-200/50'
+                                    : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm shadow-sm'
+                                    } ${
+                                    // FIX: Gunakan p-1 untuk semua image/gif terlepas dari ada caption atau tidak
+                                    (msg.type === 'image' || msg.type === 'gif') ? 'p-1' : 'pl-4 pr-7 py-3'
+                                    }`}
+                                >
                                 {/* Menu Trigger inside the bubble (Absolutely positioned at top-right) */}
                                 <div className={`absolute top-1 right-1 opacity-0 group-hover/msg:opacity-100 transition-opacity flex flex-col items-end justify-start z-20`}>
                                   <div className="relative">
@@ -874,6 +907,7 @@ export default function MessagePage() {
                                     </div>
                                   </div>
                                 )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1118,6 +1152,14 @@ export default function MessagePage() {
                     currentUserId={currentUserId}
                   />
                 )}
+
+                <GroupInfoModal
+                  isOpen={isGroupInfoOpen}
+                  onClose={() => setIsGroupInfoOpen(false)}
+                  conversation={activeChat}
+                  onSubmit={handleSubmitGroupInfo}
+                  saving={isSavingGroupInfo}
+                />
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
