@@ -154,8 +154,13 @@ export default function MessagePage() {
   // Fetch conversations on mount
   useEffect(() => { messaging.fetchConversations(); }, []);
 
-  // Debounced search
+  // Debounced search (skip initial mount — already handled by the effect above)
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     const t = setTimeout(() => messaging.fetchConversations(searchQuery), 400);
     return () => clearTimeout(t);
   }, [searchQuery]);
@@ -253,7 +258,7 @@ export default function MessagePage() {
 
   const renderMessageStatus = (msg, isMe) => {
     if (!isMe) return null;
-    
+
     let isRead = false;
     if (activeChat?.type === 'private') {
       const contactReadAt = activeChat.contact?.last_read_at;
@@ -612,9 +617,11 @@ export default function MessagePage() {
                     <button
                       key={cId}
                       onClick={() => isSelectionMode ? handleToggleSelect(cId) : handleSelectChat(contact)}
-                      className={`w-full cursor-pointer flex items-center gap-3.5 p-3 rounded-2xl text-left group transition-all mb-1 hover:bg-[#f8f9fa] ${isSelectionMode && selectedContacts.includes(cId)
+                      className={`w-full cursor-pointer flex items-center gap-3.5 p-3 rounded-2xl text-left group transition-all mb-1 hover:bg-gray-50 ${isSelectionMode && selectedContacts.includes(cId)
                         ? 'bg-indigo-50 border-indigo-200 border'
-                        : isActive && !isSelectionMode ? 'bg-indigo-50/60 border border-transparent' : 'border border-transparent'
+                        : isActive && !isSelectionMode ? 'bg-primary/10 border border-transparent'
+                          : (contact.unread_count || 0) > 0 ? 'bg-primary/5 border border-transparent'
+                            : 'border border-transparent'
                         }`}
                     >
                       {isSelectionMode && (
@@ -690,7 +697,7 @@ export default function MessagePage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 justify-between">
-                          <p className={`text-xs truncate ${isActive && (contact.unread_count || 0) > 0 ? 'font-bold text-primary' : 'text-gray-500'}`}>
+                          <p className={`text-xs truncate ${(contact.unread_count || 0) > 0 ? 'font-bold text-gray-800' : 'text-gray-500'}`}>
                             {getLastMessagePreview(contact) || 'Tidak ada pesan'}
                           </p>
 

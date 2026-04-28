@@ -103,7 +103,7 @@ const StyledWrapper = styled.div`
     height: 10px;
     margin-right: 6px;
     border-radius: 50%;
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary);
     -webkit-animation: dot-pulse2 1.5s ease-in-out infinite;
     animation: dot-pulse2 1.5s ease-in-out infinite;
   }

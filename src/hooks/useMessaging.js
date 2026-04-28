@@ -110,7 +110,9 @@ export function useMessaging(currentUserId) {
       setMessages(prev => append ? [...newMsgs, ...prev] : newMsgs);
       setMsgPagination({ currentPage: d?.current_page || 1, lastPage: d?.last_page || 1 });
       // Mark as read
-      alumniApi.markConversationAsRead(convId).catch(() => {});
+      alumniApi.markConversationAsRead(convId).then(() => {
+        window.dispatchEvent(new CustomEvent('local:message.read_cleared'));
+      }).catch(() => {});
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     } finally {

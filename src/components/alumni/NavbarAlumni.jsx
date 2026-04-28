@@ -16,6 +16,7 @@ export default function NavbarAlumni({ user }) {
   const [scrolled, setScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,8 +76,12 @@ export default function NavbarAlumni({ user }) {
   // Fetch notification unread count
   useEffect(() => {
     fetchUnreadCount();
+    fetchUnreadMessageCount();
     // Poll every 30 seconds for new notifications
-    const interval = setInterval(fetchUnreadCount, 30000);
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+      fetchUnreadMessageCount();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -110,6 +115,35 @@ export default function NavbarAlumni({ user }) {
       console.error('Error fetching unread count:', err);
     }
   };
+
+  const fetchUnreadMessageCount = async () => {
+    try {
+      const response = await alumniApi.getMessageUnreadCount();
+      setUnreadMessageCount(response.data.data.unread_count || 0);
+    } catch (err) {
+      console.error('Error fetching unread message count:', err);
+    }
+  };
+
+  // Realtime badge update for messages
+  useEffect(() => {
+    const handleRealtimeMessage = (e) => {
+      const msg = e.detail?.message;
+      if (msg && msg.sender_id !== (user?.id_users || user?.id)) {
+        fetchUnreadMessageCount();
+      }
+    };
+    const handleMessageRead = () => {
+      fetchUnreadMessageCount();
+    };
+
+    window.addEventListener('reverb:message.sent', handleRealtimeMessage);
+    window.addEventListener('local:message.read_cleared', handleMessageRead);
+    return () => {
+      window.removeEventListener('reverb:message.sent', handleRealtimeMessage);
+      window.removeEventListener('local:message.read_cleared', handleMessageRead);
+    };
+  }, [user]);
 
   const handleLogoutClick = async () => {
     const result = await alertConfirm('Apakah Anda yakin ingin keluar dari aplikasi?');
@@ -236,6 +270,16 @@ export default function NavbarAlumni({ user }) {
                 className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
               >
                 <MessageSquareMore size={20} />
+                {unreadMessageCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
+                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                  </span>
+                )}
+                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                    {unreadMessageCount > 0 ? `${unreadMessageCount} Pesan Baru` : 'Pesan'}
+                  </div>
+                </div>
               </button>
               <button
                 onClick={() => navigate('/alumni/notifikasi')}
@@ -408,7 +452,7 @@ export default function NavbarAlumni({ user }) {
                   <div className="flex flex-col gap-1">
                     <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 6 * 0.08 } }} onClick={() => { navigate('/alumni/pesan'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
                       Chat
-                      {unreadCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                      {unreadMessageCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadMessageCount > 99 ? '99+' : unreadMessageCount}</span>}
                     </motion.button>
                     <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 7 * 0.08 } }} onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
                       Notifikasi
