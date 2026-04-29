@@ -15,6 +15,13 @@ import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
 
 const MAX_FAVORITES = 3;
 
+function formatClockTime(rawDate) {
+  if (!rawDate) return '';
+  const dt = new Date(rawDate);
+  if (Number.isNaN(dt.getTime())) return rawDate;
+  return dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+}
+
 const TenorPicker = ({ onSelectGif, onClose }) => {
   const [search, setSearch] = useState('');
   const [gifs, setGifs] = useState([]);
@@ -1027,7 +1034,7 @@ export default function MessagePage() {
 
                                           {!msg.body && (
                                             <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm flex items-center gap-1 text-[10px] text-white shadow-sm pointer-events-none z-10">
-                                              {formatTime(msg.created_at)}
+                                              {formatClockTime(msg.created_at)}
                                               {renderMessageStatus(msg, isMe)}
                                             </div>
                                           )}
@@ -1036,7 +1043,7 @@ export default function MessagePage() {
                                             <div className="px-2 pt-2 pb-0.5 flex flex-col">
                                               <p className="text-[13px] leading-relaxed break-words">{msg.body}</p>
                                               <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                                {formatTime(msg.created_at)}
+                                                {formatClockTime(msg.created_at)}
                                                 {renderMessageStatus(msg, isMe)}
                                               </div>
                                             </div>
@@ -1062,7 +1069,7 @@ export default function MessagePage() {
                                           <div className="flex items-center justify-between gap-4 mt-1 px-1">
                                             {msg.body ? <p className="text-[13px]">{msg.body}</p> : <div />}
                                             <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                              {formatTime(msg.created_at)}
+                                              {formatClockTime(msg.created_at)}
                                               {renderMessageStatus(msg, isMe)}
                                             </div>
                                           </div>
@@ -1080,7 +1087,7 @@ export default function MessagePage() {
                                                 <div className="flex-1">
                                                   {renderLowonganCard(payload, isMe)}
                                                   <div className={`text-[10px] mt-2 flex items-center justify-end gap-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                                    {formatTime(msg.created_at)}
+                                                    {formatClockTime(msg.created_at)}
                                                     {renderMessageStatus(msg, isMe)}
                                                   </div>
                                                 </div>
@@ -1090,7 +1097,7 @@ export default function MessagePage() {
                                               <>
                                                 <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
                                                 <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                                  {formatTime(msg.created_at)}
+                                                  {formatClockTime(msg.created_at)}
                                                   {renderMessageStatus(msg, isMe)}
                                                 </div>
                                               </>
