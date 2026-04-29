@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, MapPin, Bookmark, ArrowRight, Clock, Sparkles, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,15 +6,23 @@ import { STORAGE_BASE_URL } from '../../api/axios';
 import hitungMundur from '../../utilitis/hitungMundurTanggal';
 import LockOverlay from './LockOverlay';
 import { shareLowongan } from '../../utils/share';
+import ShareToChatModal from './ShareToChatModal';
+import ShareLowonganOptionsModal from './ShareLowonganOptionsModal';
 
-function getImageUrl(path) {
+
+
+function getImageUrl(path) { 
   if (!path) return null;
   if (path.startsWith('http')) return path;
   return `${STORAGE_BASE_URL}/${path}`;
 }
 
+
+
 export default function LowonganCard({ data, onImageClick, onToggleSave, savingId, locked = false }) {
   const navigate = useNavigate();
+  const [isShareOptionsOpen, setIsShareOptionsOpen] = useState(false);
+  const [isShareChatOpen, setIsShareChatOpen] = useState(false);
 
   if (!data) return null;
 
@@ -134,11 +142,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    shareLowongan({
-                      id: data.id,
-                      judul: data.judul,
-                      perusahaan: data.perusahaan?.nama,
-                    });
+                    setIsShareOptionsOpen(true);
                   }}
                   aria-label="Bagikan lowongan"
                   className="group w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -177,6 +181,33 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
 
       {/* Komponen overlay gembok jika status lowongan terkunci */}
       {locked && <LockOverlay message="Verifikasi & isi kuesioner untuk akses" />}
+
+      <ShareLowonganOptionsModal
+        isOpen={isShareOptionsOpen}
+        onClose={() => setIsShareOptionsOpen(false)}
+        onShareChat={() => {
+          setIsShareOptionsOpen(false);
+          setIsShareChatOpen(true);
+        }}
+        onShareExternal={() => {
+          shareLowongan({
+            id: data.id,
+            judul: data.judul,
+            perusahaan: data.perusahaan?.nama,
+          });
+          setIsShareOptionsOpen(false);
+        }}
+      />
+
+      <ShareToChatModal
+        isOpen={isShareChatOpen}
+        onClose={() => setIsShareChatOpen(false)}
+        lowongan={{
+          id: data.id,
+          judul: data.judul,
+          perusahaan: data.perusahaan?.nama,
+        }}
+      />
     </div>
   );
 }
