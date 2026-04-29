@@ -265,8 +265,10 @@ export default function Login() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Masukkan Password"
                     value={password}
+                    autoComplete="new-password"
+                    data-ms-reveal="false"
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full py-2.5 lg:py-2 pl-4 pr-12 lg:pr-10 bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-sm lg:text-xs"
+                    className="w-full py-2.5 lg:py-2 pl-4 pr-12 lg:pr-10 bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-sm lg:text-xs [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
                     disabled={loading}
                   />
                   <button
