@@ -489,7 +489,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         <button onClick={onBack} className="flex items-center gap-2 px-5 py-2.5 border border-fourth rounded-xl text-xs font-bold text-primary hover:bg-fourth transition-all active:scale-95">
           <ArrowLeft size={14} /> Kembali
         </button>
-        <button onClick={handleNext} className="flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20">
+        <button onClick={handleNext} className="flex cursor-pointer items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20">
           Selanjutnya <ArrowRight size={14} />
         </button>
       </div>

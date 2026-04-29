@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Mail, 
-  Lock, 
-  ShieldCheck, 
-  ArrowRight, 
-  LockKeyhole, 
-  Eye, 
+import {
+  Mail,
+  Lock,
+  ShieldCheck,
+  ArrowRight,
+  LockKeyhole,
+  Eye,
   EyeOff,
   CheckCircle,
   AlertCircle,
@@ -17,7 +17,7 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  
+
   // State untuk mengatur visibilitas password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -144,9 +144,11 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Buat password"
+                  autoComplete="new-password"
+                  data-ms-reveal="false"
                   value={formData.password}
                   onChange={(e) => updateFormData({ password: e.target.value })}
-                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all`}
+                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all [&::-ms-reveal]:hidden [&::-ms-clear]:hidden`}
                 />
                 <button
                   type="button"
@@ -171,9 +173,11 @@ export default function Step1Account({ onNext, formData, updateFormData }) {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Ulangi password"
+                  autoComplete="new-password"
+                  data-ms-reveal="false"
                   value={formData.password_confirmation}
                   onChange={(e) => updateFormData({ password_confirmation: e.target.value })}
-                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password_confirmation ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all`}
+                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password_confirmation ? 'border-red-400' : 'border-fourth'} rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all [&::-ms-reveal]:hidden [&::-ms-clear]:hidden`}
                 />
                 <button
                   type="button"

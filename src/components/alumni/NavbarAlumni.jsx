@@ -165,8 +165,7 @@ export default function NavbarAlumni({ user }) {
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
   ];
 
-  // --- LOGIKA WARNA DAN UKURAN DIPISAH ---
-
+  const chatIsLocked = !canAccessAll;
   // 1. Cek apakah user sedang berada di halaman khusus
   const isProfilePage = location.pathname.includes('/alumni/profile');
   const isKuesionerPage = location.pathname.includes('/alumni/kuesioner');
