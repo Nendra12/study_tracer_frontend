@@ -1,11 +1,12 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Share2, MessageCircle, X } from 'lucide-react';
 
 export default function ShareLowonganOptionsModal({ isOpen, onClose, onShareChat, onShareExternal }) {
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
       <div
         className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -54,4 +55,6 @@ export default function ShareLowonganOptionsModal({ isOpen, onClose, onShareChat
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
