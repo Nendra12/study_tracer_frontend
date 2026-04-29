@@ -14,6 +14,8 @@ import { shareLowongan } from '../../utils/share';
 
 import Navbar from '../../components/alumni/Navbar';
 import { LowonganDetailSkeleton } from '../../components/alumni/skeleton';
+import ShareToChatModal from '../../components/alumni/ShareToChatModal';
+import ShareLowonganOptionsModal from '../../components/alumni/ShareLowonganOptionsModal';
 
 // Dummy Banner
 const bannerDefault = 'https://placehold.co/800x400?text=Lowongan+Kerja';
@@ -32,6 +34,8 @@ export default function LowonganDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [savingId, setSavingId] = useState(null);
+  const [isShareOptionsOpen, setIsShareOptionsOpen] = useState(false);
+  const [isShareChatOpen, setIsShareChatOpen] = useState(false);
 
   // State untuk Pratinjau Gambar
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -160,11 +164,7 @@ export default function LowonganDetail() {
                   {/* Tombol Aksi: Share, Simpan & Pratinjau */}
                   <div className="flex items-center gap-3 sm:flex-col lg:flex-row shrink-0 mt-2 sm:mt-0">
                     <button
-                      onClick={() => shareLowongan({
-                        id: job.id,
-                        judul: job.judul,
-                        perusahaan: job.perusahaan?.nama,
-                      })}
+                      onClick={() => setIsShareOptionsOpen(true)}
                       className="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer"
                       title="Bagikan Lowongan"
                     >
@@ -355,6 +355,33 @@ export default function LowonganDetail() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ShareToChatModal
+        isOpen={isShareChatOpen}
+        onClose={() => setIsShareChatOpen(false)}
+        lowongan={{
+          id: job.id,
+          judul: job.judul,
+          perusahaan: job.perusahaan?.nama,
+        }}
+      />
+
+      <ShareLowonganOptionsModal
+        isOpen={isShareOptionsOpen}
+        onClose={() => setIsShareOptionsOpen(false)}
+        onShareChat={() => {
+          setIsShareOptionsOpen(false);
+          setIsShareChatOpen(true);
+        }}
+        onShareExternal={() => {
+          shareLowongan({
+            id: job.id,
+            judul: job.judul,
+            perusahaan: job.perusahaan?.nama,
+          });
+          setIsShareOptionsOpen(false);
+        }}
+      />
 
     </div>
   );

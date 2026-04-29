@@ -9,6 +9,7 @@ import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
 import GroupInfoModal from '../../components/alumni/GroupInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, formatTime, getImageUrl } from '../../hooks/useMessaging';
+import { parseLowonganChatPayload } from '../../utils/share';
 import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
 
 
@@ -448,6 +449,38 @@ export default function MessagePage() {
     } finally {
       setIsSavingGroupInfo(false);
     }
+  };
+
+  const renderLowonganCard = (payload, isMe) => {
+    if (!payload?.id) return null;
+    const title = payload.judul || 'Lowongan Kerja';
+    const company = payload.perusahaan || 'Perusahaan';
+    const detailPath = `/alumni/lowongan/${payload.id}`;
+
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(detailPath);
+        }}
+        className={`w-full text-left p-3 rounded-xl border transition-colors cursor-pointer ${isMe
+          ? 'bg-white/90 text-gray-800 border-white/60 hover:bg-white'
+          : 'bg-gray-50 text-gray-800 border-gray-100 hover:bg-gray-100'
+          }`}
+      >
+        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Lowongan</div>
+        <div className="text-sm font-bold leading-snug line-clamp-2">{title}</div>
+        <div className="text-[11px] text-gray-500 mt-1 line-clamp-1">{company}</div>
+        <div className="text-[11px] text-primary font-semibold mt-2">Lihat detail</div>
+      </button>
+    );
+  };
+
+  const getReplyPreviewText = (msg) => {
+    const payload = parseLowonganChatPayload(msg?.body);
+    if (payload) return `Lowongan: ${payload.judul || 'Detail'}`;
+    return msg?.body || '';
   };
 
 
@@ -966,7 +999,7 @@ export default function MessagePage() {
                                             ) : msg.reply_to.type === 'file' ? (
                                               <span className="flex items-center gap-1"><Paperclip size={12} /> File</span>
                                             ) : (
-                                              msg.reply_to.body
+                                              getReplyPreviewText(msg.reply_to)
                                             )}
                                           </div>
                                         </div>
@@ -1029,12 +1062,30 @@ export default function MessagePage() {
                                           <span className="text-[11px] text-gray-400 bg-gray-100/80 px-3 py-1 rounded-full">{msg.body}</span>
                                         </div>
                                       ) : (
-                                        <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0">
-                                          <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
-                                          <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                            {formatTime(msg.created_at)}
-                                            {renderMessageStatus(msg, isMe)}
-                                          </div>
+                                        <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0 w-full">
+                                          {(() => {
+                                            const payload = parseLowonganChatPayload(msg.body);
+                                            if (payload) {
+                                              return (
+                                                <div className="flex-1">
+                                                  {renderLowonganCard(payload, isMe)}
+                                                  <div className={`text-[10px] mt-2 flex items-center justify-end gap-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                                    {formatTime(msg.created_at)}
+                                                    {renderMessageStatus(msg, isMe)}
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            return (
+                                              <>
+                                                <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
+                                                <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                                  {formatTime(msg.created_at)}
+                                                  {renderMessageStatus(msg, isMe)}
+                                                </div>
+                                              </>
+                                            );
+                                          })()}
                                         </div>
                                       )}
                                     </div>
@@ -1110,7 +1161,7 @@ export default function MessagePage() {
                               ) : replyingToMessage.type === 'file' ? (
                                 <span className="flex items-center gap-1"><Paperclip size={12} /> {replyingToMessage.file_name}</span>
                               ) : (
-                                replyingToMessage.body
+                                getReplyPreviewText(replyingToMessage)
                               )}
                             </span>
                           </div>

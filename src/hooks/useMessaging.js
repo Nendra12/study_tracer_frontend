@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { alumniApi } from '../api/alumni';
 import { STORAGE_BASE_URL } from '../api/axios';
 import toast from 'react-hot-toast';
+import { parseLowonganChatPayload } from '../utils/share';
 
 export function getImageUrl(path) {
   if (!path) return null;
@@ -36,6 +37,8 @@ export function getLastMessagePreview(conv) {
   const lm = conv?.last_message;
   if (!lm) return '';
   const prefix = conv.type === 'group' ? `${lm.sender?.nama_alumni || 'User'}: ` : '';
+  const lowonganPayload = parseLowonganChatPayload(lm.body);
+  if (lowonganPayload) return prefix + `Lowongan: ${lowonganPayload.judul || 'Detail'}`;
   if (lm.type === 'image') return prefix + '🖼️ Foto';
   if (lm.type === 'file') return prefix + '📎 ' + (lm.file_name || 'File');
   if (lm.type === 'gif') return prefix + '🎬 GIF';
