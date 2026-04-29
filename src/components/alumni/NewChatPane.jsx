@@ -142,21 +142,12 @@ export default function NewChatPane({ onSelectContact, onCancel }) {
           </button>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder={mode === 'group' ? 'Cari anggota grup...' : 'Cari nama alumni...'}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all outline-none"
-          />
-        </div>
+        
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-2 custom-scrollbar">
         {mode === 'group' && (
-          <div className="mb-5 p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+          <div className="mb-5 mt-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Grup</label>
               <input
@@ -164,7 +155,7 @@ export default function NewChatPane({ onSelectContact, onCancel }) {
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 placeholder="Contoh: Alumni TI 2020"
-                className="mt-1.5 w-full bg-white border border-gray-200 text-sm rounded-xl py-2.5 px-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
+                className="mt-1.5 w-full bg-white  text-sm rounded-xl py-2.5 px-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
               />
             </div>
 
@@ -187,6 +178,17 @@ export default function NewChatPane({ onSelectContact, onCancel }) {
           </div>
         )}
 
+        <div className="relative my-3">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input
+            type="text"
+            placeholder={mode === 'group' ? 'Cari anggota grup...' : 'Cari nama alumni...'}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-gray-50 text-sm rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all outline-none"
+          />
+        </div>
+
         <h3 className="py-2 text-xs font-bold text-gray-400 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur-sm z-10">
           {mode === 'group' ? 'Pilih Anggota Grup' : 'Koneksi Alumni'}
         </h3>
@@ -194,7 +196,7 @@ export default function NewChatPane({ onSelectContact, onCancel }) {
         {loading ? (
           <div className="py-12 flex flex-col items-center justify-center text-primary gap-3">
             <Loader2 size={28} className="animate-spin" />
-            <span className="text-sm font-medium text-gray-500">Memuat kontak...</span>
+            <span className="text-sm font-medium text-gray-500">Memuat alumni...</span>
           </div>
         ) : contacts.length > 0 ? (
           <div className="space-y-4 mt-2 pb-20">
