@@ -269,14 +269,14 @@ export default function LocationPicker({
         const province = addr.state || addr.province || '';
         // NOTE: Untuk Indonesia, Nominatim sering mengisi level kabupaten/kota di `county`/`municipality`,
         // sementara `town`/`village` bisa berisi kecamatan/kelurahan (tidak match ke master kota).
+        // NOTE: Untuk sinkronisasi dengan master kota/kabupaten, kita sengaja menghindari
+        // `town`/`village` karena pada Indonesia sering berisi kecamatan/kelurahan.
         const city =
           addr.city ||
           addr.municipality ||
           addr.county ||
           addr.city_district ||
           addr.state_district ||
-          addr.town ||
-          addr.village ||
           '';
 
         setAddress(data.display_name);

@@ -68,6 +68,105 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   const career = profile?.current_career;
   const hasPendingCareer = !!profile?.has_pending_career;
 
+  const normalizeLocationName = (value) => {
+    return (value || '')
+      .toString()
+      .toLowerCase()
+      .replace(/[.,/\\-]/g, ' ')
+      .replace(/\b(indonesia|provinsi|province|daerah|khusus|istimewa|kota|kabupaten|kab\.?|city|regency)\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const matchByName = (list, rawName) => {
+    const raw = normalizeLocationName(rawName);
+    if (!raw) return null;
+    return (
+      list.find((item) => {
+        const name = normalizeLocationName(item?.nama || item?.nama_kota || item?.nama_provinsi || '');
+        return name && (name.includes(raw) || raw.includes(name));
+      }) || null
+    );
+  };
+
+  const syncProvinsiKotaFromMap = async ({ provinceRaw, cityRaw, target }) => {
+    if (!provinceRaw && !cityRaw) return { provId: '', kotaId: '' };
+
+    const setState =
+      target === 'pekerjaan' ? setPekerjaan :
+      target === 'kuliah' ? setUniversitas :
+      setWirausaha;
+
+    const current =
+      target === 'pekerjaan' ? pekerjaan :
+      target === 'kuliah' ? universitas :
+      wirausaha;
+
+    let nextProvId = '';
+    if (provinceRaw) {
+      const matchedProv = matchByName(Array.isArray(provinsiList) ? provinsiList : [], provinceRaw);
+      if (matchedProv?.id) nextProvId = String(matchedProv.id);
+    }
+
+    let nextKotaId = '';
+    let derivedProvId = '';
+
+    if (cityRaw) {
+      // Prioritas data kota: provinsi terdeteksi -> load kota provinsi tsb; else coba dari provinsi saat ini; terakhir fetch semua kota.
+      let kotaData = [];
+
+      if (nextProvId) {
+        kotaData = await loadKota(nextProvId, target);
+      } else if (current?.id_provinsi) {
+        kotaData = await loadKota(current.id_provinsi, target);
+      }
+
+      let matchedKota = matchByName(Array.isArray(kotaData) ? kotaData : [], cityRaw);
+
+      if (!matchedKota) {
+        try {
+          const res = await masterDataApi.getKota();
+          const allKota = res?.data?.data || res?.data || [];
+          matchedKota = matchByName(Array.isArray(allKota) ? allKota : [], cityRaw);
+        } catch (err) {
+          console.error('Failed to fetch kota for map sync:', err);
+        }
+      }
+
+      if (matchedKota?.id) {
+        nextKotaId = String(matchedKota.id);
+        derivedProvId = String(matchedKota.id_provinsi || matchedKota.provinsi?.id || matchedKota.provinsi_id || '');
+      }
+    }
+
+    const finalProvId = nextProvId || derivedProvId;
+
+    // Set state sekali dan jangan pernah mengisi id_kota/id_provinsi dengan string mentah.
+    setState((prev) => {
+      const prevProvId = String(prev.id_provinsi || '');
+      const prevKotaId = String(prev.id_kota || '');
+
+      const willChangeProv = finalProvId && prevProvId !== finalProvId;
+      const willSetKota = nextKotaId && prevKotaId !== nextKotaId;
+      const shouldClearKota = willChangeProv && !nextKotaId;
+
+      if (!willChangeProv && !willSetKota && !shouldClearKota) return prev;
+      return {
+        ...prev,
+        ...(willChangeProv ? { id_provinsi: finalProvId } : null),
+        ...(willSetKota ? { id_kota: nextKotaId } : null),
+        ...(shouldClearKota ? { id_kota: '' } : null),
+      };
+    });
+
+    // Pastikan list kota sesuai provinsi baru.
+    if (finalProvId && finalProvId !== String(current?.id_provinsi || '')) {
+      void loadKota(finalProvId, target);
+    }
+
+    return { provId: finalProvId, kotaId: nextKotaId };
+  };
+
   async function loadMasterData() {
     try {
       setLoadingProvinsi(true);
@@ -623,45 +722,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       <LocationPicker
         isOpen={showBekerjaMap}
         onClose={() => setShowBekerjaMap(false)}
-        onConfirm={({ latitude, longitude, address, provinceRaw, cityRaw }) => {
+        onConfirm={async ({ latitude, longitude, address, provinceRaw, cityRaw }) => {
           setForm((prev) => ({ ...prev, latitude_perusahaan: latitude, longitude_perusahaan: longitude }));
           setPekerjaan((prev) => ({ ...prev, jalan: address || prev.jalan }));
-          // Auto-sync provinsi & kota jika berbeda
-          if (provinceRaw) {
-            const matchedProv = provinsiList.find(p =>
-              (p.nama || p.nama_provinsi || '').toLowerCase().includes(provinceRaw.toLowerCase()) ||
-              provinceRaw.toLowerCase().includes((p.nama || p.nama_provinsi || '').toLowerCase())
-            );
-            if (matchedProv) {
-              if (String(matchedProv.id) !== String(pekerjaan.id_provinsi)) {
-                setPekerjaan((prev) => ({ ...prev, id_provinsi: String(matchedProv.id), id_kota: cityRaw || '' }));
-                loadKota(matchedProv.id, 'pekerjaan').then((kotaData) => {
-                  if (cityRaw && kotaData) {
-                    const matchedKota = kotaData.find(k =>
-                      (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
-                      cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
-                    );
-                    if (matchedKota) setPekerjaan((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
-                    else setPekerjaan((prev) => ({ ...prev, id_kota: cityRaw }));
-                  }
-                });
-              } else if (cityRaw) {
-                const matchedKota = kotaPekerjaanList.find(k =>
-                  (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
-                  cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
-                );
-                if (matchedKota) {
-                  if (String(matchedKota.id) !== String(pekerjaan.id_kota)) {
-                    setPekerjaan((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
-                  }
-                } else setPekerjaan((prev) => ({ ...prev, id_kota: cityRaw }));
-              }
-            } else {
-              setPekerjaan((prev) => ({ ...prev, id_provinsi: provinceRaw, id_kota: cityRaw || '' }));
-            }
-          } else if (cityRaw) {
-            setPekerjaan((prev) => ({ ...prev, id_kota: cityRaw }));
-          }
+          await syncProvinsiKotaFromMap({ provinceRaw, cityRaw, target: 'pekerjaan' });
         }}
         initialLat={typeof form.latitude_perusahaan === 'number' ? form.latitude_perusahaan : -7.25}
         initialLng={typeof form.longitude_perusahaan === 'number' ? form.longitude_perusahaan : 112.75}
@@ -673,45 +737,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       <LocationPicker
         isOpen={showUniMap}
         onClose={() => setShowUniMap(false)}
-        onConfirm={({ latitude, longitude, address, provinceRaw, cityRaw }) => {
+        onConfirm={async ({ latitude, longitude, address, provinceRaw, cityRaw }) => {
           setForm((prev) => ({ ...prev, latitude_universitas: latitude, longitude_universitas: longitude }));
           setUniversitas((prev) => ({ ...prev, alamat: address || prev.alamat }));
-          // Auto-sync provinsi & kota jika berbeda
-          if (provinceRaw) {
-            const matchedProv = provinsiList.find(p =>
-              (p.nama || p.nama_provinsi || '').toLowerCase().includes(provinceRaw.toLowerCase()) ||
-              provinceRaw.toLowerCase().includes((p.nama || p.nama_provinsi || '').toLowerCase())
-            );
-            if (matchedProv) {
-              if (String(matchedProv.id) !== String(universitas.id_provinsi)) {
-                setUniversitas((prev) => ({ ...prev, id_provinsi: String(matchedProv.id), id_kota: cityRaw || '' }));
-                loadKota(matchedProv.id, 'kuliah').then((kotaData) => {
-                  if (cityRaw && kotaData) {
-                    const matchedKota = kotaData.find(k =>
-                      (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
-                      cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
-                    );
-                    if (matchedKota) setUniversitas((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
-                    else setUniversitas((prev) => ({ ...prev, id_kota: cityRaw }));
-                  }
-                });
-              } else if (cityRaw) {
-                const matchedKota = kotaKuliahList.find(k =>
-                  (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
-                  cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
-                );
-                if (matchedKota) {
-                  if (String(matchedKota.id) !== String(universitas.id_kota)) {
-                    setUniversitas((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
-                  }
-                } else setUniversitas((prev) => ({ ...prev, id_kota: cityRaw }));
-              }
-            } else {
-              setUniversitas((prev) => ({ ...prev, id_provinsi: provinceRaw, id_kota: cityRaw || '' }));
-            }
-          } else if (cityRaw) {
-            setUniversitas((prev) => ({ ...prev, id_kota: cityRaw }));
-          }
+          await syncProvinsiKotaFromMap({ provinceRaw, cityRaw, target: 'kuliah' });
         }}
         initialLat={typeof form.latitude_universitas === 'number' ? form.latitude_universitas : -7.25}
         initialLng={typeof form.longitude_universitas === 'number' ? form.longitude_universitas : 112.75}
@@ -723,45 +752,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       <LocationPicker
         isOpen={showUsahaMap}
         onClose={() => setShowUsahaMap(false)}
-        onConfirm={({ latitude, longitude, address, provinceRaw, cityRaw }) => {
+        onConfirm={async ({ latitude, longitude, address, provinceRaw, cityRaw }) => {
           setForm((prev) => ({ ...prev, latitude_usaha: latitude, longitude_usaha: longitude }));
           setWirausaha((prev) => ({ ...prev, alamat: address || prev.alamat }));
-          // Auto-sync provinsi & kota jika berbeda
-          if (provinceRaw) {
-            const matchedProv = provinsiList.find(p =>
-              (p.nama || p.nama_provinsi || '').toLowerCase().includes(provinceRaw.toLowerCase()) ||
-              provinceRaw.toLowerCase().includes((p.nama || p.nama_provinsi || '').toLowerCase())
-            );
-            if (matchedProv) {
-              if (String(matchedProv.id) !== String(wirausaha.id_provinsi)) {
-                setWirausaha((prev) => ({ ...prev, id_provinsi: String(matchedProv.id), id_kota: cityRaw || '' }));
-                loadKota(matchedProv.id, 'usaha').then((kotaData) => {
-                  if (cityRaw && kotaData) {
-                    const matchedKota = kotaData.find(k =>
-                      (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
-                      cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
-                    );
-                    if (matchedKota) setWirausaha((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
-                    else setWirausaha((prev) => ({ ...prev, id_kota: cityRaw }));
-                  }
-                });
-              } else if (cityRaw) {
-                const matchedKota = kotaUsahaList.find(k =>
-                  (k.nama || k.nama_kota || '').toLowerCase().includes(cityRaw.toLowerCase()) ||
-                  cityRaw.toLowerCase().includes((k.nama || k.nama_kota || '').toLowerCase())
-                );
-                if (matchedKota) {
-                  if (String(matchedKota.id) !== String(wirausaha.id_kota)) {
-                    setWirausaha((prev) => ({ ...prev, id_kota: String(matchedKota.id) }));
-                  }
-                } else setWirausaha((prev) => ({ ...prev, id_kota: cityRaw }));
-              }
-            } else {
-              setWirausaha((prev) => ({ ...prev, id_provinsi: provinceRaw, id_kota: cityRaw || '' }));
-            }
-          } else if (cityRaw) {
-            setWirausaha((prev) => ({ ...prev, id_kota: cityRaw }));
-          }
+          await syncProvinsiKotaFromMap({ provinceRaw, cityRaw, target: 'usaha' });
         }}
         initialLat={typeof form.latitude_usaha === 'number' ? form.latitude_usaha : -7.25}
         initialLng={typeof form.longitude_usaha === 'number' ? form.longitude_usaha : 112.75}
