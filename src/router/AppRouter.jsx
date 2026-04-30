@@ -12,6 +12,7 @@ const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
 const SebaranAlumni = lazy(() => import("../pages/admin/SebaranAlumni"));
+const Kelulusan = lazy(() => import("../pages/admin/Kelulusan"));
 const Pengumuman = lazy(() => import("../pages/admin/pengumuman"));
 const PengumumanDetail = lazy(() => import("../pages/admin/PengumumanDetail"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
@@ -73,6 +74,7 @@ export default function AppRouter() {
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="sebaran-alumni" element={<SebaranAlumni />} />
+          <Route path="kelulusan" element={<Kelulusan />} />
           <Route path="manage-user" >
             <Route index element={<UserManagement />} />
           </Route>
