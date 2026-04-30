@@ -191,11 +191,6 @@ export const adminApi = {
     return api.post('/admin/section-ques', data);
   },
 
-  // DEPRECATED: Status moved to pertanyaan level
-  // updateKuesionerStatus(id, status) {
-  //   return api.patch(`/admin/kuesioner/${id}/status`, { status_kuesioner: status });
-  // },
-
   // ── Jawaban Kuesioner (admin view) ─────────────
   getKuesionerJawaban(kuesionerId, filters = {}) {
     return api.get(`/admin/kuesioner/${kuesionerId}/jawaban`, { params: filters });
@@ -206,34 +201,28 @@ export const adminApi = {
   },
 
   // ── Status Karier Management ───────────────────
-  // Universitas
   getStatusKarierUniversitas() { return api.get('/admin/status-karier/universitas'); },
   createStatusKarierUniversitas(data) { return api.post('/admin/status-karier/universitas', data); },
   updateStatusKarierUniversitas(id, data) { return api.put(`/admin/status-karier/universitas/${id}`, data); },
   deleteStatusKarierUniversitas(id) { return api.delete(`/admin/status-karier/universitas/${id}`); },
 
-  // Program Studi
   getStatusKarierProdi() { return api.get('/admin/status-karier/prodi'); },
   createStatusKarierProdi(data) { return api.post('/admin/status-karier/prodi', data); },
   updateStatusKarierProdi(id, data) { return api.put(`/admin/status-karier/prodi/${id}`, data); },
   deleteStatusKarierProdi(id) { return api.delete(`/admin/status-karier/prodi/${id}`); },
 
-  // Bidang Usaha (Wirausaha)
   getStatusKarierBidangUsaha() { return api.get('/admin/status-karier/bidang-usaha'); },
   createStatusKarierBidangUsaha(data) { return api.post('/admin/status-karier/bidang-usaha', data); },
   updateStatusKarierBidangUsaha(id, data) { return api.put(`/admin/status-karier/bidang-usaha/${id}`, data); },
   deleteStatusKarierBidangUsaha(id) { return api.delete(`/admin/status-karier/bidang-usaha/${id}`); },
 
-  // Data Wirausaha
   getStatusKarierWirausaha(filters = {}) { return api.get('/admin/status-karier/wirausaha', { params: filters }); },
   createStatusKarierWirausaha(data) { return api.post('/admin/status-karier/wirausaha', data); },
   updateStatusKarierWirausaha(id, data) { return api.put(`/admin/status-karier/wirausaha/${id}`, data); },
   deleteStatusKarierWirausaha(id) { return api.delete(`/admin/status-karier/wirausaha/${id}`); },
 
-  // Posisi Pekerjaan (read-only)
   getStatusKarierPosisi() { return api.get('/admin/status-karier/posisi'); },
 
-  // Report & Export
   getStatusKarierReport() { return api.get('/admin/status-karier/report'); },
   exportStatusKarierReport(params = {}) {
     return api.get('/admin/status-karier/export', {
@@ -243,13 +232,11 @@ export const adminApi = {
   },
 
   // ── Master Data CRUD (admin only) ─────────────
-  // Provinsi
   getProvinsi() { return api.get('/admin/master/provinsi'); },
   createProvinsi(data) { return api.post('/admin/master/provinsi', data); },
   updateProvinsi(id, data) { return api.put(`/admin/master/provinsi/${id}`, data); },
   deleteProvinsi(id) { return api.delete(`/admin/master/provinsi/${id}`); },
 
-  // Kota
   getKota(idProvinsi = null) { 
     return api.get('/admin/master/kota', {
       params: idProvinsi ? { id_provinsi: idProvinsi } : {}
@@ -259,53 +246,44 @@ export const adminApi = {
   updateKota(id, data) { return api.put(`/admin/master/kota/${id}`, data); },
   deleteKota(id) { return api.delete(`/admin/master/kota/${id}`); },
 
-  // Jurusan (SMK)
   getJurusan() { return api.get('/admin/master/jurusan'); },
   createJurusan(data) { return api.post('/admin/master/jurusan', data); },
   updateJurusan(id, data) { return api.put(`/admin/master/jurusan/${id}`, data); },
   deleteJurusan(id) { return api.delete(`/admin/master/jurusan/${id}`); },
 
-  // Jurusan Kuliah
   getJurusanKuliah() { return api.get('/admin/master/jurusan-kuliah'); },
   createJurusanKuliah(data) { return api.post('/admin/master/jurusan-kuliah', data); },
   updateJurusanKuliah(id, data) { return api.put(`/admin/master/jurusan-kuliah/${id}`, data); },
   deleteJurusanKuliah(id) { return api.delete(`/admin/master/jurusan-kuliah/${id}`); },
 
-  // Skills
   getSkills() { return api.get('/admin/master/skills'); },
   createSkill(data) { return api.post('/admin/master/skills', data); },
   updateSkill(id, data) { return api.put(`/admin/master/skills/${id}`, data); },
   deleteSkill(id) { return api.delete(`/admin/master/skills/${id}`); },
 
-  // Social Media
   getSocialMedia() { return api.get('/admin/master/social-media'); },
   createSocialMedia(data) { return api.post('/admin/master/social-media', data); },
   updateSocialMedia(id, data) { return api.put(`/admin/master/social-media/${id}`, data); },
   deleteSocialMedia(id) { return api.delete(`/admin/master/social-media/${id}`); },
 
-  // Status
   getStatus() { return api.get('/admin/master/status'); },
   createStatus(data) { return api.post('/admin/master/status', data); },
   updateStatus(id, data) { return api.put(`/admin/master/status/${id}`, data); },
   deleteStatus(id) { return api.delete(`/admin/master/status/${id}`); },
 
-  // Bidang Usaha
   getBidangUsaha() { return api.get('/admin/master/bidang-usaha'); },
   createBidangUsaha(data) { return api.post('/admin/master/bidang-usaha', data); },
   updateBidangUsaha(id, data) { return api.put(`/admin/master/bidang-usaha/${id}`, data); },
   deleteBidangUsaha(id) { return api.delete(`/admin/master/bidang-usaha/${id}`); },
 
-  // Perusahaan
   getPerusahaan(filters = {}) { return api.get('/admin/master/perusahaan', { params: filters }); },
   createPerusahaan(data) { return api.post('/admin/master/perusahaan', data); },
   updatePerusahaan(id, data) { return api.put(`/admin/master/perusahaan/${id}`, data); },
   deletePerusahaan(id) { return api.delete(`/admin/master/perusahaan/${id}`); },
 
-  // Universitas
   getUniversitas() { return api.get('/admin/master/universitas'); },
   createUniversitas(data) { return api.post('/admin/master/universitas', data); },
 
-  // Tipe Pekerjaan
   getTipePekerjaan() { return api.get('/admin/master/tipe-pekerjaan'); },
 
   // ── Pengumuman Management ─────────────────────
@@ -461,4 +439,35 @@ export const adminApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+
+  // ── Kelulusan Management ──────────────────────
+  getKelulusanFilters() {
+    return api.get('/admin/kelulusan/filters');
+  },
+  getCalonLulusan(params = {}) {
+    return api.get('/admin/kelulusan/calon', { params });
+  },
+  getRiwayatKelulusan(params = {}) {
+    return api.get('/admin/kelulusan/riwayat', { params });
+  },
+  addCalonLulusan(data) {
+    return api.post('/admin/kelulusan/calon', data);
+  },
+  deleteCalonLulusan(id) {
+    return api.delete(`/admin/kelulusan/calon/${id}`);
+  },
+  clearCalonLulusan() {
+    return api.delete('/admin/kelulusan/calon');
+  },
+  simpanKelulusan() {
+    return api.post('/admin/kelulusan/simpan');
+  },
+  importKelulusan(data) {
+    return api.post('/admin/kelulusan/import', data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  exportKelulusan(params = {}) {
+    return api.get('/admin/kelulusan/export', { params, responseType: 'blob' });
+  }
 };
