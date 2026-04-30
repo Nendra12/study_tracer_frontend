@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, Trash2, Search, ChevronLeft, History, GraduationCap, Upload, Download, Loader2, XCircle, Plus } from 'lucide-react';
-import SmoothDropdown from '../../components/admin/SmoothDropdown';
+import SmoothDropdown from '../../components/admin/SmoothDropdown'; 
 import ModalTambahManual from '../../components/admin/ModalTambahManual'; 
-import axiosInstance from '../../api/axios'; 
+import { adminApi } from '../../api/admin'; 
 import { alertSuccess, alertError, alertConfirm } from '../../utilitis/alert'; 
 
 export default function Kelulusan() {
@@ -15,25 +15,71 @@ export default function Kelulusan() {
   const [loadingRiwayat, setLoadingRiwayat] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); 
 
   const [filterTop, setFilterTop] = useState({ search: '', jurusan: 'Semua Jurusan' });
   const [filterBottom, setFilterBottom] = useState({ search: '', jurusan: 'Semua Jurusan', tahun: 'Semua Tahun' });
 
-  const [jurusanOptions, setJurusanOptions] = useState(['Semua Jurusan', 'RPL', 'TKJ', 'TBSM', 'AKL', 'OTKP']); 
+  // Options KHUSUS Filter Tabel (Format String biasa agar SmoothDropdown tampil bersih)
+  const [jurusanOptions, setJurusanOptions] = useState(['Semua Jurusan']); 
   const [tahunOptions, setTahunOptions] = useState(['Semua Tahun']);
 
+  // Options KHUSUS form Modal Tambah (Format Object {value, label} agar backend mendapat ID)
+  const [masterJurusan, setMasterJurusan] = useState([]);
+
   // ==========================================
-  // 1. FETCH DATA (API Path diperbaiki)
+  // HELPER PENGURAI ARRAY (ANTI CRASH PAGINATION)
   // ==========================================
+  const extractDataArray = (response) => {
+    if (!response) return [];
+    if (Array.isArray(response.data?.data?.data)) return response.data.data.data;
+    if (Array.isArray(response.data?.data)) return response.data.data;
+    if (Array.isArray(response.data)) return response.data;
+    if (Array.isArray(response)) return response;
+    return [];
+  };
+
+  // ==========================================
+  // 1. FETCH DATA
+  // ==========================================
+  
+  // Mengambil data Tahun Lulus dari history filter
   const fetchFilters = async () => {
     try {
-      const res = await axiosInstance.get('/admin/kelulusan/filters');
-      const data = res.data?.data || res.data;
-      if (data.jurusan && data.jurusan.length > 0) setJurusanOptions(['Semua Jurusan', ...data.jurusan]);
-      if (data.tahun && data.tahun.length > 0) setTahunOptions(['Semua Tahun', ...data.tahun]);
+      const res = await adminApi.getKelulusanFilters();
+      const data = extractDataArray(res);
+      
+      // Load data Tahun untuk Filter (Format String)
+      if (data.tahun && data.tahun.length > 0) {
+        const mappedTahun = data.tahun.map(t => typeof t === 'string' ? t : (t.tahun_lulus || t.tahun || String(t)));
+        const uniqueTahun = [...new Set(mappedTahun.filter(Boolean))];
+        setTahunOptions(['Semua Tahun', ...uniqueTahun]);
+      }
     } catch (err) {
-      console.error("Gagal memuat filter", err);
+      console.error("Gagal memuat filter tahun", err);
+    }
+  };
+
+  // Mengambil Jurusan langsung dari Database Master (API getJurusan)
+  const fetchMasterJurusan = async () => {
+    try {
+      const res = await adminApi.getJurusan();
+      const data = extractDataArray(res);
+      
+      // 1. Siapkan format {value, label} untuk Modal Tambah Data (Butuh ID)
+      const formattedForModal = data.map(j => ({
+        value: j.id || j.id_jurusan,
+        label: j.nama_jurusan || j.nama || j.jurusan
+      }));
+      setMasterJurusan(formattedForModal);
+
+      // 2. Siapkan format String Murni untuk Filter SmoothDropdown
+      const formattedForFilter = data.map(j => j.nama_jurusan || j.nama || j.jurusan);
+      const uniqueJurusan = [...new Set(formattedForFilter.filter(Boolean))]; // Hapus duplikat/kosong
+      setJurusanOptions(['Semua Jurusan', ...uniqueJurusan]);
+
+    } catch (err) {
+      console.error("Gagal memuat master jurusan", err);
     }
   };
 
@@ -44,10 +90,11 @@ export default function Kelulusan() {
       if (filterTop.search) params.search = filterTop.search;
       if (filterTop.jurusan !== 'Semua Jurusan') params.jurusan = filterTop.jurusan;
 
-      const res = await axiosInstance.get('/admin/kelulusan/calon', { params });
-      setCalonLulus(res.data?.data || res.data || []);
+      const res = await adminApi.getCalonLulusan(params);
+      setCalonLulus(extractDataArray(res));
     } catch (err) {
       console.error("Gagal memuat calon lulusan", err);
+      setCalonLulus([]); 
     } finally {
       setLoadingCalon(false);
     }
@@ -61,10 +108,11 @@ export default function Kelulusan() {
       if (filterBottom.jurusan !== 'Semua Jurusan') params.jurusan = filterBottom.jurusan;
       if (filterBottom.tahun !== 'Semua Tahun') params.tahun = filterBottom.tahun;
 
-      const res = await axiosInstance.get('/admin/kelulusan/riwayat', { params });
-      setLulusan(res.data?.data || res.data || []);
+      const res = await adminApi.getRiwayatKelulusan(params);
+      setLulusan(extractDataArray(res));
     } catch (err) {
       console.error("Gagal memuat riwayat", err);
+      setLulusan([]); 
     } finally {
       setLoadingRiwayat(false);
     }
@@ -72,6 +120,7 @@ export default function Kelulusan() {
 
   useEffect(() => {
     fetchFilters();
+    fetchMasterJurusan();
   }, []);
 
   useEffect(() => {
@@ -86,24 +135,20 @@ export default function Kelulusan() {
 
 
   // ==========================================
-  // 2. HANDLER ACTIONS (API Path diperbaiki)
+  // 2. HANDLER ACTIONS
   // ==========================================
   
-  const handleTambahManualSubmit = async (formData, onSuccessCallback) => {
-    // --- VALIDASI NISN (Harus TEPAT 10 Angka) ---
-    const nisnRegex = /^\d{10}$/;
-    if (!nisnRegex.test(formData.nisn)) {
-      return alertError("NISN tidak valid! Harus terdiri dari persis 10 digit angka.");
-    }
-
+  const handleTambahManualSubmit = async (payload, onSuccessCallback) => {
     try {
       setIsSubmitting(true);
-      await axiosInstance.post('/admin/kelulusan/calon', formData);
+      await adminApi.addCalonLulusan(payload);
+      
+      await fetchCalon();
+
       alertSuccess("Berhasil menambahkan data calon lulusan!");
       
       onSuccessCallback(); 
       setShowModal(false); 
-      fetchCalon();        
     } catch (err) {
       alertError(err.response?.data?.message || 'Gagal menambahkan data.');
     } finally {
@@ -120,9 +165,7 @@ export default function Kelulusan() {
 
     try {
       setIsSubmitting(true);
-      await axiosInstance.post('/admin/kelulusan/import', formDataFile, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await adminApi.importKelulusan(formDataFile);
       alertSuccess('Berhasil mengimpor data kelulusan!');
       fetchCalon();
     } catch (err) {
@@ -135,7 +178,7 @@ export default function Kelulusan() {
 
   const handleDeleteCalon = async (id) => {
     try {
-      await axiosInstance.delete(`/admin/kelulusan/calon/${id}`);
+      await adminApi.deleteCalonLulusan(id);
       fetchCalon();
     } catch (err) {
       alertError('Gagal menghapus calon lulusan.');
@@ -148,7 +191,7 @@ export default function Kelulusan() {
 
     try {
       setIsSubmitting(true);
-      await axiosInstance.delete('/admin/kelulusan/calon');
+      await adminApi.clearCalonLulusan();
       alertSuccess('Berhasil mengosongkan data!');
       fetchCalon();
     } catch (err) {
@@ -166,7 +209,7 @@ export default function Kelulusan() {
 
     try {
       setIsSubmitting(true);
-      await axiosInstance.post('/admin/kelulusan/simpan');
+      await adminApi.simpanKelulusan();
       alertSuccess('Berhasil memproses kelulusan!');
       fetchCalon();    
       fetchRiwayat();  
@@ -185,9 +228,7 @@ export default function Kelulusan() {
       if (filterBottom.jurusan !== 'Semua Jurusan') params.jurusan = filterBottom.jurusan;
       if (filterBottom.tahun !== 'Semua Tahun') params.tahun = filterBottom.tahun;
 
-      const res = await axiosInstance.get('/admin/kelulusan/export', { 
-        params, responseType: 'blob' 
-      });
+      const res = await adminApi.exportKelulusan(params);
       
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
@@ -205,16 +246,15 @@ export default function Kelulusan() {
   // 3. UI COMPONENTS & CSS
   // ==========================================
   const searchInputClass = "w-full pl-10 pr-4 h-[42px] bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
-  const dropdownWrapperClass = "w-full sm:w-auto [&>div]:!w-full sm:[&>div]:!w-auto sm:[&>div]:!min-w-[180px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-slate-200 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-primary [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[180px] [&_li]:!whitespace-nowrap";
+  const dropdownWrapperClass = "w-full sm:w-auto [&>div]:!w-full sm:[&>div]:!w-auto sm:[&>div]:!min-w-[180px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-slate-200 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-slate-700 [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[180px] [&_li]:!whitespace-nowrap";
 
   return (
     <div className="space-y-8 pb-12 relative">
       
-      {/* =========================================
-          TABEL 1: DATA CALON LULUSAN TAHUN INI 
-      ========================================= */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-5">
+      {/* TABEL 1: DATA CALON LULUSAN TAHUN INI */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
+        
+        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-5 rounded-t-2xl relative z-20">
           
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
@@ -226,7 +266,7 @@ export default function Kelulusan() {
             </div>
           </div>
           
-          <div className="flex flex-col xl:flex-row flex-wrap xl:flex-nowrap items-center gap-3 w-full">
+          <div className="flex flex-col xl:flex-row flex-wrap xl:flex-nowrap items-center gap-3 w-full relative z-[60]">
             
             <div className="relative w-full xl:flex-1">
               <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -239,7 +279,9 @@ export default function Kelulusan() {
               />
             </div>
 
-            <div className={dropdownWrapperClass}>
+            {/* FILTER KEMBALI MENGGUNAKAN SMOOTH DROPDOWN UNTUK TAMPILAN BERSIH */}
+            {/* Datanya diambil dari database via jurusanOptions (Array String) */}
+            <div className={`relative z-[60] ${dropdownWrapperClass}`}>
               <SmoothDropdown
                 options={jurusanOptions}
                 value={filterTop.jurusan}
@@ -295,8 +337,7 @@ export default function Kelulusan() {
           </div>
         </div>
 
-        {/* List Geser (Swipe to Delete) */}
-        <div className="overflow-x-auto bg-white">
+        <div className="overflow-x-auto bg-white rounded-b-2xl overflow-hidden relative z-10">
           <div className="flex flex-col min-w-[600px]">
             <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-slate-50 border-b border-slate-100 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
               <div className="col-span-1 text-center">No</div>
@@ -348,11 +389,10 @@ export default function Kelulusan() {
         </div>
       </div>
 
-      {/* =========================================
-          TABEL 2: RIWAYAT LULUSAN FIX
-      ========================================= */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-5">
+      {/* TABEL 2: RIWAYAT LULUSAN FIX */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
+        
+        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-5 rounded-t-2xl relative z-20">
           
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0">
@@ -364,7 +404,7 @@ export default function Kelulusan() {
             </div>
           </div>
           
-          <div className="flex flex-col xl:flex-row flex-wrap xl:flex-nowrap items-center gap-3 w-full">
+          <div className="flex flex-col xl:flex-row flex-wrap xl:flex-nowrap items-center gap-3 w-full relative z-[60]">
             
             <div className="relative w-full xl:flex-1">
               <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -377,7 +417,7 @@ export default function Kelulusan() {
               />
             </div>
 
-            <div className={dropdownWrapperClass}>
+            <div className={`relative z-[60] ${dropdownWrapperClass}`}>
                <SmoothDropdown
                 options={tahunOptions}
                 value={filterBottom.tahun}
@@ -385,7 +425,7 @@ export default function Kelulusan() {
               />
             </div>
 
-            <div className={dropdownWrapperClass}>
+            <div className={`relative z-[50] ${dropdownWrapperClass}`}>
               <SmoothDropdown
                 options={jurusanOptions}
                 value={filterBottom.jurusan}
@@ -403,7 +443,7 @@ export default function Kelulusan() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto bg-white rounded-b-2xl overflow-hidden relative z-10">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
@@ -445,15 +485,12 @@ export default function Kelulusan() {
         </div>
       </div>
 
-      {/* =========================================
-          PANGGIL KOMPONEN MODAL TAMBAH MANUAL
-      ========================================= */}
       <ModalTambahManual 
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleTambahManualSubmit}
         isSubmitting={isSubmitting}
-        jurusanOptions={jurusanOptions}
+        jurusanOptions={masterJurusan} 
       />
 
     </div>

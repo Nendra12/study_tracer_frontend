@@ -433,7 +433,7 @@ export default function UserManagement() {
                 />
               </div>
 
-              <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 relative z-50">
+              <div className="flex flex-wrap items-stretch gap-2.5 w-full sm:w-auto shrink-0 relative z-50">
                 <FilterJurusan
                   isFilterOpen={isFilterOpen}
                   setIsFilterOpen={setIsFilterOpen}
@@ -441,6 +441,7 @@ export default function UserManagement() {
                   setSelectedJurusan={setSelectedJurusan}
                   jurusanList={jurusanList}
                 />
+                
                 <FilterTahunLulus
                   isTahunFilterOpen={isTahunFilterOpen}
                   setIsTahunFilterOpen={setIsTahunFilterOpen}
@@ -448,12 +449,17 @@ export default function UserManagement() {
                   setSelectedTahunLulus={setSelectedTahunLulus}
                   tahunLulusList={tahunLulusList}
                 />
+                
                 <button
                   onClick={handleExport}
                   disabled={exportLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/80 active:scale-95 transition-all text-sm shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap"
+                  className="flex items-center justify-center gap-2 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/80 active:scale-95 transition-all text-sm shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap"
                 >
-                  {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  {exportLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Download size={16} />
+                  )}
                   <span className="inline">Eksport CSV</span>
                 </button>
               </div>
