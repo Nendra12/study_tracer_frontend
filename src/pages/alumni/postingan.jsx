@@ -4,7 +4,7 @@ import PostsImg from "../../assets/svg/news-broadcast-svgrepo-com.svg";
 
 export default function PostinganAlumni() {
   return (
-    <div className="w-full bg-[#f8f9fa] min-h-screen selection:bg-primary/20 overflow-x-hidden">
+    <div className="w-full bg-[#f8f9fa] min-h-screen flex flex-col font-sans selection:bg-primary/20 overflow-x-hidden">
       <section className="relative pt-28 pb-20 w-full z-30 bg-primary rounded-b-[2.5rem]">
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="max-w-2xl">
@@ -22,9 +22,8 @@ export default function PostinganAlumni() {
         </div>
       </section>
 
-      <main className="w-full px-4 sm:px-6 lg:px-8 -mt-10 pb-20 relative z-40">
-        <MiniMedsosBeranda />
-      </main>
+      {/* Komponen ini sekarang akan menangani padding dan max-width nya sendiri agar identik dengan Pengumuman */}
+      <MiniMedsosBeranda />
     </div>
   );
 }
