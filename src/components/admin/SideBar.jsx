@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X, Map,
-  IdCardLanyard, Megaphone, Palette, Handshake
+  IdCardLanyard, Megaphone, Palette, Handshake,GraduationCap
 } from 'lucide-react';
 import DefaultLogo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ export default function SideBar({ active, setActive }) {
   const menuItems = [
     { name: 'Beranda', icon: <LayoutDashboard size={20} />, path: '/wb-admin' },
     { name: 'Sebaran Alumni', icon: <Map size={20} />, path: '/wb-admin/sebaran-alumni' },
+    { name: 'Kelulusan', icon: <GraduationCap size={20} />, path: '/wb-admin/kelulusan' },
     { name: 'Manajemen Pengguna', icon: <Users size={20} />, path: '/wb-admin/manage-user' },
     { name: 'Manajemen Pekerjaan', icon: <Briefcase size={20} />, path: '/wb-admin/jobs' },
     { name: 'Status Karier', icon: <IdCardLanyard size={20} />, path: '/wb-admin/status-karir' },
@@ -48,7 +49,8 @@ export default function SideBar({ active, setActive }) {
 
   const routes = [
     { path: "/wb-admin", title: "Beranda" },
-    { path: "/wb-admin/sebaran-alumni", title: "Sebaran Alumni" }, // Tambahan Route Title
+    { path: "/wb-admin/sebaran-alumni", title: "Sebaran Alumni" }, 
+    { path: "/wb-admin/kelulusan", title: "Kelulusan" },
     { path: "/wb-admin/manage-user", title: "Manajemen Pengguna" },
     { path: "/wb-admin/jobs/job-detail/:id", title: "Manajemen Pekerjaan" },
     { path: "/wb-admin/jobs", title: "Manajemen Pekerjaan" },
