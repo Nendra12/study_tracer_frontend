@@ -159,6 +159,7 @@ export default function NavbarAlumni({ user }) {
 
   const navLinks = [
     { name: 'Beranda', path: '/alumni', locked: false },
+    { name: 'Postingan', path: '/alumni/postingan', locked: false },
     { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false },
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
     { name: 'Connections', path: '/alumni/connections', locked: !canAccessAll, badge: pendingCount },
