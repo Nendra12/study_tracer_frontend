@@ -326,7 +326,7 @@ export default function MiniMedsosBeranda() {
   }, [postSearchQuery, postSortMode, medsos.posts]);
 
   return (
-    <section className="bg-white p-6 sm:p-8 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mt-2">
+    <section className="bg-white w-full min-h-screen p-6 sm:p-8 rounded-none shadow-none border-b border-gray-100 mt-0">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-8">
         <div>
           <h2 className="text-2xl font-black text-primary tracking-tight">Postingan Alumni</h2>

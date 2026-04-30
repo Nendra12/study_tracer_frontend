@@ -28,7 +28,7 @@ import HeroBeranda from "../../components/alumni/beranda/HeroBeranda";
 import SummaryInfoBeranda from "../../components/alumni/beranda/SummaryInfoBeranda";
 import AlertBeranda from "../../components/alumni/beranda/AlertBeranda";
 import JejaringBeranda from "../../components/alumni/beranda/JejaringBeranda";
-import MiniMedsosBeranda from "../../components/alumni/beranda/MiniMedsosBeranda";
+
 
 // Helpers
 const getPengumumanImageUrl = (foto) => {
@@ -284,9 +284,6 @@ export default function Beranda() {
               kuesionerPending={kuesionerPending} setIsStatusOpen={setIsStatusOpen} navigate={navigate} 
             />
 
-            {/* 4. JEJARING ALUMNI */}
-            {/* 4. MINI MEDSOS (DUMMY UI) */}
-            <MiniMedsosBeranda />
 
             {/* 5. JEJARING ALUMNI */}
             <JejaringBeranda 
