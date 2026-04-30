@@ -12,7 +12,6 @@ import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, form
 import { parseLowonganChatPayload } from '../../utils/share';
 import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
 
-
 const MAX_FAVORITES = 3;
 
 function formatClockTime(rawDate) {
@@ -91,8 +90,6 @@ function getDayLabel(date) {
   yesterday.setDate(now.getDate() - 1);
   if (dateKey === toDateKey(yesterday)) return 'Kemarin';
 
-  // Older than yesterday: show weekday name, but if it falls on the same weekday as today
-  // (e.g., last week), show the date to avoid ambiguity.
   if (date.getDay() === now.getDay()) {
     return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
   }
@@ -162,7 +159,7 @@ export default function MessagePage() {
   // Fetch conversations on mount
   useEffect(() => { messaging.fetchConversations(); }, []);
 
-  // Debounced search (skip initial mount — already handled by the effect above)
+  // Debounced search
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
@@ -264,6 +261,7 @@ export default function MessagePage() {
     setIsChatMenuOpen(false);
   };
 
+  // --- PERBAIKAN ICON CENTANG ---
   const renderMessageStatus = (msg, isMe) => {
     if (!isMe) return null;
 
@@ -280,7 +278,7 @@ export default function MessagePage() {
     }
 
     if (isRead) {
-      return <Check size={14} className="text-green-300" title="Sudah dibaca" />;
+      return <CheckCheck size={16} className="text-emerald-400" title="Sudah dibaca" />;
     }
     return <Check size={14} className="text-white/70" title="Terkirim" />;
   };
@@ -426,9 +424,6 @@ export default function MessagePage() {
   const unreadCount = messaging.conversations.filter(c => (c.unread_count || 0) > 0 && !c.settings?.is_archived).length;
   const archivedCount = messaging.conversations.filter(c => c.settings?.is_archived).length;
   const groupCount = messaging.conversations.filter(c => c.type === 'group' && !c.settings?.is_archived).length;
-
-
-  console.log(unreadCount)
 
   const onEmojiClick = (emojiObject) => {
     setMessageInput(prev => prev + emojiObject.emoji);
@@ -1202,11 +1197,6 @@ export default function MessagePage() {
                             {attachmentPreview.type === 'gif' && (
                               <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
                             )}
-                            {/* {attachmentPreview.type === 'file' && (
-                              <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center text-primary">
-                                <Paperclip size={24} />
-                              </div>
-                            )} */}
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
                               <span className="text-xs text-primary mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
@@ -1241,13 +1231,6 @@ export default function MessagePage() {
                               >
                                 <ImagePlus size={20} />
                               </button>
-                              {/* <button
-                                onClick={() => { fileInputRef.current?.click(); setShowAttachments(false); }}
-                                className="p-3 cursor-pointer rounded-xl bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary transition-colors flex justify-center"
-                                title="Kirim File"
-                              >
-                                <Paperclip size={20} />
-                              </button> */}
                               <button
                                 onClick={() => {
                                   setShowGifPicker(!showGifPicker);
@@ -1272,13 +1255,6 @@ export default function MessagePage() {
                           >
                             <ImagePlus size={20} />
                           </button>
-                          {/* <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
-                            title="Kirim File"
-                          >
-                            <Paperclip size={20} />
-                          </button> */}
                           <button
                             onClick={() => {
                               setShowGifPicker(!showGifPicker);
