@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Building2,
   GraduationCap,
@@ -27,6 +27,8 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
   const [formErrors, setFormErrors] = useState({ nama_perusahaan: "", id_kota: "" });
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const deleteLock = useRef(false);
 
   const resetForm = () => {
     setFormData({ nama_perusahaan: "", id_kota: "", jalan: "" });
@@ -74,7 +76,6 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
     return !errors.nama_perusahaan && !errors.id_kota;
   };
 
-  // Fungsi cek duplikat nama perusahaan
   const isDuplicate = (name, currentId = null) => {
     return data.some(item => 
       item.nama?.toLowerCase().trim() === name.toLowerCase().trim() && item.id !== currentId
@@ -130,14 +131,21 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
   };
 
   const handleDelete = async (id, name) => {
-    const { isConfirmed } = await alertConfirm(`Apakah Anda yakin ingin menghapus perusahaan "${name}"?`);
-    if (!isConfirmed) return;
+    if (deleteLock.current) return;
+    deleteLock.current = true;
+
     try {
+      // PerusahaanTable BUKAN ManagedTable, jadi di sini KITA TETAP BUTUH alertConfirm
+      const { isConfirmed } = await alertConfirm(`Apakah Anda yakin ingin menghapus perusahaan "${name}"?`);
+      if (!isConfirmed) return;
+      
       await adminApi.deletePerusahaan(id);
       alertSuccess("Perusahaan berhasil dihapus");
       onRefresh();
     } catch (err) {
       alertError(err.response?.data?.message || "Gagal menghapus perusahaan");
+    } finally {
+      deleteLock.current = false;
     }
   };
 
@@ -213,7 +221,10 @@ const PerusahaanTable = ({ data = [], onRefresh, kotaList }) => {
                   <td className="py-3 px-3">
                     <div className="flex justify-end gap-1 transition-opacity">
                       <button onClick={() => startEdit(item)} className="cursor-pointer p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg active:scale-90" title="Edit"><Pencil size={14} /></button>
-                      <button onClick={() => handleDelete(item.id, item.nama)} className="cursor-pointer p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg active:scale-90" title="Hapus"><Trash2 size={14} /></button>
+                      <button onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleDelete(item.id, item.nama);
+                      }} className="cursor-pointer p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg active:scale-90" title="Hapus"><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -263,6 +274,8 @@ export default function MasterTable() {
   const [selectedReport, setSelectedReport] = useState("Data Jurusan");
   const [exportingReport, setExportingReport] = useState(false);
   
+  const deleteJurusanLock = useRef(false);
+
   const [jurusanData, setJurusanData] = useState([]);
   const [perusahaanData, setPerusahaanData] = useState([]);
   const [kotaList, setKotaList] = useState([]);
@@ -303,7 +316,6 @@ export default function MasterTable() {
     fetchPerusahaan();
   }, [fetchJurusan, fetchPerusahaan]);
 
-  // Fungsi helper cek duplikat untuk ManagedTable (Jurusan)
   const isJurusanDuplicate = (name, currentId = null) => {
     return jurusanData.some(j => j.nama?.toLowerCase().trim() === name.toLowerCase().trim() && j.id !== currentId);
   };
@@ -386,15 +398,27 @@ export default function MasterTable() {
                 fetchJurusan(); 
               } catch (e) { alertError("Gagal mengubah jurusan"); }
             }}
+            
+            /* --- INI BAGIAN YANG DIPERBAIKI --- */
             onDelete={async (id) => { 
-              const { isConfirmed } = await alertConfirm("Yakin ingin menghapus jurusan ini?");
-              if (!isConfirmed) return;
+              if (deleteJurusanLock.current) return;
+              deleteJurusanLock.current = true;
+
               try {
+                // KITA HAPUS alertConfirm dari sini karena komponen <ManagedTable/> 
+                // secara otomatis sudah menanyakan "Apakah Anda Yakin?" di dalam desainnya.
+                
                 await adminApi.deleteJurusan(id); 
                 alertSuccess("Jurusan berhasil dihapus"); 
                 fetchJurusan(); 
-              } catch (e) { alertError("Gagal menghapus jurusan"); }
+              } catch (e) { 
+                alertError("Gagal menghapus jurusan"); 
+              } finally {
+                deleteJurusanLock.current = false;
+              }
             }}
+            /* --------------------------------- */
+            
             useTextEditActions={true}
           />
           <PerusahaanTable 
