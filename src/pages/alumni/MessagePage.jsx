@@ -608,7 +608,7 @@ export default function MessagePage() {
                   ))}
                 </div>
               ) : filteredContacts.length === 0 ? (
-                <div className="text-center text-gray-400 mt-10 text-sm">Tidak ada kontak ditemukan</div>
+                <div className="text-center text-gray-400 mt-10 text-sm">Tidak ada alumni ditemukan</div>
               ) : (
                 filteredContacts.map((contact) => {
                   const cId = contact.id_conversation;

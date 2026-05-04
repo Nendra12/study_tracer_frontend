@@ -90,118 +90,118 @@ export default function Connection({
 
   const actionsEl = (
     <div className={actionsLayoutClass}>
-        {status === 'none' || status === 'rejected' ? (
-          <>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => runAction(() => onConnect?.(alumniId), 'Permintaan koneksi berhasil dikirim.')}
-              className={`${buttonBase} bg-primary text-white border-primary hover:opacity-90`}
-            >
-              {isAction('connect') ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
-              Connect
-            </button>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Alumni ini akan diblokir dan koneksi akan dihapus. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
-              className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
-            >
-              {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
-              Block
-            </button>
-          </>
-        ) : null}
-
-        {status === 'pending_sent' ? (
-          <>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Batalkan permintaan koneksi ini?', () => onRemove?.(alumniId), 'Permintaan koneksi dibatalkan.')}
-              className={`${buttonBase} bg-white text-slate-700 border-slate-200 hover:bg-slate-50`}
-            >
-              {isAction('remove') ? <Loader2 size={14} className="animate-spin" /> : <UserX size={14} />}
-              Batalkan
-            </button>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Alumni ini akan diblokir. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
-              className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
-            >
-              {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
-              Block
-            </button>
-          </>
-        ) : null}
-
-        {status === 'pending_incoming' ? (
-          <>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Terima permintaan koneksi dari alumni ini?', () => onAccept?.(alumniId, connectionId), 'Permintaan koneksi diterima.')}
-              className={`${buttonBase} bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700`}
-            >
-              {isAction('accept') ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-              Terima
-            </button>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Tolak permintaan koneksi dari alumni ini?', () => onReject?.(alumniId, connectionId), 'Permintaan koneksi ditolak.')}
-              className={`${buttonBase} bg-white text-amber-700 border-amber-200 hover:bg-amber-50`}
-            >
-              {isAction('reject') ? <Loader2 size={14} className="animate-spin" /> : <UserX size={14} />}
-              Tolak
-            </button>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Alumni ini akan diblokir. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
-              className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50 ${compact ? 'col-span-2' : ''}`}
-            >
-              {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
-              Block
-            </button>
-          </>
-        ) : null}
-
-        {status === 'accepted' ? (
-          <>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Hapus koneksi dengan alumni ini?', () => onRemove?.(alumniId), 'Koneksi berhasil dihapus.')}
-              className={`${buttonBase} bg-white text-slate-700 border-slate-200 hover:bg-slate-50`}
-            >
-              {isAction('remove') ? <Loader2 size={14} className="animate-spin" /> : <UserCheck size={14} />}
-              Hapus Koneksi
-            </button>
-            <button
-              type="button"
-              disabled={isActionLoading}
-              onClick={() => withConfirm('Alumni ini akan diblokir dan koneksi akan dihapus. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
-              className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
-            >
-              {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
-              Block
-            </button>
-          </>
-        ) : null}
-
-        {status === 'blocked_by_me' ? (
+      {status === 'none' || status === 'rejected' ? (
+        <>
           <button
             type="button"
             disabled={isActionLoading}
-            onClick={() => withConfirm('Buka blokir alumni ini?', () => onUnblock?.(alumniId), 'Blokir berhasil dibuka.')}
-            className={`${buttonBase} bg-white text-primary border-primary/30 hover:bg-primary/5 ${compact ? 'col-span-2' : ''}`}
+            onClick={() => runAction(() => onConnect?.(alumniId), 'Permintaan koneksi berhasil dikirim.')}
+            className={`${buttonBase} bg-primary text-white border-primary hover:opacity-90`}
           >
-            {isAction('unblock') ? <Loader2 size={14} className="animate-spin" /> : <ShieldOff size={14} />}
-            Unblock
+            {isAction('connect') ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+            Connect
           </button>
-        ) : null}
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Alumni ini akan diblokir dan koneksi akan dihapus. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
+            className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
+          >
+            {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
+            Block
+          </button>
+        </>
+      ) : null}
+
+      {status === 'pending_sent' ? (
+        <>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Batalkan permintaan koneksi ini?', () => onRemove?.(alumniId), 'Permintaan koneksi dibatalkan.')}
+            className={`${buttonBase} bg-white text-slate-700 border-slate-200 hover:bg-slate-50`}
+          >
+            {isAction('remove') ? <Loader2 size={14} className="animate-spin" /> : <UserX size={14} />}
+            Batalkan
+          </button>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Alumni ini akan diblokir. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
+            className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
+          >
+            {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
+            Block
+          </button>
+        </>
+      ) : null}
+
+      {status === 'pending_incoming' ? (
+        <>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Terima permintaan koneksi dari alumni ini?', () => onAccept?.(alumniId, connectionId), 'Permintaan koneksi diterima.')}
+            className={`${buttonBase} bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700`}
+          >
+            {isAction('accept') ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            Terima
+          </button>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Tolak permintaan koneksi dari alumni ini?', () => onReject?.(alumniId, connectionId), 'Permintaan koneksi ditolak.')}
+            className={`${buttonBase} bg-white text-amber-700 border-amber-200 hover:bg-amber-50`}
+          >
+            {isAction('reject') ? <Loader2 size={14} className="animate-spin" /> : <UserX size={14} />}
+            Tolak
+          </button>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Alumni ini akan diblokir. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
+            className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50 ${compact ? 'col-span-2' : ''}`}
+          >
+            {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
+            Block
+          </button>
+        </>
+      ) : null}
+
+      {status === 'accepted' ? (
+        <>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Yakin ingin putuskan koneksi dengan alumni ini?', () => onRemove?.(alumniId), 'Koneksi berhasil dihapus.')}
+            className={`${buttonBase} bg-white text-slate-700 border-slate-200 hover:bg-slate-50`}
+          >
+            {isAction('remove') ? <Loader2 size={14} className="animate-spin" /> : <UserCheck size={14} />}
+            Putuskan
+          </button>
+          <button
+            type="button"
+            disabled={isActionLoading}
+            onClick={() => withConfirm('Alumni ini akan diblokir dan koneksi akan dihapus. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
+            className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
+          >
+            {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
+            Block
+          </button>
+        </>
+      ) : null}
+
+      {status === 'blocked_by_me' ? (
+        <button
+          type="button"
+          disabled={isActionLoading}
+          onClick={() => withConfirm('Buka blokir alumni ini?', () => onUnblock?.(alumniId), 'Blokir berhasil dibuka.')}
+          className={`${buttonBase} bg-white text-primary border-primary/30 hover:bg-primary/5 ${compact ? 'col-span-2' : ''}`}
+        >
+          {isAction('unblock') ? <Loader2 size={14} className="animate-spin" /> : <ShieldOff size={14} />}
+          Unblock
+        </button>
+      ) : null}
     </div>
   );
 

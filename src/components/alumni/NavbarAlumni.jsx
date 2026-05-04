@@ -260,26 +260,36 @@ export default function NavbarAlumni({ user }) {
             })}
           </div>
 
-          {/* Action Buttons & Mobile Toggle */}
+          {/* Mode Desktop */}
           <div className="flex items-center gap-3">
-            {/* Desktop Actions */}
             <div className="hidden xl:flex items-center gap-2">
-              <button
-                onClick={() => navigate('/alumni/pesan')}
-                className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
-              >
-                <MessageSquareMore size={20} />
-                {unreadMessageCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
-                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                  </span>
-                )}
-                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                  <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                    {unreadMessageCount > 0 ? `${unreadMessageCount} Pesan Baru` : 'Pesan'}
+              {chatIsLocked ? (
+                <div className={`relative group p-2.5 rounded-md backdrop-blur-sm border transition-all cursor-not-allowed opacity-50 ${isSolidMode ? 'bg-white border-gray-200 text-slate-400' : 'bg-white/80 border-white/60 text-slate-400'}`}>
+                  <Lock size={20} />
+                  <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg w-48 text-left whitespace-normal">
+                      Membutuhkan verifikasi akun atau Isi kuesioner terlebih dahulu
+                    </div>
                   </div>
                 </div>
-              </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/alumni/pesan')}
+                  className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
+                >
+                  <MessageSquareMore size={20} />
+                  {unreadMessageCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[10px] font-black rounded-full border-2 border-white shadow-sm">
+                      {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                    </span>
+                  )}
+                  <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                      {unreadMessageCount > 0 ? `${unreadMessageCount} Pesan Baru` : 'Pesan'}
+                    </div>
+                  </div>
+                </button>
+              )}
               <button
                 onClick={() => navigate('/alumni/notifikasi')}
                 className={`cursor-pointer relative group p-2.5 rounded-md backdrop-blur-sm border transition-all ${isSolidMode ? 'bg-white border-gray-200 text-primary hover:bg-gray-50' : 'bg-white/80 border-white/60 text-primary/80 hover:text-primary hover:bg-fourth'}`}
@@ -449,10 +459,17 @@ export default function NavbarAlumni({ user }) {
                   <hr className="border-gray-100 my-0.5" />
 
                   <div className="flex flex-col gap-1">
-                    <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 6 * 0.08 } }} onClick={() => { navigate('/alumni/pesan'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
-                      Chat
-                      {unreadMessageCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadMessageCount > 99 ? '99+' : unreadMessageCount}</span>}
-                    </motion.button>
+                    {chatIsLocked ? (
+                      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 6 * 0.08 } }} className="relative flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-slate-400 bg-gray-50 opacity-60 cursor-not-allowed">
+                        Chat
+                        <Lock size={16} className="ml-auto" />
+                      </motion.div>
+                    ) : (
+                      <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 6 * 0.08 } }} onClick={() => { navigate('/alumni/pesan'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
+                        Chat
+                        {unreadMessageCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadMessageCount > 99 ? '99+' : unreadMessageCount}</span>}
+                      </motion.button>
+                    )}
                     <motion.button initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0, transition: { delay: 7 * 0.08 } }} onClick={() => { navigate('/alumni/notifikasi'); setIsOpen(false); }} className="relative cursor-pointer flex items-center gap-3 px-5 py-2.5 rounded-xl text-[15px] font-bold text-primary/80 bg-gray-50 hover:bg-gray-100 transition-all">
                       Notifikasi
                       {unreadCount > 0 && <span className="ml-auto flex items-center justify-center min-w-5.5 h-5.5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>}
