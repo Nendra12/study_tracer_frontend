@@ -291,7 +291,7 @@ export default function LihatJawaban() {
                 </button>
                 <button
                   onClick={handleExportExcel}
-                  className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#3D5A5C] text-white rounded-xl text-sm font-bold shadow-md shadow-[#3D5A5C]/20 hover:bg-[#2D4345] transition-all active:scale-95"
+                  className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
                 >
                   <FileSpreadsheet size={18} />
                   <span className="hidden sm:inline">Excel</span>
@@ -453,16 +453,16 @@ export default function LihatJawaban() {
                 </p>
                 <div className="flex items-center gap-2">
                   <button
-                    className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#3D5A5C] hover:border-[#3D5A5C] transition-all disabled:opacity-50"
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50"
                     disabled
                   >
                     <ChevronLeft size={16} />
                   </button>
                   <div className="flex gap-1">
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold bg-[#3D5A5C] text-white shadow-md shadow-[#3D5A5C]/20">1</button>
+                    <button className="w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold bg-primary text-white shadow-md shadow-primary/20">1</button>
                   </div>
                   <button
-                    className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#3D5A5C] hover:border-[#3D5A5C] transition-all"
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary hover:border-primary transition-all"
                     disabled
                   >
                     <ChevronRight size={16} />
