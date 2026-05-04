@@ -214,7 +214,7 @@ function StartPostModal({ open, avatarUrl, displayName, onClose, onSubmit, submi
             </div>
             <button type="button" onClick={handleSubmit} disabled={(!content.trim() && images.length === 0) || submitting}
               className={`h-10 px-6 rounded-md text-sm font-black transition-colors border inline-flex items-center gap-2 ${
-                (content.trim() || images.length > 0) && !submitting ? "bg-primary text-white border-primary hover:bg-[#2e4042] cursor-pointer shadow-md" : "bg-slate-100 text-slate-400 border-slate-100 cursor-not-allowed"
+                (content.trim() || images.length > 0) && !submitting ? "bg-primary text-white border-primary hover:bg-primary/80 cursor-pointer shadow-md" : "bg-slate-100 text-slate-400 border-slate-100 cursor-not-allowed"
               }`}>
               {submitting && <Loader2 size={14} className="animate-spin" />} Post
             </button>
