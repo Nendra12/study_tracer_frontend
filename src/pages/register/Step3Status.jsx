@@ -63,45 +63,64 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     }
 
     const matchedProv = provinceRaw ? matchByName(Array.isArray(provList) ? provList : [], provinceRaw) : null;
-    const nextProvId = matchedProv?.id ? String(matchedProv.id) : '';
-
-    // Override pilihan lama: jika provinsi berubah -> reset kota.
-    // Jika provinsi sama tapi user memilih titik map di kota lain -> reset kota juga (akan diisi ulang dari map).
-    setState((prev) => {
-      const prevProvId = String(prev.id_provinsi || '');
-      const shouldSetProv = nextProvId && prevProvId !== nextProvId;
-      const shouldResetKota = !!cityRaw && String(prev.id_kota || '') !== '';
-
-      if (!shouldSetProv && !shouldResetKota) return prev;
-      return {
-        ...prev,
-        ...(shouldSetProv ? { id_provinsi: nextProvId } : null),
-        ...(shouldSetProv || shouldResetKota ? { id_kota: '' } : null),
-      };
-    });
+    let nextProvId = matchedProv?.id ? String(matchedProv.id) : '';
 
     let nextKotaId = '';
 
-    // Jika ada kota, coba cari ID kota berdasarkan provinsi yang terdeteksi.
+    // Jika ada kota, coba cari ID kota.
+    // - Kalau provinsi terdeteksi: cari berdasarkan provinsi tersebut.
+    // - Kalau provinsi belum terdeteksi (map-first): cari dari seluruh kota, lalu turunkan provinsi dari hasilnya.
     if (cityRaw) {
       const targetProvId = nextProvId || String(fallbackProvId || '');
       let kotaData = kotaList;
-      if (targetProvId) {
-        try {
+
+      try {
+        if (targetProvId) {
           const res = await masterDataApi.getKota(targetProvId);
           kotaData = res?.data?.data || res?.data || [];
-        } catch (err) {
-          // Fallback: gunakan kotaList yang sedang tersedia
-          console.error('Gagal mengambil kota untuk sinkronisasi map:', err);
+        } else {
+          const res = await masterDataApi.getKota();
+          kotaData = res?.data?.data || res?.data || [];
         }
+      } catch (err) {
+        console.error('Gagal mengambil kota untuk sinkronisasi map:', err);
       }
 
       const matchedKota = matchByName(Array.isArray(kotaData) ? kotaData : [], cityRaw);
       if (matchedKota?.id) {
         nextKotaId = String(matchedKota.id);
-        setState((prev) => ({ ...prev, id_kota: nextKotaId }));
+
+        // Map-first: jika provinsi belum ketemu dari provinceRaw, coba derive dari data kota.
+        if (!nextProvId) {
+          const derivedProvId = String(
+            matchedKota.id_provinsi ||
+            matchedKota.provinsi?.id ||
+            matchedKota.provinsi_id ||
+            ''
+          );
+          if (derivedProvId) nextProvId = derivedProvId;
+        }
       }
     }
+
+    // Update state sekali supaya kota tidak "hilang" sementara atau ter-reset saat match gagal.
+    setState((prev) => {
+      const prevProvId = String(prev.id_provinsi || '');
+      const prevKotaId = String(prev.id_kota || '');
+
+      const willChangeProv = nextProvId && prevProvId !== nextProvId;
+      const willSetKota = nextKotaId && prevKotaId !== nextKotaId;
+      const shouldClearKota = willChangeProv && !nextKotaId;
+
+      if (!willChangeProv && !willSetKota && !shouldClearKota) return prev;
+
+      return {
+        ...prev,
+        ...(willChangeProv ? { id_provinsi: nextProvId } : null),
+        ...(willSetKota ? { id_kota: nextKotaId } : null),
+        ...(shouldClearKota ? { id_kota: '' } : null),
+      };
+    });
 
     return { provId: nextProvId, kotaId: nextKotaId };
   };

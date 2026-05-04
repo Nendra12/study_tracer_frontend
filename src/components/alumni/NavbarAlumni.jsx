@@ -159,6 +159,7 @@ export default function NavbarAlumni({ user }) {
 
   const navLinks = [
     { name: 'Beranda', path: '/alumni', locked: false },
+    { name: 'Postingan', path: '/alumni/postingan', locked: false },
     { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false },
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
     { name: 'Connections', path: '/alumni/connections', locked: !canAccessAll, badge: pendingCount },
@@ -191,29 +192,28 @@ export default function NavbarAlumni({ user }) {
       animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-70 transition-all duration-300 ease-in-out"
     >
-      {/* Container utama Menciut HANYA berdasarkan state `isShrunk` (yaitu: scrolled) */}
-      <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${isShrunk ? 'px-8 sm:px-12 lg:px-32' : 'px-4 sm:px-6 lg:px-8'}`}>
+      {/* PERBAIKAN 1: Padding saat isShrunk disesuaikan agar tidak terlalu mencekik ruang di layar laptop/desktop (xl:px-16) */}
+      <div className={`max-w-7xl mx-auto pt-4 transition-all duration-500 ${isShrunk ? 'px-4 sm:px-8 lg:px-12 xl:px-16' : 'px-4 sm:px-6 lg:px-8'}`}>
 
-        {/* Background & Shadow menggunakan `hasSolidBg` (hanya beri background putih jika diperlukan) */}
-        <div className={`relative rounded-3xl py-3 flex justify-between items-center transition-all duration-500 ${hasSolidBg ? 'shadow-md bg-white/90 xl:backdrop-blur-xl px-6' : 'bg-transparent'}`}>
+        <div className={`relative rounded-3xl py-3 flex justify-between items-center transition-all duration-500 gap-4 ${hasSolidBg ? 'shadow-md bg-white/90 xl:backdrop-blur-xl px-6' : 'bg-transparent'}`}>
 
-          {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-2.5 group">
+          {/* PERBAIKAN 2: Tambahkan shrink-0 pada pembungkus Logo agar tidak menyusut */}
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             <img
               src={theme?.logo || Icon}
               alt="Alumni Tracer Logo"
-              className="w-12 h-10 object-contain drop-shadow-sm"
+              className="w-12 h-10 object-contain drop-shadow-sm shrink-0"
             />
-            <div className='flex flex-col transition-all duration-500 ease-in-out'>
-              <span className={`font-black text-lg ${isSolidMode ? 'text-primary' : 'text-white'}`}>
+            <div className='flex flex-col transition-all duration-500 ease-in-out justify-center'>
+              {/* PERBAIKAN 3: Tambahkan whitespace-nowrap agar teks "Study Tracer" tidak turun ke baris baru */}
+              <span className={`font-black text-lg leading-tight whitespace-nowrap ${isSolidMode ? 'text-primary' : 'text-white'}`}>
                 Study Tracer
               </span>
               {!hasSolidBg && (
-                <span className={`text-xs font-semibold ${isSolidMode ? 'text-primary/80' : 'text-white/80'}`}>
+                <span className={`text-xs font-semibold leading-tight whitespace-nowrap ${isSolidMode ? 'text-primary/80' : 'text-white/80'}`}>
                   {theme?.namaSekolah || 'SMKN 2 Kraksaan'}
                 </span>
               )}
-
             </div>
           </Link>
 
@@ -226,11 +226,11 @@ export default function NavbarAlumni({ user }) {
                 return (
                   <div
                     key={i}
-                    className="group relative flex items-center gap-2 px-5 py-2 rounded-md text-sm font-semibold text-slate-400 cursor-not-allowed opacity-50"
+                    className="group relative flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold text-slate-400 cursor-not-allowed opacity-50 whitespace-nowrap"
                   >
                     <Lock size={14} />
                     {item.name}
-                    <div className="hidden group-hover:block absolute top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10">
+                    <div className="hidden group-hover:block absolute top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10 whitespace-normal">
                       <div className="flex items-start gap-2">
                         <AlertCircle size={14} className="shrink-0 mt-0.5" />
                         <p>Membutuhkan verifikasi akun atau Isi kuesioner terlebih dahulu</p>
@@ -244,7 +244,8 @@ export default function NavbarAlumni({ user }) {
                 <Link
                   key={i}
                   to={item.path}
-                  className={`relative px-5 py-2 rounded-md text-sm font-semibold transition-all no-underline ${isActive
+                  // PERBAIKAN 4: Tambahkan whitespace-nowrap dan kurangi sedikit padding (px-5 ke px-4) agar hemat ruang
+                  className={`relative px-4 py-2 rounded-md text-sm font-semibold transition-all no-underline whitespace-nowrap ${isActive
                     ? 'bg-white text-primary shadow-sm'
                     : 'text-third hover:text-primary hover:bg-transparent hover:no-underline'
                     }`}
@@ -260,8 +261,10 @@ export default function NavbarAlumni({ user }) {
             })}
           </div>
 
-          {/* Mode Desktop */}
-          <div className="flex items-center gap-3">
+          {/* Action Buttons & Mobile Toggle */}
+          {/* PERBAIKAN 5: Tambahkan shrink-0 agar deretan icon profil dan notifikasi tidak ikut mengecil */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Desktop Actions */}
             <div className="hidden xl:flex items-center gap-2">
               {chatIsLocked ? (
                 <div className={`relative group p-2.5 rounded-md backdrop-blur-sm border transition-all cursor-not-allowed opacity-50 ${isSolidMode ? 'bg-white border-gray-200 text-slate-400' : 'bg-white/80 border-white/60 text-slate-400'}`}>
@@ -315,7 +318,7 @@ export default function NavbarAlumni({ user }) {
                 >
                   <div className="w-8 h-8 rounded-lg bg-primary overflow-hidden">
                     {fotoUrl ? (
-                      <img src={fotoUrl} alt="Profile" className="w-full h-full object-cover" />
+                      <img src={fotoUrl} alt="Profile" className="w-full h-full object-cover shrink-0" />
                     ) : (
                       <div className="text-white text-xs p-2 uppercase font-black flex items-center justify-center h-full">
                         {user?.nama_alumni?.charAt(0) || 'A'}
@@ -324,7 +327,7 @@ export default function NavbarAlumni({ user }) {
                   </div>
                   <ChevronDown
                     size={14}
-                    className={`text-primary/80 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`text-primary/80 transition-transform shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
@@ -370,7 +373,7 @@ export default function NavbarAlumni({ user }) {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`xl:hidden relative z-60 cursor-pointer w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-full ${isSolidMode ? 'bg-gray-100' : 'bg-fourth'}`}
+              className={`xl:hidden relative z-60 cursor-pointer w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-full shrink-0 ${isSolidMode ? 'bg-gray-100' : 'bg-fourth'}`}
             >
               <motion.span animate={isOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-primary block" />
               <motion.span animate={isOpen ? { opacity: 0 } : { opacity: 1 }} className="w-5 h-0.5 bg-primary block" />
@@ -389,7 +392,7 @@ export default function NavbarAlumni({ user }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-40 xl:hidden bg-black/20"
+                  className="fixed inset-0 z-40 xl:hidden bg-black/20 cursor-default"
                 />
 
                 <motion.div
@@ -398,6 +401,7 @@ export default function NavbarAlumni({ user }) {
                   exit={{ opacity: 0, y: -20, scale: 0.95 }}
                   className="absolute z-50 top-full left-0 right-0 mt-3 p-3 bg-white/95 border border-gray-100 rounded-3xl shadow-2xl xl:hidden flex flex-col gap-1"
                 >
+                  {/* ... Kode menu mobile (sama persis dengan yang ada sebelumnya) ... */}
                   {user && (
                     <div className="mb-1 p-3 rounded-2xl border border-slate-100 bg-slate-50/80 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">

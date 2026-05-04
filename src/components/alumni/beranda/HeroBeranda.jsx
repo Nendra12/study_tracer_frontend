@@ -26,8 +26,8 @@ export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus
               <button onClick={() => navigate("/alumni/lowongan")} className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-md text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2 transition-all duration-300">
                 <ArrowRight size={18} /> Lihat Lowongan 
               </button>
-              <button onClick={() => navigate('/alumni/profile')} className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-md text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-                <User size={18} /> Perbarui Profil
+              <button onClick={() => navigate('/alumni/kelulusan')} className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-md text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <GraduationCap size={18} /> Cek Kelulusan
               </button>
             </div>
           </motion.div>

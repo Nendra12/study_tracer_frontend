@@ -36,6 +36,7 @@
 
     const navItems = [
       { label: "Beranda", path: "/alumni", locked: false },
+      { label: "Postingan", path: "/alumni/postingan", locked: false },
       { label: "Pengumuman", path: "/alumni/pengumuman", locked: false },
       { label: "Alumni", path: "/alumni/daftar-alumni", locked: !canAccessAll },
       { label: "Lowongan", path: "/alumni/lowongan", locked: !canAccessAll },

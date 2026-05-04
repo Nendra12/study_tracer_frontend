@@ -75,6 +75,11 @@ export default function Header({ toggleSidebar, user }) {
       title: "Pengaturan Tampilan",
       text: "Sesuaikan tema warna, logo, dan ikon aplikasi",
     },
+    {
+      path: "/wb-admin/kelulusan",
+      title: "Manajemen Kelulusan",
+      text: "Kelola dan tetapkan status kelulusan siswa berdasarkan NIS secara massal",
+    },
   ];
 
   const getTitle = () => {

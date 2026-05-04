@@ -12,6 +12,7 @@ const Login = lazy(() => import("../pages/Login"))
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"))
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"))
 const SebaranAlumni = lazy(() => import("../pages/admin/SebaranAlumni"));
+const Kelulusan = lazy(() => import("../pages/admin/Kelulusan"));
 const Pengumuman = lazy(() => import("../pages/admin/pengumuman"));
 const PengumumanDetail = lazy(() => import("../pages/admin/PengumumanDetail"));
 const UserManagement = lazy(() => import("../pages/admin/UserManagement"))
@@ -46,6 +47,8 @@ const LowonganDetail = lazy(() => import("../pages/alumni/lowonganDetail"));
 const Notifikasi = lazy(() => import("../pages/alumni/Notifikasi"));
 const AlumniLayout = lazy(() => import("../layouts/AlumniLayout"));
 const Message = lazy(() => import("../pages/alumni/MessagePage"));
+const PostinganAlumni = lazy(() => import("../pages/alumni/postingan"));
+const KelulusanAlumni = lazy(() => import("../pages/alumni/Kelulusan"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -72,6 +75,7 @@ export default function AppRouter() {
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="sebaran-alumni" element={<SebaranAlumni />} />
+          <Route path="kelulusan" element={<Kelulusan />} />
           <Route path="manage-user" >
             <Route index element={<UserManagement />} />
           </Route>
@@ -117,7 +121,11 @@ export default function AppRouter() {
           <Route path="profile" element={<Profil />} />
           <Route path="notifikasi" element={<Notifikasi />} />
           <Route path="pesan" element={<Message />} />
+          <Route path="postingan" element={<PostinganAlumni />} />
         </Route>
+        
+        {/* Standalone Alumni Routes (Without Navbar/Footer) */}
+        <Route path="kelulusan" element={<KelulusanAlumni />} />
       </Route>
 
       {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}

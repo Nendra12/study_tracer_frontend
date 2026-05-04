@@ -9,10 +9,17 @@ import ChatMenuOptions from '../../components/alumni/ChatMenuOptions';
 import GroupInfoModal from '../../components/alumni/GroupInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMessaging, getAvatarUrl, getDisplayName, getLastMessagePreview, formatTime, getImageUrl } from '../../hooks/useMessaging';
+import { parseLowonganChatPayload } from '../../utils/share';
 import { alertConfirm, toastSuccess, toastWarning } from '../../utilitis/alert';
 
-
 const MAX_FAVORITES = 3;
+
+function formatClockTime(rawDate) {
+  if (!rawDate) return '';
+  const dt = new Date(rawDate);
+  if (Number.isNaN(dt.getTime())) return rawDate;
+  return dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+}
 
 const TenorPicker = ({ onSelectGif, onClose }) => {
   const [search, setSearch] = useState('');
@@ -83,8 +90,6 @@ function getDayLabel(date) {
   yesterday.setDate(now.getDate() - 1);
   if (dateKey === toDateKey(yesterday)) return 'Kemarin';
 
-  // Older than yesterday: show weekday name, but if it falls on the same weekday as today
-  // (e.g., last week), show the date to avoid ambiguity.
   if (date.getDay() === now.getDay()) {
     return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
   }
@@ -154,7 +159,7 @@ export default function MessagePage() {
   // Fetch conversations on mount
   useEffect(() => { messaging.fetchConversations(); }, []);
 
-  // Debounced search (skip initial mount — already handled by the effect above)
+  // Debounced search
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
@@ -256,6 +261,7 @@ export default function MessagePage() {
     setIsChatMenuOpen(false);
   };
 
+  // --- PERBAIKAN ICON CENTANG ---
   const renderMessageStatus = (msg, isMe) => {
     if (!isMe) return null;
 
@@ -272,7 +278,7 @@ export default function MessagePage() {
     }
 
     if (isRead) {
-      return <Check size={14} className="text-green-300" title="Sudah dibaca" />;
+      return <CheckCheck size={16} className="text-emerald-400" title="Sudah dibaca" />;
     }
     return <Check size={14} className="text-white/70" title="Terkirim" />;
   };
@@ -419,9 +425,6 @@ export default function MessagePage() {
   const archivedCount = messaging.conversations.filter(c => c.settings?.is_archived).length;
   const groupCount = messaging.conversations.filter(c => c.type === 'group' && !c.settings?.is_archived).length;
 
-
-  console.log(unreadCount)
-
   const onEmojiClick = (emojiObject) => {
     setMessageInput(prev => prev + emojiObject.emoji);
   };
@@ -456,6 +459,38 @@ export default function MessagePage() {
     } finally {
       setIsSavingGroupInfo(false);
     }
+  };
+
+  const renderLowonganCard = (payload, isMe) => {
+    if (!payload?.id) return null;
+    const title = payload.judul || 'Lowongan Kerja';
+    const company = payload.perusahaan || 'Perusahaan';
+    const detailPath = `/alumni/lowongan/${payload.id}`;
+
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(detailPath);
+        }}
+        className={`w-full text-left p-3 rounded-xl border transition-colors cursor-pointer ${isMe
+          ? 'bg-white/90 text-gray-800 border-white/60 hover:bg-white'
+          : 'bg-gray-50 text-gray-800 border-gray-100 hover:bg-gray-100'
+          }`}
+      >
+        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Lowongan</div>
+        <div className="text-sm font-bold leading-snug line-clamp-2">{title}</div>
+        <div className="text-[11px] text-gray-500 mt-1 line-clamp-1">{company}</div>
+        <div className="text-[11px] text-primary font-semibold mt-2">Lihat detail</div>
+      </button>
+    );
+  };
+
+  const getReplyPreviewText = (msg) => {
+    const payload = parseLowonganChatPayload(msg?.body);
+    if (payload) return `Lowongan: ${payload.judul || 'Detail'}`;
+    return msg?.body || '';
   };
 
 
@@ -976,7 +1011,7 @@ export default function MessagePage() {
                                             ) : msg.reply_to.type === 'file' ? (
                                               <span className="flex items-center gap-1"><Paperclip size={12} /> File</span>
                                             ) : (
-                                              msg.reply_to.body
+                                              getReplyPreviewText(msg.reply_to)
                                             )}
                                           </div>
                                         </div>
@@ -994,7 +1029,7 @@ export default function MessagePage() {
 
                                           {!msg.body && (
                                             <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm flex items-center gap-1 text-[10px] text-white shadow-sm pointer-events-none z-10">
-                                              {formatTime(msg.created_at)}
+                                              {formatClockTime(msg.created_at)}
                                               {renderMessageStatus(msg, isMe)}
                                             </div>
                                           )}
@@ -1003,7 +1038,7 @@ export default function MessagePage() {
                                             <div className="px-2 pt-2 pb-0.5 flex flex-col">
                                               <p className="text-[13px] leading-relaxed break-words">{msg.body}</p>
                                               <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                                {formatTime(msg.created_at)}
+                                                {formatClockTime(msg.created_at)}
                                                 {renderMessageStatus(msg, isMe)}
                                               </div>
                                             </div>
@@ -1029,7 +1064,7 @@ export default function MessagePage() {
                                           <div className="flex items-center justify-between gap-4 mt-1 px-1">
                                             {msg.body ? <p className="text-[13px]">{msg.body}</p> : <div />}
                                             <div className={`text-[10px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                              {formatTime(msg.created_at)}
+                                              {formatClockTime(msg.created_at)}
                                               {renderMessageStatus(msg, isMe)}
                                             </div>
                                           </div>
@@ -1039,12 +1074,30 @@ export default function MessagePage() {
                                           <span className="text-[11px] text-gray-400 bg-gray-100/80 px-3 py-1 rounded-full">{msg.body}</span>
                                         </div>
                                       ) : (
-                                        <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0">
-                                          <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
-                                          <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                                            {formatTime(msg.created_at)}
-                                            {renderMessageStatus(msg, isMe)}
-                                          </div>
+                                        <div className="flex flex-wrap items-end justify-end gap-x-2 gap-y-0 relative z-0 w-full">
+                                          {(() => {
+                                            const payload = parseLowonganChatPayload(msg.body);
+                                            if (payload) {
+                                              return (
+                                                <div className="flex-1">
+                                                  {renderLowonganCard(payload, isMe)}
+                                                  <div className={`text-[10px] mt-2 flex items-center justify-end gap-1 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                                    {formatClockTime(msg.created_at)}
+                                                    {renderMessageStatus(msg, isMe)}
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            return (
+                                              <>
+                                                <p className="text-[13px] leading-relaxed flex-grow min-w-[50px]">{msg.body}</p>
+                                                <div className={`text-[10px] mb-[-2px] flex items-center gap-1 shrink-0 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                                                  {formatClockTime(msg.created_at)}
+                                                  {renderMessageStatus(msg, isMe)}
+                                                </div>
+                                              </>
+                                            );
+                                          })()}
                                         </div>
                                       )}
                                     </div>
@@ -1120,7 +1173,7 @@ export default function MessagePage() {
                               ) : replyingToMessage.type === 'file' ? (
                                 <span className="flex items-center gap-1"><Paperclip size={12} /> {replyingToMessage.file_name}</span>
                               ) : (
-                                replyingToMessage.body
+                                getReplyPreviewText(replyingToMessage)
                               )}
                             </span>
                           </div>
@@ -1144,11 +1197,6 @@ export default function MessagePage() {
                             {attachmentPreview.type === 'gif' && (
                               <img src={attachmentPreview.url} className="w-16 h-16 object-cover rounded-xl shadow-sm border border-primary/10" alt="preview" />
                             )}
-                            {/* {attachmentPreview.type === 'file' && (
-                              <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center text-primary">
-                                <Paperclip size={24} />
-                              </div>
-                            )} */}
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-gray-800 truncate max-w-[200px] md:max-w-sm">{attachmentPreview.fileName}</span>
                               <span className="text-xs text-primary mt-0.5">Tambahkan pesan keterangan (opsional)...</span>
@@ -1183,13 +1231,6 @@ export default function MessagePage() {
                               >
                                 <ImagePlus size={20} />
                               </button>
-                              {/* <button
-                                onClick={() => { fileInputRef.current?.click(); setShowAttachments(false); }}
-                                className="p-3 cursor-pointer rounded-xl bg-gray-50 text-gray-600 hover:bg-primary/10 hover:text-primary transition-colors flex justify-center"
-                                title="Kirim File"
-                              >
-                                <Paperclip size={20} />
-                              </button> */}
                               <button
                                 onClick={() => {
                                   setShowGifPicker(!showGifPicker);
@@ -1214,13 +1255,6 @@ export default function MessagePage() {
                           >
                             <ImagePlus size={20} />
                           </button>
-                          {/* <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="p-2 cursor-pointer rounded-full text-gray-400 hover:bg-[#f8f9fa] hover:text-primary transition-colors shrink-0"
-                            title="Kirim File"
-                          >
-                            <Paperclip size={20} />
-                          </button> */}
                           <button
                             onClick={() => {
                               setShowGifPicker(!showGifPicker);
