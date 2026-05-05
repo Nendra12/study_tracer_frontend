@@ -12,8 +12,8 @@ export default function SelectInput({ label, value, options, onSelect, placehold
   }, []);
 
   // Mencari label untuk ditampilkan berdasarkan value (ID) yang dipilih
-  const selectedOption = options.find(opt => opt.value === value);
-  const displayLabel = selectedOption ? selectedOption.label : value;
+  const selectedOption = options.find(opt => String(opt.value) === String(value));
+  const displayLabel = selectedOption ? selectedOption.label : (value ? value : '');
 
   return (
     <div className="space-y-1 relative isolate" ref={ref}>
@@ -50,7 +50,7 @@ export default function SelectInput({ label, value, options, onSelect, placehold
             <div 
               key={idx} 
               onClick={() => { onSelect(opt.value); setIsOpen(false); }} 
-              className={`px-3 py-2 text-xs cursor-pointer bg-white hover:bg-fourth ${value === opt.value ? "font-bold text-primary" : "text-slate-600"}`}
+              className={`px-3 py-2 text-xs cursor-pointer bg-white hover:bg-fourth ${String(value) === String(opt.value) ? "font-bold text-primary" : "text-slate-600"}`}
             >
               {opt.label}
             </div>

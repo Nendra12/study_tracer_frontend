@@ -453,8 +453,14 @@ export const adminApi = {
   addCalonLulusan(data) {
     return api.post('/admin/kelulusan/calon', data);
   },
+  lookupNisn(nisn) {
+    return api.get('/admin/kelulusan/lookup-nisn', { params: { nisn } });
+  },
   deleteCalonLulusan(id) {
     return api.delete(`/admin/kelulusan/calon/${id}`);
+  },
+  updateCalonStatus(id, status) {
+    return api.patch(`/admin/kelulusan/calon/${id}/status`, { status_kelulusan: status });
   },
   clearCalonLulusan() {
     return api.delete('/admin/kelulusan/calon');

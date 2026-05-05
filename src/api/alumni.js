@@ -10,6 +10,11 @@ export const alumniApi = {
     return api.get('/alumni/status-pengajuan');
   },
 
+  // Cek Kelulusan
+  cekKelulusan() {
+    return api.get('/alumni/kelulusan/cek');
+  },
+
   // Profile
   getProfile() {
     return api.get('/alumni/profile');

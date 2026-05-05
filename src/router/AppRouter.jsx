@@ -48,6 +48,7 @@ const Notifikasi = lazy(() => import("../pages/alumni/Notifikasi"));
 const AlumniLayout = lazy(() => import("../layouts/AlumniLayout"));
 const Message = lazy(() => import("../pages/alumni/MessagePage"));
 const PostinganAlumni = lazy(() => import("../pages/alumni/postingan"));
+const KelulusanAlumni = lazy(() => import("../pages/alumni/Kelulusan"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -122,6 +123,9 @@ export default function AppRouter() {
           <Route path="pesan" element={<Message />} />
           <Route path="postingan" element={<PostinganAlumni />} />
         </Route>
+        
+        {/* Standalone Alumni Routes (Without Navbar/Footer) */}
+        <Route path="kelulusan" element={<KelulusanAlumni />} />
       </Route>
 
       {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}
