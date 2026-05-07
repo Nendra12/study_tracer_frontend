@@ -4,6 +4,7 @@ import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import ModalTambahManual from '../../components/admin/ModalTambahManual'; 
 import { adminApi } from '../../api/admin'; 
 import { alertSuccess, alertError, alertConfirm } from '../../utilitis/alert'; 
+import KelulusanSkeleton from '../../components/admin/skeleton/KelulusanSkeleton';
 
 export default function Kelulusan() {
   const fileInputRef = useRef(null);
@@ -254,7 +255,12 @@ export default function Kelulusan() {
   // ==========================================
   const searchInputClass = "w-full pl-10 pr-4 h-[42px] bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
   const dropdownWrapperClass = "w-full md:w-auto [&>div]:!w-full md:[&>div]:!w-auto md:[&>div]:!min-w-[180px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-slate-200 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-slate-700 [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[180px] [&_li]:!whitespace-nowrap";
+  
+  const isInitialLoading = masterJurusan.length === 0 && (loadingRiwayat || loadingCalon);
 
+  if (isInitialLoading) {
+      return <KelulusanSkeleton />;
+  }
   return (
     <div className="space-y-6 pb-12 relative animate-in fade-in slide-in-from-bottom-4 duration-500">
       
@@ -340,9 +346,7 @@ export default function Kelulusan() {
               <tbody className="divide-y divide-slate-100">
                 {loadingRiwayat ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-12 text-sm text-slate-400">
-                      <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" /> Memuat data...
-                    </td>
+                    <td colSpan="6" className="text-center py-12 text-sm text-slate-400"></td>
                   </tr>
                 ) : lulusan.length === 0 ? (
                   <tr>
@@ -455,9 +459,7 @@ export default function Kelulusan() {
                 <tbody className="divide-y divide-slate-100">
                   {loadingCalon ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-12 text-sm text-slate-400">
-                        <Loader2 size={24} className="animate-spin text-third mx-auto mb-2" /> Memuat data...
-                      </td>
+                      <td colSpan="6" className="text-center py-12 text-sm text-slate-400"></td>
                     </tr>
                   ) : calonLulus.length === 0 ? (
                     <tr>
