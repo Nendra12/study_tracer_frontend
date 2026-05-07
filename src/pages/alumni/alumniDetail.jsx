@@ -288,7 +288,7 @@ export default function AlumniDetail() {
                     disabled={downloadingPdf}
                     className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2 bg-slate-900 text-white rounded-xl lg:rounded-md text-xs font-bold shadow-sm hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    {downloadingPdf ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />} 
+                    {downloadingPdf ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
                     {downloadingPdf ? 'Memproses...' : 'Print Profil'}
                   </button>
                 </div>
