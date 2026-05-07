@@ -14,7 +14,7 @@ export default function FormKuliah({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-      <div className="md:col-span-2 relative z-[90] w-full focus-within:z-[9999]">
+      <div className="md:col-span-2 relative z-[90] w-full focus-within:z-[99]">
         <UniversitySelector
           univValue={universitas.nama_universitas}
           jurusanValue={universitas.id_jurusanKuliah}
@@ -25,7 +25,7 @@ export default function FormKuliah({
         />
       </div>
 
-      <div className="w-full relative z-[80] focus-within:z-[9999]">
+      <div className="w-full relative z-[80] focus-within:z-[99]">
         <SmoothDropdown
           label={<>Jenjang <span className="text-red-500">*</span></>}
           isSearchable={false}
@@ -36,7 +36,7 @@ export default function FormKuliah({
         />
       </div>
 
-      <div className="w-full relative z-[80] focus-within:z-[9999]">
+      <div className="w-full relative z-[80] focus-within:z-[99]">
         <SmoothDropdown
           label={<>Jalur Masuk <span className="text-red-500">*</span></>}
           isSearchable={false}
