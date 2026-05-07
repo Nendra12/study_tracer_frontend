@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import NavbarLanding from "../components/NavbarLanding";
+import GlobalNavbar from "../components/GlobalNavbar";
 import Alumni from "../assets/svg/share.svg";
 import Work from "../assets/svg/work.svg";
 import Akreditasi from "../assets/svg/ticket.svg";
@@ -155,7 +155,7 @@ export default function LandingPage() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[50%] bg-primary/80/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* Floating Modern Navbar */}
-      <NavbarLanding setActiveSection={setActiveSection} activeSection={activeSection} />
+      <GlobalNavbar variant="landing" setActiveSection={setActiveSection} activeSection={activeSection} />
 
       {/* Hero Section */}
       <section
