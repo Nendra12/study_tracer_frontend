@@ -7,3 +7,4 @@ export { default as AlumniDetailSkeleton } from './AlumniDetailSkeleton';
 export { default as PengumumanDetailSkeleton } from './PengumumanDetail';
 export { default as NotifikasiSkeleton } from './NotifikasiSkeleton';
 export { default as KuesionerSkeleton } from './KuesionerSkeleton';
+export { default as PostinganSkeleton } from './PostinganSkeleton';
