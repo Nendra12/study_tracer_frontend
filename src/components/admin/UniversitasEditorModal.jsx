@@ -83,18 +83,25 @@ export default function UniversitasEditorModal({
 
         <div className="p-6 space-y-5 relative z-20 overflow-visible">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             <div className="space-y-1">
-              <label className="text-[11px] font-black text-primary uppercase tracking-wider">Nama Universitas</label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
+                Nama Universitas <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={formData.nama_universitas}
                 onChange={(e) => onNameChange(e.target.value)}
-                className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none ${errors.nama_universitas ? "border-red-300" : "border-slate-200"}`}
+                className={`w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition-all ${
+                  errors.nama_universitas 
+                    ? "border-red-300 focus:ring-2 focus:ring-red-100 focus:border-red-500 bg-red-50/30" 
+                    : "border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                }`}
                 placeholder="Contoh: Universitas Padjadjaran"
                 autoFocus
               />
               {errors.nama_universitas && (
-                <p className="text-xs text-red-500 font-medium">{errors.nama_universitas}</p>
+                <p className="text-xs text-red-500 font-medium mt-1">{errors.nama_universitas}</p>
               )}
             </div>
 
@@ -109,18 +116,29 @@ export default function UniversitasEditorModal({
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-[11px] font-black text-primary uppercase tracking-wider">Alamat Universitas</label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
+                Alamat Universitas <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={formData.alamat}
                 onChange={(e) => onAlamatChange(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className={`w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition-all ${
+                  errors.alamat 
+                    ? "border-red-300 focus:ring-2 focus:ring-red-100 focus:border-red-500 bg-red-50/30" 
+                    : "border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                }`}
                 placeholder="Alamat universitas"
               />
+              {errors.alamat && (
+                <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat}</p>
+              )}
             </div>
 
             <div className="space-y-1 relative z-120 [&>div]:min-w-0 [&>div]:space-y-0 [&_button]:h-11 [&_button]:px-3 [&_button]:py-0 [&_button]:rounded-xl [&_button]:border-slate-200 [&_button]:bg-slate-50 [&_button]:focus:ring-2 [&_button]:focus:ring-primary/20 [&_button_span]:text-sm [&_button_span]:font-normal [&_button_span]:text-slate-600 [&_button_svg]:text-slate-400 [&_.absolute.z-9999]:z-120 [&_.absolute.z-9999]:rounded-xl [&_.absolute.z-9999]:border-slate-200 [&_.absolute.z-9999]:shadow-xl [&_.absolute.z-9999]:mt-2">
-              <label className="text-[11px] font-black text-primary uppercase tracking-wider">Kota</label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
+                Kota <span className="text-red-500">*</span>
+              </label>
               <SmoothKota
                 isSearchable={true}
                 placeholder="Pilih Kota"
@@ -129,7 +147,7 @@ export default function UniversitasEditorModal({
                 onSelect={(val) => onKotaChange(String(val))}
               />
               {errors.id_kota && (
-                <p className="text-xs text-red-500 font-medium">{errors.id_kota}</p>
+                <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>
               )}
             </div>
 
@@ -142,7 +160,7 @@ export default function UniversitasEditorModal({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 relative z-10 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 relative z-10 flex items-center justify-end gap-3 rounded-b-3xl">
           <button
             onClick={onCancel}
             className="cursor-pointer px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
@@ -151,8 +169,9 @@ export default function UniversitasEditorModal({
           </button>
           <button
             onClick={onSave}
+            // TOMBOL SIMPAN KINI SELALU BISA DIKLIK (HANYA DISABLED SAAT LOADING)
             disabled={saving}
-            className="cursor-pointer px-4 py-2 text-sm font-bold bg-primary text-white rounded-xl shadow-sm flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+            className="cursor-pointer px-4 py-2 text-sm font-bold bg-primary text-white rounded-xl shadow-sm flex items-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving && <Loader2 size={14} className="animate-spin" />} Simpan
           </button>

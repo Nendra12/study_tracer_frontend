@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { School, BookOpen, Store, Plus, Pencil, Trash2 } from "lucide-react";
-import { alertSuccess, alertError, alertWarning } from "../../utilitis/alert";
+import { alertSuccess, alertError, alertWarning, alertConfirm } from "../../utilitis/alert";
 import { adminApi } from "../../api/admin";
 import { createExportFileName, downloadCsv } from "../../utilitis/export";
 
-// --- IMPORT KOMPONEN REUSABLE ---
 import ManagedTable from "../../components/admin/ManagedTable";
 import BoxUnduhData from "../../components/admin/BoxUnduhData";
 import TableLayoutSkeleton from "../../components/admin/skeleton/TableLayoutSkeleton";
@@ -49,24 +48,25 @@ function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreat
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({ nama_universitas: '', alamat: '', id_kota: '', jurusan: [] });
-  const [formErrors, setFormErrors] = useState({ nama_universitas: '', id_kota: '' });
+  const [formErrors, setFormErrors] = useState({ nama_universitas: '', id_kota: '', alamat: '' }); // Tambah alamat
 
   const totalPages = Math.max(1, Math.ceil(data.length / ITEMS_PER_PAGE));
   const paginatedData = data.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const resetForm = () => {
     setFormData({ nama_universitas: '', alamat: '', id_kota: '', jurusan: [] });
-    setFormErrors({ nama_universitas: '', id_kota: '' });
+    setFormErrors({ nama_universitas: '', id_kota: '', alamat: '' }); // Tambah alamat
   };
 
   const validateForm = (payload) => {
     const errors = {
       nama_universitas: validateUniversityName(payload.nama_universitas),
       id_kota: payload.id_kota ? '' : 'Kota wajib dipilih.',
+      alamat: payload.alamat?.trim() ? '' : 'Alamat universitas wajib diisi.', // Validasi Alamat
     };
 
     setFormErrors(errors);
-    return !errors.nama_universitas && !errors.id_kota;
+    return !errors.nama_universitas && !errors.id_kota && !errors.alamat;
   };
 
   const normalizeJurusan = (list = []) => {
@@ -113,7 +113,7 @@ function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreat
       id_kota: item.id_kota ? String(item.id_kota) : (item.kota_id ? String(item.kota_id) : ''),
       jurusan: normalizeJurusan(item.jurusan),
     });
-    setFormErrors({ nama_universitas: '', id_kota: '' });
+    setFormErrors({ nama_universitas: '', id_kota: '', alamat: '' });
   };
 
   const handleCreate = async () => {
@@ -124,7 +124,7 @@ function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreat
       jurusan: normalizeJurusan(formData.jurusan),
     };
 
-    if (!validateForm(payload)) return;
+    if (!validateForm(payload)) return; // Di sini error text akan terpicu jika ada yang kosong
 
     setSaving(true);
     try {
@@ -250,7 +250,10 @@ function UniversitasTable({ data = [], kotaList = [], prodiOptions = [], onCreat
           setFormErrors((prev) => ({ ...prev, nama_universitas: validateUniversityName(val) }));
         }}
         onJurusanChange={(newVal) => setFormData((prev) => ({ ...prev, jurusan: newVal }))}
-        onAlamatChange={(val) => setFormData((prev) => ({ ...prev, alamat: val }))}
+        onAlamatChange={(val) => {
+          setFormData((prev) => ({ ...prev, alamat: val }));
+          setFormErrors((prev) => ({ ...prev, alamat: '' })); // Hapus error alamat saat diketik
+        }}
         onKotaChange={(val) => {
           setFormData((prev) => ({ ...prev, id_kota: val }));
           setFormErrors((prev) => ({ ...prev, id_kota: '' }));
@@ -458,6 +461,9 @@ export default function StatusKarir() {
   };
 
   const handleDeleteBidangUsaha = async (id) => {
+    const confirm = await alertConfirm("Apakah Anda yakin ingin menghapus data bidang usaha ini?");
+    if (!confirm.isConfirmed) return;
+
     try {
       await adminApi.deleteStatusKarierBidangUsaha(id);
       await fetchBidangUsaha();
@@ -500,7 +506,6 @@ export default function StatusKarir() {
   // --- FUNGSI CREATE, UPDATE, DELETE ---
   const handleCreate = async (category, data) => {
     try {
-
       const namaInput = data.nama_universitas || data.nama_prodi || data.nama_bidang || data.nama_usaha || data.nama;
 
       if (isDuplicate(category, namaInput)) {
@@ -561,7 +566,6 @@ export default function StatusKarir() {
 
   const handleUpdate = async (category, id, data) => {
     try {
-
       const namaInput = data.nama_universitas || data.nama_prodi || data.nama_bidang || data.nama_usaha || data.nama || Object.values(data)[0];
 
       if (isDuplicate(category, namaInput, id)) {
@@ -613,6 +617,14 @@ export default function StatusKarir() {
   };
 
   const handleDelete = async (category, id) => {
+    let message = "Apakah Anda yakin ingin menghapus data ini?";
+    if (category === "univ") message = "Apakah Anda yakin ingin menghapus data universitas ini?";
+    if (category === "prodi") message = "Apakah Anda yakin ingin menghapus data program studi ini?";
+    if (category === "wirausaha") message = "Apakah Anda yakin ingin menghapus data wirausaha ini?";
+
+    const confirm = await alertConfirm(message);
+    if (!confirm.isConfirmed) return;
+
     try {
       if (category === "univ") { 
         await adminApi.deleteStatusKarierUniversitas(id); 
@@ -746,6 +758,7 @@ export default function StatusKarir() {
             bidangUsahaIdToLabel={bidangUsahaIdToLabel}
             onCreate={(data) => handleCreate('wirausaha', data)}
             onUpdate={(id, data) => handleUpdate('wirausaha', id, data)}
+            onDelete={(id) => handleDelete('wirausaha', id)}
           />
 
           <ManagedTable
