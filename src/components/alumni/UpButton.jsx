@@ -39,11 +39,10 @@ export default function UpButton() {
           - pointer-events-none saat sembunyi agar tidak menghalangi klik
           - hover:bg-third (asumsi 'third' adalah warna custom di tailwind.config)
         */
-        className={`fixed cursor-pointer bottom-6 right-6 md:bottom-8 md:right-8 z-50 p-2 md:p-3 rounded-full border-2 border-third text-third bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-500 ease-in-out flex items-center justify-center group ${
-          isVisible 
-            ? "opacity-100 translate-y-0" 
+        className={`fixed cursor-pointer bottom-6 right-6 md:bottom-8 md:right-8 z-50 p-2 md:p-3 rounded-full border-2 border-third text-third bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-500 ease-in-out flex items-center justify-center group ${isVisible
+            ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-10 pointer-events-none"
-        } hover:bg-third hover:text-white hover:scale-110 hover:shadow-xl`}
+          } hover:bg-third hover:text-white hover:scale-110 hover:shadow-xl`}
       >
         {/* Ikon dengan kelas custom untuk animasi saat di-hover */}
         <ChevronUp className="w-6 h-6 icon-float transition-colors duration-300" />
