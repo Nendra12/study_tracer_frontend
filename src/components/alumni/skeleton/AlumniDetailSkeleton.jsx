@@ -1,141 +1,201 @@
 import React from 'react';
+import { School, BriefcaseBusiness, Star, Clock, Briefcase } from 'lucide-react';
 
 export default function AlumniDetailSkeleton() {
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col animate-in fade-in duration-500">
+    <div className="min-h-screen bg-white font-sans flex flex-col animate-in fade-in duration-500">
       
-      {/* BACKGROUND HERO (Meniru gradien hijau toska) */}
-      <div className="relative h-64 md:h-80 bg-slate-300/40 overflow-hidden animate-pulse">
-        <svg className="absolute bottom-0 left-0 w-full h-16" viewBox="0 0 1440 100" preserveAspectRatio="none">
-          <path fill="#f8f9fa" d="M0,60L120,55C240,50,480,40,720,42C960,44,1200,58,1320,65L1440,72L1440,100L0,100Z" />
-        </svg>
-      </div>
+      {/* ===== GRADIENT HEADER MOCK ===== */}
+      <div className="h-42 md:h-52 w-full bg-slate-200 animate-pulse relative"></div>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-12 relative z-20 -mt-32 pb-20">
-        
-        {/* Tombol Kembali Skeleton */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-4 h-4 bg-slate-300 rounded animate-pulse" />
-          <div className="h-3 w-32 bg-slate-300 rounded-full animate-pulse" />
-        </div>
+      <main className="flex-1 transition-all duration-500 pb-20 relative max-w-7xl mx-auto px-6 lg:px-8 w-full">
 
-        {/* PROFILE HEADER CARD SKELETON */}
-        <div className="bg-white rounded-md shadow-xl border border-slate-100 p-6 md:p-10 mb-10">
-          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-            {/* Foto Profil */}
-            <div className="relative shrink-0">
-              <div className="w-32 h-32 md:w-44 md:h-44 rounded-md border-8 border-white shadow-2xl bg-slate-200 animate-pulse" />
-              <div className="absolute -bottom-2 -right-2 w-20 h-6 rounded-full bg-slate-300 border-4 border-white animate-pulse" />
+        {/* ===== PROFILE HEADER ===== */}
+        <div className="relative -mt-16 lg:-mt-20 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start mb-10">
+
+          {/* Photo & Mobile Info Wrapper */}
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-8 items-center lg:items-start w-full lg:w-auto">
+            
+            {/* Photo Skeleton */}
+            <div className="shrink-0 relative z-10">
+              <div className="w-50 h-50 lg:w-66 lg:h-66 lg:rounded-[60px] rounded-[30px] border-[4px] lg:border-[6px] border-white bg-slate-200 animate-pulse shadow-md"></div>
             </div>
 
-            {/* Info Nama & Jurusan */}
-            <div className="flex-1 space-y-4 w-full">
-              <div className="h-10 bg-slate-200 rounded-full w-2/3 md:w-1/2 animate-pulse" />
-              
-              <div className="flex flex-wrap items-center gap-y-3 gap-x-6 pt-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
-                  <div className="h-4 w-40 bg-slate-100 rounded-full animate-pulse" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
-                  <div className="h-4 w-32 bg-slate-100 rounded-full animate-pulse" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
-                  <div className="h-4 w-24 bg-slate-100 rounded-full animate-pulse" />
-                </div>
+            {/* Mobile Info Skeleton - Hidden on lg+ */}
+            <div className="flex-1 min-w-0 lg:hidden flex flex-col items-center w-full pb-2 px-4 space-y-3">
+              <div className="h-7 w-48 bg-slate-200 rounded-full animate-pulse"></div>
+              <div className="h-4 w-64 bg-slate-200 rounded-full animate-pulse"></div>
+              <div className="flex gap-2 justify-center mt-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="w-7 h-7 rounded-full bg-slate-200 animate-pulse"></div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 2-COLUMN CONTENT SKELETON */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {/* Desktop Info & Shared Bottom Sections */}
+          <div className="flex-1 w-full lg:self-end lg:mt-24 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
 
-          {/* --- SIDEBAR KIRI SKELETON --- */}
-          <div className="lg:col-span-4 space-y-8">
-            
-            {/* Status Karier Skeleton */}
-            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
-                <div className="h-3 w-32 bg-slate-200 rounded-full animate-pulse" />
+            <div className="flex-1 min-w-0 w-full">
+              {/* Desktop Info - Hidden on mobile/tablet */}
+              <div className="hidden lg:block space-y-3">
+                <div className="h-8 w-64 bg-slate-200 rounded-full animate-pulse mb-4"></div>
+                <div className="h-5 w-80 bg-slate-200 rounded-full animate-pulse"></div>
               </div>
-              <div className="space-y-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-2 w-20 bg-slate-100 rounded-full animate-pulse" />
-                    <div className="h-4 w-4/5 bg-slate-200 rounded-full animate-pulse" />
+
+              {/* Action Buttons Skeleton */}
+              <div className="flex gap-3 w-full lg:w-auto mt-6">
+                <div className="h-11 lg:h-10 w-full lg:w-32 bg-slate-200 rounded-xl lg:rounded-md animate-pulse"></div>
+                <div className="h-11 lg:h-10 w-full lg:w-32 bg-slate-200 rounded-xl lg:rounded-md animate-pulse"></div>
+              </div>
+            </div>
+
+            <div className="flex flex-col print:hidden items-start lg:items-end gap-4 shrink-0 w-full lg:w-auto mt-4 lg:mt-0">
+              {/* Social Icons Desktop Skeleton */}
+              <div className="hidden lg:flex gap-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="w-7 h-7 rounded-full bg-slate-200 animate-pulse"></div>
+                ))}
+              </div>
+
+              {/* Stats Skeleton */}
+              <div className="grid grid-cols-3 lg:flex gap-4 lg:gap-8 text-center mt-2 w-full lg:w-auto bg-slate-50 lg:bg-transparent rounded-2xl lg:rounded-none p-4 lg:p-0 border lg:border-none border-slate-100">
+                {[1, 2, 3].map((i, idx) => (
+                  <div key={i} className={`flex flex-col items-center ${idx !== 0 ? 'border-l border-slate-200 lg:border-none pl-4 lg:pl-0' : ''}`}>
+                    <div className="h-3 w-16 bg-slate-200 rounded-full animate-pulse mb-2"></div>
+                    <div className="h-8 w-20 bg-slate-200 rounded-full animate-pulse"></div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Info Akademik Skeleton */}
-            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
-                <div className="h-3 w-36 bg-slate-200 rounded-full animate-pulse" />
-              </div>
-              <div className="space-y-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-2 w-20 bg-slate-100 rounded-full animate-pulse" />
-                    <div className="h-4 w-3/4 bg-slate-200 rounded-full animate-pulse" />
+          </div>
+        </div>
+
+        {/* ===== SKILLS SKELETON ===== */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-6">
+            <Star size={24} className="text-slate-300" />
+            <div className="h-6 w-32 bg-slate-200 rounded-full animate-pulse"></div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-9 w-24 bg-slate-200 rounded-full animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+
+        {/* ===== INFO AKADEMIK & STATUS KARIER - 2 COLUMNS ===== */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-16">
+
+          {/* Informasi Akademik Skeleton */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <School size={24} className="text-slate-300" />
+              <div className="h-6 w-48 bg-slate-200 rounded-full animate-pulse"></div>
+            </div>
+            <div className="border-t border-slate-200 flex flex-col">
+              {[1, 2].map(i => (
+                <div key={i} className="py-6 border-b border-slate-200">
+                  <div className="h-3 w-32 bg-slate-200 rounded-full animate-pulse mb-4"></div>
+                  <div className="h-6 w-48 bg-slate-200 rounded-full animate-pulse mb-4"></div>
+                  <div className="h-2 w-20 bg-slate-200 rounded-full animate-pulse mt-2"></div>
+                </div>
+              ))}
+              <div className="py-6 border-b border-slate-200 grid grid-cols-2 gap-6">
+                {[1, 2].map(i => (
+                  <div key={i}>
+                    <div className="h-3 w-24 bg-slate-200 rounded-full animate-pulse mb-3"></div>
+                    <div className="h-6 w-32 bg-slate-200 rounded-full animate-pulse"></div>
                   </div>
                 ))}
               </div>
             </div>
-            
-            {/* Skills Skeleton */}
-            <div className="bg-white rounded-md p-8 border border-slate-100 shadow-sm">
-               <div className="flex items-center gap-3 mb-6">
-                <div className="w-4 h-4 bg-slate-200 rounded animate-pulse" />
-                <div className="h-3 w-24 bg-slate-200 rounded-full animate-pulse" />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <div className="h-8 w-20 bg-slate-100 rounded-xl animate-pulse" />
-                <div className="h-8 w-16 bg-slate-100 rounded-xl animate-pulse" />
-                <div className="h-8 w-24 bg-slate-100 rounded-xl animate-pulse" />
-                <div className="h-8 w-28 bg-slate-100 rounded-xl animate-pulse" />
-              </div>
-            </div>
-
           </div>
 
-          {/* --- KONTEN KANAN (Riwayat) SKELETON --- */}
-          <div className="lg:col-span-8 space-y-10">
-            
-            {/* Riwayat Karier Card */}
-            <div className="bg-white rounded-md p-8 md:p-10 border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-10">
-                <div className="w-6 h-6 bg-slate-200 rounded-lg animate-pulse" />
-                <div className="h-5 w-40 bg-slate-200 rounded-full animate-pulse" />
+          {/* Status Karier Skeleton */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <BriefcaseBusiness size={24} className="text-slate-300" />
+              <div className="h-6 w-40 bg-slate-200 rounded-full animate-pulse"></div>
+            </div>
+            <div className="border-t border-slate-200 flex flex-col">
+              {[1, 2].map(i => (
+                <div key={i} className="py-6 border-b border-slate-200">
+                  <div className="h-3 w-32 bg-slate-200 rounded-full animate-pulse mb-4"></div>
+                  <div className="flex items-center gap-3 mb-4">
+                    {i === 1 && <div className="w-3 h-3 rounded-full bg-slate-200 animate-pulse"></div>}
+                    <div className="h-6 w-48 bg-slate-200 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="h-2 w-20 bg-slate-200 rounded-full animate-pulse mt-2"></div>
+                </div>
+              ))}
+              <div className="py-6 border-b border-slate-200 grid grid-cols-2 gap-6">
+                {[1, 2].map(i => (
+                  <div key={i}>
+                    <div className="h-3 w-24 bg-slate-200 rounded-full animate-pulse mb-3"></div>
+                    <div className="h-6 w-32 bg-slate-200 rounded-full animate-pulse"></div>
+                  </div>
+                ))}
               </div>
-              
-              {/* Timeline Items */}
-              <div className="relative pl-8 border-l-2 border-slate-100 space-y-12">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="relative">
-                    <div className="absolute -left-10.25 top-0 w-5 h-5 rounded-full bg-slate-200 border-4 border-white animate-pulse" />
-                    <div className="space-y-3">
-                      <div className="h-2.5 w-24 bg-slate-200 rounded-full animate-pulse" />
-                      <div className="h-5 w-64 bg-slate-300 rounded-full animate-pulse mt-1" />
-                      <div className="h-3.5 w-48 bg-slate-200 rounded-full animate-pulse mb-2" />
-                      <div className="h-3 w-32 bg-slate-100 rounded-full animate-pulse" />
+            </div>
+          </div>
+
+        </div>
+
+        {/* ===== RIWAYAT KARIER SKELETON ===== */}
+        <div className="mb-14">
+          <div className="flex items-center gap-2 mb-6">
+            <Clock size={24} className="text-slate-300" />
+            <div className="h-6 w-44 bg-slate-200 rounded-full animate-pulse"></div>
+          </div>
+          <div className="flex flex-col">
+            {[1, 2, 3].map((i, idx, arr) => {
+              const isLast = idx === arr.length - 1;
+              return (
+                <div key={i} className="flex gap-4 md:gap-6">
+                  {/* Timeline Column */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 ring-[4px] ring-white z-10 shadow-sm shrink-0 mt-6 md:mt-8 animate-pulse" />
+                    {!isLast && <div className="w-[3px] bg-slate-100 flex-1 my-1 rounded-full animate-pulse" />}
+                  </div>
+
+                  {/* Content Column */}
+                  <div className={`flex-1 ${!isLast ? 'pb-8' : ''}`}>
+                    <div className="bg-slate-50/70 rounded-2xl p-6 md:p-8 border border-slate-100">
+                      <div className="h-6 w-48 bg-slate-200 rounded-full animate-pulse mb-4"></div>
+                      <div className="h-4 w-64 bg-slate-200 rounded-full animate-pulse mb-6"></div>
+                      
+                      <div className="space-y-3">
+                        <div className="h-3 w-full bg-slate-200 rounded-full animate-pulse"></div>
+                        <div className="h-3 w-full bg-slate-200 rounded-full animate-pulse"></div>
+                        <div className="h-3 w-3/4 bg-slate-200 rounded-full animate-pulse"></div>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ===== PORTOFOLIO SKELETON ===== */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-6">
+            <Briefcase size={24} className="text-slate-300" />
+            <div className="h-6 w-56 bg-slate-200 rounded-full animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white flex flex-col">
+                <div className="h-48 rounded-xl bg-slate-200 animate-pulse mb-4"></div>
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 w-3/4 bg-slate-200 rounded-full animate-pulse"></div>
+                  <div className="h-3 w-full bg-slate-200 rounded-full animate-pulse"></div>
+                  <div className="h-3 w-5/6 bg-slate-200 rounded-full animate-pulse"></div>
+                </div>
               </div>
-            </div>
-
-            {/* Privacy Note Skeleton */}
-            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 flex justify-center">
-               <div className="h-3 w-3/4 bg-slate-200 rounded-full animate-pulse" />
-            </div>
-
+            ))}
           </div>
         </div>
 
