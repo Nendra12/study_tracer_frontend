@@ -11,6 +11,9 @@ export default function Kelulusan() {
 
   const [activeTab, setActiveTab] = useState('riwayat'); // 'riwayat' | 'proses'
 
+  // STATE BARU: Mencegah skeleton hilang sebelum data master benar-benar siap
+  const [isPageReady, setIsPageReady] = useState(false);
+
   const [calonLulus, setCalonLulus] = useState([]);
   const [lulusan, setLulusan] = useState([]);
   
@@ -23,11 +26,8 @@ export default function Kelulusan() {
   const [filterTop, setFilterTop] = useState({ search: '', jurusan: 'Semua Jurusan' });
   const [filterBottom, setFilterBottom] = useState({ search: '', jurusan: 'Semua Jurusan', tahun: 'Semua Tahun' });
 
-  // Options KHUSUS Filter Tabel (Format String biasa agar SmoothDropdown tampil bersih)
   const [jurusanOptions, setJurusanOptions] = useState(['Semua Jurusan']); 
   const [tahunOptions, setTahunOptions] = useState(['Semua Tahun']);
-
-  // Options KHUSUS form Modal Tambah (Format Object {value, label} agar backend mendapat ID)
   const [masterJurusan, setMasterJurusan] = useState([]);
 
   // ==========================================
@@ -116,24 +116,29 @@ export default function Kelulusan() {
     }
   };
 
+  // FETCH MASTER DATA PERTAMA KALI
   useEffect(() => {
-    fetchFilters();
-    fetchMasterJurusan();
+    const loadInitialData = async () => {
+      await Promise.all([fetchFilters(), fetchMasterJurusan()]);
+      setIsPageReady(true); // Matikan skeleton setelah data master selesai
+    };
+    loadInitialData();
   }, []);
 
+  // FETCH TABEL SETELAH PAGE READY (Ada delay 500ms untuk pencarian)
   useEffect(() => {
-    if (activeTab === 'proses') {
+    if (activeTab === 'proses' && isPageReady) {
       const timer = setTimeout(() => fetchCalon(), 500);
       return () => clearTimeout(timer);
     }
-  }, [filterTop, activeTab]);
+  }, [filterTop, activeTab, isPageReady]);
 
   useEffect(() => {
-    if (activeTab === 'riwayat') {
+    if (activeTab === 'riwayat' && isPageReady) {
       const timer = setTimeout(() => fetchRiwayat(), 500);
       return () => clearTimeout(timer);
     }
-  }, [filterBottom, activeTab]);
+  }, [filterBottom, activeTab, isPageReady]);
 
 
   // ==========================================
@@ -176,21 +181,25 @@ export default function Kelulusan() {
   };
 
   const handleDeleteCalon = async (id) => {
+    const confirm = await alertConfirm("Apakah Anda yakin ingin menghapus data siswa ini dari daftar proses kelulusan?");
+    if (!confirm.isConfirmed) return;
+
     try {
       await adminApi.deleteCalonLulusan(id);
       fetchCalon();
+      alertSuccess('Data siswa berhasil dihapus dari daftar.');
     } catch (err) {
       alertError('Gagal menghapus calon lulusan.');
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === 'lulus' ? 'tidak_lulus' : 'lulus';
+  const handleToggleStatus = async (id, newStatus) => {
     try {
       await adminApi.updateCalonStatus(id, newStatus);
       fetchCalon();
+      alertSuccess('Status kelulusan berhasil diperbarui!');
     } catch (err) {
-      alertError('Gagal mengubah status.');
+      alertError('Gagal mengubah status kelulusan.');
     }
   };
 
@@ -256,18 +265,16 @@ export default function Kelulusan() {
   const searchInputClass = "w-full pl-10 pr-4 h-[42px] bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
   const dropdownWrapperClass = "w-full md:w-auto [&>div]:!w-full md:[&>div]:!w-auto md:[&>div]:!min-w-[180px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-slate-200 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-slate-700 [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[180px] [&_li]:!whitespace-nowrap";
   
-  const isInitialLoading = masterJurusan.length === 0 && (loadingRiwayat || loadingCalon);
-
-  if (isInitialLoading) {
+  // TAMPILKAN SKELETON JIKA PAGE BELUM READY
+  if (!isPageReady) {
       return <KelulusanSkeleton />;
   }
+
   return (
     <div className="space-y-6 pb-12 relative animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       {/* Header & Tabs */}
       <div>
-
-        
         <div className="flex border-b border-slate-200 overflow-x-auto hide-scrollbar">
           <button 
             onClick={() => setActiveTab('riwayat')}
@@ -346,7 +353,9 @@ export default function Kelulusan() {
               <tbody className="divide-y divide-slate-100">
                 {loadingRiwayat ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-12 text-sm text-slate-400"></td>
+                    <td colSpan="6" className="text-center py-12 text-sm text-slate-400">
+                      <Loader2 size={24} className="animate-spin text-primary mx-auto mb-2" /> Memuat data...
+                    </td>
                   </tr>
                 ) : lulusan.length === 0 ? (
                   <tr>
@@ -459,7 +468,9 @@ export default function Kelulusan() {
                 <tbody className="divide-y divide-slate-100">
                   {loadingCalon ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-12 text-sm text-slate-400"></td>
+                      <td colSpan="6" className="text-center py-12 text-sm text-slate-400">
+                        <Loader2 size={24} className="animate-spin text-third mx-auto mb-2" /> Memuat data...
+                      </td>
                     </tr>
                   ) : calonLulus.length === 0 ? (
                     <tr>
@@ -490,15 +501,7 @@ export default function Kelulusan() {
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : 'bg-red-50 text-red-700 border-red-200'
                             }`}
-                            onChange={(e) => {
-                              const newStatus = e.target.value;
-                              // Call the API directly instead of using handleToggleStatus which toggles based on current
-                              adminApi.updateCalonStatus(item.id, newStatus).then(() => {
-                                fetchCalon();
-                              }).catch(() => {
-                                alertError('Gagal mengubah status.');
-                              });
-                            }}
+                            onChange={(e) => handleToggleStatus(item.id, e.target.value)}
                           >
                             <option value="lulus">Lulus</option>
                             <option value="tidak_lulus">Tidak Lulus</option>

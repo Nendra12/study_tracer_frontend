@@ -88,49 +88,58 @@ export default function WirausahaEditorModal({
 
         <div className="p-6 space-y-5 relative z-20 overflow-visible">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider">
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
                 Nama Usaha <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.nama_usaha}
                 onChange={(e) => onNamaUsahaChange(e.target.value)}
-                className={`mt-3 w-full p-3 bg-white text-sm border-2 rounded-xl transition-all outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary ${
-                  errors.nama_usaha ? "border-red-300" : "border-gray-100"
+                className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all ${
+                  errors.nama_usaha ? "border-red-300 focus:ring-red-100 focus:border-red-500 bg-red-50/30" : "border-slate-200"
                 }`}
                 placeholder="Contoh: Kedai Kopi Nusantara"
                 autoFocus
               />
-              {errors.nama_usaha && <p className="text-xs text-red-500 font-medium">{errors.nama_usaha}</p>}
+              {errors.nama_usaha && <p className="text-xs text-red-500 font-medium mt-1">{errors.nama_usaha}</p>}
             </div>
 
-            <div className="space-y-1 relative z-50 [&>div]:space-y-0">
+            <div className="space-y-1 relative z-50 [&>div]:min-w-0 [&>div]:space-y-0 [&_button]:h-[42px] [&_button]:px-3 [&_button]:py-0 [&_button]:rounded-xl [&_button]:border-slate-200 [&_button]:bg-white [&_button]:focus:ring-2 [&_button]:focus:ring-primary/20 [&_button_span]:text-sm [&_button_span]:font-normal [&_button_span]:text-slate-600 [&_button_svg]:text-slate-400 [&_.absolute.z-9999]:z-120 [&_.absolute.z-9999]:rounded-xl [&_.absolute.z-9999]:border-slate-200 [&_.absolute.z-9999]:shadow-xl [&_.absolute.z-9999]:mt-2">
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
+                Bidang Usaha <span className="text-red-500">*</span>
+              </label>
               <SmoothDropdown
-                label="Bidang Usaha"
                 value={selectedBidangLabel || formData.id_bidang || ""}
                 options={bidangUsahaList}
-                isRequired={true}
                 isSearchable={true}
                 placeholder="Pilih Bidang"
                 onSelect={(val) => onBidangUsahaChange(String(bidangUsahaMap[val] || val))}
               />
-              {errors.id_bidang && <p className="text-xs text-red-500 font-medium">{errors.id_bidang}</p>}
+              {errors.id_bidang && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_bidang}</p>}
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-[11px] font-black text-primary uppercase tracking-wider">Alamat</label>
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
+                Alamat Usaha <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={formData.alamat}
                 onChange={(e) => onAlamatChange(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all ${
+                  errors.alamat ? "border-red-300 focus:ring-red-100 focus:border-red-500 bg-red-50/30" : "border-slate-200"
+                }`}
                 placeholder="Alamat usaha"
               />
+              {errors.alamat && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat}</p>}
             </div>
 
-            <div className="space-y-1 relative z-120 [&>div]:min-w-0 [&>div]:space-y-0 [&_button]:h-11 [&_button]:px-3 [&_button]:py-0 [&_button]:rounded-xl [&_button]:border-slate-200 [&_button]:bg-slate-50 [&_button]:focus:ring-2 [&_button]:focus:ring-primary/20 [&_button_span]:text-sm [&_button_span]:font-normal [&_button_span]:text-slate-600 [&_button_svg]:text-slate-400 [&_.absolute.z-9999]:z-120 [&_.absolute.z-9999]:rounded-xl [&_.absolute.z-9999]:border-slate-200 [&_.absolute.z-9999]:shadow-xl [&_.absolute.z-9999]:mt-2">
-              <label className="text-[11px] font-black text-primary uppercase tracking-wider">Kota</label>
+            <div className="space-y-1 relative z-120 [&>div]:min-w-0 [&>div]:space-y-0 [&_button]:h-[42px] [&_button]:px-3 [&_button]:py-0 [&_button]:rounded-xl [&_button]:border-slate-200 [&_button]:bg-white [&_button]:focus:ring-2 [&_button]:focus:ring-primary/20 [&_button_span]:text-sm [&_button_span]:font-normal [&_button_span]:text-slate-600 [&_button_svg]:text-slate-400 [&_.absolute.z-9999]:z-120 [&_.absolute.z-9999]:rounded-xl [&_.absolute.z-9999]:border-slate-200 [&_.absolute.z-9999]:shadow-xl [&_.absolute.z-9999]:mt-2">
+              <label className="text-[11px] font-black text-primary uppercase tracking-wider">
+                Kota <span className="text-red-500">*</span>
+              </label>
               <SmoothKota
                 isSearchable={true}
                 placeholder="Pilih Kota"
@@ -138,7 +147,7 @@ export default function WirausahaEditorModal({
                 options={kotaList.map((k) => ({ value: String(k.id), label: k.nama }))}
                 onSelect={(val) => onKotaChange(String(val))}
               />
-              {errors.id_kota && <p className="text-xs text-red-500 font-medium">{errors.id_kota}</p>}
+              {errors.id_kota && <p className="text-xs text-red-500 font-medium mt-1">{errors.id_kota}</p>}
             </div>
 
             <div className="space-y-1">
@@ -150,7 +159,7 @@ export default function WirausahaEditorModal({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 relative z-10 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 relative z-10 flex items-center justify-end gap-3 rounded-b-3xl">
           <button
             onClick={onCancel}
             className="cursor-pointer px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"

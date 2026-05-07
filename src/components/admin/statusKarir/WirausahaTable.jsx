@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Store, Plus, Pencil } from "lucide-react";
+import { Store, Plus, Pencil, Trash2 } from "lucide-react";
 
 import WirausahaEditorModal from "../WirausahaEditorModal";
 import Pagination from "../Pagination";
@@ -19,6 +19,7 @@ export default function WirausahaTable({
   bidangUsahaIdToLabel = {},
   onCreate,
   onUpdate,
+  onDelete, // JANGAN LUPA MENERIMA PROPS onDelete DI SINI
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -155,6 +156,7 @@ export default function WirausahaTable({
               <th className="px-3 py-3 w-1/4">Alamat</th>
               <th className="px-3 py-3 w-1/6">Kota</th>
               <th className="px-3 py-3 w-1/6">Provinsi</th>
+              <th className="px-3 py-3 text-right w-28">Aksi</th> {/* TAMBAH KOLOM AKSI DI SINI */}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -172,6 +174,14 @@ export default function WirausahaTable({
                   <td className="px-3 py-3 text-xs text-slate-600">{item.alamat || "-"}</td>
                   <td className="px-3 py-3 text-xs text-slate-600">{resolveLocation(item).kotaName}</td>
                   <td className="px-3 py-3 text-xs text-slate-600">{resolveLocation(item).provinsiName}</td>
+                  <td className="px-3 py-3"> {/* RENDER TOMBOL EDIT DAN HAPUS DI SINI */}
+                    <div className="flex justify-end gap-1">
+                      <button onClick={() => startEdit(item)} className="p-1.5 text-gray-400 hover:text-[#3C5759] hover:bg-blue-100 rounded-lg"><Pencil size={14} /></button>
+                      {onDelete && (
+                        <button onClick={() => onDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg"><Trash2 size={14} /></button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
