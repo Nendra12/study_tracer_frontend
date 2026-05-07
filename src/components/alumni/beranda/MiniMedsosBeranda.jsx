@@ -29,6 +29,11 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function getCommentId(comment) {
+  if (!comment) return null;
+  return comment.id_comment ?? comment.id_post_comment ?? comment.comment_id ?? comment.id_comment_post ?? comment.id;
+}
+
 function Avatar({ url, name, size = "w-11 h-11", textSize = "text-sm" }) {
   return (
     <div className={`${size} rounded-full bg-primary/10 flex items-center justify-center flex-none overflow-hidden`}>
@@ -55,7 +60,7 @@ function StatButton({ icon: Icon, label, count, active, onClick, variant }) {
   );
 }
 
-function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwner }) {
+function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwner, repliesCount, onRepliesClick, isRepliesOpen = false, showReplyAction = true }) {
   const author = comment.author || {};
   const authorName = author.nama_alumni || "Alumni";
   const avatarUrl = author.foto ? getImageUrl(author.foto) : null;
@@ -82,8 +87,14 @@ function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwne
           <p className="text-sm text-slate-700 mt-1 leading-relaxed break-words">{comment.content}</p>
         </div>
         <div className="mt-2 flex items-center gap-3 text-xs font-bold text-slate-400">
-          <button type="button" className="hover:text-primary transition-colors cursor-pointer" onClick={onReplyClick}>Reply</button>
-          {comment.replies_count > 0 && <span className="text-slate-300">{comment.replies_count} balasan</span>}
+          {showReplyAction && (
+            <button type="button" className="hover:text-primary transition-colors cursor-pointer" onClick={onReplyClick}>Reply</button>
+          )}
+          {repliesCount > 0 && (
+            <button type="button" className="text-slate-300 hover:text-primary transition-colors cursor-pointer" onClick={onRepliesClick} aria-expanded={isRepliesOpen}>
+              {isRepliesOpen ? "Sembunyikan balasan" : `${repliesCount} balasan`}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -206,6 +217,7 @@ export default function MiniMedsosBeranda() {
   const [openCommentsById, setOpenCommentsById] = useState({});
   const [commentDraftByPostId, setCommentDraftByPostId] = useState({});
   const [replyTargetByPostId, setReplyTargetByPostId] = useState({});
+  const [openRepliesByCommentId, setOpenRepliesByCommentId] = useState({});
   
   const [postSearchQuery, setPostSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
@@ -231,7 +243,8 @@ export default function MiniMedsosBeranda() {
   const handleAddComment = useCallback(async (postId) => {
     const content = (commentDraftByPostId[postId] || "").trim();
     if (!content) return;
-    const parentId = replyTargetByPostId[postId] || null;
+    const replyTarget = replyTargetByPostId[postId];
+    const parentId = replyTarget !== null && replyTarget !== undefined ? replyTarget : null;
     try {
       await medsos.addComment(postId, content, parentId);
       setCommentDraftByPostId((prev) => ({ ...prev, [postId]: "" }));
@@ -353,6 +366,8 @@ export default function MiniMedsosBeranda() {
             const comments = medsos.commentsByPost[postId] || [];
             const isCommentsOpen = !!openCommentsById[postId];
             const isCommentsLoading = !!medsos.commentsLoading[postId];
+            const replyTarget = replyTargetByPostId[postId];
+            const hasReplyTarget = replyTarget !== null && replyTarget !== undefined;
 
             return (
               <article key={postId} className="w-full rounded-md border border-slate-100 bg-white shadow-sm overflow-hidden">
@@ -392,36 +407,96 @@ export default function MiniMedsosBeranda() {
 
                   {isCommentsOpen && (
                     <div className="mt-5 space-y-4 w-full">
-                      <AddCommentRow avatarUrl={myAvatarUrl} displayName={myName}
-                        placeholder={replyTargetByPostId[postId] ? "Balas komentar..." : "Tambahkan komentar..."}
-                        value={commentDraftByPostId[postId] ?? ""}
-                        onChange={(val) => setCommentDraftByPostId((prev) => ({ ...prev, [postId]: val }))}
-                        onSubmit={() => handleAddComment(postId)}
-                        submitting={!!medsos.actionLoading[`comment-${postId}`]} />
-
-                      {replyTargetByPostId[postId] && (
-                        <div className="flex items-center gap-2 text-xs text-slate-500 px-2 mt-2">
-                          <span className="font-bold">Membalas komentar</span>
-                          <button type="button" onClick={() => setReplyTargetByPostId((prev) => ({ ...prev, [postId]: null }))}
-                            className="text-red-400 hover:text-red-600 cursor-pointer bg-red-50 p-1 rounded-md"><X size={12} /></button>
-                        </div>
-                      )}
-
                       {isCommentsLoading ? (
                         <div className="flex justify-center py-4 w-full"><Loader2 size={20} className="text-slate-400 animate-spin" /></div>
                       ) : (
                         <div className="space-y-4 mt-4 w-full">
-                          {comments.map((c) => {
-                            const commentId = c.id_comment ?? c.id;
+                          {comments.map((c, index) => {
+                            const commentId = getCommentId(c) ?? `comment-${index}`;
+                            const replyTargetId = replyTargetByPostId[postId];
+                            const isReplyTarget = replyTargetId !== null && replyTargetId !== undefined && replyTargetId === commentId;
+                            const repliesCount = c.replies_count ?? 0;
+                            const isRepliesOpen = !!openRepliesByCommentId[commentId];
+                            const replies = medsos.repliesByComment?.[commentId] || [];
+                            const isRepliesLoading = !!medsos.repliesLoading?.[commentId];
                             const isOwnComment = c.is_own_comment || (myAlumniId && c.author?.id_alumni === myAlumniId);
                             return (
-                              <CommentItem key={commentId} comment={c}
-                                isOwnComment={isOwnComment} isPostOwner={isOwnPost}
-                                onReplyClick={() => { setReplyTargetByPostId((prev) => ({ ...prev, [postId]: commentId })); }}
-                                onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, commentId); }} />
+                              <div key={commentId} className="space-y-3">
+                                <CommentItem comment={c}
+                                  isOwnComment={isOwnComment} isPostOwner={isOwnPost}
+                                  onReplyClick={() => {
+                                    const targetId = getCommentId(c);
+                                    if (targetId !== null && targetId !== undefined) {
+                                      setReplyTargetByPostId((prev) => ({ ...prev, [postId]: targetId }));
+                                    }
+                                  }}
+                                  repliesCount={repliesCount}
+                                  isRepliesOpen={isRepliesOpen}
+                                  onRepliesClick={() => {
+                                    if (!commentId) return;
+                                    setOpenRepliesByCommentId((prev) => {
+                                      const nextOpen = !prev[commentId];
+                                      if (nextOpen && !medsos.repliesByComment?.[commentId]) {
+                                        medsos.fetchCommentReplies?.(commentId);
+                                      }
+                                      return { ...prev, [commentId]: nextOpen };
+                                    });
+                                  }}
+                                  onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, commentId); }} />
+
+                                {isRepliesOpen && (
+                                  <div className="ml-12 space-y-3">
+                                    {isRepliesLoading ? (
+                                      <div className="flex justify-center py-2 w-full"><Loader2 size={16} className="text-slate-400 animate-spin" /></div>
+                                    ) : (
+                                      replies.length === 0 ? (
+                                        <p className="text-xs text-slate-400 px-2">Belum ada balasan.</p>
+                                      ) : (
+                                        replies.map((reply, replyIndex) => {
+                                          const replyId = getCommentId(reply) ?? `reply-${replyIndex}`;
+                                          const isOwnReply = reply.is_own_comment || (myAlumniId && reply.author?.id_alumni === myAlumniId);
+                                          return (
+                                            <CommentItem key={replyId} comment={reply}
+                                              isOwnComment={isOwnReply} isPostOwner={isOwnPost}
+                                              showReplyAction={false}
+                                              repliesCount={0}
+                                              onRepliesClick={null}
+                                              onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, replyId); }} />
+                                          );
+                                        })
+                                      )
+                                    )}
+                                  </div>
+                                )}
+
+                                {isReplyTarget && (
+                                  <div className="ml-12 space-y-2">
+                                    <div className="flex items-center gap-2 text-xs text-slate-500 px-2">
+                                      <span className="font-bold">Membalas komentar</span>
+                                      <button type="button" onClick={() => setReplyTargetByPostId((prev) => ({ ...prev, [postId]: null }))}
+                                        className="text-red-400 hover:text-red-600 cursor-pointer bg-red-50 p-1 rounded-md"><X size={12} /></button>
+                                    </div>
+                                    <AddCommentRow avatarUrl={myAvatarUrl} displayName={myName}
+                                      placeholder="Balas komentar..."
+                                      value={commentDraftByPostId[postId] ?? ""}
+                                      onChange={(val) => setCommentDraftByPostId((prev) => ({ ...prev, [postId]: val }))}
+                                      onSubmit={() => handleAddComment(postId)}
+                                      submitting={!!medsos.actionLoading[`comment-${postId}`]} />
+                                  </div>
+                                )}
+                              </div>
                             );
                           })}
                         </div>
+                      )}
+
+                      {!hasReplyTarget && (
+                        <AddCommentRow avatarUrl={myAvatarUrl} displayName={myName}
+                          placeholder="Tambahkan komentar..."
+                          value={commentDraftByPostId[postId] ?? ""}
+                          onChange={(val) => setCommentDraftByPostId((prev) => ({ ...prev, [postId]: val }))}
+                          onSubmit={() => handleAddComment(postId)}
+                          submitting={!!medsos.actionLoading[`comment-${postId}`]} />
                       )}
                     </div>
                   )}
