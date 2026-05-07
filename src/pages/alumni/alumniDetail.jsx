@@ -4,11 +4,15 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft, GraduationCap, Briefcase, Award, AlertCircle, Layout, Image as ImageIcon, Star, Clock, Lock,
   School,
-  BriefcaseBusiness
+  BriefcaseBusiness,
+  Printer,
+  Loader2
 } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import PublicProfileBar from '../../components/alumni/PublicProfileBar';
+import PublicProfileBar, { generateCvPdf } from '../../components/alumni/PublicProfileBar';
+import { useThemeSettings } from '../../context/ThemeContext';
+import { toastError } from '../../utilitis/alert';
 import Connection from '../../components/alumni/Connection';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -52,6 +56,8 @@ export default function AlumniDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [connectionCount, setConnectionCount] = useState(0);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const { theme } = useThemeSettings();
   const {
     statusMap, loadingStatusMap, actionLoadingMap,
     fetchStatus, registerAlumniIds, sendRequest,
@@ -180,35 +186,29 @@ export default function AlumniDetail() {
     'bg-orange-50/60'
   ];
 
+  async function handlePrintPdf() {
+    try {
+      setDownloadingPdf(true);
+      const webLink = window.location.origin;
+      await generateCvPdf(alumni, webLink, theme?.logo, theme?.namaSekolah);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      toastError('Gagal membuat PDF. Silakan coba lagi.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col">
 
       {/* ===== GRADIENT HEADER ===== */}
-      <div className="h-42 md:h-52 w-full bg-gradient-to-r from-pink-500 via-orange-400 to-slate-900 relative">
-        <div className="max-w-[95%] xl:max-w-7xl mx-auto w-full h-full relative">
-          {/* BAR PROFIL PUBLIK */}
-          {fromProfile && (
-            <div className="absolute top-4 w-full z-20">
-              <PublicProfileBar alumniData={alumni} />
-            </div>
-          )}
+      <div className="h-42 md:h-52 w-full bg-gradient-to-r from-pink-500 via-orange-400 to-slate-900 relative"></div>
 
-          {/* Tombol Kembali */}
-          {!fromProfile && (
-            <div className="absolute top-6 left-0 z-10">
-              <MotionButton whileHover={{ x: -3 }} onClick={() => navigate('/alumni/daftar-alumni')}
-                className="flex items-center gap-2 text-white hover:text-white/80 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer drop-shadow-md">
-                <ArrowLeft size={14} /> Kembali
-              </MotionButton>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <main className="flex-1 w-full max-w-[95%] xl:max-w-7xl mx-auto transition-all duration-500 pb-20 relative" >
+      <main className="flex-1 transition-all duration-500 pb-20 relative max-w-7xl mx-auto px-6 lg:px-8" >
 
         {/* ===== PROFILE HEADER ===== */}
-        <div className="relative -mt-16 lg:-mt-20 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start mb-10">
+        <div data-pdf-section={true} className="relative -mt-16 lg:-mt-20 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start mb-10">
 
           {/* Photo & Mobile Info Wrapper */}
           <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-8 items-center lg:items-start w-full lg:w-auto">
@@ -262,7 +262,7 @@ export default function AlumniDetail() {
 
                 <div className="flex items-center gap-2 mb-4">
                   {
-                    currentCareer?.pekerjaan ? <BriefcaseBusiness size={22} className='text-slate-900'/> : <GraduationCap size={22} className='text-slate-900' />
+                    currentCareer?.pekerjaan ? <BriefcaseBusiness size={22} className='text-slate-900' /> : <GraduationCap size={22} className='text-slate-900' />
                   }
 
                   <span className="text-base lg:text-base text-slate-900 tracking-tight leading-tight">
@@ -272,7 +272,7 @@ export default function AlumniDetail() {
                 </div>
               </div>
 
-              {!isSelfProfile && (
+              {!isSelfProfile ? (
                 <div className="flex gap-3 w-full lg:w-auto">
                   <Connection alumniId={profileId} statusEntry={statusMap[String(profileId)]}
                     isLoading={loadingStatusMap[String(profileId)]} isActionLoading={actionLoadingMap[String(profileId)]}
@@ -281,10 +281,21 @@ export default function AlumniDetail() {
                     className="w-full [&>div:last-child]:flex [&>div:last-child]:w-full lg:[&>div:last-child]:w-auto [&_button]:flex-1 lg:[&_button]:flex-none [&_button]:text-xs [&_button]:px-5 [&_button]:py-3 lg:[&_button]:py-2 [&_button]:rounded-xl lg:[&_button]:rounded-md [&_button]:font-bold"
                   />
                 </div>
+              ) : (
+                <div data-public-profile-bar={true} className="flex gap-3 w-full lg:w-auto">
+                  <button
+                    onClick={handlePrintPdf}
+                    disabled={downloadingPdf}
+                    className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2 bg-slate-900 text-white rounded-xl lg:rounded-md text-xs font-bold shadow-sm hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {downloadingPdf ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />} 
+                    {downloadingPdf ? 'Memproses...' : 'Print Profil'}
+                  </button>
+                </div>
               )}
             </div>
 
-            <div className="flex flex-col items-start lg:items-end gap-4 shrink-0 w-full lg:w-auto">
+            <div className="flex flex-col print:hidden items-start lg:items-end gap-4 shrink-0 w-full lg:w-auto">
               {/* Social Icons Desktop */}
               <div className="hidden lg:flex gap-2">
                 {socialLinks.map((s, i) => (
@@ -321,7 +332,7 @@ export default function AlumniDetail() {
 
         {/* ===== SKILLS ===== */}
         {skills.length > 0 && (
-          <div className="mb-10">
+          <div data-pdf-section={true} className="mb-10">
             <div className="flex items-center gap-2 mb-6">
               <Star size={24} className="text-slate-900" />
               <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Keahlian</h2>
@@ -337,7 +348,7 @@ export default function AlumniDetail() {
         )}
 
         {/* ===== INFO AKADEMIK & STATUS KARIER - 2 COLUMNS ===== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-16">
+        <div data-pdf-section={true} className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-16">
 
           {/* Informasi Akademik */}
           <div>
@@ -346,7 +357,7 @@ export default function AlumniDetail() {
               <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Informasi Akademik</h2>
             </div>
             <div className="border-t border-slate-200 flex flex-col">
-              
+
               <div className="py-6 border-b border-slate-200">
                 <p className="text-sm text-slate-500 tracking-tight leading-tight mb-2">Program Studi Utama</p>
                 <div className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{alumni.jurusan?.nama || '-'}</div>
@@ -416,7 +427,7 @@ export default function AlumniDetail() {
 
         {/* ===== RIWAYAT KARIER ===== */}
         {riwayat.length > 0 && (
-          <div className="mb-14">
+          <div data-pdf-section={true} className="mb-14">
             <div className="flex items-center gap-2 mb-6">
               <Clock size={24} className="text-slate-900" />
               <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Riwayat Karier</h2>
@@ -474,7 +485,7 @@ export default function AlumniDetail() {
 
         {/* ===== PORTOFOLIO ===== */}
         {portofolioList.length > 0 && (
-          <div className="mb-10">
+          <div data-pdf-section={true} className="mb-10">
             <div className="flex items-center gap-2 mb-6">
               <Briefcase size={24} className="text-slate-900" />
               <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Project dan Portofolio</h2>

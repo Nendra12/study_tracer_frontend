@@ -208,9 +208,9 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className={`fixed top-0 left-0 right-0 z-[70] transition-all duration-300 ease-in-out ${bgNavbar}`}
+      className={`fixed top-0 left-0 right-0 z-[70] transition-all duration-300 print:hidden ease-in-out ${bgNavbar}`}
     >
-      <div className="max-w-[95%] xl:max-w-7xl mx-auto transition-all duration-500">
+      <div className="print:hidden transition-all duration-500 relative max-w-7xl mx-auto px-6 lg:px-8">
         <div className="relative py-4 flex justify-between items-center transition-all duration-500">
           
           {/* Logo Section */}
