@@ -286,7 +286,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
     return (
       <>
-        <div className="relative z-[70] w-full focus-within:z-[9999]">
+        <div className="relative z-[70] w-full focus-within:z-[99]">
           <SmoothDropdown
             label={<>Tahun Mulai <span className="text-red-500">*</span></>}
             isSearchable={true}
@@ -303,7 +303,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
           />
         </div>
 
-        <div className="relative z-[70] w-full focus-within:z-[9999]">
+        <div className="relative z-[70] w-full focus-within:z-[99]">
           {!data.is_saat_ini ? (
             <SmoothDropdown
               label="Tahun Selesai (opsional)"

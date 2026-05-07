@@ -437,7 +437,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="relative z-[60] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-primary/30 [&_button_span]:!text-sm focus-within:z-[9999]">
+          <div className="relative z-[60] [&_button]:!p-2.5 [&_button]:!px-3 [&_button]:!rounded-xl [&_button]:!border-primary/30 [&_button_span]:!text-sm focus-within:z-[99]">
             <div className="mb-2">
               <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">
                 {renderLabel('Tempat Lahir', 'tempat_lahir')}
@@ -545,7 +545,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
             />
             {isEditing && errors.no_hp && <p className="text-xs text-red-500 mt-0.5">{errors.no_hp}</p>}
           </div>
-          <div className="relative z-[70] focus-within:z-[9999]">
+          <div className="relative z-[70] focus-within:z-[99]">
             <div className="mb-2">
               <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">
                 {renderLabel('Tahun Masuk', 'tahun_masuk')}

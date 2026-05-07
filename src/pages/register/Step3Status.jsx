@@ -303,7 +303,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
     return (
       <>
-        <div className="relative focus-within:z-[9999]">
+        <div className="relative focus-within:z-[99]">
           <YearsInput
             label="Tahun Mulai"
             value={data.tahun_mulai}
@@ -319,7 +319,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
           />
         </div>
 
-        <div className="relative focus-within:z-[9999]">
+        <div className="relative focus-within:z-[99]">
           {!data.is_saat_ini ? (
             <YearsInput
               label="Tahun Selesai"
@@ -416,7 +416,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {selectedStatus === 'Bekerja' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             
-            <div className="relative z-[80] focus-within:z-[9999]">
+            <div className="relative z-[80] focus-within:z-[99]">
               <InputDropdownEdit
                 label="Pekerjaan Sekarang"
                 value={pekerjaan.posisi}
@@ -428,7 +428,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
             
-            <div className="relative z-[70] focus-within:z-[9999]">
+            <div className="relative z-[70] focus-within:z-[99]">
               <InputDropdownEdit
                 label="Nama Perusahaan"
                 value={pekerjaan.nama_perusahaan}
@@ -515,7 +515,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {/* FORM KULIAH */}
         {selectedStatus === 'Kuliah' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            <div className="md:col-span-2 relative z-[80] focus-within:z-[9999]">
+            <div className="md:col-span-2 relative z-[80] focus-within:z-[99]">
               <UniversitySelector
                 univValue={universitas.nama_universitas} 
                 jurusanValue={universitas.id_jurusan_kuliah}
@@ -526,7 +526,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
-            <div className="relative z-[70] focus-within:z-[9999]">
+            <div className="relative z-[70] focus-within:z-[99]">
               <SmoothDropdown
                 label="Jalur Masuk Kuliah"
                 value={universitas.jalur_masuk}
@@ -536,7 +536,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
               />
             </div>
 
-            <div className="relative z-[60] focus-within:z-[9999]">
+            <div className="relative z-[60] focus-within:z-[99]">
               <SmoothDropdown
                 label="Jenjang Kuliah"
                 value={universitas.jenjang}
@@ -808,7 +808,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
       {/* Modal CAPTCHA */}
       {showCaptchaModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99] p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
             {/* Close button */}
             <button

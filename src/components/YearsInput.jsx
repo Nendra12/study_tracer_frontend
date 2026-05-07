@@ -32,7 +32,7 @@ export default function YearsInput({
   };
 
   return (
-    <div className={`space-y-1 w-full text-left relative ${isOpen ? 'z-[9999]' : ''}`} ref={dropdownRef}>
+    <div className={`space-y-1 w-full text-left relative ${isOpen ? 'z-[99]' : ''}`} ref={dropdownRef}>
       {label && (
         <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-1">
           {label} {isRequired && <span className="text-red-500">*</span>}
@@ -52,7 +52,7 @@ export default function YearsInput({
       </button>
 
       {isOpen && (
-        <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="absolute z-[99] w-full mt-1 bg-white border border-gray-100 rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
           <ul className="py-1 max-h-48 overflow-y-auto custom-scrollbar">
             {years.map((year) => (
               <li

@@ -107,7 +107,7 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
     !errors.nisn;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-[99] flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-visible animate-in zoom-in-95 duration-200 my-auto">
 
         {/* Header */}

@@ -299,8 +299,8 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* --- Baris 4 --- */}
-        {/* PERBAIKAN Z-INDEX: Menggunakan z-[70] default dan z-[9999] saat focus-within agar opsi tidak tertutup */}
-        <div className="space-y-1 relative z-[70] focus-within:z-[9999]">
+        {/* PERBAIKAN Z-INDEX: Menggunakan z-[70] default dan z-[99] saat focus-within agar opsi tidak tertutup */}
+        <div className="space-y-1 relative z-[70] focus-within:z-[99]">
           <YearsInput 
             label="Tahun Masuk" 
             isRequired={true} 
@@ -342,7 +342,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
         </div>
 
         {/* PERBAIKAN Z-INDEX: Dibuat sedikit di bawah Tahun Masuk agar berurutan */}
-        <div className="space-y-1 relative z-[65] focus-within:z-[9999]">
+        <div className="space-y-1 relative z-[65] focus-within:z-[99]">
           <YearsInput 
             label="Tahun Lulus" 
             isRequired={true} 
@@ -389,7 +389,7 @@ export default function Step2Profile({ onNext, onBack, formData, updateFormData 
           {errors.tempat_lahir && <p className="text-xs text-red-500 mt-0.5">{errors.tempat_lahir}</p>}
         </div>
 
-        <div className="space-y-1 relative z-[55] focus-within:z-[9999]">
+        <div className="space-y-1 relative z-[55] focus-within:z-[99]">
           <DateOfBirthInput 
             isRequired={true} 
             value={formData.tanggal_lahir} 

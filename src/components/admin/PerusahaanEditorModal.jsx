@@ -56,7 +56,7 @@ export default function PerusahaanEditorModal({
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm animate-in fade-in duration-200"
+        className="fixed inset-0 z-[99] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onCancel}
       >
         <div
@@ -104,7 +104,7 @@ export default function PerusahaanEditorModal({
               </div>
 
               {/* --- KOTA --- */}
-              <div className="space-y-1 relative z-[120] [&>div]:min-w-0 [&>div]:space-y-0 [&_button]:h-11 [&_button]:px-3 [&_button]:py-0 [&_button]:rounded-xl [&_button]:border-slate-200 [&_button]:bg-slate-50 [&_button]:focus:ring-2 [&_button]:focus:ring-primary/20 [&_button_span]:text-sm [&_button_span]:font-normal [&_button_span]:text-slate-600 [&_button_svg]:text-slate-400 [&_.absolute.z-[9999]]:z-[120] [&_.absolute.z-[9999]]:rounded-xl [&_.absolute.z-[9999]]:border-slate-200 [&_.absolute.z-[9999]]:shadow-xl [&_.absolute.z-[9999]]:mt-2">
+              <div className="space-y-1 relative z-[120] [&>div]:min-w-0 [&>div]:space-y-0 [&_button]:h-11 [&_button]:px-3 [&_button]:py-0 [&_button]:rounded-xl [&_button]:border-slate-200 [&_button]:bg-slate-50 [&_button]:focus:ring-2 [&_button]:focus:ring-primary/20 [&_button_span]:text-sm [&_button_span]:font-normal [&_button_span]:text-slate-600 [&_button_svg]:text-slate-400 [&_.absolute]:z-[120] [&_.absolute]:rounded-xl [&_.absolute]:border-slate-200 [&_.absolute]:shadow-xl [&_.absolute]:mt-2">
                 <label className="text-[11px] font-black text-primary uppercase tracking-wider">
                   Kota <span className="text-red-500">*</span>
                 </label>
