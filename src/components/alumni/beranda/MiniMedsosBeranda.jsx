@@ -5,6 +5,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useMiniMedsos } from "../../../hooks/useMiniMedsos";
 import SmoothDropdown from "../../admin/SmoothDropdown";
 import StartPostModal from "../StartPostModal";
+import { PostinganSkeleton } from "../skeleton";
 
 function getImageUrl(path) {
   if (!path) return null;
@@ -323,10 +324,9 @@ export default function MiniMedsosBeranda() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12 gap-6">
         <StartPostComposer avatarUrl={myAvatarUrl} displayName={myName} onStartPost={() => setPostModalOpen(true)} />
 
+        {/* Loading state Skeleton */}
         {medsos.loading && (
-          <div className="w-full flex items-center justify-center py-16">
-            <Loader2 size={32} className="text-primary animate-spin" />
-          </div>
+          <PostinganSkeleton />
         )}
 
         {medsos.error && !medsos.loading && (
