@@ -166,6 +166,10 @@ export const alumniApi = {
     return api.get(`/alumni/connections/${alumniId}/status`);
   },
 
+  getConnectionStatusesBatch(ids) {
+    return api.post('/alumni/connections/status-batch', { ids });
+  },
+
   getMutualConnections(alumniId, params = {}) {
     return api.get(`/alumni/connections/mutual/${alumniId}`, { params });
   },

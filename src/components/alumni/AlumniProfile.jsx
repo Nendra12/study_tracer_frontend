@@ -31,7 +31,7 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick, conne
   return (
     <motion.div
       onClick={onClick}
-      className="bg-white rounded-md flex flex-col overflow-hidden border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer h-full"
+      className="bg-white rounded-md flex flex-col border border-primary/5 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer h-full"
     >
       {/* AREA GAMBAR */}
       <div
@@ -41,11 +41,6 @@ export default function AlumniProfileCard({ alumni, onClick, onImageClick, conne
           if (imageSrc && !imageError) onImageClick(imageSrc);
         }}
       >
-        {connectionBadgeSlot ? (
-          <div className="absolute top-3 right-3 z-30">
-            {connectionBadgeSlot}
-          </div>
-        ) : null}
 
         {imageSrc && !imageError ? (
           <img 

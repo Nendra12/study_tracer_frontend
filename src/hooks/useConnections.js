@@ -197,8 +197,57 @@ export function useConnections() {
       .map((id) => getId(id))
       .filter((id) => id !== null && id !== undefined);
 
-    await Promise.all(ids.map((id) => fetchStatus(id, options)));
-  }, [fetchStatus]);
+    const idsToFetch = options.force
+      ? ids
+      : ids.filter((id) => !statusMap[String(id)]);
+
+    if (idsToFetch.length === 0) return;
+
+    setLoadingStatusMap((prev) => {
+      const next = { ...prev };
+      idsToFetch.forEach((id) => { next[String(id)] = true; });
+      return next;
+    });
+
+    try {
+      const response = await alumniApi.getConnectionStatusesBatch(idsToFetch);
+      const statuses = getPayload(response) || {};
+
+      setStatusMap((prev) => {
+        const next = { ...prev };
+        idsToFetch.forEach((id) => {
+          const rawStatus = statuses[id];
+          next[String(id)] = {
+            ...(next[String(id)] || {}),
+            ...normalizeStatus(rawStatus)
+          };
+        });
+        return next;
+      });
+    } catch (err) {
+      const inferred = inferBlockedStatusFromError(err);
+      if (inferred) {
+        setStatusMap((prev) => {
+          const next = { ...prev };
+          idsToFetch.forEach((id) => {
+            next[String(id)] = {
+              ...(next[String(id)] || {}),
+              status: inferred,
+              connectionId: null,
+              raw: { inferredFromError: true }
+            };
+          });
+          return next;
+        });
+      }
+    } finally {
+      setLoadingStatusMap((prev) => {
+        const next = { ...prev };
+        idsToFetch.forEach((id) => { next[String(id)] = false; });
+        return next;
+      });
+    }
+  }, [statusMap]);
 
   const getPendingConnectionIdByAlumni = useCallback(async (alumniId) => {
     const response = await alumniApi.getPendingConnectionRequests({ per_page: 100 });

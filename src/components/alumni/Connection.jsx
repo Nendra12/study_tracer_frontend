@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { Ban, Check, Loader2, ShieldOff, UserCheck, UserPlus, UserX } from 'lucide-react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { Ban, Check, Loader2, ShieldOff, UserCheck, UserPlus, UserX, ChevronDown, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { alertConfirm, toastError, toastSuccess } from '../../utilitis/alert';
 
 const STATUS_LABEL = {
@@ -35,6 +36,20 @@ export default function Connection({
   mode = 'full',
   className = '',
 }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const status = statusEntry?.status || 'none';
   const connectionId =
     statusEntry?.connectionId ??
@@ -75,18 +90,6 @@ export default function Connection({
     : 'h-10 px-4 text-xs font-bold rounded-xl border transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2';
 
   const actionsLayoutClass = compact ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2';
-
-  const badgeEl = (
-    <div className={`inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider w-max ${compact ? 'mx-auto' : ''} ${getBadgeStyle(status)}`}>
-      {isLoading ? (
-        <span className="inline-flex items-center gap-1.5">
-          <Loader2 size={12} className="animate-spin" /> Sinkron...
-        </span>
-      ) : (
-        STATUS_LABEL[status] || STATUS_LABEL.none
-      )}
-    </div>
-  );
 
   const actionsEl = (
     <div className={actionsLayoutClass}>
@@ -170,20 +173,48 @@ export default function Connection({
 
       {status === 'accepted' ? (
         <>
+          <div className="relative flex-1 lg:flex-none flex" ref={dropdownRef}>
+            <button
+              type="button"
+              disabled={isActionLoading}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className={`${buttonBase} bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 w-full ${compact ? '' : 'lg:w-auto'} justify-between sm:justify-center px-4`}
+            >
+              <span className="flex items-center gap-2">
+                {isBusy ? <Loader2 size={14} className="animate-spin" /> : <UserCheck size={14} />}
+                Terhubung
+              </span>
+              <ChevronDown size={14} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-full min-w-[140px] bg-white border border-slate-100 shadow-xl rounded-xl p-1.5 z-999 animate-in fade-in zoom-in-95 duration-200">
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    navigate('/alumni/pesan', { state: { targetAlumniId: alumniId } });
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[11px] sm:text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-primary rounded-lg transition-colors text-left mb-1"
+                >
+                  <MessageSquare size={14} /> Kirim Pesan
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    withConfirm('Yakin ingin putuskan koneksi dengan alumni ini?', () => onRemove?.(alumniId), 'Koneksi berhasil dihapus.');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[11px] sm:text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-colors text-left mb-1"
+                >
+                  <UserX size={14} /> Putuskan
+                </button>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             disabled={isActionLoading}
-            onClick={() => withConfirm('Yakin ingin putuskan koneksi dengan alumni ini?', () => onRemove?.(alumniId), 'Koneksi berhasil dihapus.')}
-            className={`${buttonBase} bg-white text-slate-700 border-slate-200 hover:bg-slate-50`}
-          >
-            {isAction('remove') ? <Loader2 size={14} className="animate-spin" /> : <UserCheck size={14} />}
-            Putuskan
-          </button>
-          <button
-            type="button"
-            disabled={isActionLoading}
-            onClick={() => withConfirm('Alumni ini akan diblokir dan koneksi akan dihapus. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
-            className={`${buttonBase} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
+            onClick={() => withConfirm('Alumni ini akan diblokir. Lanjutkan?', () => onBlock?.(alumniId), 'Alumni berhasil diblokir.')}
+            className={`${buttonBase} flex-1 lg:flex-none bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}
           >
             {isAction('block') ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
             Block
@@ -196,7 +227,8 @@ export default function Connection({
           type="button"
           disabled={isActionLoading}
           onClick={() => withConfirm('Buka blokir alumni ini?', () => onUnblock?.(alumniId), 'Blokir berhasil dibuka.')}
-          className={`${buttonBase} bg-white text-primary border-primary/30 hover:bg-primary/5 ${compact ? 'col-span-2' : ''}`}
+          className={`${buttonBase} bg-white text-primary border-primary/30 hover:bg-primary/5`}
+          
         >
           {isAction('unblock') ? <Loader2 size={14} className="animate-spin" /> : <ShieldOff size={14} />}
           Unblock
@@ -204,14 +236,6 @@ export default function Connection({
       ) : null}
     </div>
   );
-
-  if (mode === 'badge') {
-    return (
-      <div className={wrapperClass} onClick={(e) => e.stopPropagation()}>
-        {badgeEl}
-      </div>
-    );
-  }
 
   if (mode === 'actions') {
     return (
@@ -223,7 +247,6 @@ export default function Connection({
 
   return (
     <div className={wrapperClass} onClick={(e) => e.stopPropagation()}>
-      {badgeEl}
       {actionsEl}
     </div>
   );
