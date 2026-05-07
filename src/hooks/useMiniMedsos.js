@@ -10,6 +10,9 @@ const getPayload = (response) => response?.data?.data ?? response?.data ?? null;
 const getErrorMessage = (err) =>
   err?.response?.data?.message || err?.message || 'Terjadi kesalahan.';
 
+const getCommentId = (comment) =>
+  comment?.id_comment ?? comment?.id_post_comment ?? comment?.comment_id ?? comment?.id_comment_post ?? comment?.id ?? null;
+
 /**
  * Custom hook: useMiniMedsos
  * Manages feed state, CRUD, likes, comments, and real-time updates.
@@ -33,6 +36,8 @@ export function useMiniMedsos() {
   const [commentsByPost, setCommentsByPost] = useState({});
   const [commentsLoading, setCommentsLoading] = useState({});
   const [commentsPagination, setCommentsPagination] = useState({});
+  const [repliesByComment, setRepliesByComment] = useState({});
+  const [repliesLoading, setRepliesLoading] = useState({});
 
   // Keep track of action in-progress per post
   const [actionLoading, setActionLoading] = useState({});
@@ -247,13 +252,33 @@ export function useMiniMedsos() {
   }, []);
 
   /**
+   * Fetch replies for a comment.
+   */
+  const fetchCommentReplies = useCallback(async (commentId, perPage = 10) => {
+    setRepliesLoading((prev) => ({ ...prev, [commentId]: true }));
+    try {
+      const response = await alumniApi.getCommentReplies(commentId, { per_page: perPage });
+      const payload = getPayload(response);
+      const items = payload?.data ?? [];
+
+      if (mountedRef.current) {
+        setRepliesByComment((prev) => ({ ...prev, [commentId]: items }));
+      }
+    } catch (err) {
+      if (mountedRef.current) setError(getErrorMessage(err));
+    } finally {
+      if (mountedRef.current) setRepliesLoading((prev) => ({ ...prev, [commentId]: false }));
+    }
+  }, []);
+
+  /**
    * Add a comment (or reply) to a post.
    */
   const addComment = useCallback(async (postId, content, parentCommentId = null) => {
     setActionLoading((prev) => ({ ...prev, [`comment-${postId}`]: true }));
     try {
       const data = { content };
-      if (parentCommentId) data.id_parent_comment = parentCommentId;
+      if (parentCommentId !== null && parentCommentId !== undefined) data.id_parent_comment = parentCommentId;
 
       const response = await alumniApi.addPostComment(postId, data);
       const payload = getPayload(response);
@@ -274,6 +299,20 @@ export function useMiniMedsos() {
               return { ...p, comments_count: (p.comments_count ?? 0) + 1 };
             })
           );
+        } else {
+          const parentId = parentCommentId;
+          setRepliesByComment((prev) => ({
+            ...prev,
+            [parentId]: [...(prev[parentId] || []), newComment],
+          }));
+          setCommentsByPost((prev) => ({
+            ...prev,
+            [postId]: (prev[postId] || []).map((c) => {
+              const id = getCommentId(c);
+              if (id !== parentId) return c;
+              return { ...c, replies_count: (c.replies_count ?? 0) + 1 };
+            }),
+          }));
         }
       }
 
@@ -296,7 +335,7 @@ export function useMiniMedsos() {
       if (mountedRef.current) {
         setCommentsByPost((prev) => ({
           ...prev,
-          [postId]: (prev[postId] || []).filter((c) => (c.id_comment ?? c.id) !== commentId),
+          [postId]: (prev[postId] || []).filter((c) => getCommentId(c) !== commentId),
         }));
         setPosts((prev) =>
           prev.map((p) => {
@@ -394,6 +433,8 @@ export function useMiniMedsos() {
     commentsByPost,
     commentsLoading,
     commentsPagination,
+    repliesByComment,
+    repliesLoading,
     actionLoading,
 
     // Actions
@@ -403,6 +444,7 @@ export function useMiniMedsos() {
     deletePost,
     toggleLike,
     fetchComments,
+    fetchCommentReplies,
     addComment,
     deleteComment,
     reportPost,

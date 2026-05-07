@@ -116,7 +116,7 @@ function loadImage(dataUrl) {
 //    c. Jika lebih tinggi dari halaman penuh → slice dengan canvas per halaman
 // 3. Watermark di setiap halaman
 
-async function generateCvPdf(alumni, webLink, logoUrl, namaSekolah) {
+export async function generateCvPdf(alumni, webLink, logoUrl, namaSekolah) {
   const logoDataUrl = await loadImageAsDataUrl(logoUrl || DefaultLogo);
 
   const sourceRoot = document.querySelector('main.w-full.max-w-7xl') || document.querySelector('main');

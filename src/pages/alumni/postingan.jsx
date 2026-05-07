@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import MiniMedsosBeranda from "../../components/alumni/beranda/MiniMedsosBeranda";
 import PostsImg from "../../assets/svg/news-broadcast-svgrepo-com.svg";
 
 export default function PostinganAlumni() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && !user.can_access_all) {
+      navigate('/alumni', { replace: true });
+    }
+  }, [user, navigate]);
+
   return (
     <div className="w-full bg-[#f8f9fa] min-h-screen flex flex-col font-sans selection:bg-primary/20 overflow-x-hidden">
       <section className="relative pt-28 pb-20 w-full z-30 bg-primary rounded-b-[2.5rem]">

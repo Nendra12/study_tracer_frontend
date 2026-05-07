@@ -2,16 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, MapPin, GraduationCap, Briefcase, Globe, Award, Loader2, AlertCircle, Building2, Rocket, LineChart, Layout, ExternalLink, Image as ImageIcon
+  ArrowLeft, GraduationCap, Briefcase, Award, AlertCircle, Layout, Image as ImageIcon, Star, Clock, Lock,
+  School,
+  BriefcaseBusiness,
+  Printer,
+  Loader2
 } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import PublicProfileBar from '../../components/alumni/PublicProfileBar';
+import PublicProfileBar, { generateCvPdf } from '../../components/alumni/PublicProfileBar';
+import { useThemeSettings } from '../../context/ThemeContext';
+import { toastError } from '../../utilitis/alert';
 import Connection from '../../components/alumni/Connection';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import { AlumniDetailSkeleton } from '../../components/alumni/skeleton';
 import { useConnections } from '../../hooks/useConnections';
+import UpButton from '../../components/alumni/UpButton';
 
 const MotionButton = motion.button;
 const MotionDiv = motion.div;
@@ -26,17 +33,6 @@ function getAlumniId(entity) {
   if (!entity) return null;
   return entity.id || entity.id_alumni || entity.alumni_id || null;
 }
-
-const getStatusIcon = (status) => {
-  switch (status) {
-    case 'Kuliah': return <GraduationCap size={18} className="text-primary/40" />;
-    case 'Wirausaha': return <Rocket size={18} className="text-primary/40" />;
-    case 'Mencari Pekerjaan':
-    case 'Mencari': return <LineChart size={18} className="text-primary/40" />;
-    case 'Bekerja':
-    default: return <Briefcase size={18} className="text-primary/40" />;
-  }
-};
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -59,30 +55,21 @@ export default function AlumniDetail() {
   const [alumni, setAlumni] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [connectionCount, setConnectionCount] = useState(0);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const { theme } = useThemeSettings();
   const {
-    statusMap,
-    loadingStatusMap,
-    actionLoadingMap,
-    fetchStatus,
-    registerAlumniIds,
-    sendRequest,
-    acceptRequest,
-    rejectRequest,
-    removeOrCancel,
-    block,
-    unblock,
+    statusMap, loadingStatusMap, actionLoadingMap,
+    fetchStatus, registerAlumniIds, sendRequest,
+    acceptRequest, rejectRequest, removeOrCancel, block, unblock,
   } = useConnections();
 
-  useEffect(() => {
-    fetchAlumniProfile();
-  }, [id]);
+  useEffect(() => { fetchAlumniProfile(); }, [id]);
 
   useEffect(() => {
     const profileId = getAlumniId(alumni) || id;
     const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
-
     if (!profileId || String(profileId) === String(myAlumniId)) return;
-
     registerAlumniIds([profileId]);
     fetchStatus(profileId);
   }, [alumni, id, authUser, fetchStatus, registerAlumniIds]);
@@ -91,12 +78,9 @@ export default function AlumniDetail() {
     try {
       setLoading(true);
       setError(null);
-
-      // If the profile owner has blocked the current user, do not show any detail.
       const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
       const requestedId = id;
       const isSelf = myAlumniId && requestedId && String(myAlumniId) === String(requestedId);
-
       if (!isSelf) {
         try {
           const statusEntry = await fetchStatus(requestedId, { force: true });
@@ -106,13 +90,19 @@ export default function AlumniDetail() {
             return;
           }
         } catch (statusErr) {
-          // If status check fails, continue loading profile as fallback.
           console.warn('Failed to check connection status before profile load:', statusErr);
         }
       }
-
       const res = await alumniApi.getAlumniPublicProfile(id);
       setAlumni(res.data.data);
+
+      // Fetch connection count stats
+      try {
+        const statsRes = await alumniApi.getAlumniConnectionStats(id);
+        setConnectionCount(statsRes.data?.data?.connections_count || 0);
+      } catch (statsErr) {
+        console.warn('Failed to fetch connection stats:', statsErr);
+      }
     } catch (err) {
       console.error('Failed to load alumni profile:', err);
       setError(err.response?.data?.message || 'Gagal memuat profil alumni');
@@ -122,27 +112,20 @@ export default function AlumniDetail() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-        <AlumniDetailSkeleton />
-      </div>
-    );
+    return (<div className="min-h-screen bg-white font-sans flex flex-col"><AlumniDetailSkeleton /></div>);
   }
 
   if (error || !alumni) {
     return (
-      <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
+      <div className="min-h-screen bg-white font-sans flex flex-col">
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center px-6">
             <AlertCircle size={56} className="text-red-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-black text-primary mb-2">{error || 'Profil Tidak Ditemukan'}</h2>
-            <p className="text-sm text-primary/60 font-medium mb-6 max-w-md">
+            <h2 className="text-2xl font-black text-slate-800 mb-2">{error || 'Profil Tidak Ditemukan'}</h2>
+            <p className="text-sm text-slate-500 font-medium mb-6 max-w-md">
               {error ? 'Terjadi kesalahan saat memuat profil. Silakan coba lagi.' : 'Profil alumni yang Anda cari tidak tersedia.'}
             </p>
-            <button
-              onClick={() => navigate('/alumni')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer"
-            >
+            <button onClick={() => navigate('/alumni')} className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-md hover:bg-slate-800 transition-all cursor-pointer">
               <ArrowLeft size={16} /> Ke Portal Alumni
             </button>
           </div>
@@ -158,17 +141,11 @@ export default function AlumniDetail() {
   const currentCareer = alumni.current_career;
   const skills = alumni.skills || [];
   const riwayat = alumni.riwayat_status || [];
-
-  // Data Portofolio
   const portofolioList = alumni.portofolio || [];
 
-  // Map deskripsi_karier by riwayat id for easy lookup
   const deskripsiByRiwayat = {};
-  (alumni.deskripsi_karier || []).forEach(d => {
-    deskripsiByRiwayat[d.status_karier_id] = d.deskripsi;
-  });
+  (alumni.deskripsi_karier || []).forEach(d => { deskripsiByRiwayat[d.status_karier_id] = d.deskripsi; });
 
-  // Extract current career display info
   let currentStatus = currentCareer?.status || 'Alumni';
   let currentRole = null;
   let currentCompany = null;
@@ -178,7 +155,6 @@ export default function AlumniDetail() {
 
   if (currentCareer) {
     currentPeriod = `${currentCareer.tahun_mulai || '-'} - ${currentCareer.tahun_selesai || 'Sekarang'}`;
-
     if (currentCareer.pekerjaan) {
       currentRole = currentCareer.pekerjaan.posisi;
       currentCompany = currentCareer.pekerjaan.perusahaan?.nama || '-';
@@ -197,414 +173,354 @@ export default function AlumniDetail() {
     }
   }
 
+  const socialLinks = [
+    { url: alumni.linkedin, icon: <FaLinkedin size={16} />, text: 'text-[#0077B5]' },
+    { url: alumni.instagram, icon: <FaInstagram size={16} />, text: 'text-pink-600' },
+    { url: alumni.github, icon: <FaGithub size={16} />, text: 'text-black' },
+    { url: alumni.facebook, icon: <FaFacebook size={16} />, text: 'text-[#1877F2]' },
+  ].filter(s => s.url);
+
+  const riwayatColors = [
+    'bg-red-50/60',
+    'bg-emerald-50/60',
+    'bg-orange-50/60'
+  ];
+
+  async function handlePrintPdf() {
+    try {
+      setDownloadingPdf(true);
+      const webLink = window.location.origin;
+      await generateCvPdf(alumni, webLink, theme?.logo, theme?.namaSekolah);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      toastError('Gagal membuat PDF. Silakan coba lagi.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-      {/* --- BACKGROUND HERO --- */}
-      <div className="relative h-64 md:h-80 bg-primary overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
-          <div className="absolute bottom-10 right-20 w-60 h-60 rounded-full bg-white/10 blur-3xl" />
-        </div>
-        <svg className="absolute bottom-0 left-0 w-full h-16" viewBox="0 0 1440 100" preserveAspectRatio="none">
-          <path fill="#f8f9fa" d="M0,60L120,55C240,50,480,40,720,42C960,44,1200,58,1320,65L1440,72L1440,100L0,100Z" />
-        </svg>
-      </div>
+    <div className="min-h-screen bg-white font-sans flex flex-col">
 
-        {/* --- MAIN CONTENT AREA --- */}
-        <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 -mt-32 pb-20">
+      {/* ===== GRADIENT HEADER ===== */}
+      <div className="h-42 md:h-52 w-full bg-gradient-to-r from-pink-500 via-orange-400 to-slate-900 relative"></div>
 
-        {/* BAR PROFIL PUBLIK (hanya muncul jika dari halaman profil) */}
-        {fromProfile && <PublicProfileBar alumniData={alumni} />}
+      <main className="flex-1 transition-all duration-500 pb-20 relative max-w-7xl mx-auto px-6 lg:px-8" >
 
-        {/* Tombol Kembali (hanya muncul jika dari direktori alumni) */}
-        {!fromProfile && (
-          <MotionButton
-            whileHover={{ x: -3 }}
-            onClick={() => navigate('/alumni/daftar-alumni')}
-            className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest mb-4 transition-all cursor-pointer"
-          >
-            <ArrowLeft size={14} /> Kembali ke Direktori
-          </MotionButton>
-        )}
+        {/* ===== PROFILE HEADER ===== */}
+        <div data-pdf-section={true} className="relative -mt-16 lg:-mt-20 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start mb-10">
 
-        {/* PROFILE HEADER CARD */}
-        <div data-pdf-section className="bg-white rounded-md shadow-xl border border-slate-100 p-6 md:p-10 mb-10 w-full overflow-hidden">
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center w-full">
-
-            {/* BAGIAN FOTO */}
-            <MotionDiv
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="relative shrink-0 mx-auto md:mx-0"
-            >
-              <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-3xl border-8 border-white shadow-xl overflow-hidden bg-slate-50 flex items-center justify-center relative z-10">
+          {/* Photo & Mobile Info Wrapper */}
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-8 items-center lg:items-start w-full lg:w-auto">
+            {/* Photo */}
+            <MotionDiv initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="shrink-0 relative z-10">
+              <div className="w-50 h-50 lg:w-66 lg:h-66 lg:rounded-[60px] rounded-[30px] border-[4px] lg:border-[6px] border-white overflow-hidden bg-slate-100 shadow-md">
                 {imageSrc ? (
                   <img src={imageSrc} alt={alumni.nama} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl md:text-5xl font-black text-primary/20 bg-primary/5">
+                  <div className="w-full h-full flex items-center justify-center text-5xl font-black text-slate-300 bg-slate-100 leading-snug">
                     {alumni.nama?.charAt(0) || 'A'}
                   </div>
                 )}
               </div>
-
-              {/* Status Badge */}
-              {currentStatus && (
-                <div className={`absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 z-20 ${getStatusColor(currentStatus)} text-white px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg border-4 border-white`}>
-                  {currentStatus}
-                </div>
-              )}
             </MotionDiv>
 
-            {/* BAGIAN TEKS */}
-            <div className="flex-1 text-center md:text-left w-full mt-2 md:mt-0">
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-primary tracking-tight leading-tight mb-4 md:mb-3">
+            {/* Mobile Info (Below photo) - Hidden on lg+ */}
+            <div className="flex-1 min-w-0 lg:hidden flex flex-col items-center text-center pb-2 px-4">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight mb-1">
                 {alumni.nama}
               </h1>
-
-              {/* Detail Informasi (Role, Jurusan, Angkatan) */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 md:gap-y-3 md:gap-x-6 text-xs sm:text-sm font-bold text-primary/60">
-
-                {currentRole && (
-                  <span className="flex items-center gap-1.5 md:gap-2 bg-slate-50 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-slate-100 md:border-transparent">
-                    {getStatusIcon(currentStatus)}
-                    <span className="text-left">
-                      {currentRole}
-                      {currentCompany && currentCompany !== '-' && (
-                        <> di <span className="text-primary">{currentCompany}</span></>
-                      )}
-                    </span>
-                  </span>
-                )}
-
-                {alumni.jurusan?.nama && (
-                  <span className="flex items-center gap-1.5 md:gap-2 bg-slate-50 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-slate-100 md:border-transparent">
-                    <GraduationCap size={16} className="text-primary/40 shrink-0" />
-                    <span>{alumni.jurusan.nama}</span>
-                  </span>
-                )}
-
-                {alumni.tahun_masuk && (
-                  <span className="flex items-center gap-1.5 md:gap-2 bg-slate-50 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-slate-100 md:border-transparent">
-                    <MapPin size={16} className="text-primary/40 shrink-0" />
-                    Angkatan {alumni.tahun_masuk}
-                  </span>
-                )}
-
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {
+                  currentCareer?.pekerjaan ? <BriefcaseBusiness size={22} className='text-slate-900 shrink-0 mt-0.5' /> : <GraduationCap size={22} className='text-slate-900 shrink-0 mt-0.5' />
+                }
+                <p className="line-clamp-2 text-slate-900 tracking-tight leading-tight">
+                  {currentCareer?.pekerjaan ? `Bekerja sebagai ${currentRole}` : (currentRole || 'Alumni')}
+                  {currentCompany && currentCompany !== '-' ? ` di ${currentCompany}` : ''}
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap justify-center">
+                {socialLinks.map((s, i) => (
+                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
+                    className={`w-7 h-7 rounded-full bg-blue-50/50 flex items-center justify-center transition-all hover:scale-110 ${s.text}`}>
+                    {s.icon}
+                  </a>
+                ))}
               </div>
             </div>
+          </div>
 
-            {/* BAGIAN AKSI (kolom kanan di desktop, di bawah di mobile) */}
-            {!isSelfProfile && (
-              <div className="w-full md:w-auto md:ml-auto mt-4 md:mt-0 flex justify-center md:justify-end">
-                <Connection
-                  alumniId={profileId}
-                  statusEntry={statusMap[String(profileId)]}
-                  isLoading={loadingStatusMap[String(profileId)]}
-                  isActionLoading={actionLoadingMap[String(profileId)]}
-                  onConnect={sendRequest}
-                  onAccept={acceptRequest}
-                  onReject={rejectRequest}
-                  onRemove={removeOrCancel}
-                  onBlock={block}
-                  onUnblock={unblock}
-                  className="w-full max-w-md md:max-w-none md:flex md:flex-col md:items-end [&>div:nth-child(2)]:w-full [&>div:nth-child(2)]:justify-center [&_button]:flex-1 [&_button]:min-w-40 md:[&>div:nth-child(2)]:w-auto md:[&>div:nth-child(2)]:justify-end md:[&_button]:flex-none md:[&_button]:min-w-fit"
-                />
+          {/* Desktop Info & Shared Bottom Sections */}
+          <div className="flex-1 w-full lg:self-end lg:mt-24 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+
+            <div className="flex-1 min-w-0 w-full">
+              {/* Desktop Info - Hidden on mobile/tablet */}
+              <div className="hidden lg:block">
+                <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mb-2">
+                  {alumni.nama}
+                </h1>
+
+                <div className="flex items-center gap-2 mb-4">
+                  {
+                    currentCareer?.pekerjaan ? <BriefcaseBusiness size={22} className='text-slate-900' /> : <GraduationCap size={22} className='text-slate-900' />
+                  }
+
+                  <span className="text-base lg:text-base text-slate-900 tracking-tight leading-tight">
+                    {currentCareer?.pekerjaan ? `Bekerja sebagai ${currentRole}` : (currentRole || 'Alumni')}
+                    {currentCompany && currentCompany !== '-' ? ` di ${currentCompany}` : ''}
+                  </span>
+                </div>
               </div>
-            )}
+
+              {!isSelfProfile ? (
+                <div className="flex gap-3 w-full lg:w-auto">
+                  <Connection alumniId={profileId} statusEntry={statusMap[String(profileId)]}
+                    isLoading={loadingStatusMap[String(profileId)]} isActionLoading={actionLoadingMap[String(profileId)]}
+                    onConnect={sendRequest} onAccept={acceptRequest} onReject={rejectRequest}
+                    onRemove={removeOrCancel} onBlock={block} onUnblock={unblock}
+                    className="w-full [&>div:last-child]:flex [&>div:last-child]:w-full lg:[&>div:last-child]:w-auto [&_button]:flex-1 lg:[&_button]:flex-none [&_button]:text-xs [&_button]:px-5 [&_button]:py-3 lg:[&_button]:py-2 [&_button]:rounded-xl lg:[&_button]:rounded-md [&_button]:font-bold"
+                  />
+                </div>
+              ) : (
+                <div data-public-profile-bar={true} className="flex gap-3 w-full lg:w-auto">
+                  <button
+                    onClick={handlePrintPdf}
+                    disabled={downloadingPdf}
+                    className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2 bg-slate-900 text-white rounded-xl lg:rounded-md text-xs font-bold shadow-sm hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {downloadingPdf ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />} 
+                    {downloadingPdf ? 'Memproses...' : 'Print Profil'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col print:hidden items-start lg:items-end gap-4 shrink-0 w-full lg:w-auto">
+              {/* Social Icons Desktop */}
+              <div className="hidden lg:flex gap-2">
+                {socialLinks.map((s, i) => (
+                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
+                    className={`w-7 h-7 rounded-full bg-blue-50/50 flex items-center justify-center transition-all hover:scale-110 ${s.text}`}>
+                    {s.icon}
+                  </a>
+                ))}
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 lg:flex gap-4 lg:gap-8 text-center mt-2 w-full lg:w-auto bg-slate-50 lg:bg-transparent rounded-2xl lg:rounded-none p-4 lg:p-0 border lg:border-none border-slate-100">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Koneksi</p>
+                  <p className="text-xl lg:text-3xl font-black text-slate-900 leading-none">{connectionCount}</p>
+                </div>
+                {alumni.jurusan?.nama && (
+                  <div className="border-l border-slate-200 lg:border-none">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Jurusan</p>
+                    <p className="text-xl lg:text-3xl font-black text-slate-900 leading-none uppercase truncate px-2">{alumni.jurusan.nama}</p>
+                  </div>
+                )}
+                {alumni.tahun_masuk && (
+                  <div className="border-l border-slate-200 lg:border-none">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Angkatan</p>
+                    <p className="text-xl lg:text-3xl font-black text-slate-900 leading-none">{alumni.tahun_masuk}</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
           </div>
         </div>
 
-        {/* 2-COLUMN CONTENT */}
-        <div data-pdf-section className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
-
-          {/* SIDEBAR KIRI */}
-          <div className="lg:col-span-4 space-y-8">
-            {/* Status Karier Card */}
-            {currentCareer && (
-              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
-                <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                  {getStatusIcon(currentStatus)} Status Karier Saat Ini
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Status</p>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor(currentStatus)}`} />
-                      <span className="text-sm font-bold text-primary">{currentStatus}</span>
-                    </div>
-                  </div>
-                  {currentRole && (
-                    <div>
-                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Posisi / Peran</p>
-                      <span className="text-sm font-bold text-primary">{currentRole}</span>
-                    </div>
-                  )}
-                  {currentCompany && currentCompany !== '-' && (
-                    <div>
-                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">
-                        {currentStatus === 'Kuliah' ? 'Universitas' : currentStatus === 'Wirausaha' ? 'Nama Usaha' : 'Perusahaan'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Building2 size={14} className="text-primary/40" />
-                        <span className="text-sm font-bold text-primary">{currentCompany}</span>
-                      </div>
-                    </div>
-                  )}
-                  {currentPeriod && (
-                    <div>
-                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Periode</p>
-                      <span className="text-sm font-bold text-primary">{currentPeriod}</span>
-                    </div>
-                  )}
-                  {currentLocation && (
-                    <div>
-                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Lokasi</p>
-                      <span className="text-sm font-bold text-primary">{currentLocation}</span>
-                    </div>
-                  )}
-                  {currentAddress && (
-                    <div>
-                      <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Alamat</p>
-                      <span className="text-sm font-bold text-primary">{currentAddress}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Info Akademik */}
-            <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
-              <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                <GraduationCap size={14} /> Informasi Akademik
-              </h2>
-
-              {/* Diubah menggunakan Grid 2 Kolom */}
-              <div className="grid grid-cols-2 gap-y-5 gap-x-4">
-
-                {/* --- BARIS 1 --- */}
-                {alumni.jurusan?.nama && (
-                  <div>
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Jurusan</p>
-                    <span className="text-sm font-bold text-primary">{alumni.jurusan.nama}</span>
-                  </div>
-                )}
-                {alumni.jenis_kelamin && (
-                  <div>
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Jenis Kelamin</p>
-                    <span className="text-sm font-bold text-primary">{alumni.jenis_kelamin}</span>
-                  </div>
-                )}
-
-                {/* --- BARIS 2 --- */}
-                {alumni.tahun_masuk && (
-                  <div>
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Tahun Masuk</p>
-                    <span className="text-sm font-bold text-primary">{alumni.tahun_masuk}</span>
-                  </div>
-                )}
-                {alumni.tahun_lulus && (
-                  <div>
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Tahun Lulus</p>
-                    <span className="text-sm font-bold text-primary">{new Date(alumni.tahun_lulus).getFullYear()}</span>
-                  </div>
-                )}
-
-                {/* --- BARIS 3 --- */}
-                {alumni.tempat_lahir && (
-                  <div className="col-span-2">
-                    <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest mb-1">Tempat Lahir</p>
-                    <span className="text-sm font-bold text-primary">{alumni.tempat_lahir}</span>
-                  </div>
-                )}
-
-              </div>
+        {/* ===== SKILLS ===== */}
+        {skills.length > 0 && (
+          <div data-pdf-section={true} className="mb-10">
+            <div className="flex items-center gap-2 mb-6">
+              <Star size={24} className="text-slate-900" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Keahlian</h2>
             </div>
+            <div className="flex flex-wrap gap-3">
+              {skills.map((skill, idx) => (
+                <span key={idx} className="px-5 py-2 text-sm font-bold text-slate-800 bg-orange-100/80 rounded-full">
+                  {skill.nama}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-            {/* Skills */}
-            {skills.length > 0 && (
-              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
-                <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                  <Award size={14} /> Keahlian
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, idx) => (
-                    <span key={idx} className="px-4 py-2 text-[11px] font-black text-primary/70 bg-primary/5 rounded-xl border border-primary/5">
-                      {skill.nama}
-                    </span>
-                  ))}
+        {/* ===== INFO AKADEMIK & STATUS KARIER - 2 COLUMNS ===== */}
+        <div data-pdf-section={true} className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-16">
+
+          {/* Informasi Akademik */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <School size={24} className="text-slate-900" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Informasi Akademik</h2>
+            </div>
+            <div className="border-t border-slate-200 flex flex-col">
+
+              <div className="py-6 border-b border-slate-200">
+                <p className="text-sm text-slate-500 tracking-tight leading-tight mb-2">Program Studi Utama</p>
+                <div className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{alumni.jurusan?.nama || '-'}</div>
+                <p className="text-[10px] text-[#3b82f6] uppercase tracking-tight leading-tight mt-3">JURUSAN</p>
+              </div>
+
+              <div className="py-6 border-b border-slate-200">
+                <p className="text-sm text-slate-500 tracking-tight leading-tight mb-2">Masa Studi Akademik</p>
+                <div className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">
+                  {alumni.tahun_masuk || '-'} <span className="text-slate-300 mx-2">—</span> {alumni.tahun_lulus ? new Date(alumni.tahun_lulus).getFullYear() : 'Sekarang'}
+                </div>
+                <p className="text-[10px] text-[#3b82f6] uppercase tracking-tight leading-tight mt-3">ANGKATAN & KELULUSAN</p>
+              </div>
+
+              <div className="py-6 border-b border-slate-200 grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-slate-500 tracking-tight leading-tight mb-1">Tempat Lahir</p>
+                  <p className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{alumni.tempat_lahir || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 tracking-tight leading-tight mb-1">Jenis Kelamin</p>
+                  <p className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{alumni.jenis_kelamin || '-'}</p>
                 </div>
               </div>
-            )}
 
-            {/* Social Media */}
-            {(alumni.instagram || alumni.linkedin || alumni.github || alumni.facebook || alumni.website) && (
-              <div className="bg-white rounded-md p-6 md:p-8 border border-slate-100 shadow-sm">
-                <h2 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                  <Globe size={14} /> Media Sosial
-                </h2>
-                <div className="flex flex-wrap gap-3">
-                  {alumni.linkedin && (
-                    <a href={alumni.linkedin} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary/60 hover:bg-[#0077B5] hover:text-white transition-all">
-                      <FaLinkedin size={20} />
-                    </a>
-                  )}
-                  {alumni.github && (
-                    <a href={alumni.github} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary/60 hover:bg-black hover:text-white transition-all">
-                      <FaGithub size={20} />
-                    </a>
-                  )}
-                  {alumni.instagram && (
-                    <a href={alumni.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary/60 hover:bg-gradient-to-br hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all">
-                      <FaInstagram size={20} />
-                    </a>
-                  )}
-                  {alumni.facebook && (
-                    <a href={alumni.facebook} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary/60 hover:bg-[#1877F2] hover:text-white transition-all">
-                      <FaFacebook size={20} />
-                    </a>
-                  )}
-                  {alumni.website && (
-                    <a href={alumni.website} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary/60 hover:bg-primary hover:text-white transition-all">
-                      <FaGlobe size={20} />
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* KONTEN KANAN */}
-          <div className="lg:col-span-8 space-y-8">
+          {/* Status Karier Saat Ini */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <BriefcaseBusiness size={24} className="text-slate-900" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Status Karier</h2>
+            </div>
+            <div className="border-t border-slate-200 flex flex-col">
 
-            {/* --- SEKSI: RIWAYAT KARIER --- */}
-            {riwayat.length > 0 && (
-              <div className="bg-white rounded-md p-6 md:p-10 border border-slate-100 shadow-sm">
-                <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-10">
-                  <Briefcase size={22} /> Riwayat Karier
-                </h2>
-                <div className="relative pl-6 sm:pl-8 border-l-2 border-slate-100 space-y-10 sm:space-y-12">
-                  {riwayat.map((item, idx) => {
-                    let title = item.status?.nama || '-';
-                    let subtitle = '';
-                    let location = '';
-                    const periode = `${item.tahun_mulai || '-'} - ${item.tahun_selesai || 'Sekarang'}`;
+              <div className="py-6 border-b border-slate-200">
+                <p className="text-sm text-slate-500 tracking-tight leading-tight mb-2">Aktivitas Saat Ini</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full shrink-0 ${getStatusColor(currentStatus)}`} />
+                  <div className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{currentStatus}</div>
+                </div>
+                <p className="text-[10px] text-[#3b82f6] uppercase tracking-tight leading-tight mt-3">STATUS UTAMA</p>
+              </div>
 
-                    if (item.pekerjaan) {
-                      title = item.pekerjaan.posisi || title;
-                      subtitle = item.pekerjaan.perusahaan?.nama || '';
-                      const kota = item.pekerjaan.perusahaan?.kota || '';
-                      const prov = item.pekerjaan.perusahaan?.provinsi || '';
-                      location = [kota, prov].filter(Boolean).join(', ');
-                    } else if (item.kuliah) {
-                      title = item.kuliah.jenjang ? `Mahasiswa ${item.kuliah.jenjang}` : (item.status?.nama || 'Kuliah');
-                      subtitle = item.kuliah.universitas?.nama || item.kuliah.universitas || '';
-                      const lokasiKuliah = [item.kuliah.kota?.nama || item.kuliah.kota, item.kuliah.provinsi?.nama || item.kuliah.provinsi].filter(Boolean).join(', ');
-                      location = [item.kuliah.jurusan_kuliah?.nama || '', lokasiKuliah, item.kuliah.alamat || ''].filter(Boolean).join(' • ');
-                    } else if (item.wirausaha) {
-                      title = 'Wirausaha';
-                      subtitle = item.wirausaha.nama_usaha || '';
-                      const lokasiUsaha = [item.wirausaha.kota?.nama || item.wirausaha.kota, item.wirausaha.provinsi?.nama || item.wirausaha.provinsi].filter(Boolean).join(', ');
-                      location = [item.wirausaha.bidang_usaha?.nama || item.wirausaha.bidang_usaha || '', lokasiUsaha, item.wirausaha.alamat || ''].filter(Boolean).join(' • ');
-                    }
+              <div className="py-6 border-b border-slate-200">
+                <p className="text-sm text-slate-500 tracking-tight leading-tight mb-2">Posisi / Peran Terakhir</p>
+                <div className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight line-clamp-2">{currentRole || '-'}</div>
+                <p className="text-[10px] text-[#3b82f6] uppercase tracking-tight leading-tight mt-3">PERAN</p>
+              </div>
 
-                    return (
-                      <div key={item.id || idx} className="relative w-full">
-                        {/* Dot / Lingkaran Timeline */}
-                        <div className="absolute -left-[2.2rem] sm:-left-[2.6rem] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-[#2A3E3F] z-10" />
-
-                        {/* Wrapper Flex: Info di Kiri, Tanggal di Kanan */}
-                        <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4 w-full">
-
-                          {/* Sisi Kiri: Judul, Subjudul, Lokasi, dan DESKRIPSI */}
-                          <div className="flex-1">
-                            <h3 className="text-lg font-black text-primary">{title}</h3>
-                            {subtitle && <p className="text-sm font-bold text-primary/50 mb-1">{subtitle}</p>}
-                            {location && <p className="text-sm text-primary/60 font-medium">{location}</p>}
-
-                            {/* Menampilkan deskripsi karier dari API */}
-                            {(item.deskripsi || deskripsiByRiwayat[item.id]) && (
-                              <p
-                                className="prose text-sm text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap"
-                                dangerouslySetInnerHTML={{
-                                  __html: item.deskripsi || deskripsiByRiwayat[item.id] || ""
-                                }}
-                              />
-                            )}
-                          </div>
-
-                          {/* Sisi Kanan: TANGGAL */}
-                          <div className="shrink-0 mt-2 sm:mt-0">
-                            <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.15em] bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                              {periode}
-                            </span>
-                          </div>
-
-                        </div>
-                      </div>
-                    );
-                  })}
+              <div className="py-6 border-b border-slate-200 grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-slate-500 tracking-tight leading-tight mb-1">Periode</p>
+                  <p className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{currentPeriod || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 tracking-tight leading-tight mb-1">Lokasi</p>
+                  <p className="text-xl lg:text-2xl text-slate-900 tracking-tight leading-tight">{currentLocation || '-'}</p>
                 </div>
               </div>
-            )}
 
-            {/* --- SEKSI: PORTOFOLIO / PENGALAMAN --- */}
-            {portofolioList.length > 0 && (
-              <div className="bg-white rounded-md p-6 md:p-10 border border-slate-100 shadow-sm">
-                <h2 className="text-xl font-black text-primary tracking-tight flex items-center gap-3 mb-8">
-                  <Layout size={22} /> Portofolio & Pengalaman
-                </h2>
+            </div>
+          </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {portofolioList.map((porto, idx) => (
-                    <div key={idx} className="group bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
-                      {/* Area Gambar */}
-                      <div className="h-44 bg-slate-50 overflow-hidden relative">
-                        {porto.gambar ? (
-                          <img
-                            src={getImageUrl(porto.gambar)}
-                            alt={porto.judul}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
+        </div>
+
+        {/* ===== RIWAYAT KARIER ===== */}
+        {riwayat.length > 0 && (
+          <div data-pdf-section={true} className="mb-14">
+            <div className="flex items-center gap-2 mb-6">
+              <Clock size={24} className="text-slate-900" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Riwayat Karier</h2>
+            </div>
+            <div className="flex flex-col">
+              {riwayat.map((item, idx) => {
+                let title = item.status?.nama || '-';
+                let subtitle = '';
+                const periode = `${item.tahun_mulai || '-'} - ${item.tahun_selesai || 'Sekarang'}`;
+                const isLast = idx === riwayat.length - 1;
+
+                if (item.pekerjaan) {
+                  title = item.pekerjaan.posisi || title;
+                  subtitle = item.pekerjaan.perusahaan?.nama || '';
+                } else if (item.kuliah) {
+                  title = item.kuliah.jenjang ? `Mahasiswa ${item.kuliah.jenjang}` : (item.status?.nama || 'Kuliah');
+                  subtitle = item.kuliah.universitas?.nama || item.kuliah.universitas || '';
+                } else if (item.wirausaha) {
+                  title = 'Wirausaha';
+                  subtitle = item.wirausaha.nama_usaha || '';
+                }
+
+                const bgColor = riwayatColors[idx % riwayatColors.length];
+
+                return (
+                  <div key={item.id || idx} className="flex gap-4 md:gap-6">
+                    {/* Timeline Column */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-5 h-5 rounded-full bg-[#3b82f6] ring-[4px] ring-white z-10 shadow-sm shrink-0 mt-6 md:mt-8" />
+                      {!isLast && <div className="w-[3px] bg-[#3b82f6] flex-1 my-1 rounded-full" />}
+                    </div>
+
+                    {/* Content Column */}
+                    <div className={`flex-1 ${!isLast ? 'pb-8' : ''}`}>
+                      <div className={`${bgColor} rounded-2xl p-6 md:p-8`}>
+                        <h3 className="text-lg md:text-xl font-black text-slate-900 mb-1 tracking-tight leading-tight">{title}</h3>
+                        {subtitle && <p className="text-sm font-bold text-slate-700 mb-3 tracking-tight leading-tight">{subtitle} • {periode}</p>}
+
+                        {(item.deskripsi || deskripsiByRiwayat[item.id]) ? (
+                          <p className="text-xs md:text-sm text-slate-700 leading-relaxed whitespace-pre-wrap tracking-tight"
+                            dangerouslySetInnerHTML={{ __html: item.deskripsi || deskripsiByRiwayat[item.id] || "" }} />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300">
-                            <ImageIcon size={40} />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Area Konten */}
-                      <div className="p-5 flex-1 flex flex-col">
-                        <h3 className="font-bold text-lg text-primary line-clamp-1 mb-2">{porto.judul}</h3>
-                        <p className="text-slate-600 text-sm flex-1 line-clamp-3 mb-4">{porto.deskripsi}</p>
-
-                        {porto.link_project && (
-                          <a
-                            href={porto.link_project}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary/80 transition-colors mt-auto w-fit"
-                          >
-                            <ExternalLink size={14} /> Lihat Proyek
-                          </a>
+                          <p className="text-xs md:text-sm text-slate-500 leading-relaxed tracking-tight">
+                            Tidak ada deskripsi detail untuk riwayat karier ini.
+                          </p>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Privacy Note */}
-            <div className="bg-primary/5 rounded-md p-6 border border-primary/10">
-              <p className="text-sm text-primary/60 font-medium text-center">
-                Informasi sensitif seperti email, nomor telepon, dan alamat tidak ditampilkan untuk menjaga privasi alumni.
-              </p>
+                  </div>
+                );
+              })}
             </div>
-
           </div>
-        </div>
+        )}
+
+        {/* ===== PORTOFOLIO ===== */}
+        {portofolioList.length > 0 && (
+          <div data-pdf-section={true} className="mb-10">
+            <div className="flex items-center gap-2 mb-6">
+              <Briefcase size={24} className="text-slate-900" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Project dan Portofolio</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {portofolioList.map((porto, idx) => (
+                <div key={idx} className="bg-white overflow-hidden flex flex-col">
+                  <div className="h-48 rounded-xl overflow-hidden mb-4 bg-slate-100">
+                    {porto.gambar ? (
+                      <img src={getImageUrl(porto.gambar)} alt={porto.judul}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <ImageIcon size={40} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col">
+                    <h3 className="font-black text-sm text-slate-900 line-clamp-1 mb-2">{porto.judul}</h3>
+                    <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-3 mb-4">{porto.deskripsi}</p>
+                    {porto.link_project && (
+                      <a href={porto.link_project} target="_blank" rel="noopener noreferrer"
+                        className="inline-block mt-auto w-fit px-4 py-1.5 bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors rounded-md text-[10px] font-bold uppercase tracking-wider">
+                        Lihat Project
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </main>
+      <UpButton />
     </div>
   );
 }
