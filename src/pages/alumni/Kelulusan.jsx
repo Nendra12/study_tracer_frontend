@@ -7,7 +7,7 @@ import { useThemeSettings } from '../../context/ThemeContext';
 
 export default function Kelulusan() {
   const navigate = useNavigate();
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [kelulusanData, setKelulusanData] = useState(null);
@@ -48,30 +48,33 @@ export default function Kelulusan() {
 
   // Tema untuk status kelulusan pada kotak pengumuman
   const themes = {
-    lulus: { 
-      bgBox: 'bg-[#E8F5E9]', 
-      borderBox: 'border-[#C8E6C9]', 
-      textTitle: 'text-[#2E7D32]', 
-      textStatus: 'text-[#1B5E20]', 
-      label: 'LULUS' 
+    lulus: {
+      bgBox: 'bg-[#E8F5E9]',
+      borderBox: 'border-[#C8E6C9]',
+      textTitle: 'text-[#2E7D32]',
+      textStatus: 'text-[#1B5E20]',
+      label: 'LULUS'
     },
-    tidak_lulus: { 
-      bgBox: 'bg-[#FFEBEE]', 
-      borderBox: 'border-[#FFCDD2]', 
-      textTitle: 'text-[#C62828]', 
-      textStatus: 'text-[#B71C1C]', 
-      label: 'TIDAK LULUS' 
+    tidak_lulus: {
+      bgBox: 'bg-[#FFEBEE]',
+      borderBox: 'border-[#FFCDD2]',
+      textTitle: 'text-[#C62828]',
+      textStatus: 'text-[#B71C1C]',
+      label: 'TIDAK LULUS'
     },
-    belum_tersedia: { 
-      bgBox: 'bg-slate-100', 
-      borderBox: 'border-slate-200', 
-      textTitle: 'text-slate-600', 
-      textStatus: 'text-slate-800', 
-      label: 'BELUM TERSEDIA' 
+    belum_tersedia: {
+      bgBox: 'bg-slate-100',
+      borderBox: 'border-slate-200',
+      textTitle: 'text-slate-600',
+      textStatus: 'text-slate-800',
+      label: 'BELUM TERSEDIA'
     }
   };
 
   const currentTheme = themes[status] || themes.belum_tersedia;
+  const handleBack = () => {
+    navigate("/alumni");
+  }
 
   if (loading) {
     return (
@@ -93,8 +96,8 @@ export default function Kelulusan() {
           </div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">Terjadi Kesalahan</h2>
           <p className="text-slate-500 text-sm mb-6">{error}</p>
-          <button 
-            onClick={() => navigate('/alumni')} 
+          <button
+            onClick={() => navigate('/alumni')}
             className="bg-slate-900 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors"
           >
             Kembali ke Beranda
@@ -106,35 +109,35 @@ export default function Kelulusan() {
 
   return (
     <div className="h-[100dvh] w-full bg-slate-50 flex flex-col items-center justify-center p-4 md:py-6 md:px-8 font-sans overflow-hidden">
-      
+
       <div className="w-full max-w-2xl flex flex-col gap-4 md:gap-5 animate-in fade-in duration-500">
-        
+
         {/* ===== HEADER LOGO & JUDUL ===== */}
         <div className="w-full text-center">
           <div className="flex justify-center items-center gap-3 md:gap-4 mb-2 md:mb-3">
-            <img 
-              src="/logo-provinsi.png" 
-              alt="Logo Provinsi" 
+            <img
+              src="/logo-provinsi.png"
+              alt="Logo Provinsi"
               className="w-12 h-12 md:w-16 md:h-16 object-contain"
               onError={(e) => e.target.style.display = 'none'}
             />
-            <img 
+            <img
               src={TutwuriHandayani}
-              alt="Tut Wuri Handayani" 
-              className="w-12 h-12 md:w-16 md:h-16 object-contain" 
+              alt="Tut Wuri Handayani"
+              className="w-12 h-12 md:w-16 md:h-16 object-contain"
               onError={(e) => e.target.style.display = 'none'}
             />
-            <img 
-              src="/icon.png" 
-              alt="Logo Sekolah" 
+            <img
+              src="/icon.png"
+              alt="Logo Sekolah"
               className="w-12 h-12 md:w-16 md:h-16 object-contain"
               onError={(e) => e.target.style.display = 'none'}
             />
           </div>
-          
+
           <h2 className="text-[#B91C1C] text-sm md:text-lg font-normal leading-tight uppercase">
-            PENGUMUMAN KELULUSAN SISWA<br/>
-            {theme?.nama_sekolah || 'SMKN 2 Kraksaan'}<br/>
+            PENGUMUMAN KELULUSAN SISWA<br />
+            {theme?.nama_sekolah || 'SMKN 2 Kraksaan'}<br />
           </h2>
         </div>
 
@@ -145,7 +148,7 @@ export default function Kelulusan() {
           <p className={`${currentTheme.textStatus} text-xl md:text-3xl font-extrabold tracking-wide uppercase`}>
             {currentTheme.label}
           </p>
-          
+
           {/* Ucapan Kelulusan */}
           {status === 'lulus' && (
             <div className="mt-2 pt-2 border-t border-[#C8E6C9] max-w-lg mx-auto">
@@ -154,7 +157,7 @@ export default function Kelulusan() {
               </p>
             </div>
           )}
-          
+
           {status === 'tidak_lulus' && (
             <div className="mt-2 pt-2 border-t border-[#FFCDD2] max-w-lg mx-auto">
               <p className="text-[#B71C1C] text-xs md:text-sm font-medium">
@@ -190,8 +193,14 @@ export default function Kelulusan() {
         )}
 
         {/* Tombol Cetak - disembunyikan saat mode print */}
-        <div className="flex justify-center w-full">
-          <button 
+        <div className="flex justify-center w-full gap-3">
+          <button
+            onClick={handleBack}
+            className="cursor-pointer print:hidden  bg-slate-900 text-white font-bold py-2 md:py-3 px-6 md:px-8 rounded shadow flex items-center justify-center gap-2 transition-colors w-full sm:w-auto"
+          >
+            Kembali ke Beranda
+          </button>
+          <button
             onClick={handleCetak}
             disabled={status === 'belum_tersedia'}
             className={`cursor-pointer ${status === 'belum_tersedia' ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#C62828] hover:bg-[#B71C1C]'} print:hidden text-white font-bold py-2 md:py-3 px-6 md:px-8 rounded shadow flex items-center justify-center gap-2 transition-colors w-full sm:w-auto`}

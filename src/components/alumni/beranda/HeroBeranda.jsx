@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, User, ClipboardCheck, ShieldCheck, Clock, GraduationCap } from 'lucide-react';
+import { ArrowRight, User, ClipboardCheck, ShieldCheck, Clock, GraduationCap, SquareCheckBig } from 'lucide-react';
 
 export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus, isVerified, hasCompletedKuesioner }) {
   return (
@@ -10,7 +10,7 @@ export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-white mt-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
-          
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex flex-col items-start text-left  flex-1 lg:max-w-xl">
             <div className="flex items-center gap-3 font-semibold mb-4 bg-white/10 border border-white/20 px-4 py-2 rounded-md backdrop-blur-sm shadow-lg">
               {greeting.icon}
@@ -24,10 +24,10 @@ export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full">
               <button onClick={() => navigate("/alumni/lowongan")} className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-md text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2 transition-all duration-300">
-                <ArrowRight size={18} /> Lihat Lowongan 
+                <ArrowRight size={18} /> Lihat Lowongan
               </button>
-              <button onClick={() => navigate('/alumni/kelulusan')} className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-md text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-                <GraduationCap size={18} /> Cek Kelulusan
+              <button onClick={() => navigate('/alumni/kelulusan')} className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-t from-red-800 to-red-500 hover:opacity-90 shadow-md text-white rounded-md text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer uppercase">
+                <SquareCheckBig size={18} /> CEK KELULUSAN
               </button>
             </div>
           </motion.div>
@@ -71,7 +71,7 @@ export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus
                 </p>
               </div>
             </motion.div>
-            
+
             <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1, y: [-4, 4, -4] }} transition={{ opacity: { delay: 0.9, duration: 0.4 }, y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 1.5 } }} className="absolute top-10 -left-6 z-0 bg-white/10 border border-white/20 w-12 h-12 rounded-2xl shadow-lg flex items-center justify-center text-white backdrop-blur-md rotate-12">
               <GraduationCap size={22} strokeWidth={2} />
             </motion.div>
