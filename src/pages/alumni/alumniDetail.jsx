@@ -205,7 +205,7 @@ export default function AlumniDetail() {
       {/* ===== GRADIENT HEADER ===== */}
       <div className="h-42 md:h-52 w-full bg-gradient-to-r from-pink-500 via-orange-400 to-slate-900 relative"></div>
 
-      <main className="flex-1 w-full max-w-[95%] xl:max-w-7xl mx-auto transition-all duration-500 pb-20 relative" >
+      <main className="flex-1 transition-all duration-500 pb-20 relative max-w-7xl mx-auto px-6 lg:px-8" >
 
         {/* ===== PROFILE HEADER ===== */}
         <div data-pdf-section={true} className="relative -mt-16 lg:-mt-20 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start mb-10">
