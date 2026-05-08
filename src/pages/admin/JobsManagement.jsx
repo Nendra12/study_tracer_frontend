@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom"; // TAMBAHKAN INI
 import {
   Search,
   Plus,
@@ -8,6 +9,7 @@ import {
   Hourglass,
   CalendarClock,
   Layers,
+  X, // TAMBAHKAN INI
 } from "lucide-react";
 
 import { adminApi } from "../../api/admin";
@@ -39,11 +41,14 @@ export default function ManajemenPekerjaan() {
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [loading, setLoading] = useState(true); // Untuk list pekerjaan
-  const [loadingStats, setLoadingStats] = useState(true); // Untuk sidebar/ringkasan
+  const [loading, setLoading] = useState(true); 
+  const [loadingStats, setLoadingStats] = useState(true); 
   const [currentPage, setCurrentPage] = useState(1);
   const [editingJob, setEditingJob] = useState(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // State untuk Modal Gambar Lightbox
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const tabFilterMap = {
     "Semua": {},
@@ -70,7 +75,7 @@ export default function ManajemenPekerjaan() {
   }, [activeTab, debouncedSearch]);
 
   const fetchStats = useCallback(async () => {
-    setLoadingStats(true); // Mulai loading stats
+    setLoadingStats(true); 
     try {
       const res = await adminApi.getLowonganStats();
       const data = res.data?.data || res.data || {};
@@ -79,9 +84,10 @@ export default function ManajemenPekerjaan() {
     } catch (err) {
       console.error("Error fetching stats:", err);
     } finally {
-      setLoadingStats(false); // Selesai
+      setLoadingStats(false); 
     }
   }, []);
+  
   useEffect(() => {
     fetchJobs();
     fetchStats();
@@ -92,6 +98,15 @@ export default function ManajemenPekerjaan() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Efek scroll lock untuk lightbox gambar
+  useEffect(() => {
+    if (!selectedImage) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [selectedImage]);
 
 
   // --- HANDLERS ---
@@ -242,6 +257,7 @@ export default function ManajemenPekerjaan() {
                       onDelete={handleDelete}
                       onRepost={handleRepost}
                       onEdit={handleEdit}
+                      onViewImage={setSelectedImage} // TAMBAHKAN PROPS INI DI SINI
                     />
                   ))}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-4">
@@ -277,7 +293,6 @@ export default function ManajemenPekerjaan() {
               )}
             </div>
 
-            {/* Ganti kondisi loading sidebar lama dengan ini */}
             {loadingStats && !lowonganStats ? (
               <JobSidebarSkeleton />
             ) : (
@@ -325,6 +340,37 @@ export default function ManajemenPekerjaan() {
         onSuccess={handleFormSuccess}
         editJob={editingJob}
       />
+
+      {/* --- RENDER MODAL GAMBAR (MENGGUNAKAN PORTAL) --- */}
+      {selectedImage && createPortal(
+        <div 
+          // PERBAIKAN: Ubah backdrop-blur-xl (sangat kuat) -> backdrop-blur (standar)
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-white/40 backdrop-blur p-4 sm:p-8 animate-in fade-in zoom-in-95 duration-200"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="relative flex justify-center items-center w-full max-w-4xl max-h-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Tombol Close */}
+            <button 
+              onClick={() => setSelectedImage(null)} 
+              className="absolute top-2 right-2 sm:-top-5 sm:-right-5 bg-white border border-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-all cursor-pointer shadow-xl z-10 active:scale-95"
+            >
+              <X size={20} />
+            </button>
+            
+            {/* Tampilan Gambar Full */}
+            <img 
+              src={selectedImage.foto} 
+              alt={selectedImage.judul} 
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-gray-100 bg-white p-1.5"
+            />
+          </div>
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 }

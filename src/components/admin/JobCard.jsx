@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Layers, CalendarClock, Check, X, Pencil, RotateCcw, Trash2, Tag } from "lucide-react";
+import { MapPin, Layers, CalendarClock, Check, X, Pencil, RotateCcw, Trash2, Tag, ZoomIn } from "lucide-react";
 import banner from "../../assets/banner.jfif";
 import { STORAGE_BASE_URL } from "../../api/axios";
 import hitungMundur from "../../utilitis/hitungMundurTanggal";
@@ -16,7 +16,7 @@ const getDisplayStatus = (job) => {
   return job.status?.toUpperCase() || "-";
 };
 
-const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
+const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit, onViewImage }) => {
   const navigate = useNavigate();
   const displayStatus = getDisplayStatus(job);
 
@@ -72,14 +72,41 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit }) => {
     durasi = "-"
   }
 
+  // Fungsi khusus saat gambar diklik agar tidak membuka detail pekerjaan
+  const handleImageClick = (e) => {
+    e.stopPropagation();
+    if (onViewImage) {
+      // Mengirimkan url original (resolusi tinggi) ke modal
+      onViewImage({ foto: fotoOriginal, judul: job.judul });
+    }
+  };
+
   return (
     <div
       onClick={() => navigate(`/wb-admin/jobs/job-detail/${job.id}`)}
       className={`bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 cursor-pointer group/card ${getBorderColor(displayStatus)}`}
     >
       <div className="flex flex-col sm:flex-row gap-5 flex-1 min-w-0 w-full">
-        <div className="w-full sm:w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 border border-gray-100 relative group-hover/card:shadow-inner transition-all">
-          <img src={fotoUrl} alt={job.judul} className="w-full h-full object-cover opacity-90 group-hover/card:scale-105 transition-transform duration-500" onError={(e) => { if (e.target.src !== fotoOriginal) e.target.src = fotoOriginal; else e.target.src = banner; }} />
+        
+        {/* AREA GAMBAR DENGAN EFEK HOVER */}
+        <div 
+          onClick={handleImageClick}
+          className="w-full sm:w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 border border-gray-100 relative transition-all group/image"
+        >
+          <img 
+            src={fotoUrl} 
+            alt={job.judul} 
+            className="w-full h-full object-cover opacity-90 group-hover/image:scale-110 transition-transform duration-500" 
+            onError={(e) => { if (e.target.src !== fotoOriginal) e.target.src = fotoOriginal; else e.target.src = banner; }} 
+          />
+          
+          {/* OVERLAY GELAP & TEKS MUNCUL SAAT HOVER */}
+          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 backdrop-blur-[1px] z-10">
+            <ZoomIn className="text-white/80" size={18} />
+            <span className="text-white text-[9px] font-semibold bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10 text-center leading-none">
+              Lihat
+            </span>
+          </div>
         </div>
 
         <div className="space-y-2 flex-1 min-w-0">

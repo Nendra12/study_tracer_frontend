@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Pencil, Trash2, Pin, Megaphone, Eye, EyeOff, Archive } from 'lucide-react';
+import { Calendar, Pencil, Trash2, Pin, Megaphone, Eye, EyeOff, Archive, ZoomIn } from 'lucide-react'; // Tambah icon ZoomIn
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_BASE_URL } from '../../api/axios';
 
@@ -69,18 +69,30 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
   return (
     <div className={`bg-white rounded-2xl border ${item.is_pinned ? 'border-primary/40 bg-blue-50/20' : 'border-gray-100'} shadow-sm flex flex-col group transition-all hover:shadow-md overflow-hidden`}>
       
-      {/* 1. AREA GAMBAR - Klik untuk pop-up gambar saja */}
+      {/* 1. AREA GAMBAR dengan Efek Hover Reredup & Teks */}
       <div 
         onClick={handleViewImage} 
-        className="w-full h-32 sm:h-40 overflow-hidden relative bg-gray-100 flex-shrink-0 cursor-pointer"
+        // Menambahkan grup 'group/image' khusus untuk area gambar
+        className="w-full h-32 sm:h-40 overflow-hidden relative bg-gray-100 flex-shrink-0 cursor-pointer group/image"
       >
         <img 
           src={imageUrl} 
           alt={item.judul} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          // Efek scale saat HOVER pada area gambar
+          className="w-full h-full object-cover group-hover/image:scale-110 transition-transform duration-500"
           onError={(e) => { e.target.src = imgPengumuman; }}
         />
-        <div className="absolute top-3 right-3 flex gap-1.5">
+
+        {/* PERBAIKAN: Overlay Redup & Teks "Klik untuk lihat" (Muncul saat hover group/image) */}
+        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 backdrop-blur-[1px]">
+          <ZoomIn className="text-white/80" size={24} />
+          <span className="text-white text-xs font-semibold bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+            Klik untuk lihat gambar
+          </span>
+        </div>
+
+        {/* Badge Status (Tetap di atas overlay) */}
+        <div className="absolute top-3 right-3 flex gap-1.5 z-10">
           <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
             item.status === 'aktif' ? 'bg-green-500 text-white' : 
             item.status === 'draft' ? 'bg-gray-500 text-white' : 'bg-red-500 text-white'
@@ -110,7 +122,8 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: item.konten}} />
+        {/* Menggunakan div alih-alih p karena dangerouslySetInnerHTML mungkin merender block element */}
+        <div className="text-sm text-gray-600 line-clamp-2 leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: item.konten}} />
         
         {/* Aksi */}
         <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
@@ -118,7 +131,7 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
             {/* Tombol Pin */}
             <button 
               onClick={(e) => { e.stopPropagation(); onTogglePin(item.id); }} 
-              className={`text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer ${item.is_pinned ? 'text-primary' : 'text-gray-400 hover:text-primary'}`}
+              className={`text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer p-1 rounded hover:bg-gray-100 ${item.is_pinned ? 'text-primary' : 'text-gray-400 hover:text-primary'}`}
             >
               <Pin size={14} /> {item.is_pinned ? 'Lepas' : 'Pin'}
             </button>
@@ -129,7 +142,7 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
                 <span className="text-gray-200">|</span>
                 <button 
                   onClick={(e) => { e.stopPropagation(); onChangeStatus(item.id, statusAction.targetStatus, item.judul); }} 
-                  className={`text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer ${statusAction.className}`}
+                  className={`text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer p-1 rounded ${statusAction.className}`}
                 >
                   {statusAction.icon} {statusAction.label}
                 </button>
@@ -141,6 +154,7 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit(item); }} 
               className="cursor-pointer p-2 text-gray-400 hover:text-[#3C5759] hover:bg-blue-50 rounded-lg active:scale-90 transition-all" 
+              title="Edit"
             >
               <Pencil size={16} />
             </button>
@@ -157,6 +171,7 @@ export default function PengumumanCard({ item, onTogglePin, onEdit, onDelete, on
             <button 
               onClick={(e) => { e.stopPropagation(); onDelete(item.id, item.judul); }} 
               className="cursor-pointer p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg active:scale-90 transition-all" 
+              title="Hapus"
             >
               <Trash2 size={16} />
             </button>

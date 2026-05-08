@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom"; // IMPORT PORTAL DI SINI
 import { Search, Plus, Megaphone, X, Loader2 } from "lucide-react";
 import { alertSuccess, alertConfirm, alertError } from "../../utilitis/alert";
 import Pagination from "../../components/admin/Pagination";
@@ -36,6 +37,18 @@ export default function Pengumuman() {
 
   // State untuk Modal Detail Pop-up (Khusus Gambar)
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Efek untuk mengunci scroll background saat Lightbox Gambar terbuka
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [selectedImage]);
 
   // --- FETCH DATA DARI API ---
   const fetchPengumuman = useCallback(async () => {
@@ -226,7 +239,7 @@ export default function Pengumuman() {
               ) : (
                 <div className="flex flex-col md:flex-row w-full gap-3">
                   
-                  {/* Kolom Pencarian - Disamakan persis: mt-3, p-3, border-2, rounded-xl */}
+                  {/* Kolom Pencarian */}
                   <div className="relative w-full md:flex-1 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-gray-400 group-focus-within:text-primary" size={18} />
                     <input
@@ -240,8 +253,6 @@ export default function Pengumuman() {
 
                   {/* Grup Dropdown */}
                   <div className="flex flex-row gap-3 w-full md:w-auto shrink-0">
-                    
-                    {/* Width dibuat minimal 180px agar tidak bentrok dengan setingan dalam SmoothDropdown */}
                     <div className="flex-1 md:w-[180px] relative">
                       <SmoothDropdown
                         options={["Terbaru", "Terlama"]}
@@ -250,8 +261,6 @@ export default function Pengumuman() {
                         placeholder="Urutkan"
                       />
                     </div>
-
-                    {/* Width diperlebar jadi 200px agar "Semua Tipe (Pin)" muat 1 baris utuh */}
                     <div className="flex-1 md:w-[200px] relative">
                       <SmoothDropdown
                         options={["Semua Tipe (Pin)", "Di-pin", "Tidak Di-pin"]}
@@ -260,7 +269,6 @@ export default function Pengumuman() {
                         placeholder="Filter Pin"
                       />
                     </div>
-
                   </div>
                 </div>
               )}
@@ -308,7 +316,6 @@ export default function Pengumuman() {
           </div>
 
           {/* --- KOLOM KANAN (SIDEBAR STATISTIK & TOMBOL BUAT) --- */}
-          {/* Hapus duplikasi div lg:col-span-4 di sini */}
           <div className="lg:col-span-4">
             {loading ? (
               <PengumumanSidebarSkeleton />
@@ -328,20 +335,21 @@ export default function Pengumuman() {
         editData={editData}
       />
 
-      {/* --- RENDER MODAL GAMBAR SAJA (POP-UP LIGHTBOX) --- */}
-      {selectedImage && (
+      {/* --- RENDER MODAL GAMBAR SAJA (POP-UP LIGHTBOX) (MENGGUNAKAN PORTAL) --- */}
+      {selectedImage && createPortal(
         <div 
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 sm:p-8 animate-in zoom-in-95 duration-200"
+          // PERBAIKAN: Ubahbackdrop-blur-xl (sangat kuat) -> backdrop-blur (standar)
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-white/40 backdrop-blur p-4 sm:p-8 animate-in fade-in zoom-in-95 duration-200"
           onClick={() => setSelectedImage(null)}
         >
           <div 
             className="relative flex justify-center items-center w-full max-w-4xl max-h-full"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Tombol Close diletakkan di dalam layar agar aman di HP */}
+            {/* Tombol Close */}
             <button 
               onClick={() => setSelectedImage(null)} 
-              className="absolute top-2 right-2 sm:-top-5 sm:-right-5 bg-black/60 border border-white/20 text-white p-2 rounded-full hover:bg-black transition-all cursor-pointer shadow-xl z-10"
+              className="absolute top-2 right-2 sm:-top-5 sm:-right-5 bg-white border border-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-all cursor-pointer shadow-xl z-10 active:scale-95"
             >
               <X size={20} />
             </button>
@@ -350,10 +358,11 @@ export default function Pengumuman() {
             <img 
               src={selectedImage.foto} 
               alt={selectedImage.judul} 
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-gray-100 bg-white p-1.5"
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
