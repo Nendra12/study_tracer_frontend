@@ -335,10 +335,11 @@ export default function Pengumuman() {
         editData={editData}
       />
 
-      {/* --- RENDER MODAL GAMBAR (MENGGUNAKAN PORTAL) --- */}
+      {/* --- RENDER MODAL GAMBAR SAJA (POP-UP LIGHTBOX) (MENGGUNAKAN PORTAL) --- */}
       {selectedImage && createPortal(
         <div 
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 sm:p-8 animate-in zoom-in-95 duration-200"
+          // PERBAIKAN: Ubahbackdrop-blur-xl (sangat kuat) -> backdrop-blur (standar)
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-white/40 backdrop-blur p-4 sm:p-8 animate-in fade-in zoom-in-95 duration-200"
           onClick={() => setSelectedImage(null)}
         >
           <div 
@@ -348,7 +349,7 @@ export default function Pengumuman() {
             {/* Tombol Close */}
             <button 
               onClick={() => setSelectedImage(null)} 
-              className="absolute top-2 right-2 sm:-top-5 sm:-right-5 bg-black/60 border border-white/20 text-white p-2 rounded-full hover:bg-black transition-all cursor-pointer shadow-xl z-10"
+              className="absolute top-2 right-2 sm:-top-5 sm:-right-5 bg-white border border-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-all cursor-pointer shadow-xl z-10 active:scale-95"
             >
               <X size={20} />
             </button>
@@ -357,7 +358,7 @@ export default function Pengumuman() {
             <img 
               src={selectedImage.foto} 
               alt={selectedImage.judul} 
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-gray-100 bg-white p-1.5"
             />
           </div>
         </div>,
