@@ -179,7 +179,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
     { name: 'Postingan', path: '/alumni/postingan', locked: !canAccessAll },
     { name: 'Pengumuman', path: '/alumni/pengumuman', locked: false },
     { name: 'Alumni', path: '/alumni/daftar-alumni', locked: !canAccessAll },
-    { name: 'Connections', path: '/alumni/connections', locked: !canAccessAll, badge: pendingCount },
+    { name: 'Koneksi', path: '/alumni/connections', locked: !canAccessAll, badge: pendingCount },
     { name: 'Lowongan', path: '/alumni/lowongan', locked: !canAccessAll },
   ];
 
@@ -208,7 +208,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className={`fixed top-0 left-0 right-0 z-[70] transition-all duration-300 print:hidden ease-in-out ${bgNavbar}`}
+      className={`fixed top-0 left-0 right-0 z-80 transition-all duration-300 print:hidden ease-in-out ${bgNavbar}`}
     >
       <div className="print:hidden transition-all duration-500 relative max-w-7xl mx-auto px-6 lg:px-8">
         <div className="relative py-4 flex justify-between items-center transition-all duration-500">

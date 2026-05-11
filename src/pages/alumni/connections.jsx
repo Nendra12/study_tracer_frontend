@@ -394,14 +394,6 @@ export default function ConnectionsPage() {
                           alumniId={item.id}
                           isSelf={isSelf}
                           statusEntry={item.statusEntry}
-                          isLoading={isLoading}
-                          compact
-                          mode="badge"
-                        />
-                        <Connection
-                          alumniId={item.id}
-                          isSelf={isSelf}
-                          statusEntry={item.statusEntry}
                           onConnect={(...args) => runAndRefresh(sendRequest, ...args)}
                           onAccept={(...args) => runAndRefresh(acceptRequest, ...args)}
                           onReject={(...args) => runAndRefresh(rejectRequest, ...args)}
