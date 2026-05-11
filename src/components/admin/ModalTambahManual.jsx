@@ -10,13 +10,22 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
   const [lookupState, setLookupState] = useState('idle'); // 'idle' | 'loading' | 'found' | 'not_found'
   const [lookupResult, setLookupResult] = useState(null);
 
+  // Mencegah scroll pada body ketika modal terbuka
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      // Reset form setiap kali modal dibuka
       setFormData({ nisn: '', nama: '', id_jurusan: '', status_kelulusan: 'lulus' });
       setErrors({ nisn: undefined });
       setLookupState('idle');
       setLookupResult(null);
+    } else {
+      document.body.style.overflow = 'auto';
     }
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -107,8 +116,17 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
     !errors.nisn;
 
   return createPortal(
-    <div className="fixed inset-0 z-[99] flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-visible animate-in zoom-in-95 duration-200 my-auto">
+    <div 
+      // PERBAIKAN: Ubah bg-white/40 (terang) kembali menjadi bg-black/50 (gelap tipis transparan)
+      // Gunakan backdrop-blur (blur sedang) berdasarkan instruksi user
+      // Pertahankan z-index z-[99999] agar benar-benar di atas sidebar dan header
+      className="fixed inset-0 z-[99999] flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur animate-in fade-in duration-200 overflow-y-auto"
+    >
+      <div 
+        // PERBAIKAN: Wadah modal tetap putih, tapi gunakan bayangan gelap yang tipis shadow-[0_0_40px_-15px_rgba(0,0,0,0.2)] 
+        // agar menonjol dari latar belakang gelap
+        className="bg-white w-full max-w-md rounded-2xl shadow-[0_0_40px_-15px_rgba(0,0,0,0.2)] border border-slate-100 overflow-visible animate-in zoom-in-95 duration-200 my-auto"
+      >
 
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
