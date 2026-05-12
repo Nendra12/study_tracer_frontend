@@ -429,6 +429,10 @@ export const adminApi = {
     return api.get('/admin/sebaran/search', { params });
   },
 
+  searchAlumniByName(query) {
+    return api.get('/admin/alumni', { params: { search: query, per_page: 10 } });
+  },
+
   // ── Meta Data Management ──────────────────────
   getMetaData() {
     return api.get('/metadata'); 

@@ -8,7 +8,6 @@ import Navbar from '../../components/alumni/Navbar';
 import Footer from '../../components/alumni/Footer';
 import Pagination from '../../components/admin/Pagination';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
-import TambahLowongan from '../../components/alumni/TambahLowongan';
 
 // Komponen Lowongan yang dipisah
 import LowonganCard from '../../components/alumni/LowonganCard';
@@ -181,10 +180,6 @@ export default function Lowongan() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingJob, setEditingJob] = useState(null);
-
   // My Lowongan State
   const [myLowongan, setMyLowongan] = useState([]);
   const [myLoading, setMyLoading] = useState(false);
@@ -291,9 +286,9 @@ export default function Lowongan() {
   }, [activeTab, fetchLowongan, fetchMyLowongan]);
 
   useEffect(() => {
-    document.body.style.overflow = (selectedImage || isModalOpen) ? 'hidden' : 'unset';
+    document.body.style.overflow = selectedImage ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; };
-  }, [selectedImage, isModalOpen]);
+  }, [selectedImage]);
 
   // PERBAIKAN FUNGSI SEARCH: Memasukkan value inputan ke appliedSearch untuk query
   const handleSearch = (e) => {
@@ -322,16 +317,6 @@ export default function Lowongan() {
     }
   };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingJob(null);
-  };
-
-  const handleFormSuccess = () => {
-    if (activeTab === 'saya') fetchMyLowongan(myPage);
-    else fetchLowongan(currentPage);
-  };
-
   // Render "Lowongan Saya" tab content
   const renderMyLowongan = () => {
     if (myLoading) return <MyLowonganSkeleton />;
@@ -358,7 +343,7 @@ export default function Lowongan() {
             <h2 className="text-lg font-black text-primary mb-2">Belum Ada Lowongan</h2>
             <p className="text-sm font-medium mb-4">Anda belum mengajukan lowongan kerja apapun.</p>
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => navigate('/alumni/lowongan/tambah')}
               className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer inline-flex items-center gap-2"
             >
               <Plus size={16} /> Pasang Lowongan
@@ -496,7 +481,7 @@ export default function Lowongan() {
             </div>
 
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => navigate('/alumni/lowongan/tambah')}
               className="px-5 py-2.5 rounded-xl text-[13px] font-bold bg-primary hover:bg-primary/80 text-white transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Plus size={16} />Tambah Lowongan
@@ -555,8 +540,6 @@ export default function Lowongan() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12">
         {activeTab === 'saya' ? renderMyLowongan() : renderLowonganGrid()}
       </main>
-
-      <TambahLowongan isOpen={isModalOpen} onClose={handleModalClose} onSuccess={handleFormSuccess} editJob={editingJob} />
 
       {/* --- MODAL IMAGE PREVIEW --- */}
       <AnimatePresence>

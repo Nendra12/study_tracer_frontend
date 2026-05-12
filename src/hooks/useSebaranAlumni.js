@@ -32,6 +32,7 @@ export function useSebaranAlumni() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [heatmapData, setHeatmapData] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [alumniSearchResults, setAlumniSearchResults] = useState([]);
   const [totalMarkers, setTotalMarkers] = useState(0);
   const [totalAlumni, setTotalAlumni] = useState(0);
 
@@ -43,6 +44,7 @@ export function useSebaranAlumni() {
 
   const [filters, setFilters] = useState({});
   const searchTimeout = useRef(null);
+  const alumniSearchTimeout = useRef(null);
 
   const fetchAllPerusahaan = useCallback(async () => {
     const perPage = 200;
@@ -180,6 +182,28 @@ export function useSebaranAlumni() {
     }, 300);
   }, []);
 
+  const searchAlumni = useCallback((query) => {
+    if (alumniSearchTimeout.current) {
+      clearTimeout(alumniSearchTimeout.current);
+    }
+
+    if (!query || query.length < 2) {
+      setAlumniSearchResults([]);
+      return;
+    }
+
+    alumniSearchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await adminApi.searchAlumniByName(query);
+        const raw = res.data?.data || res.data || [];
+        const rows = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
+        setAlumniSearchResults(rows);
+      } catch (err) {
+        console.error('searchAlumni error:', err);
+      }
+    }, 300);
+  }, []);
+
   const applyFilters = useCallback((newFilters) => {
     const cleanFilters = {};
 
@@ -228,6 +252,9 @@ export function useSebaranAlumni() {
       if (searchTimeout.current) {
         clearTimeout(searchTimeout.current);
       }
+      if (alumniSearchTimeout.current) {
+        clearTimeout(alumniSearchTimeout.current);
+      }
     };
   }, []);
 
@@ -239,6 +266,7 @@ export function useSebaranAlumni() {
     selectedLocation,
     heatmapData,
     searchResults,
+    alumniSearchResults,
     totalMarkers,
     totalAlumni,
     filters,
@@ -251,9 +279,11 @@ export function useSebaranAlumni() {
     resetFilters,
     handleMarkerClick,
     searchLocation,
+    searchAlumni,
     fetchMarkers,
     fetchStats,
     setSelectedLocation,
     setSearchResults,
+    setAlumniSearchResults,
   };
 }

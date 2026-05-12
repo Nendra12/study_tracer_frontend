@@ -46,8 +46,6 @@ export default function ManajemenPekerjaan() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingJob, setEditingJob] = useState(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  // State untuk Modal Gambar Lightbox
   const [selectedImage, setSelectedImage] = useState(null);
 
   const tabFilterMap = {
