@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle, UserPen, MessageSquareMore } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, User, Lock, AlertCircle, UserPen, MessageSquareMore, MessageSquareOff } from 'lucide-react';
 import { STORAGE_BASE_URL } from '../api/axios';
 import { alumniApi } from '../api/alumni';
 import { useThemeSettings } from '../context/ThemeContext';
@@ -194,7 +194,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
 
   const isSolidMode = scrolled || isProfilePage || isKuesionerPage || isPengumumanDetail || isLowonganDetail || isPesan;
   const hasSolidBg = true;
-  
+
   // Standard Fleet inspired styling (Always solid white)
   const bgNavbar = 'bg-white shadow-sm border-b border-gray-100';
   const textLogo = 'text-slate-900';
@@ -202,7 +202,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
   const textLinkDefault = 'text-slate-500 hover:text-slate-900';
   const textLinkActive = 'text-slate-900';
   const iconAction = 'text-slate-500 hover:text-slate-900 hover:bg-slate-100';
-  
+
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
@@ -212,7 +212,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
     >
       <div className="print:hidden transition-all duration-500 relative max-w-7xl mx-auto px-6 lg:px-8">
         <div className="relative py-4 flex justify-between items-center transition-all duration-500">
-          
+
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
             <img src={theme?.logo || Icon} alt="Study Tracer Logo" className="w-8 h-8 object-contain shrink-0" />
@@ -245,7 +245,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
                 if (item.locked) {
                   return (
                     <div key={i} className="group relative flex items-center gap-1.5 text-sm font-medium text-slate-400 cursor-not-allowed whitespace-nowrap">
-                       {item.name} <Lock size={12} className="opacity-60" />
+                      {item.name} <Lock size={12} className="opacity-60" />
                       <div className="hidden group-hover:block absolute top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10 whitespace-normal">
                         <div className="flex items-start gap-2">
                           <AlertCircle size={14} className="shrink-0 mt-0.5" />
@@ -283,11 +283,12 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
                 ) : (
                   <>
                     {chatIsLocked ? (
-                      <div className={`relative group p-2 rounded-lg transition-all cursor-not-allowed opacity-50 ${iconAction}`}>
-                        <MessageSquareMore size={20} strokeWidth={1.5} />
-                        <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                          <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg w-48 text-left whitespace-normal">
-                            Membutuhkan verifikasi akun atau Isi kuesioner terlebih dahulu
+                      <div className={`relative group p-2 rounded-lg transition-all cursor-not-allowed ${iconAction}`}>
+                        <MessageSquareOff size={20} strokeWidth={1.5} className='opacity-50'/>
+                        <div className="hidden group-hover:block absolute top-full mt-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg shadow-lg z-10 whitespace-normal">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                            <p>Membutuhkan verifikasi akun atau Isi kuesioner terlebih dahulu</p>
                           </div>
                         </div>
                       </div>
@@ -311,7 +312,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
                         </span>
                       )}
                     </button>
-                  </> 
+                  </>
                 )}
 
                 {/* Profile Dropdown */}
@@ -341,7 +342,7 @@ export default function GlobalNavbar({ variant = 'landing', activeSection, setAc
                           </Link>
                           {variant === 'landing' && (
                             <Link to="/alumni" onClick={() => setIsDropdownOpen(false)} className="group flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
-                                <LogOut size={16} className="text-slate-400 group-hover:text-slate-700" /> Dashboard Alumni
+                              <LogOut size={16} className="text-slate-400 group-hover:text-slate-700" /> Dashboard Alumni
                             </Link>
                           )}
                           <div className="h-px bg-gray-100 my-1 mx-2" />
