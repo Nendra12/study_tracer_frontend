@@ -67,9 +67,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
     let nextKotaId = '';
 
-    // Jika ada kota, coba cari ID kota.
-    // - Kalau provinsi terdeteksi: cari berdasarkan provinsi tersebut.
-    // - Kalau provinsi belum terdeteksi (map-first): cari dari seluruh kota, lalu turunkan provinsi dari hasilnya.
     if (cityRaw) {
       const targetProvId = nextProvId || String(fallbackProvId || '');
       let kotaData = kotaList;
@@ -90,7 +87,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       if (matchedKota?.id) {
         nextKotaId = String(matchedKota.id);
 
-        // Map-first: jika provinsi belum ketemu dari provinceRaw, coba derive dari data kota.
         if (!nextProvId) {
           const derivedProvId = String(
             matchedKota.id_provinsi ||
@@ -103,7 +99,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       }
     }
 
-    // Update state sekali supaya kota tidak "hilang" sementara atau ter-reset saat match gagal.
     setState((prev) => {
       const prevProvId = String(prev.id_provinsi || '');
       const prevKotaId = String(prev.id_kota || '');
@@ -125,7 +120,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     return { provId: nextProvId, kotaId: nextKotaId };
   };
 
-  // 1. Sinkronisasi Status Awal dari formData
   const getInitialStatus = () => {
     if (formData.pekerjaan) return 'Bekerja';
     if (formData.universitas) return 'Kuliah';
@@ -141,7 +135,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [universitasList, setUniversitasList] = useState([]); 
   
-  // STATE: Untuk Provinsi dan Kota
   const [provinsiList, setProvinsiList] = useState([]);
   const [kotaList, setKotaList] = useState([]);
   const [loadingProvinsi, setLoadingProvinsi] = useState(false);
@@ -152,7 +145,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
 
   const [locationLock, setLocationLock] = useState({ pekerjaan: false, universitas: false, wirausaha: false });
 
-  // State Form
   const [pekerjaan, setPekerjaan] = useState(formData.pekerjaan || { 
     posisi: '', nama_perusahaan: '', id_provinsi: '', id_kota: '', jalan: '', 
     latitude: null, longitude: null,
@@ -199,7 +191,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showCaptchaModal]);
 
-  // 2. Fetch data master (Status, Bidang Usaha, Perusahaan, Universitas & Provinsi)
   useEffect(() => {
     masterDataApi.getStatus().then((res) => setStatusList(res.data.data || []));
     
@@ -211,7 +202,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       setBidangUsahaMap(map);
     });
 
-    // Fetch Master Perusahaan
     masterDataApi.getPerusahaan()
       .then((res) => {
         const rawData = res.data?.data?.data || res.data?.data || [];
@@ -222,7 +212,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       })
       .catch((err) => console.error("Gagal mengambil data perusahaan", err));
 
-    // Fetch Master Universitas
     masterDataApi.getUniversitas()
       .then((res) => {
         const rawData = res.data?.data?.data || res.data?.data || [];
@@ -233,7 +222,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       })
       .catch((err) => console.error("Gagal mengambil data universitas", err));
 
-    // Fetch Provinsi
     setLoadingProvinsi(true);
     masterDataApi.getProvinsi()
       .then((res) => setProvinsiList(res.data?.data || res.data || []))
@@ -241,7 +229,6 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       .finally(() => setLoadingProvinsi(false));
   }, []);
 
-  // Fetch Kota berdasarkan provinsi aktif di form status yang sedang dipilih
   useEffect(() => {
     const activeProvinsiId = selectedStatus === 'Bekerja'
       ? pekerjaan.id_provinsi
@@ -263,14 +250,12 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       .finally(() => setLoadingKota(false));
   }, [selectedStatus, pekerjaan.id_provinsi, universitas.id_provinsi, wirausaha.id_provinsi]);
 
-  // LOGIKA DINAMIS: Cek apakah Perusahaan / Universitas sudah ada di database
   const isExistingPerusahaan = perusahaanList.some(p => p.toLowerCase() === (pekerjaan.nama_perusahaan || '').trim().toLowerCase());
   const showPerusahaanLocation = (pekerjaan.nama_perusahaan || '').trim() !== '' && !isExistingPerusahaan;
 
   const isExistingUniv = universitasList.some(u => u.toLowerCase() === (universitas.nama_universitas || '').trim().toLowerCase());
   const showUnivLocation = (universitas.nama_universitas || '').trim() !== '' && !isExistingUniv;
 
-  // 3. FUNGSI PENYIMPANAN OTOMATIS
   useEffect(() => {
     const statusNameMap = { 'Mencari Kerja': 'Belum Bekerja' };
     const backendName = statusNameMap[selectedStatus] || selectedStatus;
@@ -487,25 +472,38 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                   />
                 </div>
 
+                {/* MODIFIKASI: TAMPILKAN TOMBOL PETA BESAR JIKA ALAMAT BELUM ADA */}
                 <div className="md:col-span-2 space-y-1">
                   <label className="text-[11px] font-bold text-primary uppercase">Alamat Perusahaan Baru <span className="text-red-500">*</span></label>
-                  <div className="mt-2 flex gap-2 items-start">
-                    <input
-                      type="text"
-                      value={pekerjaan.jalan || ''}
-                      onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
-                      className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                      placeholder="Masukkan alamat lengkap perusahaan"
-                    />
+                  
+                  {(!pekerjaan.jalan && !pekerjaan.latitude) ? (
                     <button
                       type="button"
                       onClick={() => setShowBekerjaMap(true)}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer"
+                      className="mt-2 w-full flex items-center justify-center gap-2 py-4 bg-primary/5 border-2 border-dashed border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-bold cursor-pointer"
                     >
-                      <MapPin size={16} />
-                      Peta
+                      <MapPin size={18} /> Buka Peta untuk Pilih Lokasi
                     </button>
-                  </div>
+                  ) : (
+                    <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start">
+                      <input
+                        type="text"
+                        value={pekerjaan.jalan || ''}
+                        onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
+                        className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                        placeholder="Masukkan alamat lengkap perusahaan"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowBekerjaMap(true)}
+                        className="flex w-full sm:w-auto shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
+                      >
+                        <MapPin size={16} />
+                        <span className="hidden sm:inline">Ubah Peta</span>
+                        <span className="sm:hidden">Peta</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -593,25 +591,38 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                   />
                 </div>
 
+                {/* MODIFIKASI: TAMPILKAN TOMBOL PETA BESAR JIKA ALAMAT BELUM ADA */}
                 <div className="md:col-span-2 space-y-1">
                   <label className="text-[11px] font-bold text-primary uppercase">Alamat Universitas Baru <span className="text-red-500">*</span></label>
-                  <div className="mt-2 flex gap-2 items-start">
-                    <input
-                      type="text"
-                      value={universitas.alamat || ''}
-                      onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
-                      className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                      placeholder="Masukkan alamat lengkap universitas"
-                    />
+                  
+                  {(!universitas.alamat && !universitas.latitude) ? (
                     <button
                       type="button"
                       onClick={() => setShowUniMap(true)}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer"
+                      className="mt-2 w-full flex items-center justify-center gap-2 py-4 bg-primary/5 border-2 border-dashed border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-bold cursor-pointer"
                     >
-                      <MapPin size={16} />
-                      Peta
+                      <MapPin size={18} /> Buka Peta untuk Pilih Lokasi
                     </button>
-                  </div>
+                  ) : (
+                    <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start">
+                      <input
+                        type="text"
+                        value={universitas.alamat || ''}
+                        onChange={(e) => setUniversitas((prev) => ({ ...prev, alamat: e.target.value }))}
+                        className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                        placeholder="Masukkan alamat lengkap universitas"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowUniMap(true)}
+                        className="flex w-full sm:w-auto shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
+                      >
+                        <MapPin size={16} />
+                        <span className="hidden sm:inline">Ubah Peta</span>
+                        <span className="sm:hidden">Peta</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -681,25 +692,38 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
                 />
               </div>
 
+              {/* MODIFIKASI: TAMPILKAN TOMBOL PETA BESAR JIKA ALAMAT BELUM ADA */}
               <div className="md:col-span-2 space-y-1">
                 <label className="text-[11px] font-bold text-primary uppercase">Alamat Usaha <span className="text-red-500">*</span></label>
-                <div className="mt-2 flex gap-2 items-start">
-                  <input
-                    type="text"
-                    value={wirausaha.alamat || ''}
-                    onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
-                    className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                    placeholder="Masukkan alamat lengkap usaha"
-                  />
+                
+                {(!wirausaha.alamat && !wirausaha.latitude) ? (
                   <button
                     type="button"
                     onClick={() => setShowUsahaMap(true)}
-                    className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer"
+                    className="mt-2 w-full flex items-center justify-center gap-2 py-4 bg-primary/5 border-2 border-dashed border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-bold cursor-pointer"
                   >
-                    <MapPin size={16} />
-                    Peta
+                    <MapPin size={18} /> Buka Peta untuk Pilih Lokasi
                   </button>
-                </div>
+                ) : (
+                  <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start">
+                    <input
+                      type="text"
+                      value={wirausaha.alamat || ''}
+                      onChange={(e) => setWirausaha((prev) => ({ ...prev, alamat: e.target.value }))}
+                      className="w-full p-3 bg-white border-2 border-fourth rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                      placeholder="Masukkan alamat lengkap usaha"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowUsahaMap(true)}
+                      className="flex w-full sm:w-auto shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
+                    >
+                      <MapPin size={16} />
+                      <span className="hidden sm:inline">Ubah Peta</span>
+                      <span className="sm:hidden">Peta</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

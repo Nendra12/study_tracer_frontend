@@ -50,6 +50,7 @@ const AlumniLayout = lazy(() => import("../layouts/AlumniLayout"));
 const Message = lazy(() => import("../pages/alumni/MessagePage"));
 const PostinganAlumni = lazy(() => import("../pages/alumni/postingan"));
 const KelulusanAlumni = lazy(() => import("../pages/alumni/Kelulusan"));
+const RiwayatKuesioner = lazy(() => import("../pages/alumni/RiwayatKuesioner"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -124,6 +125,7 @@ export default function AppRouter() {
           <Route path="notifikasi" element={<Notifikasi />} />
           <Route path="pesan" element={<Message />} />
           <Route path="postingan" element={<PostinganAlumni />} />
+          <Route path="riwayat-kuesioner" element={<RiwayatKuesioner />} />
         </Route>
         
         {/* Standalone Alumni Routes (Without Navbar/Footer) */}
