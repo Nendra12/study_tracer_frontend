@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X } from "lucide-react";
+import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X, Users, TrendingUp, Clock } from "lucide-react";
 import { STORAGE_BASE_URL } from "../../../api/axios";
 import { useAuth } from "../../../context/AuthContext";
 import { useMiniMedsos } from "../../../hooks/useMiniMedsos";
-import SmoothDropdown from "../../admin/SmoothDropdown";
 import StartPostModal from "../StartPostModal";
 import { PostinganSkeleton } from "../skeleton";
 
@@ -221,16 +220,17 @@ export default function MiniMedsosBeranda() {
   
   const [postSearchQuery, setPostSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [postSortMode, setPostSortMode] = useState("terbaru");
+  const [feedFilter, setFeedFilter] = useState(null); // null = terbaru, 'connections', 'all' = trending
   
   const [postModalOpen, setPostModalOpen] = useState(false);
 
-  const sortOptions = [
-    { value: 'terbaru', label: 'Terbaru' },
-    { value: 'popular', label: 'Terpopuler' }
+  const filterOptions = [
+    { value: null,           label: 'Terbaru',   icon: Clock,       desc: 'Semua post, urut terbaru' },
+    { value: 'connections',  label: 'Koneksi',    icon: Users,       desc: 'Post dari koneksi saja' },
+    { value: 'all',          label: 'Trending',   icon: TrendingUp,  desc: 'Semua post, urut engagement' },
   ];
 
-  useEffect(() => { medsos.fetchFeed(); }, []);
+  useEffect(() => { medsos.fetchFeed(10, feedFilter); }, [feedFilter]);
 
   const toggleComments = useCallback((postId) => {
     setOpenCommentsById((prev) => {
@@ -283,11 +283,8 @@ export default function MiniMedsosBeranda() {
         return authorName.includes(query) || content.includes(query);
       });
     }
-    if (postSortMode === "popular") {
-      return [...filtered].sort((a, b) => ((b.likes_count || 0) + (b.comments_count || 0)) - ((a.likes_count || 0) + (a.comments_count || 0)));
-    }
     return filtered; 
-  }, [appliedSearch, postSortMode, medsos.posts]);
+  }, [appliedSearch, medsos.posts]);
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 px-2 sm:px-0 lg:px-4">
@@ -316,20 +313,29 @@ export default function MiniMedsosBeranda() {
                 Cari
               </button>
             </form>
+          </div>
 
-            <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-              <div className="w-full lg:w-48 relative z-50">
-                <SmoothDropdown 
-                  options={sortOptions.map(opt => opt.label)} 
-                  value={sortOptions.find(opt => opt.value === postSortMode)?.label || "Terbaru"} 
-                  onSelect={(label) => {
-                    const selected = sortOptions.find(opt => opt.label === label);
-                    if(selected) setPostSortMode(selected.value);
-                  }} 
-                  placeholder="Urutkan Berdasarkan" 
-                />
-              </div>
-            </div>
+          {/* Feed Filter Tabs */}
+          <div className="flex items-center gap-2 mt-4 overflow-x-auto scrollbar-hide">
+            {filterOptions.map(({ value, label, icon: Icon, desc }) => {
+              const isActive = feedFilter === value;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setFeedFilter(value)}
+                  title={desc}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <Icon size={15} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -345,7 +351,7 @@ export default function MiniMedsosBeranda() {
         {medsos.error && !medsos.loading && (
           <div className="w-full text-center py-8">
             <p className="text-red-500 text-sm font-medium">{medsos.error}</p>
-            <button type="button" onClick={() => medsos.fetchFeed()} className="mt-2 text-sm font-bold text-primary hover:underline cursor-pointer">Coba lagi</button>
+            <button type="button" onClick={() => medsos.fetchFeed(10, feedFilter)} className="mt-2 text-sm font-bold text-primary hover:underline cursor-pointer">Coba lagi</button>
           </div>
         )}
 
