@@ -149,14 +149,18 @@ const JobCard = ({ job, onApprove, onReject, onDelete, onRepost, onEdit, onViewI
           <div className="flex items-center gap-2">
             <button onClick={() => onApprove(job.id)} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"><Check size={14} /> Setujui</button>
             <button onClick={() => onReject(job.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X size={16} /></button>
-            <button onClick={() => onEdit(job)} className="p-2 text-gray-400 hover:text-primary cursor-pointer"><Pencil size={18} /></button>
+            {job.posted_by?.role !== 'alumni' && (
+              <button onClick={() => onEdit(job)} className="p-2 text-gray-400 hover:text-primary cursor-pointer"><Pencil size={18} /></button>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-2">
             {(displayStatus === "BERAKHIR" || displayStatus === "DITOLAK") && (
               <button onClick={() => onRepost(job.id)} className="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-100 cursor-pointer"><RotateCcw size={18} /></button>
             )}
-            <button onClick={() => onEdit(job)} className="p-2 text-slate-500 bg-slate-50 hover:text-primary rounded-xl border border-slate-100 cursor-pointer"><Pencil size={18} /></button>
+            {job.posted_by?.role !== 'alumni' && (
+              <button onClick={() => onEdit(job)} className="p-2 text-slate-500 bg-slate-50 hover:text-primary rounded-xl border border-slate-100 cursor-pointer"><Pencil size={18} /></button>
+            )}
             <button onClick={() => onDelete(job.id)} className="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 cursor-pointer"><Trash2 size={18} /></button>
           </div>
         )}

@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { Search, Filter, Building2, School } from 'lucide-react';
+import { Search, Filter, UserCircle2 } from 'lucide-react';
 import { useSebaranAlumni } from '../../hooks/useSebaranAlumni';
 
 import StatSebaran from '../../components/admin/sebaran/StatSebaran';
@@ -16,14 +16,18 @@ export default function SebaranAlumni() {
     markers, bounds, stats, filterOptions, selectedLocation,
     totalMarkers, totalAlumni, loadingMarkers, loadingDetail, loadingFilters,
     applyFilters, resetFilters, handleMarkerClick, searchLocation, searchResults, setSearchResults,
+    searchAlumni, alumniSearchResults, setAlumniSearchResults,
   } = useSebaranAlumni();
 
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [alumniSearchQuery, setAlumniSearchQuery] = useState('');
+  const [flyTo, setFlyTo] = useState(null);
   const [activeFilters, setActiveFilters] = useState({
     tipe_karir: '', angkatan: '', perusahaan_id: '', universitas_id: '',
     provinsi_id: '', jurusan_id: '', kota_id: '', bidang_usaha_id: '',
   });
+  const alumniSearchRef = useRef(null);
 
   const handleFilterChange = (keyOrObj, value) => {
     setActiveFilters((prev) => {
@@ -41,37 +45,65 @@ export default function SebaranAlumni() {
   const handleResetFilters = () => {
     setActiveFilters({ tipe_karir: '', angkatan: '', perusahaan_id: '', universitas_id: '', provinsi_id: '', jurusan_id: '', kota_id: '', bidang_usaha_id: '' });
     setSearchQuery(''); setSearchResults([]); resetFilters(); setShowFilters(false);
+    setAlumniSearchQuery(''); setAlumniSearchResults([]);
+    setFlyTo(null);
   };
 
   const handleSearch = (e) => {
     const q = e.target.value; setSearchQuery(q); searchLocation(q);
   };
 
-  const handleSearchSelect = (result) => {
-    const filterKey = result.type === 'perusahaan' ? 'perusahaan_id' : 'universitas_id';
-
-    // Use the updated handler that auto-applies map update and triggers business logic if we put that logic in handleFilterChange or handle it properly.
-    // Wait, the business logic will be in FilterSebaran.jsx, but since it's search select here, we should apply it too.
-    const updates = { [filterKey]: result.id };
-    if (result.type === 'perusahaan') {
-      updates.tipe_karir = 'bekerja';
-      updates.universitas_id = '';
-      updates.bidang_usaha_id = '';
-    } else {
-      updates.tipe_karir = 'kuliah';
-      updates.perusahaan_id = '';
-      updates.bidang_usaha_id = '';
+  const handleAlumniSearch = (e) => {
+    const q = e.target.value;
+    setAlumniSearchQuery(q);
+    searchAlumni(q);
+    // Kalau query dihapus, reset filter alumni_id
+    if (!q) {
+      const updates = { ...activeFilters, alumni_id: '' };
+      setActiveFilters(updates);
+      applyFilters(updates);
     }
+  };
 
-    handleFilterChange(updates);
-    setSearchQuery('');
-    setSearchResults([]);
-    setShowFilters(false);
+  const handleAlumniSelect = (alumni) => {
+    const namaAlumni = alumni.nama || alumni.name || `Alumni #${alumni.id}`;
+    setAlumniSearchQuery(namaAlumni);
+    setAlumniSearchResults([]);
+
+    // Cari lokasi alumni langsung dari markers yang sudah dimuat (alumni_preview)
+    const alumniId = alumni.id;
+    const matchingMarkers = markers.filter((m) =>
+      m.alumni_preview?.some((a) => 
+        String(a.id) === String(alumniId) || String(a.id_alumni) === String(alumniId)
+      )
+    );
+
+    if (matchingMarkers.length > 0) {
+      // Fly langsung ke marker pertama yang mengandung alumni ini
+      const target = matchingMarkers[0];
+      setFlyTo({ lat: target.latitude, lng: target.longitude, zoom: 14, _t: Date.now() });
+    } else {
+      // Fallback: jika tidak ditemukan di preview, tetap apply filter dan tunggu backend
+      const updates = { ...activeFilters, alumni_id: alumniId };
+      setActiveFilters(updates);
+      applyFilters(updates);
+    }
   };
 
   const activeFilterCount = useMemo(() => {
     return Object.values(activeFilters).filter((v) => v !== '' && v !== null).length;
   }, [activeFilters]);
+
+  // Tutup dropdown alumni search saat klik di luar
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (alumniSearchRef.current && !alumniSearchRef.current.contains(e.target)) {
+        setAlumniSearchResults([]);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // LOGIKA LOADING SKELETON
   // Tampilkan skeleton JIKA sedang memuat data pertama kali DAN markers masih kosong/belum ada
@@ -81,7 +113,7 @@ export default function SebaranAlumni() {
   useEffect(() => {
     if (!loadingMarkers && !isInitialLoading && activeFilterCount > 0 && totalMarkers === 0) {
       toast.error('Tidak ada data yang sesuai dengan filter', {
-        id: 'empty-filter', // Mencegah toast duplikat
+        id: 'empty-filter', 
         duration: 4000,
       });
     }
@@ -96,21 +128,56 @@ export default function SebaranAlumni() {
       {/* HEADER BAR */}
       <StatSebaran stats={stats} />
 
-
       <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col md:flex-row items-center gap-3 shadow-sm relative z-[60]">
-        <div className="relative w-full flex-1">
+        {/* SEARCH NAMA ALUMNI */}
+        <div className="relative w-full flex-1" ref={alumniSearchRef}>
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={searchQuery} onChange={handleSearch} placeholder="Cari nama perusahaan atau universitas..." className="w-full pl-11 pr-4 py-2.5 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" />
-          {searchResults.length > 0 && (
+          <input
+            type="text"
+            value={alumniSearchQuery}
+            onChange={handleAlumniSearch}
+            placeholder="Cari nama alumni..."
+            className="w-full pl-11 pr-4 py-2.5 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+          />
+          {alumniSearchQuery && (
+            <button
+              onClick={() => {
+                setAlumniSearchQuery('');
+                setAlumniSearchResults([]);
+                setFlyTo(null);
+                const updates = { ...activeFilters, alumni_id: '' };
+                setActiveFilters(updates);
+                applyFilters(updates);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none cursor-pointer"
+            >
+              ×
+            </button>
+          )}
+          {alumniSearchResults.length > 0 && (
             <div className="absolute top-[110%] left-0 w-full bg-white rounded-xl shadow-lg border border-gray-100 z-[100] max-h-60 overflow-y-auto py-2">
-              {searchResults.map((result) => (
-                <button key={`${result.type}-${result.id}`} onClick={() => handleSearchSelect(result)} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer">
-                  <div className={`p-2 rounded-lg ${result.type === 'perusahaan' ? 'bg-blue-50 text-blue-500' : 'bg-green-50 text-green-500'}`}>
-                    {result.type === 'perusahaan' ? <Building2 size={16} /> : <School size={16} />}
-                  </div>
+              {alumniSearchResults.map((alumni) => (
+                <button
+                  key={alumni.id}
+                  onClick={() => handleAlumniSelect(alumni)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer"
+                >
+                  {alumni.foto_url || alumni.foto ? (
+                    <img
+                      src={alumni.foto_url || alumni.foto}
+                      alt={alumni.nama}
+                      className="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <UserCircle2 size={18} className="text-primary/60" />
+                    </div>
+                  )}
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-primary truncate">{result.name}</p>
-                    {result.kota && <p className="text-xs text-gray-400 truncate">{result.kota}</p>}
+                    <p className="text-sm font-bold text-primary truncate">{alumni.nama || alumni.name}</p>
+                    {alumni.angkatan && (
+                      <p className="text-xs text-gray-400">Angkatan {alumni.angkatan}</p>
+                    )}
                   </div>
                 </button>
               ))}
@@ -128,7 +195,7 @@ export default function SebaranAlumni() {
       <FilterSebaran showFilters={showFilters} setShowFilters={setShowFilters} loadingFilters={loadingFilters} filterOptions={filterOptions} activeFilters={activeFilters} handleFilterChange={handleFilterChange} handleApplyFilters={handleApplyFilters} handleResetFilters={handleResetFilters} />
 
       {/* PETA LEAFLET COMPONENT */}
-      <MapSebaran markers={markers} bounds={bounds} loadingMarkers={loadingMarkers} loadingDetail={loadingDetail} selectedLocation={selectedLocation} handleMarkerClick={handleMarkerClick} totalMarkers={totalMarkers} totalAlumni={totalAlumni} />
+      <MapSebaran markers={markers} bounds={bounds} loadingMarkers={loadingMarkers} loadingDetail={loadingDetail} selectedLocation={selectedLocation} handleMarkerClick={handleMarkerClick} totalMarkers={totalMarkers} totalAlumni={totalAlumni} flyTo={flyTo} />
 
       {/* TOP 5 COMPONENT */}
       <TopSebaran markers={markers} />

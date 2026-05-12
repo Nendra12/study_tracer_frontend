@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin } from 'lucide-react';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { adminApi } from '../../api/admin';
+import { alumniApi } from '../../api/alumni';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
 import { STORAGE_BASE_URL } from '../../api/axios';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import LocationPicker from '../../components/common/LocationPicker';
+import RichTextEditor from '../../components/admin/RichTextEditor';
 import { toastWarning, alertSuccess, alertError } from '../../utilitis/alert';
 
-export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = null }) {
+export default function TambahLowonganPage() {
   const { isAdmin } = useAuth();
-  const isEditMode = !!editJob;
+  const navigate = useNavigate();
+  const isEditMode = false; // Page is only for adding for now
 
   const formatTime = (timeString) => {
     if (!timeString) return "";
@@ -24,6 +28,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     alamat_perusahaan: '',
     tanggal_berakhir: '',
     deskripsi: '',
+    nomor_kontak: '',
     tipe_pekerjaan: '',
     lokasi: '',
     foto: null,
@@ -81,9 +86,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch Provinsi & Skills saat modal dibuka
+  // Fetch Provinsi & Skills saat halaman dibuka
   useEffect(() => {
-    if (!isOpen) return;
 
     const fetchMasterData = async () => {
       setLoadingProvinsi(true);
@@ -108,7 +112,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       }
     };
     fetchMasterData();
-  }, [isOpen]);
+  }, []);
 
   // Fetch Kota berdasarkan Provinsi
   useEffect(() => {
@@ -132,53 +136,21 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     fetchKota();
   }, [formData.id_provinsi]);
 
-  // Sinkronisasi Form Saat Buka Modal
+  // Inisialisasi State Saat Mount
   useEffect(() => {
-    if (editJob && isOpen) {
-      const cityId = editJob.id_kota ? String(editJob.id_kota) : editJob.perusahaan?.kota?.id ? String(editJob.perusahaan.kota.id) : '';
-      const provinceId = editJob.id_provinsi ? String(editJob.id_provinsi) : editJob.perusahaan?.kota?.provinsi?.id ? String(editJob.perusahaan.kota.provinsi.id) : '';
-
-      setFormData({
-        judul: editJob.judul || '',
-        perusahaan: editJob.perusahaan?.nama || editJob.nama_perusahaan || '',
-        id_perusahaan: editJob.id_perusahaan ? String(editJob.id_perusahaan) : (editJob.perusahaan?.id ? String(editJob.perusahaan.id) : ''),
-        alamat_perusahaan: editJob.alamat_perusahaan || editJob.perusahaan?.jalan || '',
-        tanggal_berakhir: editJob.lowongan_selesai || '',
-        deskripsi: editJob.deskripsi || '',
-        tipe_pekerjaan: editJob.tipe_pekerjaan || '',
-        lokasi: editJob.lokasi || '',
-        foto: null,
-        id_provinsi: provinceId,
-        id_kota: cityId,
-        latitude_perusahaan: editJob.latitude_perusahaan ?? editJob.perusahaan?.latitude ?? null,
-        longitude_perusahaan: editJob.longitude_perusahaan ?? editJob.perusahaan?.longitude ?? null,
-        jam_mulai: formatTime(editJob.jam_mulai),
-        jam_berakhir: formatTime(editJob.jam_berakhir),
-      });
-      
-      const fotoPath = editJob.foto_lowongan || editJob.foto;
-      setPreviewUrl(fotoPath ? `${STORAGE_BASE_URL}/${fotoPath}` : null);
-      
-      if (editJob.skills && Array.isArray(editJob.skills)) {
-        setSelectedSkills(editJob.skills.map(s => ({ id: s.id, nama: s.nama })));
-      }
-      setErrors({});
-      setSubmitError(null);
-    } else if (!editJob && isOpen) {
-      setFormData({
-        judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
-        id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
-        latitude_perusahaan: null, longitude_perusahaan: null,
-        jam_mulai: '', jam_berakhir: '',
-      });
-      setSelectedSkills([]);
-      setPreviewUrl(null);
-      setErrors({});
-      setSubmitError(null);
-      setSkillSearch('');
-      setCompanySearchTerm('');
-    }
-  }, [editJob, isOpen]);
+    setFormData({
+      judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '', nomor_kontak: '',
+      id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
+      latitude_perusahaan: null, longitude_perusahaan: null,
+      jam_mulai: '', jam_berakhir: '',
+    });
+    setSelectedSkills([]);
+    setPreviewUrl(null);
+    setErrors({});
+    setSubmitError(null);
+    setSkillSearch('');
+    setCompanySearchTerm('');
+  }, []);
 
   const isExistingCompany = Boolean(formData.id_perusahaan);
 
@@ -311,7 +283,15 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       if (!formData.id_kota) newErrors.id_kota = 'Kota wajib dipilih';
       if (!formData.alamat_perusahaan?.trim()) newErrors.alamat_perusahaan = 'Alamat perusahaan wajib diisi';
     }
-    if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
+    if (!formData.deskripsi.trim() || formData.deskripsi === '<p></p>') newErrors.deskripsi = 'Deskripsi wajib diisi';
+
+    if (!formData.nomor_kontak.trim()) {
+      newErrors.nomor_kontak = 'Nomor kontak wajib diisi';
+    } else if (!/^[\d\s+\-()]+$/.test(formData.nomor_kontak)) {
+      newErrors.nomor_kontak = 'Format nomor kontak tidak valid (hanya angka dan simbol +, -, ())';
+    } else if (formData.nomor_kontak.replace(/\D/g, '').length < 9) {
+      newErrors.nomor_kontak = 'Nomor kontak terlalu pendek (min 9 angka)';
+    }
 
     if (!isEditMode && !formData.foto) {
       newErrors.foto = 'Gambar/Banner wajib diunggah';
@@ -346,6 +326,8 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         }
       }
       fd.append('deskripsi', formData.deskripsi);
+      fd.append('nomor_kontak', formData.nomor_kontak);
+      fd.append('kebutuhan_lainnya', ''); // Kosongkan karena digabung dengan deskripsi
       fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
       fd.append('lowongan_selesai', formData.tanggal_berakhir);
       fd.append('jam_mulai', formData.jam_mulai);
@@ -360,17 +342,15 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       });
 
       if (isEditMode) {
-        await adminApi.updateLowongan(editJob.id, fd);
+        // ... (if needed in future for edit mode)
+        await alumniApi.updateLowongan(editJob.id, fd); // Note: alumniApi doesn't have updateLowongan yet, but isEditMode is hardcoded to false
         alertSuccess('Lowongan kerja berhasil diperbarui!');
       } else {
-        if (isAdmin) fd.append('status', 'published');
-        const res = await adminApi.createLowongan(fd);
-        if (isAdmin && res.data?.data?.id) await adminApi.approveLowongan(res.data.data.id);
-        alertSuccess('Lowongan kerja berhasil dikirim!');
+        await alumniApi.submitLowongan(fd);
+        alertSuccess('Lowongan kerja berhasil dikirim dan menunggu persetujuan admin!');
       }
 
-      onSuccess();
-      onClose();
+      navigate('/alumni/lowongan');
     } catch (err) {
       console.error('Submit lowongan failed:', err);
       if (err.response?.status === 422) {
@@ -401,31 +381,27 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     }
   };
 
-  if (!isOpen) return null;
-
   // Standarisasi kelas Input CSS
   const inputClass = (err) => `w-full h-[48px] px-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
   const textareaClass = (err) => `w-full p-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none min-h-[120px]`;
-  
-  // PERUBAHAN: Menambahkan !text-[11px] !font-black !text-primary !uppercase !tracking-widest pada &label agar judulnya BOLD dan identik
   const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-semibold [&_button_span]:!text-slate-700";
-  console.log(skillsList)
+
   return (
-    <div className="fixed inset-0 z-[99] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative" onClick={e => e.stopPropagation()}>
+    <div className="min-h-screen bg-slate-50 pt-20 pb-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* HEADER MODAL */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
-          <h2 className="text-xl font-black text-primary tracking-tight">
-            {isEditMode ? 'Edit Lowongan Kerja' : 'Pasang Lowongan Kerja'}
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors cursor-pointer">
-            <X size={20} strokeWidth={2.5} />
-          </button>
+        {/* HEADER */}
+        <div className="mb-8 flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Pasang Lowongan Kerja</h1>
+            <p className="text-slate-500 text-sm font-medium mt-1">Isi formulir di bawah ini dengan lengkap untuk memasang lowongan baru.</p>
+          </div>
         </div>
 
-        {/* KONTEN UTAMA */}
-        <div className="p-6 md:p-8 overflow-y-auto space-y-8 flex-1 custom-modal-scroll">
+        <div className="bg-white rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col relative">
+          
+          {/* KONTEN UTAMA */}
+          <div className="p-6 md:p-8 space-y-8 flex-1">
 
           {submitError && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-bold">
@@ -720,24 +696,41 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
             <div className="relative z-[10]">
               <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
-                Deskripsi & Kualifikasi Pekerjaan <span className="text-red-500">*</span>
+                Deskripsi, Kualifikasi & Kebutuhan Lainnya <span className="text-red-500">*</span>
               </label>
-              <textarea name="deskripsi" rows={5} value={formData.deskripsi} onChange={handleInputChange} placeholder="Jelaskan peran, tanggung jawab..." className={textareaClass(errors.deskripsi)} />
+              <div className={errors.deskripsi ? 'ring-2 ring-red-400 rounded-xl' : ''}>
+                <RichTextEditor
+                  content={formData.deskripsi}
+                  onChange={(html) => setFormData(prev => ({ ...prev, deskripsi: html }))}
+                  placeholder="Jelaskan peran, tanggung jawab, kualifikasi, syarat khusus, benefit tambahan..."
+                  minHeight="200px"
+                />
+              </div>
               {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
             </div>
+
+            <div className="relative z-[5]">
+              <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
+                Nomor Kontak <span className="text-red-500">*</span>
+              </label>
+              <input name="nomor_kontak" value={formData.nomor_kontak} onChange={handleInputChange} placeholder="Contoh: 08123456789" className={inputClass(errors.nomor_kontak)} />
+              {errors.nomor_kontak && <p className="text-xs text-red-500 font-medium mt-1">{errors.nomor_kontak}</p>}
+            </div>
+
 
           </div>
         </div>
 
-        {/* Footer Modal / Tombol Aksi */}
-        <div className="p-6 border-t border-gray-100 flex justify-end gap-4 bg-white sticky bottom-0 z-[110] shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-          <button onClick={onClose} disabled={submitting} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm cursor-pointer">
+        {/* Footer / Tombol Aksi */}
+        <div className="p-6 border-t border-gray-100 flex justify-end gap-4 bg-gray-50/50 sticky bottom-0 z-[110]">
+          <button onClick={() => navigate('/alumni/lowongan')} disabled={submitting} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm cursor-pointer">
             Batal
           </button>
           <button onClick={handleSubmit} disabled={submitting} className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/80 transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer text-sm">
-            {submitting ? <Loader2 size={18} className="animate-spin" /> : <>{isEditMode ? 'Simpan' : 'Kirim'} <Send size={16} /></>}
+            {submitting ? <Loader2 size={18} className="animate-spin" /> : <>Kirim <Send size={16} /></>}
           </button>
         </div>
+      </div>
       </div>
 
       <LocationPicker

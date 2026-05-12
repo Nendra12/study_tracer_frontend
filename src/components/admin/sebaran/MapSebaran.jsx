@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { MapPin } from 'lucide-react';
@@ -31,18 +31,40 @@ const markerIcons = {
   wirausaha: createIcon('#f59e0b', svgStore),
 };
 
-function MapBoundsUpdater({ bounds }) {
+function MapViewController({ bounds, flyTo }) {
   const map = useMap();
+  const prevBoundsRef = useRef(null);
+  const prevFlyToRef = useRef(null);
+
   useEffect(() => {
-    if (bounds) {
-      const leafletBounds = L.latLngBounds([bounds.south, bounds.west], [bounds.north, bounds.east]);
-      map.fitBounds(leafletBounds, { padding: [50, 50], maxZoom: 15 });
+    // flyTo: zoom ke koordinat spesifik (single marker / alumni tertentu)
+    if (flyTo) {
+      const key = `${flyTo.lat},${flyTo.lng},${flyTo.zoom},${flyTo._t || ''}`;
+      if (prevFlyToRef.current !== key) {
+        prevFlyToRef.current = key;
+        map.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom || 13, { animate: true, duration: 1.2 });
+      }
+      return;
     }
-  }, [bounds, map]);
+
+    // fitBounds: zoom ke semua marker
+    if (bounds) {
+      const key = `${bounds.south},${bounds.west},${bounds.north},${bounds.east}`;
+      if (prevBoundsRef.current !== key) {
+        prevBoundsRef.current = key;
+        const leafletBounds = L.latLngBounds(
+          [bounds.south, bounds.west],
+          [bounds.north, bounds.east]
+        );
+        map.flyToBounds(leafletBounds, { padding: [50, 50], maxZoom: 13, animate: true, duration: 1.0 });
+      }
+    }
+  }, [bounds, flyTo, map]);
+
   return null;
 }
 
-export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDetail, selectedLocation, handleMarkerClick, totalMarkers, totalAlumni }) {
+export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDetail, selectedLocation, handleMarkerClick, totalMarkers, totalAlumni, flyTo }) {
   const defaultCenter = [-2.5, 118.0];
   const defaultZoom = 5;
 
@@ -171,7 +193,7 @@ export default function MapSebaran({ markers, bounds, loadingMarkers, loadingDet
 
         <MapContainer center={defaultCenter} zoom={defaultZoom} style={{ height: '100%', width: '100%' }} scrollWheelZoom>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
-          <MapBoundsUpdater bounds={bounds} />
+          <MapViewController bounds={bounds} flyTo={flyTo} />
           {markers.map((marker) => (
             <Marker 
               key={marker.id} 
