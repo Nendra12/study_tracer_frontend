@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Briefcase, Award, Layout, FileText } from 'lucide-react';
+import { User, Briefcase, Award, Layout, FileText, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../../components/alumni/Navbar';
@@ -15,6 +15,7 @@ import TabStatusKarier from '../../components/alumni/profile/TabStatusKarier';
 import TabDeskripsiKarier from '../../components/alumni/profile/TabDeskripsiKarier';
 import TabKeahlian from '../../components/alumni/profile/TabKeahlian';
 import TabPortofolio from '../../components/alumni/profile/TabPortofolio';
+import TabRiwayatKuesioner from '../../components/alumni/profile/TabRiwayatKuesioner';
 import { ProfilSkeleton } from '../../components/alumni/skeleton';
 import { useThemeSettings } from '../../context/ThemeContext';
 import { toastSuccess } from '../../utilitis/alert';
@@ -150,6 +151,9 @@ export default function Profil() {
               <button onClick={() => setActiveTab('portofolio')} className={`flex shrink-0  items-center gap-2 px-6 py-5 text-sm font-bold sm:border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'portofolio' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
                 <Layout size={16} /> Portofolio
               </button>
+              <button onClick={() => setActiveTab('riwayat_kuesioner')} className={`flex shrink-0  items-center gap-2 px-6 py-5 text-sm font-bold sm:border-b-2 whitespace-nowrap cursor-pointer transition-all ${activeTab === 'riwayat_kuesioner' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-primary/70'}`}>
+                <ClipboardList size={16} /> Riwayat Kuesioner
+              </button>
             </div>
 
             {/* Render Tab Konten Secara Dinamis */}
@@ -158,6 +162,7 @@ export default function Profil() {
             {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
             {activeTab === 'keahlian' && <TabKeahlian profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
             {activeTab === 'portofolio' && <TabPortofolio profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
+            {activeTab === 'riwayat_kuesioner' && <TabRiwayatKuesioner />}
 
           </div>
         </div>
