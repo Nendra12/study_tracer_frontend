@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X, Users, TrendingUp, Filter } from "lucide-react";
+import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X } from "lucide-react";
 import { STORAGE_BASE_URL } from "../../../api/axios";
 import { useAuth } from "../../../context/AuthContext";
 import { useMiniMedsos } from "../../../hooks/useMiniMedsos";
 import StartPostModal from "../StartPostModal";
 import { PostinganSkeleton } from "../skeleton";
-
-// IMPORT ALERT TAMBAHAN
 import { alertSuccess, alertConfirm } from "../../../utilitis/alert";
+
+// IMPORT SMOOTH DROPDOWN
+import SmoothDropdown from "../../../components/admin/SmoothDropdown";
 
 function getImageUrl(path) {
   if (!path) return null;
@@ -230,11 +231,9 @@ export default function MiniMedsosBeranda() {
   
   const [postSearchQuery, setPostSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [feedFilter, setFeedFilter] = useState('all'); // 'all' = trending (default), 'connections' = koneksi saja
+  const [feedFilter, setFeedFilter] = useState('all'); // 'all' = semua, 'connections' = koneksi saja
   
   const [postModalOpen, setPostModalOpen] = useState(false);
-
-  const isConnectionsFilter = feedFilter === 'connections';
 
   const handleNavigateToProfile = useCallback((alumniId) => {
     if (alumniId) navigate(`/alumni/daftar-alumni/${alumniId}`);
@@ -246,7 +245,7 @@ export default function MiniMedsosBeranda() {
     setOpenCommentsById((prev) => {
       const isOpen = !prev[postId];
       if (isOpen && !medsos.commentsByPost[postId]) medsos.fetchComments(postId);
-      return { ...prev, [postId] : isOpen };
+      return { ...prev, [postId]: isOpen };
     });
   }, [medsos]);
 
@@ -263,7 +262,6 @@ export default function MiniMedsosBeranda() {
     } catch {}
   }, [commentDraftByPostId, replyTargetByPostId, medsos]);
 
-  // MODIFIKASI: Menambahkan Alert saat tambah Post
   const handleSubmitPost = useCallback(async (content, visibility, images) => {
     try {
       await medsos.createPost(content, visibility, images);
@@ -274,7 +272,6 @@ export default function MiniMedsosBeranda() {
     }
   }, [medsos]);
 
-  // MODIFIKASI: Menambahkan Alert saat hapus post
   const handleDeletePost = useCallback(async (postId) => {
     const confirm = await alertConfirm("Hapus postingan ini?", "Postingan yang dihapus tidak dapat dikembalikan.");
     if (!confirm.isConfirmed) return;
@@ -308,59 +305,51 @@ export default function MiniMedsosBeranda() {
     return filtered; 
   }, [appliedSearch, medsos.posts]);
 
+  // Styling custom untuk SmoothDropdown agar tingginya pas dengan form
+  const dropdownWrapperClass = "w-full md:w-auto [&>div]:!w-full md:[&>div]:!w-auto md:[&>div]:!min-w-[160px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-gray-100 [&_button]:!border-2 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-slate-700 [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[160px] [&_li]:!whitespace-nowrap";
+
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 px-2 sm:px-0 lg:px-4">
       
-      {/* MODIFIKASI: Gap dan Layout satu baris (flex-row di ukuran medium keatas) */}
-      <section className="relative z-40 max-w-7xl mx-auto px-6 lg:px-12 -mt-10 mb-6 w-full">
-        <div className="bg-white p-4 rounded-md shadow-sm border border-slate-100 w-full flex flex-col md:flex-row items-center justify-between gap-4">
-          
-          <form
-            onSubmit={handleSearch}
-            className="flex h-[42px] w-full md:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
-          >
-            <div className="relative flex-1 flex items-center">
-              <Search className="absolute left-3 text-gray-400" size={18} />
-              <input
-                type="text"
-                value={postSearchQuery}
-                onChange={(e) => setPostSearchQuery(e.target.value)}
-                placeholder="Cari postingan atau nama alumni..."
-                className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+      {/* FILTER HEADER - Dibuat satu baris dan sejajar */}
+      <section className="relative z-[60] max-w-7xl mx-auto px-6 lg:px-12 -mt-10 w-full">
+        <div className="bg-white p-4 md:p-6 rounded-md shadow-xl border border-slate-100 w-full">
+          <div className="flex flex-col md:flex-row w-full gap-3">
+            
+            <form
+              onSubmit={handleSearch}
+              className="flex h-[42px] w-full md:flex-1 border-2 border-gray-100 rounded-xl bg-white overflow-hidden transition-all focus-within:border-gray-200"
             >
-              Cari
-            </button>
-          </form>
+              <div className="relative flex-1 flex items-center">
+                <Search className="absolute left-3 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  value={postSearchQuery}
+                  onChange={(e) => setPostSearchQuery(e.target.value)}
+                  placeholder="Cari postingan atau nama alumni..."
+                  className="w-full h-full pl-10 pr-4 bg-transparent text-sm text-slate-700 placeholder:text-gray-400 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+              >
+                Cari
+              </button>
+            </form>
 
-          {/* Feed Info & Filter Button */}
-          <div className="flex items-center justify-between w-full md:w-auto gap-5 shrink-0">
-            <div className="inline-flex items-center gap-2 text-sm font-bold text-slate-500">
-              <TrendingUp size={16} className="text-primary" />
-              <span>Trending</span>
-              {isConnectionsFilter && (
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 ml-1">Koneksi</span>
-              )}
+            <div className="flex flex-row gap-3 w-full md:w-auto shrink-0">
+              <div className={`relative z-[60] flex-1 md:w-[180px] ${dropdownWrapperClass}`}>
+                <SmoothDropdown
+                  options={["Semua", "Terkoneksi"]}
+                  value={feedFilter === 'connections' ? 'Terkoneksi' : 'Semua'}
+                  onSelect={(val) => setFeedFilter(val === 'Terkoneksi' ? 'connections' : 'all')}
+                  placeholder="Filter Koneksi"
+                />
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setFeedFilter(isConnectionsFilter ? 'all' : 'connections')}
-              title={isConnectionsFilter ? 'Tampilkan semua postingan' : 'Filter hanya koneksi'}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
-                isConnectionsFilter
-                  ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700'
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              {isConnectionsFilter ? <Users size={15} /> : <Filter size={15} />}
-              {isConnectionsFilter ? 'Koneksi Saja' : 'Filter Koneksi'}
-            </button>
+
           </div>
-
         </div>
       </section>
 
