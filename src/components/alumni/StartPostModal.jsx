@@ -44,8 +44,8 @@ export default function StartPostModal({ open, avatarUrl, displayName, onClose, 
   const handleSubmit = async () => {
     if (!content.trim() && images.length === 0) return;
     try { 
-      // Hardcode visibilitas menjadi "connections"
-      await onSubmit(content, "connections", images); 
+      // Default visibilitas: publik (semua alumni bisa melihat)
+      await onSubmit(content, "public", images); 
       setContent(""); 
       setImages([]); 
       onClose(); 
@@ -65,7 +65,7 @@ export default function StartPostModal({ open, avatarUrl, displayName, onClose, 
               <div className="min-w-0">
                 <p className="text-sm font-black text-slate-800 truncate">{displayName || "Alumni"}</p>
                 <p className="text-xs font-bold text-slate-500 mt-0.5">
-                  Posting ke Koneksi
+                  Posting ke Semua Alumni
                 </p>
               </div>
             </div>
