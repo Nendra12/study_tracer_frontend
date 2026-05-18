@@ -28,7 +28,7 @@ const LihatJawabanDetail = lazy(() => import("../pages/admin/LihatJawabanDetail"
 const UpdateKuesioner = lazy(() => import("../pages/admin/UpdateKuesioner"));
 const StatistikKuesioner = lazy(() => import("../pages/admin/StatistikKuesioner"));
 const PengaturanTampilan = lazy(() => import("../pages/admin/PengaturanTampilan"));
-const Kemitraan = lazy(() => import("../pages/admin/Kemitraan"));
+
 
 const LupaPass = lazy(() => import("../pages/LupaPass"));
 const Register = lazy(() => import("../pages/register/Register"));
@@ -105,7 +105,7 @@ export default function AppRouter() {
             </Route>
           </Route>
           <Route path="tampilan" element={<PengaturanTampilan />} />
-          <Route path="kemitraan" element={<Kemitraan />} />
+
         </Route>
       </Route>
 

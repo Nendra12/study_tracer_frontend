@@ -26,7 +26,7 @@ export function useMiniMedsos() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState(null); // null | 'connections' | 'all'
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' = trending (default) | 'connections'
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,

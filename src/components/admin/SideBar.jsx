@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X, Map,
-  IdCardLanyard, Megaphone, Palette, Handshake,GraduationCap
+  IdCardLanyard, Megaphone, Palette, GraduationCap
 } from 'lucide-react';
 import DefaultLogo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
@@ -27,7 +27,7 @@ export default function SideBar({ active, setActive }) {
     { name: 'Manajemen Pekerjaan', icon: <Briefcase size={20} />, path: '/wb-admin/jobs' },
     { name: 'Status Karier', icon: <IdCardLanyard size={20} />, path: '/wb-admin/status-karir' },
     { name: 'Data Master', icon: <Database size={20} />, path: '/wb-admin/master' },
-    { name: 'Kemitraan', icon: <Handshake size={20} />, path: '/wb-admin/kemitraan' },
+
     { name: 'Kuesioner', icon: <FileText size={20} />, path: '/wb-admin/kuisoner' },
     { name: 'Pengumuman', icon: <Megaphone size={20} />, path: '/wb-admin/pengumuman' }, 
     { name: 'Pengaturan Tampilan', icon: <Palette size={20} />, path: '/wb-admin/tampilan' },
@@ -56,7 +56,7 @@ export default function SideBar({ active, setActive }) {
     { path: "/wb-admin/jobs", title: "Manajemen Pekerjaan" },
     { path: "/wb-admin/status-karir", title: "Status Karier" },
     { path: "/wb-admin/master", title: "Data Master" },
-    { path: "/wb-admin/kemitraan", title: "Kemitraan" },
+
     { path: "/wb-admin/kuisoner", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/tambah-kuesioner", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/preview-kuesioner/:id", title: "Kuesioner" },
