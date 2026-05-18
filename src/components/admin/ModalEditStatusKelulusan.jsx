@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, Loader2, UserCircle2 } from 'lucide-react';
+import SmoothDropdown from './SmoothDropdown'; // Pastikan path import ini sesuai
 
 export default function ModalEditStatusKelulusan({ 
   isOpen, 
@@ -8,37 +10,51 @@ export default function ModalEditStatusKelulusan({
   isSubmitting,
   editData 
 }) {
-  const [status, setStatus] = useState('lulus');
+  // Gunakan format label (huruf besar) untuk ditampilkan di SmoothDropdown
+  const [statusDisplay, setStatusDisplay] = useState('Lulus');
 
-  // Populate data when modal opens
+  // Mengisi data awal dan mengunci scroll saat modal terbuka
   useEffect(() => {
-    if (isOpen && editData) {
-      setStatus(editData.status_kelulusan || 'lulus');
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      if (editData) {
+        // Konversi dari format database ('lulus'/'tidak_lulus') ke format label Dropdown
+        setStatusDisplay(editData.status_kelulusan === 'tidak_lulus' ? 'Tidak Lulus' : 'Lulus');
+      }
+    } else {
+      document.body.style.overflow = 'auto';
     }
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, [isOpen, editData]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(status);
+    // Konversi kembali dari label Dropdown ke format database
+    const payloadStatus = statusDisplay === 'Tidak Lulus' ? 'tidak_lulus' : 'lulus';
+    onSubmit(payloadStatus);
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop overlay */}
-      <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300"
-        onClick={!isSubmitting ? onClose : undefined}
-      />
-      
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur animate-in fade-in duration-200"
+      onClick={!isSubmitting ? onClose : undefined}
+    >
       {/* Modal Box */}
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+      <div 
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-[0_0_40px_-15px_rgba(0,0,0,0.2)] border border-slate-100 overflow-visible animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()} // Mencegah modal tertutup saat area dalam diklik
+      >
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
           <h2 className="text-lg font-black text-slate-800">Ubah Status Kelulusan</h2>
           <button 
+            type="button"
             onClick={onClose}
             disabled={isSubmitting}
             className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
@@ -48,41 +64,40 @@ export default function ModalEditStatusKelulusan({
         </div>
 
         {/* Info Siswa */}
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-4">
+        <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center gap-4">
           <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
             <UserCircle2 size={24} />
           </div>
           <div>
             <p className="text-sm font-bold text-slate-800">{editData?.nama || 'Siswa'}</p>
-            <p className="text-xs font-medium text-slate-500">NISN: {editData?.nisn || '-'}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 bg-slate-200 text-slate-700 text-[10px] font-bold rounded-md">
+            <p className="text-xs font-medium text-slate-500 mt-0.5">NISN: {editData?.nisn || '-'}</p>
+            <span className="inline-block mt-1.5 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold rounded-md shadow-sm">
               {editData?.jurusan || editData?.jurusan?.nama_jurusan || '-'}
             </span>
           </div>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <div className="p-6 space-y-5">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">
+            <div className="relative z-50">
+              <label className="block text-[11px] font-black text-primary uppercase tracking-wider mb-2">
                 Status Kelulusan
               </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                required
+              
+              {/* Menggunakan Smooth Dropdown */}
+              <SmoothDropdown
+                options={["Lulus", "Tidak Lulus"]}
+                value={statusDisplay}
+                onSelect={(val) => setStatusDisplay(val)}
                 disabled={isSubmitting}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all cursor-pointer"
-              >
-                <option value="lulus">Lulus</option>
-                <option value="tidak_lulus">Tidak Lulus</option>
-              </select>
+              />
+
             </div>
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex gap-3 justify-end">
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex gap-3 justify-end rounded-b-2xl mt-auto">
             <button
               type="button"
               onClick={onClose}
@@ -94,7 +109,7 @@ export default function ModalEditStatusKelulusan({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-[#2e4042] text-white text-sm font-bold rounded-xl transition-all cursor-pointer disabled:opacity-70"
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-[#2e4042] text-white text-sm font-bold rounded-xl transition-all cursor-pointer disabled:opacity-70 shadow-sm"
             >
               {isSubmitting ? (
                 <><Loader2 size={16} className="animate-spin" /> Menyimpan...</>
@@ -105,6 +120,7 @@ export default function ModalEditStatusKelulusan({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

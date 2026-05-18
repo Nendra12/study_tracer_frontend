@@ -394,9 +394,11 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
             )}
             
             <option.icon size={28} className={selectedStatus === option.id ? 'text-primary' : 'text-third'} />
-            <div className="text-center">
-              <p className={`text-sm font-bold ${selectedStatus === option.id ? 'text-primary' : 'text-primary'}`}>{option.label}</p>
-              <p className="text-[10px] text-third">{option.sub}</p>
+            <div className="text-center mt-1">
+              <p className={`text-[12px] sm:text-xs font-bold leading-tight ${selectedStatus === option.id ? 'text-primary' : 'text-primary'}`}>
+                {option.label}
+              </p>
+              <p className="text-[9px] sm:text-[10px] text-third mt-0.5">{option.sub}</p>
             </div>
           </button>
         ))}
