@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X, Users, TrendingUp, Filter } from "lucide-react";
 import { STORAGE_BASE_URL } from "../../../api/axios";
 import { useAuth } from "../../../context/AuthContext";
 import { useMiniMedsos } from "../../../hooks/useMiniMedsos";
-import SmoothDropdown from "../../admin/SmoothDropdown";
 import StartPostModal from "../StartPostModal";
 import { PostinganSkeleton } from "../skeleton";
 
@@ -34,9 +34,14 @@ function getCommentId(comment) {
   return comment.id_comment ?? comment.id_post_comment ?? comment.comment_id ?? comment.id_comment_post ?? comment.id;
 }
 
-function Avatar({ url, name, size = "w-11 h-11", textSize = "text-sm" }) {
+function Avatar({ url, name, size = "w-11 h-11", textSize = "text-sm", onClick }) {
   return (
-    <div className={`${size} rounded-full bg-primary/10 flex items-center justify-center flex-none overflow-hidden`}>
+    <div
+      className={`${size} rounded-full bg-primary/10 flex items-center justify-center flex-none overflow-hidden ${onClick ? 'cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       {url ? (
         <img src={url} alt={name || "User"} className="w-full h-full object-cover" />
       ) : (
@@ -60,19 +65,19 @@ function StatButton({ icon: Icon, label, count, active, onClick, variant }) {
   );
 }
 
-function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwner, repliesCount, onRepliesClick, isRepliesOpen = false, showReplyAction = true }) {
+function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwner, repliesCount, onRepliesClick, isRepliesOpen = false, showReplyAction = true, onAuthorClick }) {
   const author = comment.author || {};
   const authorName = author.nama_alumni || "Alumni";
   const avatarUrl = author.foto ? getImageUrl(author.foto) : null;
 
   return (
     <div className="flex items-start gap-3 w-full">
-      <Avatar url={avatarUrl} name={authorName} size="w-9 h-9" textSize="text-xs" />
+      <Avatar url={avatarUrl} name={authorName} size="w-9 h-9" textSize="text-xs" onClick={() => onAuthorClick?.(author.id_alumni)} />
       <div className="flex-1 min-w-0">
         <div className="bg-slate-50 border border-slate-100 rounded-md px-4 py-3 w-full">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <p className="text-xs font-black text-slate-800 truncate">{authorName}</p>
+              <p className="text-xs font-black text-slate-800 truncate cursor-pointer hover:text-primary transition-colors" onClick={() => onAuthorClick?.(author.id_alumni)}>{authorName}</p>
               {author.jurusan && <span className="text-[10px] text-slate-400 font-medium truncate">{author.jurusan}</span>}
             </div>
             <div className="flex items-center gap-2 flex-none">
@@ -208,6 +213,7 @@ function PostMenuDropdown({ isOwnPost, onDelete, onReport }) {
 // --- KOMPONEN UTAMA ---
 export default function MiniMedsosBeranda() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const medsos = useMiniMedsos();
   const myProfile = user?.profile;
   const myName = myProfile?.nama || user?.nama_alumni || "Alumni";
@@ -221,16 +227,18 @@ export default function MiniMedsosBeranda() {
   
   const [postSearchQuery, setPostSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [postSortMode, setPostSortMode] = useState("terbaru");
+  const [feedFilter, setFeedFilter] = useState('all'); // 'all' = trending (default), 'connections' = koneksi saja
   
   const [postModalOpen, setPostModalOpen] = useState(false);
 
-  const sortOptions = [
-    { value: 'terbaru', label: 'Terbaru' },
-    { value: 'popular', label: 'Terpopuler' }
-  ];
+  // Whether the connections-only filter is active
+  const isConnectionsFilter = feedFilter === 'connections';
 
-  useEffect(() => { medsos.fetchFeed(); }, []);
+  const handleNavigateToProfile = useCallback((alumniId) => {
+    if (alumniId) navigate(`/alumni/daftar-alumni/${alumniId}`);
+  }, [navigate]);
+
+  useEffect(() => { medsos.fetchFeed(10, feedFilter); }, [feedFilter]);
 
   const toggleComments = useCallback((postId) => {
     setOpenCommentsById((prev) => {
@@ -283,11 +291,8 @@ export default function MiniMedsosBeranda() {
         return authorName.includes(query) || content.includes(query);
       });
     }
-    if (postSortMode === "popular") {
-      return [...filtered].sort((a, b) => ((b.likes_count || 0) + (b.comments_count || 0)) - ((a.likes_count || 0) + (a.comments_count || 0)));
-    }
     return filtered; 
-  }, [appliedSearch, postSortMode, medsos.posts]);
+  }, [appliedSearch, medsos.posts]);
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 px-2 sm:px-0 lg:px-4">
@@ -316,20 +321,30 @@ export default function MiniMedsosBeranda() {
                 Cari
               </button>
             </form>
+          </div>
 
-            <div className="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
-              <div className="w-full lg:w-48 relative z-50">
-                <SmoothDropdown 
-                  options={sortOptions.map(opt => opt.label)} 
-                  value={sortOptions.find(opt => opt.value === postSortMode)?.label || "Terbaru"} 
-                  onSelect={(label) => {
-                    const selected = sortOptions.find(opt => opt.label === label);
-                    if(selected) setPostSortMode(selected.value);
-                  }} 
-                  placeholder="Urutkan Berdasarkan" 
-                />
-              </div>
+          {/* Feed Info & Filter Button */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="inline-flex items-center gap-2 text-sm font-bold text-slate-500">
+              <TrendingUp size={15} className="text-primary" />
+              <span>Trending</span>
+              {isConnectionsFilter && (
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 ml-1">Koneksi</span>
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => setFeedFilter(isConnectionsFilter ? 'all' : 'connections')}
+              title={isConnectionsFilter ? 'Tampilkan semua postingan' : 'Filter hanya koneksi'}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                isConnectionsFilter
+                  ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              {isConnectionsFilter ? <Users size={15} /> : <Filter size={15} />}
+              {isConnectionsFilter ? 'Koneksi Saja' : 'Filter Koneksi'}
+            </button>
           </div>
         </div>
       </section>
@@ -345,7 +360,7 @@ export default function MiniMedsosBeranda() {
         {medsos.error && !medsos.loading && (
           <div className="w-full text-center py-8">
             <p className="text-red-500 text-sm font-medium">{medsos.error}</p>
-            <button type="button" onClick={() => medsos.fetchFeed()} className="mt-2 text-sm font-bold text-primary hover:underline cursor-pointer">Coba lagi</button>
+            <button type="button" onClick={() => medsos.fetchFeed(10, feedFilter)} className="mt-2 text-sm font-bold text-primary hover:underline cursor-pointer">Coba lagi</button>
           </div>
         )}
 
@@ -374,16 +389,33 @@ export default function MiniMedsosBeranda() {
                 <div className="p-5 md:p-6 w-full">
                   <header className="flex items-start justify-between gap-4 w-full">
                     <div className="flex items-start gap-3 min-w-0">
-                      <Avatar url={authorAvatar} name={authorName} />
+                      <Avatar url={authorAvatar} name={authorName} onClick={() => handleNavigateToProfile(author.id_alumni)} />
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-black text-slate-800 truncate">{authorName}</h3>
-                          {post.visibility === "connections" && (
-                            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">Koneksi</span>
-                          )}
-                          {post.visibility === "public" && (
-                            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">Publik</span>
-                          )}
+                          <h3
+                            className="text-sm font-black text-slate-800 truncate cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => handleNavigateToProfile(author.id_alumni)}
+                          >{authorName}</h3>
+                          {(() => {
+                            // Don't show tag on own posts
+                            if (isOwnPost) return null;
+                            // Use is_connection field from API if available (relationship-based)
+                            const isConnection = post.is_connection ?? post.author?.is_connected;
+                            if (isConnection === true) {
+                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">Koneksi</span>;
+                            }
+                            if (isConnection === false) {
+                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">Publik</span>;
+                            }
+                            // Fallback to visibility field
+                            if (post.visibility === "connections") {
+                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">Koneksi</span>;
+                            }
+                            if (post.visibility === "public") {
+                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">Publik</span>;
+                            }
+                            return null;
+                          })()}
                         </div>
                         <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{author.jurusan || ""}</p>
                       </div>
@@ -442,7 +474,8 @@ export default function MiniMedsosBeranda() {
                                       return { ...prev, [commentId]: nextOpen };
                                     });
                                   }}
-                                  onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, commentId); }} />
+                                  onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, commentId); }}
+                                  onAuthorClick={handleNavigateToProfile} />
 
                                 {isRepliesOpen && (
                                   <div className="ml-12 space-y-3">
@@ -461,7 +494,8 @@ export default function MiniMedsosBeranda() {
                                               showReplyAction={false}
                                               repliesCount={0}
                                               onRepliesClick={null}
-                                              onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, replyId); }} />
+                                              onDelete={() => { if (window.confirm("Hapus komentar ini?")) medsos.deleteComment(postId, replyId); }}
+                                              onAuthorClick={handleNavigateToProfile} />
                                           );
                                         })
                                       )

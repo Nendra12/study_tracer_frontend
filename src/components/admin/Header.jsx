@@ -40,11 +40,7 @@ export default function Header({ toggleSidebar, user }) {
       title: "Manajemen Data Master",
       text: "Kelola konfigurasi sistem, jurusan, jenis pekerjaan, dan laporan tracer study",
     },
-    {
-      path: "/wb-admin/kemitraan",
-      title: "Kemitraan",
-      text: "Kelola daftar mitra perusahaan dan universitas untuk jejaring karir",
-    },
+
     {
       path: "/wb-admin/kuisoner/tambah-kuesioner",
       title: "Buat Kuesioner Baru",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Edit, AlertCircle } from 'lucide-react';
+import { Eye, AlertCircle, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProfileHeader({ profile, onPerbarui }) {
@@ -14,21 +14,26 @@ export default function ProfileHeader({ profile, onPerbarui }) {
             Profil Saya
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
-            // Arahkan ke halaman detail menggunakan ID alumni
             onClick={() => {
               const alumniId = profile?.id || profile?.id_alumni;
               if (alumniId) {
                 navigate(`/alumni/daftar-alumni/${alumniId}`, { state: { fromProfile: true } });
               }
             }}
-            // Ubah bg menjadi primary, text menjadi white, dan berikan efek hover yang sesuai
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-md text-sm font-bold hover:opacity-90 transition-all cursor-pointer shadow-sm"
           >
             <Eye size={16} /> Lihat Profil Publik
           </button>
-
+          
+          {/* PERBAIKAN: Menggunakan navigate untuk pindah ke halaman baru */}
+          <button
+            onClick={() => navigate('/alumni/riwayat-kuesioner')}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer shadow-sm"
+          >
+            <ClipboardList size={16} className="text-primary" /> Lihat Riwayat Kuesioner
+          </button>
         </div>
       </div>
 

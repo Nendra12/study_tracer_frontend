@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { User, Briefcase, Award, Layout, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import Navbar from '../../components/alumni/Navbar';
-import Footer from '../../components/alumni/Footer';
 import ProfileHeader from '../../components/alumni/profile/ProfileHeader';
 import ProfileSidebar from '../../components/alumni/profile/ProfileSidebar';
 import { alumniApi } from '../../api/alumni';
@@ -26,8 +24,6 @@ function buildDisplayProfile(profile) {
 
   const next = { ...profile };
 
-  // Map latest personal info payload ke frontend keys
-  // (latest sudah berisi data merged: approved + pending override dari backend)
   if (latest.nama_alumni ?? latest.nama) next.nama = latest.nama_alumni ?? latest.nama;
   if (latest.nis !== undefined) next.nis = latest.nis;
   if (latest.nisn !== undefined) next.nisn = latest.nisn;
@@ -40,15 +36,12 @@ function buildDisplayProfile(profile) {
   if (latest.foto !== undefined) next.foto = latest.foto;
   if (latest.foto_path !== undefined) next.foto = latest.foto_path;
 
-  // Teruskan latest_personal_info AS-IS agar TabDetailPribadi bisa menggunakannya
-  // Pastikan changed_fields tersedia (backend mengirim sebagai 'changed_fields')
   next.latest_personal_info = {
     ...latest,
     changed_fields: latest.changed_fields || latest.pending_fields || [],
     pending_update_id: latest.pending_update_id || latest.pending_id || null,
   };
 
-  // Legacy keys untuk komponen lama (ProfileSidebar, dll.)
   next.latest_pending_fields = next.latest_personal_info.changed_fields;
   next.latest_personal_info_status = latest.status || null;
   next.latest_personal_info_pending_id = next.latest_personal_info.pending_update_id;
@@ -58,13 +51,11 @@ function buildDisplayProfile(profile) {
 
 export default function Profil() {
   const navigate = useNavigate();
-  // const { user: authUser } = useAuth();
   const { theme } = useThemeSettings();
-  // State Global Profil
+  
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // State Navigasi Tab SPA
   const [activeTab, setActiveTab] = useState('detail');
   const [triggerEdit, setTriggerEdit] = useState(false);
 
@@ -89,7 +80,6 @@ export default function Profil() {
     }
   }
 
-  // Refresh profil tanpa skeleton (agar tab tidak unmount dan local state tidak hilang)
   async function refreshProfile() {
     try {
       const res = await alumniApi.getProfile();
@@ -104,19 +94,21 @@ export default function Profil() {
   }
 
   const displayProfile = buildDisplayProfile(profile);
-
   const { user } = useAuth();
-
   const isVerified = user?.can_access_all ?? false;
 
   if (loading) return <ProfilSkeleton />;
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
-
       <main className="flex-1 w-full mt-5 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-16">
 
-        <ProfileHeader profile={displayProfile} onPerbarui={handlePerbarui} isVerified={isVerified} />
+        {/* Props onGantiTab sudah dibuang karena murni pakai URL */}
+        <ProfileHeader 
+          profile={displayProfile} 
+          onPerbarui={handlePerbarui} 
+          isVerified={isVerified} 
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <ProfileSidebar
@@ -158,7 +150,6 @@ export default function Profil() {
             {activeTab === 'deskripsi_karier' && <TabDeskripsiKarier profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
             {activeTab === 'keahlian' && <TabKeahlian profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
             {activeTab === 'portofolio' && <TabPortofolio profile={displayProfile} onRefresh={refreshProfile} onShowSuccess={showSuccess} isVerified={isVerified} />}
-
           </div>
         </div>
       </main>

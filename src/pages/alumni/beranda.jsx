@@ -37,27 +37,7 @@ const getPengumumanImageUrl = (foto) => {
   return `${STORAGE_BASE_URL}/${foto}`;
 };
 
-const normalizeMitraLogos = (berandaPayload) => {
-  const source = Array.isArray(berandaPayload?.mitra_logos) ? berandaPayload.mitra_logos : [];
-  const normalized = source
-    .map((item) => ({
-      name: item?.name || item?.nama || item?.title || 'Mitra',
-      image: item?.image || item?.logo || item?.logo_url || item?.foto || null,
-    }))
-    .filter((item) => item.image)
-    .map((item) => ({
-      ...item,
-      image: item.image.startsWith('http') ? item.image : `${STORAGE_BASE_URL}/${item.image}`,
-    }));
 
-  const unique = [];
-  const seen = new Set();
-  normalized.forEach((item) => {
-    const key = `${item.name}|${item.image}`;
-    if (!seen.has(key)) { seen.add(key); unique.push(item); }
-  });
-  return unique;
-};
 
 const mockStats = [
   { label: "Bekerja", percentage: 65, color: "bg-emerald-500" },
@@ -215,7 +195,7 @@ export default function Beranda() {
   const alumniTerbaru = berandaData?.alumni_terbaru || { locked: true, data: [] };
   const lowonganTerbaru = berandaData?.lowongan_terbaru || { locked: true, data: [] };
   const topPerusahaan = berandaData?.top_perusahaan || { locked: true, data: [] };
-  const partnerLogos = normalizeMitraLogos(berandaData);
+
 
   const namaAlumni = profile?.nama || authUser?.profile?.nama || "Alumni";
   const tahunLulus = profile?.tahun_lulus?.split("-")[0] ?? null;
@@ -244,6 +224,7 @@ export default function Beranda() {
       <HeroBeranda 
         greeting={greeting} namaAlumni={namaAlumni} navigate={navigate} 
         tahunLulus={tahunLulus} isVerified={isVerified} hasCompletedKuesioner={hasCompletedKuesioner} 
+        statusNew={statusNew}
       />
 
       {/* Notifikasi Info Kampus Melayang */}
@@ -343,7 +324,7 @@ export default function Beranda() {
             </section>
 
             {/* TOP PERUSAHAAN */}
-            <TopPerusahaan data={topPerusahaan.data} dataUniversitas={topUniversitas} partnerLogos={partnerLogos} locked={topPerusahaan.locked} />
+            <TopPerusahaan data={topPerusahaan.data} dataUniversitas={topUniversitas} locked={topPerusahaan.locked} />
 
           </div>
         )}

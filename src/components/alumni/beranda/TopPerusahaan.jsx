@@ -14,71 +14,17 @@ const dummyUniversitas = [
 export default function TopPerusahaan({
   data,
   dataUniversitas,
-  partnerLogos,
   locked
 }) {
   const univList = dataUniversitas?.length > 0 ? dataUniversitas : dummyUniversitas;
   const topCompanies = data?.length > 0 ? data.slice(0, 5) : [];
   const topUnivs = univList.slice(0, 5);
-  const runningLogos = Array.isArray(partnerLogos) ? partnerLogos : [];
 
   const maxCompAlumni = Math.max(...(topCompanies.map(c => c.alumniCount) || [1]));
   const maxUnivAlumni = Math.max(...(topUnivs.map(u => u.alumniCount) || [1]));
 
   return (
     <section className="py-12 bg-[#FAFAFB] min-h-screen font-sans">
-      {/* Inject Custom CSS untuk Animasi Marquee */}
-      <style>
-        {`
-          @keyframes scroll-left {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-          }
-          .animate-scroll {
-            animation: scroll-left 40s linear infinite;
-          }
-          .animate-scroll:hover {
-            animation-play-state: paused;
-          }
-        `}
-      </style>
-
-      {/* ================= SECTION 1: MARQUEE LOGO BERJALAN ================= */}
-      <div className={`w-full overflow-hidden py-4 ${locked ? 'grayscale opacity-60' : ''}`}>
-        <p className="text-2xl font-black text-primary tracking-tight text-center mb-6">
-          Mitra Industri Teknologi & Perguruan Tinggi Terkemuka
-        </p>
-        <div className="relative w-full overflow-hidden py-4">
-          {/* Gradient overlays */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-[#FAFAFB] via-[#FAFAFB]/50 to-transparent pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-[#FAFAFB] via-[#FAFAFB]/50 to-transparent pointer-events-none"></div>
-
-          {/* Scrolling content */}
-          {runningLogos.length === 0 ? (
-            <div className="py-8 text-center text-sm text-slate-400 font-medium">
-              Data logo mitra belum tersedia.
-            </div>
-          ) : (
-            <div className="flex">
-              <div className="flex gap-12 items-center animate-scroll">
-                {[...runningLogos, ...runningLogos].map((item, idx) => (
-                  <div
-                    key={`set1-${idx}`}
-                    className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center hover:scale-110 transition-transform duration-300"
-                    title={item.name || 'Mitra'}
-                  >
-                    <img
-                      src={item.image}
-                      alt={`${item.name || 'Mitra'} logo`}
-                      className="w-full h-full object-contain drop-shadow-md filter hover:drop-shadow-lg"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
       
       <div className="max-w-7xl mx-auto px-6 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative">

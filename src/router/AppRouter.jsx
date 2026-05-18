@@ -28,7 +28,7 @@ const LihatJawabanDetail = lazy(() => import("../pages/admin/LihatJawabanDetail"
 const UpdateKuesioner = lazy(() => import("../pages/admin/UpdateKuesioner"));
 const StatistikKuesioner = lazy(() => import("../pages/admin/StatistikKuesioner"));
 const PengaturanTampilan = lazy(() => import("../pages/admin/PengaturanTampilan"));
-const Kemitraan = lazy(() => import("../pages/admin/Kemitraan"));
+
 
 const LupaPass = lazy(() => import("../pages/LupaPass"));
 const Register = lazy(() => import("../pages/register/Register"));
@@ -50,6 +50,7 @@ const AlumniLayout = lazy(() => import("../layouts/AlumniLayout"));
 const Message = lazy(() => import("../pages/alumni/MessagePage"));
 const PostinganAlumni = lazy(() => import("../pages/alumni/postingan"));
 const KelulusanAlumni = lazy(() => import("../pages/alumni/Kelulusan"));
+const RiwayatKuesioner = lazy(() => import("../pages/alumni/RiwayatKuesioner"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -104,7 +105,7 @@ export default function AppRouter() {
             </Route>
           </Route>
           <Route path="tampilan" element={<PengaturanTampilan />} />
-          <Route path="kemitraan" element={<Kemitraan />} />
+
         </Route>
       </Route>
 
@@ -124,6 +125,7 @@ export default function AppRouter() {
           <Route path="notifikasi" element={<Notifikasi />} />
           <Route path="pesan" element={<Message />} />
           <Route path="postingan" element={<PostinganAlumni />} />
+          <Route path="riwayat-kuesioner" element={<RiwayatKuesioner />} />
         </Route>
         
         {/* Standalone Alumni Routes (Without Navbar/Footer) */}

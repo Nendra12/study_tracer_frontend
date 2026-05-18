@@ -107,6 +107,10 @@ export const alumniApi = {
     return api.post(`/alumni/kuesioner/${kuesionerId}/jawaban`, data);
   },
 
+  getRiwayatKuesioner() {
+    return api.get('/alumni/kuesioner/riwayat');
+  },
+
   // Alumni Directory (restricted - needs verified + kuesioner)
   getAlumniDirectory(params = {}) {
     return api.get('/alumni/directory', { params });

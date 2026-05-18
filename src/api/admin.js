@@ -347,62 +347,6 @@ export const adminApi = {
     return api.post('/admin/pengaturan-tampilan/reset');
   },
 
-  // ── Kemitraan Management ─────────────────────
-  getKemitraanUniversitas(params = {}) {
-    return api.get('/admin/kemitraan/universitas', { params });
-  },
-
-  createKemitraanUniversitas(data) {
-    return api.post('/admin/kemitraan/universitas', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
-
-  updateKemitraanUniversitas(id, data) {
-    if (data instanceof FormData) {
-      data.append('_method', 'PUT');
-    }
-
-    return api.post(`/admin/kemitraan/universitas/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
-
-  deleteKemitraanUniversitas(id) {
-    return api.delete(`/admin/kemitraan/universitas/${id}`);
-  },
-
-  getKemitraanPerusahaan(params = {}) {
-    return api.get('/admin/kemitraan/perusahaan', { params });
-  },
-
-  createKemitraanPerusahaan(data) {
-    return api.post('/admin/kemitraan/perusahaan', data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
-
-  updateKemitraanPerusahaan(id, data) {
-    if (data instanceof FormData) {
-      data.append('_method', 'PUT');
-    }
-
-    return api.post(`/admin/kemitraan/perusahaan/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
-
-  deleteKemitraanPerusahaan(id) {
-    return api.delete(`/admin/kemitraan/perusahaan/${id}`);
-  },
-
-  exportKemitraan(type = 'universitas') {
-    return api.get('/admin/kemitraan/export', {
-      params: { type },
-      responseType: 'blob',
-    });
-  },
-
   // ── Sebaran Alumni (Mapping) ─────────────────
   getSebaranMarkers(filters = {}) {
     return api.get('/admin/sebaran/markers', { params: filters });
@@ -453,6 +397,12 @@ export const adminApi = {
   },
   getRiwayatKelulusan(params = {}) {
     return api.get('/admin/kelulusan/riwayat', { params });
+  },
+  updateRiwayatKelulusan(id, status) {
+    return api.patch(`/admin/kelulusan/riwayat/${id}/status`, { status_kelulusan: status });
+  },
+  deleteRiwayatKelulusan(id) {
+    return api.delete(`/admin/kelulusan/riwayat/${id}`);
   },
   addCalonLulusan(data) {
     return api.post('/admin/kelulusan/calon', data);

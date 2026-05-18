@@ -26,6 +26,7 @@ export function useMiniMedsos() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' = trending (default) | 'connections'
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
@@ -58,12 +59,18 @@ export function useMiniMedsos() {
 
   /**
    * Fetch the feed (page 1).
+   * @param {number} perPage
+   * @param {string|null} filter - 'connections' | 'all' | null (default: semua, urut terbaru)
    */
-  const fetchFeed = useCallback(async (perPage = 10) => {
+  const fetchFeed = useCallback(async (perPage = 10, filter = null) => {
     setLoading(true);
     setError(null);
+    setActiveFilter(filter);
     try {
-      const response = await alumniApi.getPostFeed({ per_page: perPage });
+      const params = { per_page: perPage };
+      if (filter) params.filter = filter;
+
+      const response = await alumniApi.getPostFeed(params);
       const payload = getPayload(response);
       const items = payload?.data ?? [];
       const meta = payload?.meta ?? payload;
@@ -94,7 +101,10 @@ export function useMiniMedsos() {
     setLoadingMore(true);
     try {
       const nextPage = pagination.currentPage + 1;
-      const response = await alumniApi.getPostFeed({ per_page: perPage, page: nextPage });
+      const params = { per_page: perPage, page: nextPage };
+      if (activeFilter) params.filter = activeFilter;
+
+      const response = await alumniApi.getPostFeed(params);
       const payload = getPayload(response);
       const items = payload?.data ?? [];
       const meta = payload?.meta ?? payload;
@@ -112,7 +122,7 @@ export function useMiniMedsos() {
     } finally {
       if (mountedRef.current) setLoadingMore(false);
     }
-  }, [pagination]);
+  }, [pagination, activeFilter]);
 
   // =====================
   // CREATE POST
@@ -429,6 +439,7 @@ export function useMiniMedsos() {
     loadingMore,
     submitting,
     error,
+    activeFilter,
     pagination,
     commentsByPost,
     commentsLoading,
@@ -450,7 +461,7 @@ export function useMiniMedsos() {
     reportPost,
     setError,
   }), [
-    posts, loading, loadingMore, submitting, error, pagination,
+    posts, loading, loadingMore, submitting, error, activeFilter, pagination,
     commentsByPost, commentsLoading, commentsPagination, actionLoading,
     fetchFeed, loadMorePosts, createPost, deletePost, toggleLike,
     fetchComments, addComment, deleteComment, reportPost,
