@@ -28,6 +28,18 @@ export default function SebaranAlumni() {
     provinsi_id: '', jurusan_id: '', kota_id: '', bidang_usaha_id: '',
   });
   const alumniSearchRef = useRef(null);
+  const defaultApplied = useRef(false);
+
+  // Set default filter angkatan = tahun terbaru saat filterOptions pertama kali dimuat
+  useEffect(() => {
+    if (!defaultApplied.current && filterOptions?.angkatan?.length > 0) {
+      defaultApplied.current = true;
+      const latestYear = String(Math.max(...filterOptions.angkatan));
+      const defaultFilters = { ...activeFilters, angkatan: latestYear };
+      setActiveFilters(defaultFilters);
+      applyFilters(defaultFilters);
+    }
+  }, [filterOptions]);
 
   const handleFilterChange = (keyOrObj, value) => {
     setActiveFilters((prev) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck, MapPin, Save } from 'lucide-react';
+import { Briefcase, GraduationCap, Store, Search, CheckCircle, ArrowLeft, Loader2, X, RefreshCcw, ShieldCheck, MapPin, Save, BookOpen } from 'lucide-react';
 import SmoothDropdown from '../../components/admin/SmoothDropdown';
 import InputDropdownEdit from '../../components/InputDropdownEdit';
 import YearsInput from '../../components/YearsInput';
@@ -124,7 +124,10 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     if (formData.pekerjaan) return 'Bekerja';
     if (formData.universitas) return 'Kuliah';
     if (formData.wirausaha) return 'Wirausaha';
-    if (formData.id_status && !formData.pekerjaan && !formData.universitas && !formData.wirausaha) return 'Mencari Kerja';
+    if (formData.id_status && !formData.pekerjaan && !formData.universitas && !formData.wirausaha) {
+      if (statusList.find(s => s.id === formData.id_status)?.nama === 'Siswa Aktif') return 'Siswa Aktif';
+      return 'Mencari Kerja';
+    }
     return 'Bekerja';
   };
 
@@ -261,12 +264,15 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     const backendName = statusNameMap[selectedStatus] || selectedStatus;
     const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
 
-    const activeData = selectedStatus === 'Bekerja' ? pekerjaan : selectedStatus === 'Kuliah' ? universitas : wirausaha;
+    // Jika statusList belum dimuat, jangan update id_status
+    if (statusList.length === 0) return;
+
+    const activeData = selectedStatus === 'Bekerja' ? pekerjaan : selectedStatus === 'Kuliah' ? universitas : selectedStatus === 'Wirausaha' ? wirausaha : null;
 
     const updates = {
       id_status: matched?.id || formData.id_status,
       tahun_mulai: activeData?.tahun_mulai || "",
-      tahun_selesai: activeData?.is_saat_ini ? "" : activeData?.tahun_selesai,
+      tahun_selesai: activeData?.is_saat_ini ? "" : (activeData?.tahun_selesai || ""),
       pekerjaan: selectedStatus === 'Bekerja' ? { ...pekerjaan, isNew: showPerusahaanLocation } : null,
       universitas: selectedStatus === 'Kuliah' ? { ...universitas, isNew: showUnivLocation } : null,
       wirausaha: selectedStatus === 'Wirausaha' ? { ...wirausaha, isNew: true } : null,
@@ -279,9 +285,10 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     { id: 'Kuliah', label: 'Kuliah', sub: '(Studying)', icon: GraduationCap },
     { id: 'Wirausaha', label: 'Wirausaha', sub: '(Entrepreneur)', icon: Store },
     { id: 'Mencari Kerja', label: 'Mencari Kerja', sub: '(Unemployed)', icon: Search },
+    { id: 'Siswa Aktif', label: 'Siswa Aktif', sub: '(Active Student)', icon: BookOpen },
   ];
 
-  const renderTahunDinamis = (type, label) => {
+  const renderTahunDinamis = (type) => {
     const data = type === 'Bekerja' ? pekerjaan : type === 'Kuliah' ? universitas : wirausaha;
     const setData = type === 'Bekerja' ? setPekerjaan : type === 'Kuliah' ? setUniversitas : setWirausaha;
     const tahunSekarang = new Date().getFullYear();
@@ -345,7 +352,8 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
     const matched = statusList.find((s) => (s.nama_status || s.nama) === backendName);
     
     const activeData = selectedStatus === 'Bekerja' ? pekerjaan : 
-                       selectedStatus === 'Kuliah' ? universitas : wirausaha;
+                       selectedStatus === 'Kuliah' ? universitas : 
+                       selectedStatus === 'Wirausaha' ? wirausaha : null;
 
     const updates = {
       id_status: matched?.id || formData.id_status,
@@ -367,7 +375,7 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
       </div>
 
       {/* Cards Selection */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {statusOptions.map((option) => (
           <button
             key={option.id}
@@ -732,6 +740,11 @@ export default function Step3Status({ onBack, formData, updateFormData, onSubmit
         {/* MENCARI KERJA */}
         {selectedStatus === 'Mencari Kerja' && (
           <p className="text-center text-sm text-third py-4 italic">Semangat! Tetaplah berusaha dan tingkatkan skill Anda.</p>
+        )}
+
+        {/* SISWA AKTIF */}
+        {selectedStatus === 'Siswa Aktif' && (
+          <p className="text-center text-sm text-third py-4 italic">Silakan lanjutkan untuk mengecek pengumuman kelulusan Anda.</p>
         )}
       </div>
 

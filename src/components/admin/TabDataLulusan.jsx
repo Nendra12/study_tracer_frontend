@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Download, Loader2, Pencil } from 'lucide-react';
+import { Search, Download, Loader2, Pencil, Trash2 } from 'lucide-react';
 import SmoothDropdown from './SmoothDropdown';
 
 export default function TabDataLulusan({
@@ -10,7 +10,8 @@ export default function TabDataLulusan({
   handleExportExcel,
   loadingRiwayat,
   lulusan,
-  onEdit // <-- Menerima props onEdit dari halaman utama
+  onEdit,
+  onDelete
 }) {
   const searchInputClass = "w-full pl-10 pr-4 h-[42px] bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
   const dropdownWrapperClass = "w-full md:w-auto [&>div]:!w-full md:[&>div]:!w-auto md:[&>div]:!min-w-[180px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-slate-200 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-slate-700 [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[180px] [&_li]:!whitespace-nowrap";
@@ -60,8 +61,7 @@ export default function TabDataLulusan({
               <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Jurusan</th>
               <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
               <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Tahun Lulus</th>
-              {/* Tambahan Kolom Aksi */}
-              <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
+              <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center w-24">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -94,15 +94,23 @@ export default function TabDataLulusan({
                   <td className="px-6 py-4 text-center text-sm font-bold text-slate-600">
                     {item.tahun_lulus || item.tahunLulus || '-'}
                   </td>
-                  {/* Tambahan Tombol Edit */}
                   <td className="px-6 py-4 text-center">
-                    <button 
-                      onClick={() => onEdit(item)}
-                      className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center"
-                      title="Edit Data"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    <div className="flex justify-center gap-2">
+                      <button 
+                        onClick={() => onEdit(item)}
+                        className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+                        title="Ubah Status Kelulusan"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button 
+                        onClick={() => onDelete(item.id_kelulusan || item.id)}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        title="Hapus Data"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
