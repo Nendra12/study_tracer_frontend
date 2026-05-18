@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { History, GraduationCap } from 'lucide-react';
-import ModalTambahManual from '../../components/admin/ModalTambahManual'; 
-import ModalEditLulusan from '../../components/admin/ModalEditLulusan'; // <-- Import Modal Edit
+import ModalTambahManual from '../../components/admin/ModalTambahManual';
+import ModalEditStatusKelulusan from '../../components/admin/ModalEditStatusKelulusan';
 import { adminApi } from '../../api/admin'; 
 import { alertSuccess, alertError, alertConfirm } from '../../utilitis/alert'; 
 import KelulusanSkeleton from '../../components/admin/skeleton/KelulusanSkeleton';
@@ -23,9 +23,9 @@ export default function Kelulusan() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State Modals
-  const [showModal, setShowModal] = useState(false); 
-  const [showEditModal, setShowEditModal] = useState(false); // <-- State Modal Edit
-  const [editData, setEditData] = useState(null); // <-- State Data yang mau diedit
+  const [showModal, setShowModal] = useState(false);
+  const [showEditStatusModal, setShowEditStatusModal] = useState(false);
+  const [editRiwayatData, setEditRiwayatData] = useState(null);
 
   const [filterTop, setFilterTop] = useState({ search: '', jurusan: 'Semua Jurusan' });
   const [filterBottom, setFilterBottom] = useState({ search: '', jurusan: 'Semua Jurusan', tahun: 'Semua Tahun' });
@@ -162,27 +162,37 @@ export default function Kelulusan() {
     }
   };
 
-  // --- HANDLER EDIT BARU ---
-  const handleEditClick = (item) => {
-    setEditData(item);
-    setShowEditModal(true);
+  const handleEditRiwayatClick = (item) => {
+    setEditRiwayatData(item);
+    setShowEditStatusModal(true);
   };
 
-  const handleEditSubmit = async (payload) => {
+  const handleUpdateRiwayatStatus = async (status) => {
     try {
       setIsSubmitting(true);
-      // Gunakan endpoint API update Anda, misal: adminApi.updateKelulusan
-      await adminApi.updateKelulusan(editData.id, payload); 
-      alertSuccess("Berhasil memperbarui data lulusan!");
-      setShowEditModal(false);
-      fetchRiwayat(); // Refresh tabel setelah edit
+      await adminApi.updateRiwayatKelulusan(editRiwayatData.id_kelulusan || editRiwayatData.id, status);
+      alertSuccess("Berhasil memperbarui status kelulusan!");
+      setShowEditStatusModal(false);
+      fetchRiwayat();
     } catch (err) {
-      alertError(err.response?.data?.message || 'Gagal memperbarui data.');
+      alertError(err.response?.data?.message || 'Gagal memperbarui status.');
     } finally {
       setIsSubmitting(false);
     }
   };
-  // --------------------------
+
+  const handleDeleteRiwayat = async (id) => {
+    const isConfirm = await alertConfirm("Yakin ingin menghapus?", "Data riwayat kelulusan siswa ini akan dihapus permanen.");
+    if (!isConfirm) return;
+
+    try {
+      await adminApi.deleteRiwayatKelulusan(id);
+      alertSuccess("Berhasil menghapus data kelulusan!");
+      fetchRiwayat();
+    } catch (err) {
+      alertError(err.response?.data?.message || 'Gagal menghapus data.');
+    }
+  };
 
   const handleImportExcel = async (e) => {
     const file = e.target.files[0];
@@ -333,7 +343,8 @@ export default function Kelulusan() {
           handleExportExcel={handleExportExcel}
           loadingRiwayat={loadingRiwayat}
           lulusan={lulusan}
-          onEdit={handleEditClick} // <-- Kirim fungsi onEdit ke dalam komponen tab
+          onEdit={handleEditRiwayatClick}
+          onDelete={handleDeleteRiwayat}
         />
       )}
 
@@ -361,14 +372,13 @@ export default function Kelulusan() {
         jurusanOptions={masterJurusan} 
       />
 
-      {/* MODAL EDIT LULUSAN */}
-      <ModalEditLulusan 
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onSubmit={handleEditSubmit}
+      {/* MODAL EDIT STATUS KELULUSAN */}
+      <ModalEditStatusKelulusan
+        isOpen={showEditStatusModal}
+        onClose={() => setShowEditStatusModal(false)}
+        onSubmit={handleUpdateRiwayatStatus}
         isSubmitting={isSubmitting}
-        jurusanOptions={masterJurusan}
-        editData={editData} 
+        editData={editRiwayatData}
       />
 
     </div>

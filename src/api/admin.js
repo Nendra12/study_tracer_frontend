@@ -398,6 +398,12 @@ export const adminApi = {
   getRiwayatKelulusan(params = {}) {
     return api.get('/admin/kelulusan/riwayat', { params });
   },
+  updateRiwayatKelulusan(id, status) {
+    return api.patch(`/admin/kelulusan/riwayat/${id}/status`, { status_kelulusan: status });
+  },
+  deleteRiwayatKelulusan(id) {
+    return api.delete(`/admin/kelulusan/riwayat/${id}`);
+  },
   addCalonLulusan(data) {
     return api.post('/admin/kelulusan/calon', data);
   },

@@ -224,6 +224,7 @@ export default function Beranda() {
       <HeroBeranda 
         greeting={greeting} namaAlumni={namaAlumni} navigate={navigate} 
         tahunLulus={tahunLulus} isVerified={isVerified} hasCompletedKuesioner={hasCompletedKuesioner} 
+        statusNew={statusNew}
       />
 
       {/* Notifikasi Info Kampus Melayang */}

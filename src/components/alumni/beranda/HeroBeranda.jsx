@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, User, ClipboardCheck, ShieldCheck, Clock, GraduationCap, SquareCheckBig } from 'lucide-react';
 
-export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus, isVerified, hasCompletedKuesioner }) {
+export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus, isVerified, hasCompletedKuesioner, statusNew }) {
   return (
     <div className="relative bg-primary pt-28 pb-32 overflow-hidden rounded-b-[3rem] shadow-xl">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[50%] bg-primary/80 rounded-full blur-[120px] pointer-events-none opacity-50"></div>
@@ -26,9 +26,11 @@ export default function HeroBeranda({ greeting, namaAlumni, navigate, tahunLulus
               <button onClick={() => navigate("/alumni/lowongan")} className="cursor-pointer w-full sm:w-auto px-8 py-3.5 bg-white text-primary rounded-md text-sm font-black shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2 transition-all duration-300">
                 <ArrowRight size={18} /> Lihat Lowongan
               </button>
-              <button onClick={() => navigate('/alumni/kelulusan')} className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-t from-red-800 to-red-500 hover:opacity-90 shadow-md text-white rounded-md text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer uppercase">
-                <SquareCheckBig size={18} /> CEK KELULUSAN
-              </button>
+              {statusNew === 'Siswa Aktif' && (
+                <button onClick={() => navigate('/alumni/kelulusan')} className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-t from-red-800 to-red-500 hover:opacity-90 shadow-md text-white rounded-md text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer uppercase">
+                  <SquareCheckBig size={18} /> CEK KELULUSAN
+                </button>
+              )}
             </div>
           </motion.div>
 
