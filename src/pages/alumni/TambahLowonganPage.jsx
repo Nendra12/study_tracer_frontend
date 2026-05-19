@@ -388,15 +388,7 @@ export default function TambahLowonganPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20 pb-10">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* HEADER */}
-        <div className="mb-8 flex items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Pasang Lowongan Kerja</h1>
-            <p className="text-slate-500 text-sm font-medium mt-1">Isi formulir di bawah ini dengan lengkap untuk memasang lowongan baru.</p>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
 
         <div className="bg-white rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col relative">
           

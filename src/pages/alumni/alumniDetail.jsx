@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -6,13 +6,14 @@ import {
   School,
   BriefcaseBusiness,
   Printer,
-  Loader2
+  Loader2,
+  Camera
 } from 'lucide-react';
 import { FaLinkedin, FaGithub, FaFacebook, FaGlobe, FaInstagram } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import PublicProfileBar, { generateCvPdf } from '../../components/alumni/PublicProfileBar';
 import { useThemeSettings } from '../../context/ThemeContext';
-import { toastError } from '../../utilitis/alert';
+import { toastError, toastSuccess } from '../../utilitis/alert';
 import Connection from '../../components/alumni/Connection';
 import { alumniApi } from '../../api/alumni';
 import { STORAGE_BASE_URL } from '../../api/axios';
@@ -57,6 +58,8 @@ export default function AlumniDetail() {
   const [error, setError] = useState(null);
   const [connectionCount, setConnectionCount] = useState(0);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [isUploadingSampul, setIsUploadingSampul] = useState(false);
+  const sampulInputRef = useRef(null);
   const { theme } = useThemeSettings();
   const {
     statusMap, loadingStatusMap, actionLoadingMap,
@@ -111,8 +114,29 @@ export default function AlumniDetail() {
     }
   }
 
+
+  const imageSrc = getImageUrl(alumni?.latest_personal_info?.foto || alumni?.foto);
+  const sampulSrc = getImageUrl(alumni?.latest_personal_info?.foto_sampul || alumni?.foto_sampul);
+  const profileId = getAlumniId(alumni) || id;
+  const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
+  const isSelfProfile = String(profileId) === String(myAlumniId);
+  const currentCareer = alumni?.current_career;
+  const skills = alumni?.skills || [];
+  const riwayat = alumni?.riwayat_status || [];
+  const portofolioList = alumni?.portofolio || [];
+
+  const deskripsiByRiwayat = {};
+  (alumni?.deskripsi_karier || []).forEach(d => { deskripsiByRiwayat[d.status_karier_id] = d.deskripsi; });
+
+  let currentStatus = currentCareer?.status || 'Alumni';
+  let currentRole = null;
+  let currentCompany = null;
+  let currentLocation = null;
+  let currentAddress = null;
+  let currentPeriod = null;
+
   if (loading) {
-    return (<div className="min-h-screen bg-white font-sans flex flex-col"><AlumniDetailSkeleton /></div>);
+    return (<div className="min-h-screen bg-white font-sans flex flex-col"><AlumniDetailSkeleton foto={sampulSrc} /></div>);
   }
 
   if (error || !alumni) {
@@ -133,25 +157,6 @@ export default function AlumniDetail() {
       </div>
     );
   }
-
-  const imageSrc = getImageUrl(alumni.foto);
-  const profileId = getAlumniId(alumni) || id;
-  const myAlumniId = getAlumniId(authUser?.profile) || getAlumniId(authUser);
-  const isSelfProfile = String(profileId) === String(myAlumniId);
-  const currentCareer = alumni.current_career;
-  const skills = alumni.skills || [];
-  const riwayat = alumni.riwayat_status || [];
-  const portofolioList = alumni.portofolio || [];
-
-  const deskripsiByRiwayat = {};
-  (alumni.deskripsi_karier || []).forEach(d => { deskripsiByRiwayat[d.status_karier_id] = d.deskripsi; });
-
-  let currentStatus = currentCareer?.status || 'Alumni';
-  let currentRole = null;
-  let currentCompany = null;
-  let currentLocation = null;
-  let currentAddress = null;
-  let currentPeriod = null;
 
   if (currentCareer) {
     currentPeriod = `${currentCareer.tahun_mulai || '-'} - ${currentCareer.tahun_selesai || 'Sekarang'}`;
@@ -199,11 +204,65 @@ export default function AlumniDetail() {
     }
   }
 
+  async function handleSampulChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.match('image/.*')) {
+      toastError('File harus berupa gambar (JPG/PNG).');
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toastError('Ukuran gambar maksimal 4MB.');
+      return;
+    }
+
+    try {
+      setIsUploadingSampul(true);
+      const formData = new FormData();
+      formData.append('foto_sampul', file);
+
+      await alumniApi.updateProfile(formData);
+      toastSuccess('Berhasil! Foto sampul akan diperbarui setelah disetujui admin.');
+      await fetchAlumniProfile();
+    } catch (err) {
+      console.error('Failed to update cover photo:', err);
+      toastError(err.response?.data?.message || 'Gagal mengubah foto sampul.');
+    } finally {
+      setIsUploadingSampul(false);
+      if (sampulInputRef.current) sampulInputRef.current.value = '';
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col">
 
-      {/* ===== GRADIENT HEADER ===== */}
-      <div className="h-42 md:h-52 w-full bg-gradient-to-r from-pink-500 via-orange-400 to-slate-900 relative"></div>
+      {/* ===== HEADER SAMPUL / GRADIENT ===== */}
+      <div
+        className={`${!sampulSrc ? 'h-60 md:h-60' : 'h-80 md:h-100'} w-full relative group ${!sampulSrc ? 'bg-primary' : 'bg-slate-200'}`}
+        style={sampulSrc ? { backgroundImage: `url(${sampulSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+      >
+        {isSelfProfile && (
+          <>
+            <input
+              type="file"
+              ref={sampulInputRef}
+              onChange={handleSampulChange}
+              accept="image/png, image/jpeg, image/jpg"
+              className="hidden"
+            />
+            <button
+              onClick={() => sampulInputRef.current?.click()}
+              disabled={isUploadingSampul}
+              className="absolute top-4 right-4 lg:top-6 lg:right-6 bg-black/40 hover:bg-black/60 text-white p-2.5 rounded-full backdrop-blur-sm transition-all shadow-sm z-20 flex items-center gap-2 group-hover:opacity-100 opacity-80"
+              title="Ubah Foto Sampul"
+            >
+              {isUploadingSampul ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+              <span className="hidden md:inline-block text-xs font-bold mr-1">Edit Sampul</span>
+            </button>
+          </>
+        )}
+      </div>
 
       <main className="w-full flex-1 transition-all duration-500 pb-20 relative max-w-7xl mx-auto px-6 lg:px-8" >
 
