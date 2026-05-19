@@ -111,7 +111,14 @@ function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwne
 }
 
 function AddCommentRow({ avatarUrl, displayName, placeholder = "Tambahkan komentar...", value, onChange, onSubmit, submitting }) {
-  const handleKeyDown = (e) => { if (e.key === "Enter" && !e.shiftKey && value.trim()) { e.preventDefault(); onSubmit(); } };
+  // PERBAIKAN BUG: Tambahkan kondisi !submitting agar Enter tidak bisa diklik berkali-kali saat proses kirim
+  const handleKeyDown = (e) => { 
+    if (e.key === "Enter" && !e.shiftKey && value.trim() && !submitting) { 
+      e.preventDefault(); 
+      onSubmit(); 
+    } 
+  };
+  
   return (
     <div className="w-full flex items-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-3">
       <Avatar url={avatarUrl} name={displayName} size="w-8 h-8" textSize="text-xs" />
@@ -231,7 +238,7 @@ export default function MiniMedsosBeranda() {
   
   const [postSearchQuery, setPostSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [feedFilter, setFeedFilter] = useState('all'); // 'all' = semua, 'connections' = koneksi saja
+  const [feedFilter, setFeedFilter] = useState('all'); 
   
   const [postModalOpen, setPostModalOpen] = useState(false);
 
@@ -252,6 +259,11 @@ export default function MiniMedsosBeranda() {
   const handleAddComment = useCallback(async (postId) => {
     const content = (commentDraftByPostId[postId] || "").trim();
     if (!content) return;
+
+    // PERBAIKAN BUG: Lapisan proteksi kedua di tingkat fungsi utama, 
+    // jika state sedang memproses kiriman komentar pada post tersebut, batalkan request tambahan.
+    if (medsos.actionLoading[`comment-${postId}`]) return;
+
     const replyTarget = replyTargetByPostId[postId];
     const parentId = replyTarget !== null && replyTarget !== undefined ? replyTarget : null;
     try {
@@ -305,13 +317,12 @@ export default function MiniMedsosBeranda() {
     return filtered; 
   }, [appliedSearch, medsos.posts]);
 
-  // Styling custom untuk SmoothDropdown agar tingginya pas dengan form
   const dropdownWrapperClass = "w-full md:w-auto [&>div]:!w-full md:[&>div]:!w-auto md:[&>div]:!min-w-[160px] [&_button]:!h-[42px] [&_button]:!min-h-[42px] [&_button]:!py-0 [&_button]:!border-gray-100 [&_button]:!border-2 [&_button]:!bg-white [&_button]:!rounded-xl [&_button_span]:!font-medium [&_button_span]:!text-slate-700 [&_button_span]:!whitespace-nowrap [&_ul]:!min-w-[160px] [&_li]:!whitespace-nowrap";
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 px-2 sm:px-0 lg:px-4">
       
-      {/* FILTER HEADER - Dibuat satu baris dan sejajar */}
+      {/* FILTER HEADER */}
       <section className="relative z-[60] max-w-7xl mx-auto px-6 lg:px-12 -mt-10 w-full">
         <div className="bg-white p-4 md:p-6 rounded-md shadow-xl border border-slate-100 w-full">
           <div className="flex flex-col md:flex-row w-full gap-3">
@@ -353,7 +364,7 @@ export default function MiniMedsosBeranda() {
         </div>
       </section>
 
-      {/* Main Container dipastikan gap-6 untuk konsistensi jarak antar kotak */}
+      {/* Main Container */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-20 flex flex-col pb-12 gap-6">
         <StartPostComposer avatarUrl={myAvatarUrl} displayName={myName} onStartPost={() => setPostModalOpen(true)} />
 
