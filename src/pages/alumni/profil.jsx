@@ -35,6 +35,8 @@ function buildDisplayProfile(profile) {
   if (latest.tahun_masuk !== undefined) next.tahun_masuk = latest.tahun_masuk;
   if (latest.foto !== undefined) next.foto = latest.foto;
   if (latest.foto_path !== undefined) next.foto = latest.foto_path;
+  if (latest.foto_sampul !== undefined) next.foto_sampul = latest.foto_sampul;
+  if (latest.gambar_path !== undefined) next.foto_sampul = latest.gambar_path;
 
   next.latest_personal_info = {
     ...latest,

@@ -285,7 +285,8 @@ export default function Alumni() {
                 return (
                 <AlumniProfileCard 
                   key={alumniId || alumni.id} 
-                  alumni={alumni} 
+                  alumni={alumni}
+                  isSelfProfile={isSelf} 
                   onClick={() => navigate(`/alumni/daftar-alumni/${alumniId || alumni.id}`, { state: { alumni } })}
                   onImageClick={(src) => setSelectedImage(src)}
                   connectionBadgeSlot={(

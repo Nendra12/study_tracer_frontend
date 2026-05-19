@@ -1,12 +1,12 @@
 import React from 'react';
 import { School, BriefcaseBusiness, Star, Clock, Briefcase } from 'lucide-react';
 
-export default function AlumniDetailSkeleton() {
+export default function AlumniDetailSkeleton({ foto }) {
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col animate-in fade-in duration-500">
-      
+
       {/* ===== GRADIENT HEADER MOCK ===== */}
-      <div className="h-42 md:h-52 w-full bg-slate-200 animate-pulse relative"></div>
+      <div className={`${!foto ? 'h-60 md:h-80' : 'h-80 md:h-100'} w-full bg-slate-200 animate-pulse relative`}></div>
 
       <main className="flex-1 transition-all duration-500 pb-20 relative max-w-7xl mx-auto px-6 lg:px-8 w-full">
 

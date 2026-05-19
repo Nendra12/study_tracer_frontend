@@ -67,8 +67,7 @@ export default function JobPosterCard({ data, onImageClick, locked }) {
             </p>
           </div>
 
-          <p className="text-sm text-primary/80 leading-relaxed mb-6 line-clamp-2">
-            {deskripsi}
+          <p className="text-sm text-primary/80 leading-relaxed mb-6 line-clamp-2" dangerouslySetInnerHTML={{ __html: deskripsi }}>
           </p>
 
           {/* BAGIAN BAWAH: Footer Card (Lokasi & Tombol Panah) */}

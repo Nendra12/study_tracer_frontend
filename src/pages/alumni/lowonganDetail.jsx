@@ -108,15 +108,6 @@ export default function LowonganDetail() {
 
       <main className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-7 xl:px-0 pt-28 pb-20">
 
-        {/* Tombol Kembali */}
-        <button
-          onClick={() => navigate('/alumni/lowongan')}
-          className="flex items-center gap-2 text-slate-500 hover:text-primary text-sm font-bold mb-6 transition-colors cursor-pointer w-fit group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Kembali
-        </button>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
 
           {/* --- KONTEN KIRI (Header & Deskripsi) --- */}
@@ -222,8 +213,7 @@ export default function LowonganDetail() {
                 </div>
                 <h2 className="text-xl font-black text-primary tracking-tight">Deskripsi Pekerjaan</h2>
               </div>
-              <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-primary/80 font-medium leading-relaxed whitespace-pre-line">
-                {job.deskripsi || 'Tidak ada deskripsi yang disediakan oleh perusahaan.'}
+              <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-primary/80 font-medium leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: job.deskripsi }}>
               </div>
             </div>
 

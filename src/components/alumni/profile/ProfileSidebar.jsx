@@ -95,9 +95,11 @@ function pendingSocialToMap(pendingSocialArray, masterList) {
 
 export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVerified }) {
   const fileInputRef = useRef(null);
+  const sampulInputRef = useRef(null);
 
   // States
   const [savingFoto, setSavingFoto] = useState(false);
+  const [savingSampul, setSavingSampul] = useState(false);
   const [savingSocial, setSavingSocial] = useState(false);
   const [cancelingSocial, setCancelingeSocial] = useState(false);
 
@@ -179,6 +181,39 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
     } finally {
       setSavingFoto(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  async function handleSampulSelect(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImageFile = file.type?.startsWith('image/');
+    if (!isImageFile) {
+      toastWarning('File yang diunggah harus berupa format foto (image)');
+      if (sampulInputRef.current) sampulInputRef.current.value = '';
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toastError('Ukuran gambar maksimal 4MB.');
+      if (sampulInputRef.current) sampulInputRef.current.value = '';
+      return;
+    }
+
+    try {
+      setSavingSampul(true);
+      const formData = new FormData();
+      formData.append('foto_sampul', file);
+
+      await alumniApi.updateProfile(formData);
+      onShowSuccess('Berhasil! Foto sampul akan diperbarui setelah disetujui admin.');
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to update cover photo:', err);
+      toastError(err.response?.data?.message || 'Gagal mengubah foto sampul.');
+    } finally {
+      setSavingSampul(false);
+      if (sampulInputRef.current) sampulInputRef.current.value = '';
     }
   }
 
@@ -396,6 +431,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
   }
 
   const fotoUrl = profile?.foto ? getImageUrl(profile.foto) : null;
+  const sampulUrl = profile?.foto_sampul ? getImageUrl(profile.foto_sampul) : null;
   const pendingUpdates = (profile?.pending_updates || []).filter(
     (u) => u.section === 'personal_info' && u.status === 'pending'
   );
@@ -426,49 +462,70 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
 
       {/* Input File Tersembunyi */}
       <input type="file" ref={fileInputRef} className="hidden" onChange={handleFotoSelect} accept="image/*" />
+      <input type="file" ref={sampulInputRef} className="hidden" onChange={handleSampulSelect} accept="image/png, image/jpeg, image/jpg" />
 
       {/* KOTAK 1: INFO PROFIL */}
-      <div className="bg-white rounded-md p-8 shadow-sm text-center border border-slate-100">
-        <div className="relative w-32 h-32 mx-auto mb-5">
-          <div className="w-full h-full rounded-full overflow-hidden border-4 border-slate-50">
-            {fotoUrl ? (
-              <img src={fotoUrl} alt="Foto Profil" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary/40">
-                {profile?.nama?.charAt(0) || 'A'}
-              </div>
-            )}
-          </div>
-          {isFotoPending && (
-            <span className="absolute -top-1 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black border border-amber-200">
-              PENDING
-            </span>
+      <div className="bg-white rounded-md shadow-sm text-center border border-slate-100 overflow-hidden relative">
+        {/* SAMPUL BACKGROUND */}
+        <div className={`h-28 w-full relative group ${!sampulUrl ? 'bg-gradient-to-r from-pink-500 via-orange-400 to-slate-900' : 'bg-slate-200'}`}>
+          {sampulUrl && (
+            <img src={sampulUrl} className="w-full h-full object-cover" alt="Sampul Profil" />
           )}
+          
           <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={savingFoto || !isVerified}
-            title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
-            className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors border-2 border-white shadow-sm disabled:opacity-50 ${
-              !isVerified ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary cursor-pointer hover:bg-[#2A3E3F]'
+            onClick={() => sampulInputRef.current?.click()}
+            disabled={savingSampul || !isVerified}
+            title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : 'Ubah Foto Sampul'}
+            className={`absolute top-4 right-4 p-2 rounded-full flex items-center justify-center text-white transition-colors shadow-sm disabled:opacity-50 ${
+              !isVerified ? 'bg-black/40 cursor-not-allowed' : 'bg-black/40 cursor-pointer hover:bg-black/60'
             }`}
           >
-            {savingFoto ? <Loader2 size={14} className="animate-spin" /> : (!isVerified ? <Lock size={14} /> : <Edit size={14} />)}
+            {savingSampul ? <Loader2 size={16} className="animate-spin" /> : (!isVerified ? <Lock size={16} /> : <Edit size={16} />)}
           </button>
         </div>
 
-        <h2 className="text-xl font-black text-primary">{profile?.nama || '-'}</h2>
-        <p className="text-sm font-semibold text-primary/60 mb-6">
-          Angkatan {profile?.tahun_masuk || '-'}
-          {profile?.jurusan?.nama && ` • ${profile.jurusan.nama}`}
-        </p>
-        <div className="space-y-3 pt-6 border-t border-slate-100 text-left">
-          <div className="flex items-center gap-3 text-primary/70">
-            <Mail size={16} className="shrink-0" />
-            <span className="text-sm font-medium truncate">{profile?.email || '-'}</span>
+        <div className="p-8 pt-0">
+          <div className="relative w-32 h-32 mx-auto -mt-16 mb-5">
+            <div className="w-full h-full rounded-full overflow-hidden border-4 border-slate-50">
+              {fotoUrl ? (
+                <img src={fotoUrl} alt="Foto Profil" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary/40">
+                  {profile?.nama?.charAt(0) || 'A'}
+                </div>
+              )}
+            </div>
+            {isFotoPending && (
+              <span className="absolute -top-1 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black border border-amber-200">
+                PENDING
+              </span>
+            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={savingFoto || !isVerified}
+              title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
+              className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors border-2 border-white shadow-sm disabled:opacity-50 ${
+                !isVerified ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary cursor-pointer hover:bg-[#2A3E3F]'
+              }`}
+            >
+              {savingFoto ? <Loader2 size={14} className="animate-spin" /> : (!isVerified ? <Lock size={14} /> : <Edit size={14} />)}
+            </button>
           </div>
-          <div className="flex items-center gap-3 text-primary/70">
-            <Phone size={16} className="shrink-0" />
-            <span className="text-sm font-medium">{profile?.no_hp || '-'}</span>
+
+          <h2 className="text-xl font-black text-primary">{profile?.nama || '-'}</h2>
+          <p className="text-sm font-semibold text-primary/60 mb-6">
+            Angkatan {profile?.tahun_masuk || '-'}
+            {profile?.jurusan?.nama && ` • ${profile.jurusan.nama}`}
+          </p>
+          <div className="space-y-3 pt-6 border-t border-slate-100 text-left">
+            <div className="flex items-center gap-3 text-primary/70">
+              <Mail size={16} className="shrink-0" />
+              <span className="text-sm font-medium truncate">{profile?.email || '-'}</span>
+            </div>
+            <div className="flex items-center gap-3 text-primary/70">
+              <Phone size={16} className="shrink-0" />
+              <span className="text-sm font-medium">{profile?.no_hp || '-'}</span>
+            </div>
           </div>
         </div>
       </div>
