@@ -109,7 +109,7 @@ export default function ModalEditStatusKelulusan({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-[#2e4042] text-white text-sm font-bold rounded-xl transition-all cursor-pointer disabled:opacity-70 shadow-sm"
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/80 text-white text-sm font-bold rounded-xl transition-all cursor-pointer disabled:opacity-70 shadow-sm"
             >
               {isSubmitting ? (
                 <><Loader2 size={16} className="animate-spin" /> Menyimpan...</>
