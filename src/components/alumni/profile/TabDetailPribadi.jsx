@@ -287,7 +287,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
             <button
               onClick={handleSaveProfile}
               disabled={saving}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary text-white shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary text-white shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Simpan
             </button>

@@ -6,17 +6,15 @@ import { adminApi } from '../../api/admin';
 
 export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitting, jurusanOptions }) {
   const [formData, setFormData] = useState({ nisn: '', nama: '', id_jurusan: '', status_kelulusan: 'lulus' });
-  const [errors, setErrors] = useState({ nisn: undefined });
-  const [lookupState, setLookupState] = useState('idle'); // 'idle' | 'loading' | 'found' | 'not_found'
+  const [errors, setErrors] = useState({}); 
+  const [lookupState, setLookupState] = useState('idle'); 
   const [lookupResult, setLookupResult] = useState(null);
 
-  // Mencegah scroll pada body ketika modal terbuka
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      // Reset form setiap kali modal dibuka
       setFormData({ nisn: '', nama: '', id_jurusan: '', status_kelulusan: 'lulus' });
-      setErrors({ nisn: undefined });
+      setErrors({});
       setLookupState('idle');
       setLookupResult(null);
     } else {
@@ -33,21 +31,19 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
   const handleNisnChange = (e) => {
     const val = e.target.value.replace(/\D/g, '');
     setFormData(prev => ({ ...prev, nisn: val }));
-    // Reset lookup when NISN changes
     setLookupState('idle');
     setLookupResult(null);
 
-    if (val.length > 0 && val.length < 10) {
-      setErrors(prev => ({ ...prev, nisn: 'NISN harus terdiri dari tepat 10 angka' }));
-    } else if (val.length === 0) {
-      setErrors(prev => ({ ...prev, nisn: 'NISN wajib diisi' }));
-    } else {
+    if (errors.nisn) {
       setErrors(prev => ({ ...prev, nisn: undefined }));
     }
   };
 
   const handleLookup = async () => {
-    if (formData.nisn.length !== 10) return;
+    if (formData.nisn.length !== 10) {
+      setErrors(prev => ({ ...prev, nisn: 'NISN harus terdiri dari tepat 10 angka untuk dicek' }));
+      return;
+    }
 
     try {
       setLookupState('loading');
@@ -57,11 +53,16 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
       if (data?.found) {
         setLookupState('found');
         setLookupResult(data);
-        // Auto-fill nama dan jurusan
         setFormData(prev => ({
           ...prev,
           nama: data.nama || prev.nama,
           id_jurusan: data.id_jurusan ? String(data.id_jurusan) : prev.id_jurusan,
+        }));
+        
+        setErrors(prev => ({
+          ...prev,
+          nama: data.nama ? undefined : prev.nama,
+          id_jurusan: data.id_jurusan ? undefined : prev.id_jurusan
         }));
       } else {
         setLookupState('not_found');
@@ -90,12 +91,20 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
       }
     }
 
-    if (hasError) {
-      setErrors(currentErrors);
-      return;
+    if (!formData.nama?.trim()) {
+      currentErrors.nama = 'Nama lengkap wajib diisi';
+      hasError = true;
     }
 
-    if (!formData.id_jurusan) return;
+    if (!formData.id_jurusan) {
+      currentErrors.id_jurusan = 'Jurusan wajib dipilih';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(currentErrors);
+      return; 
+    }
 
     const payload = {
       nisn: formData.nisn,
@@ -109,24 +118,9 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
     onSubmit(payload, () => {});
   };
 
-  const isFormValid =
-    formData.nisn.length === 10 &&
-    formData.nama.trim().length > 0 &&
-    formData.id_jurusan !== '' &&
-    !errors.nisn;
-
   return createPortal(
-    <div 
-      // PERBAIKAN: Ubah bg-white/40 (terang) kembali menjadi bg-black/50 (gelap tipis transparan)
-      // Gunakan backdrop-blur (blur sedang) berdasarkan instruksi user
-      // Pertahankan z-index z-[99999] agar benar-benar di atas sidebar dan header
-      className="fixed inset-0 z-[99999] flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur animate-in fade-in duration-200 overflow-y-auto"
-    >
-      <div 
-        // PERBAIKAN: Wadah modal tetap putih, tapi gunakan bayangan gelap yang tipis shadow-[0_0_40px_-15px_rgba(0,0,0,0.2)] 
-        // agar menonjol dari latar belakang gelap
-        className="bg-white w-full max-w-md rounded-2xl shadow-[0_0_40px_-15px_rgba(0,0,0,0.2)] border border-slate-100 overflow-visible animate-in zoom-in-95 duration-200 my-auto"
-      >
+    <div className="fixed inset-0 z-[99999] flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-[0_0_40px_-15px_rgba(0,0,0,0.2)] border border-slate-100 overflow-visible animate-in zoom-in-95 duration-200 my-auto">
 
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
@@ -152,7 +146,7 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
                 onChange={handleNisnChange}
                 className={`flex-1 px-4 py-2.5 text-sm rounded-xl outline-none transition-all border ${
                   errors.nisn
-                    ? 'border-red-300 focus:ring-2 focus:ring-red-100 focus:border-red-500 bg-red-50/30'
+                    ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-500 bg-red-50/50'
                     : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                 }`}
                 placeholder="Masukkan 10 digit NISN"
@@ -168,7 +162,7 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
               </button>
             </div>
             {errors.nisn && (
-              <p className="flex items-center gap-1.5 text-xs text-red-500 font-medium mt-1.5">
+              <p className="flex items-center gap-1.5 text-xs text-red-500 font-bold mt-2">
                 <AlertCircle size={14} /> {errors.nisn}
               </p>
             )}
@@ -205,25 +199,47 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
             </label>
             <input
               type="text"
-              required
               value={formData.nama}
-              onChange={(e) => setFormData({...formData, nama: e.target.value})}
-              className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all ${
-                lookupState === 'found' ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-200'
+              onChange={(e) => {
+                setFormData({...formData, nama: e.target.value});
+                if (errors.nama) setErrors(prev => ({...prev, nama: undefined})); 
+              }}
+              className={`w-full px-4 py-2.5 text-sm border rounded-xl outline-none transition-all ${
+                errors.nama 
+                  ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-500 bg-red-50/50' 
+                  : lookupState === 'found' 
+                    ? 'border-emerald-300 bg-emerald-50/30 focus:ring-2 focus:ring-primary/20 focus:border-primary' 
+                    : 'border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary'
               }`}
               placeholder="Masukkan nama lengkap siswa"
             />
+            {errors.nama && (
+              <p className="flex items-center gap-1.5 text-xs text-red-500 font-bold mt-2">
+                <AlertCircle size={14} /> {errors.nama}
+              </p>
+            )}
           </div>
 
           {/* Jurusan */}
           <div className="relative z-50">
-            <SelectInput
-              label="Jurusan"
-              placeholder="Pilih jurusan"
-              options={jurusanOptions}
-              value={formData.id_jurusan || ""}
-              onSelect={(val) => setFormData({...formData, id_jurusan: val})}
-            />
+            {/* PERBAIKAN: Label dikembalikan ke dalam SelectInput, dan CSS error menargetkan child button-nya */}
+            <div className={errors.id_jurusan ? '[&_button]:!border-red-400 [&_button]:!bg-red-50/50 [&>div>div]:!border-red-400 [&>div>div]:!bg-red-50/50' : ''}>
+              <SelectInput
+                label="Jurusan"
+                placeholder="Pilih jurusan"
+                options={jurusanOptions}
+                value={formData.id_jurusan || ""}
+                onSelect={(val) => {
+                  setFormData({...formData, id_jurusan: val});
+                  if (errors.id_jurusan) setErrors(prev => ({...prev, id_jurusan: undefined})); 
+                }}
+              />
+            </div>
+            {errors.id_jurusan && (
+              <p className="flex items-center gap-1.5 text-xs text-red-500 font-bold mt-2">
+                <AlertCircle size={14} /> {errors.id_jurusan}
+              </p>
+            )}
           </div>
 
           {/* Status Kelulusan */}
@@ -268,7 +284,7 @@ export default function ModalTambahManual({ isOpen, onClose, onSubmit, isSubmitt
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !isFormValid}
+              disabled={isSubmitting} 
               className="flex-1 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors flex justify-center items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
