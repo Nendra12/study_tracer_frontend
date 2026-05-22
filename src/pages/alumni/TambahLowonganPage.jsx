@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin, ArrowLeft } from 'lucide-react';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { adminApi } from '../../api/admin';
 import { alumniApi } from '../../api/alumni';
@@ -28,7 +28,7 @@ export default function TambahLowonganPage() {
     alamat_perusahaan: '',
     tanggal_berakhir: '',
     deskripsi: '',
-    nomor_kontak: '',
+    nomor_kontak: [''], // ARRAY UNTUK MULTIPLE CONTACTS
     tipe_pekerjaan: '',
     lokasi: '',
     foto: null,
@@ -88,7 +88,6 @@ export default function TambahLowonganPage() {
 
   // Fetch Provinsi & Skills saat halaman dibuka
   useEffect(() => {
-
     const fetchMasterData = async () => {
       setLoadingProvinsi(true);
       try {
@@ -139,7 +138,7 @@ export default function TambahLowonganPage() {
   // Inisialisasi State Saat Mount
   useEffect(() => {
     setFormData({
-      judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '', nomor_kontak: '',
+      judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '', nomor_kontak: [''],
       id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
       latitude_perusahaan: null, longitude_perusahaan: null,
       jam_mulai: '', jam_berakhir: '',
@@ -232,6 +231,33 @@ export default function TambahLowonganPage() {
     }
   };
 
+  // --- HANDLER NOMOR KONTAK ---
+  const handleContactChange = (index, value) => {
+    const newContacts = [...formData.nomor_kontak];
+    newContacts[index] = value;
+    setFormData(prev => ({ ...prev, nomor_kontak: newContacts }));
+    if (errors[`nomor_kontak_${index}`]) {
+      setErrors(prev => ({ ...prev, [`nomor_kontak_${index}`]: undefined }));
+    }
+  };
+
+  const addContact = () => {
+    // Pastikan maksimal hanya 3 kontak yang bisa ditambahkan
+    if (formData.nomor_kontak.length < 3) {
+      setFormData(prev => ({ ...prev, nomor_kontak: [...prev.nomor_kontak, ''] }));
+    }
+  };
+
+  const removeContact = (index) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      nomor_kontak: prev.nomor_kontak.filter((_, i) => i !== index) 
+    }));
+    if (errors[`nomor_kontak_${index}`]) {
+      setErrors(prev => ({ ...prev, [`nomor_kontak_${index}`]: undefined }));
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -285,12 +311,34 @@ export default function TambahLowonganPage() {
     }
     if (!formData.deskripsi.trim() || formData.deskripsi === '<p></p>') newErrors.deskripsi = 'Deskripsi wajib diisi';
 
-    if (!formData.nomor_kontak.trim()) {
-      newErrors.nomor_kontak = 'Nomor kontak wajib diisi';
-    } else if (!/^[\d\s+\-()]+$/.test(formData.nomor_kontak)) {
-      newErrors.nomor_kontak = 'Format nomor kontak tidak valid (hanya angka dan simbol +, -, ())';
-    } else if (formData.nomor_kontak.replace(/\D/g, '').length < 9) {
-      newErrors.nomor_kontak = 'Nomor kontak terlalu pendek (min 9 angka)';
+    // VALIDASI ARRAY NOMOR KONTAK
+    const validContacts = [];
+    formData.nomor_kontak.forEach((kontak, idx) => {
+      const trimmed = kontak.trim();
+      if (!trimmed) {
+        if (idx === 0 && formData.nomor_kontak.length === 1) {
+          newErrors[`nomor_kontak_${idx}`] = 'Nomor kontak wajib diisi';
+        }
+        return;
+      }
+      
+      if (!/^[\d\s+\-()]+$/.test(trimmed)) {
+        newErrors[`nomor_kontak_${idx}`] = 'Format tidak valid (hanya angka dan simbol +, -, ())';
+        return;
+      }
+      
+      const digits = trimmed.replace(/\D/g, '');
+      if (digits.length < 10) {
+        newErrors[`nomor_kontak_${idx}`] = 'Minimal 10 angka';
+      } else if (digits.length > 13) {
+        newErrors[`nomor_kontak_${idx}`] = 'Maksimal 13 angka';
+      } else {
+        validContacts.push(trimmed);
+      }
+    });
+
+    if (Object.keys(newErrors).length === 0 && validContacts.length === 0) {
+      newErrors['nomor_kontak_0'] = 'Minimal ada satu nomor kontak yang diisi';
     }
 
     if (!isEditMode && !formData.foto) {
@@ -326,7 +374,10 @@ export default function TambahLowonganPage() {
         }
       }
       fd.append('deskripsi', formData.deskripsi);
-      fd.append('nomor_kontak', formData.nomor_kontak);
+      
+      // Mengirimkan kontak sebagai string yang dipisah koma
+      fd.append('nomor_kontak', validContacts.join(', '));
+      
       fd.append('kebutuhan_lainnya', ''); // Kosongkan karena digabung dengan deskripsi
       fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
       fd.append('lowongan_selesai', formData.tanggal_berakhir);
@@ -342,8 +393,7 @@ export default function TambahLowonganPage() {
       });
 
       if (isEditMode) {
-        // ... (if needed in future for edit mode)
-        await alumniApi.updateLowongan(editJob.id, fd); // Note: alumniApi doesn't have updateLowongan yet, but isEditMode is hardcoded to false
+        await alumniApi.updateLowongan(editJob.id, fd); 
         alertSuccess('Lowongan kerja berhasil diperbarui!');
       } else {
         await alumniApi.submitLowongan(fd);
@@ -370,6 +420,7 @@ export default function TambahLowonganPage() {
         if (validationErrors.id_kota) mapped.id_kota = validationErrors.id_kota[0];
         if (validationErrors.id_provinsi) mapped.id_provinsi = validationErrors.id_provinsi[0];
         if (validationErrors.skills) mapped.skills = validationErrors.skills[0];
+        if (validationErrors.nomor_kontak) mapped.nomor_kontak_0 = validationErrors.nomor_kontak[0];
         
         setErrors(mapped);
         document.querySelector('.custom-modal-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -701,14 +752,58 @@ export default function TambahLowonganPage() {
               {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
             </div>
 
+            {/* KOMPONEN INPUT NOMOR KONTAK DINAMIS */}
             <div className="relative z-[5]">
               <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                 Nomor Kontak <span className="text-red-500">*</span>
               </label>
-              <input name="nomor_kontak" value={formData.nomor_kontak} onChange={handleInputChange} placeholder="Contoh: 08123456789" className={inputClass(errors.nomor_kontak)} />
-              {errors.nomor_kontak && <p className="text-xs text-red-500 font-medium mt-1">{errors.nomor_kontak}</p>}
+              <div className="space-y-4">
+                {formData.nomor_kontak.map((kontak, idx) => (
+                  <div key={idx} className="flex flex-col">
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-1">
+                        <input 
+                          value={kontak} 
+                          onChange={(e) => handleContactChange(idx, e.target.value)} 
+                          placeholder="Contoh: 08123456789" 
+                          className={inputClass(errors[`nomor_kontak_${idx}`])} 
+                        />
+                      </div>
+                      
+                      {formData.nomor_kontak.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeContact(idx)}
+                          className="flex shrink-0 items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors cursor-pointer h-[48px] w-[48px]"
+                          title="Hapus Nomor Kontak"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
+                    </div>
+                    {/* Pesan Error ditempatkan mengalir (relative) di bawah input */}
+                    {errors[`nomor_kontak_${idx}`] && (
+                      <p className="text-xs text-red-500 font-medium mt-1.5 ml-1">
+                        {errors[`nomor_kontak_${idx}`]}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Tombol hanya muncul jika jumlah kontak kurang dari 3 */}
+              {formData.nomor_kontak.length < 3 && (
+                <div className="pt-3">
+                  <button
+                    type="button"
+                    onClick={addContact}
+                    className="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer px-1"
+                  >
+                    <Plus size={14} strokeWidth={3} /> Tambah Nomor Kontak Lain
+                  </button>
+                </div>
+              )}
             </div>
-
 
           </div>
         </div>

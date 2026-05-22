@@ -343,7 +343,7 @@ export default function MiniMedsosBeranda() {
               </div>
               <button
                 type="submit"
-                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-primary/80 transition-colors cursor-pointer border-l-2 border-gray-100"
               >
                 Cari
               </button>
@@ -547,7 +547,7 @@ export default function MiniMedsosBeranda() {
         {medsos.pagination.currentPage < medsos.pagination.lastPage && (
           <div className="flex justify-center pt-8 w-full">
             <button type="button" onClick={() => medsos.loadMorePosts()} disabled={medsos.loadingMore}
-              className="h-11 px-8 rounded-md text-sm font-bold text-white bg-primary hover:bg-[#2e4042] transition-colors cursor-pointer inline-flex items-center gap-2 shadow-sm">
+              className="h-11 px-8 rounded-md text-sm font-bold text-white bg-primary hover:bg-primary/80 transition-colors cursor-pointer inline-flex items-center gap-2 shadow-sm">
               {medsos.loadingMore && <Loader2 size={16} className="animate-spin" />}
               {medsos.loadingMore ? "Memuat..." : "Muat Lebih Banyak"}
             </button>

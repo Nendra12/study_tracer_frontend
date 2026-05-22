@@ -344,7 +344,7 @@ export default function Lowongan() {
             <p className="text-sm font-medium mb-4">Anda belum mengajukan lowongan kerja apapun.</p>
             <button
               onClick={() => navigate('/alumni/lowongan/tambah')}
-              className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-[#2e4042] transition-all cursor-pointer inline-flex items-center gap-2"
+              className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer inline-flex items-center gap-2"
             >
               <Plus size={16} /> Pasang Lowongan
             </button>

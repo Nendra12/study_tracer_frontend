@@ -156,7 +156,7 @@ export default function PengumumanAlumni() {
               </div>
               <button 
                 type="submit" 
-                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-[#2e4042] transition-colors cursor-pointer border-l-2 border-gray-100"
+                className="bg-primary text-white px-6 md:px-8 h-full font-bold text-sm hover:bg-primary/80 transition-colors cursor-pointer border-l-2 border-gray-100"
               >
                 Cari
               </button>
@@ -198,7 +198,7 @@ export default function PengumumanAlumni() {
               <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-slate-700 mb-2">Gagal Memuat Data</h2>
               <p className="text-slate-500 text-sm mb-4">{error}</p>
-              <button onClick={() => fetchPengumuman(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-[#2e4042] transition-colors">
+              <button onClick={() => fetchPengumuman(currentPage)} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-primary/80 transition-colors">
                 Coba Lagi
               </button>
             </div>
