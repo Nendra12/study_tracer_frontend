@@ -418,15 +418,6 @@ export default function MiniMedsosBeranda() {
                             if (isConnection === true) {
                               return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">Koneksi</span>;
                             }
-                            if (isConnection === false) {
-                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">Publik</span>;
-                            }
-                            if (post.visibility === "connections") {
-                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">Koneksi</span>;
-                            }
-                            if (post.visibility === "public") {
-                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">Publik</span>;
-                            }
                             return null;
                           })()}
                         </div>
