@@ -3,7 +3,7 @@ import { FileText, Edit2, Save, X, Briefcase, Plus, Trash2, Clock, AlertCircle, 
 import SmoothDropdown from '../../admin/SmoothDropdown';
 import { alumniApi } from '../../../api/alumni';
 import DeskripsiKerierInput from '../../admin/DeskripsiKerierInput';
-import { alertConfirm, toastError, toastWarning } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastWarning, toastSuccess } from '../../../utilitis/alert'; // Tambahkan toastSuccess
 
 export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -70,7 +70,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
       try {
         setLoading(true);
         await alumniApi.deleteDeskripsiKarier(id);
-        onShowSuccess('Penghapusan deskripsi karier telah dikirim, menunggu persetujuan admin');
+        toastSuccess('Penghapusan deskripsi karier telah dikirim, menunggu persetujuan admin');
         onRefresh();
       } catch (error) {
         const message = error.response?.data?.message || 'Gagal menghapus deskripsi';
@@ -91,7 +91,7 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
       try {
         setLoading(true);
         await alumniApi.cancelPendingDeskripsiKarier(pendingId);
-        onShowSuccess('Pengajuan deskripsi karier berhasil dibatalkan');
+        toastSuccess('Pengajuan deskripsi karier berhasil dibatalkan');
         onRefresh();
       } catch (error) {
         const message = error.response?.data?.message || 'Gagal membatalkan pengajuan';
@@ -110,6 +110,16 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
       return;
     }
 
+    // Tampilkan Alert Confirm sebelum menyimpan data
+    const confirmMessage = editMode === 'edit_pending'
+      ? "Apakah Anda yakin ingin menyimpan pembaruan pengajuan deskripsi karier ini?"
+      : editMode === 'edit'
+        ? "Apakah Anda yakin ingin menyimpan perubahan deskripsi karier ini?"
+        : "Apakah Anda yakin ingin menyimpan deskripsi karier baru ini?";
+        
+    const confirm = await alertConfirm(confirmMessage);
+    if (!confirm.isConfirmed) return;
+
     try {
       setLoading(true);
 
@@ -118,21 +128,21 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
         await alumniApi.updatePendingDeskripsiKarier(formData.pendingId, {
           deskripsi: formData.deskripsi,
         });
-        onShowSuccess('Pengajuan deskripsi karier berhasil diperbarui, menunggu persetujuan admin');
+        toastSuccess('Pengajuan deskripsi karier berhasil diperbarui, menunggu persetujuan admin');
       } else if (editMode === 'edit' && formData.id) {
         // Update deskripsi yang sudah approved
         await alumniApi.updateDeskripsiKarier(formData.id, {
           id_riwayat: formData.id_riwayat,
           deskripsi: formData.deskripsi,
         });
-        onShowSuccess('Perubahan deskripsi karier telah dikirim, menunggu persetujuan admin');
+        toastSuccess('Perubahan deskripsi karier telah dikirim, menunggu persetujuan admin');
       } else {
         // Tambah baru
         await alumniApi.addDeskripsiKarier({
           id_riwayat: formData.id_riwayat,
           deskripsi: formData.deskripsi,
         });
-        onShowSuccess('Deskripsi karier telah dikirim, menunggu persetujuan admin');
+        toastSuccess('Deskripsi karier telah dikirim, menunggu persetujuan admin');
       }
 
       onRefresh();
@@ -424,7 +434,6 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
                     <h3 className="font-bold text-slate-800 text-base leading-tight">
                       {karierLabel}
                     </h3>
-                    {/* Badge dipindah ke bawah judul & diubah menjadi w-fit agar tidak memakan ruang kosong */}
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                       <button
                         onClick={() => handleEditPending(pending)}
@@ -443,10 +452,6 @@ export default function TabDeskripsiKarier({ profile, onRefresh, onShowSuccess, 
                       </button>
                     </div>
                   </div>
-
-                  {/* TOMBOL AKSI: Selalu tampil di HP, tapi sembunyi (muncul saat hover) di layar besar (md) */}
-
-
                 </div>
 
                 <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 text-[10px] sm:text-[11px] font-bold rounded-full border border-amber-300">

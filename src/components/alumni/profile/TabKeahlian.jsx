@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Plus, X, Save, Loader2, Clock, Edit2, Trash2, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
-import { alertConfirm, toastError } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastSuccess, toastWarning } from '../../../utilitis/alert';
 
 // Menggunakan SmoothDropdown milik Anda
 import SmoothDropdown from '../../admin/SmoothDropdown';
@@ -53,7 +53,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
 
     if (skill) {
       const skillId = skill.id || skill.id_skills;
-      const isAlreadyAdded = mySkills.find(s => s.id === skillId);
+      const isAlreadyAdded = mySkills.find(s => String(s.id) === String(skillId));
 
       if (!isAlreadyAdded) {
         setMySkills(prev => [...prev, {
@@ -61,6 +61,8 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
           nama_skill: skill.nama_skill || skill.nama || skill.name || ''
         }]);
         setHasChanges(true);
+      } else {
+        toastWarning('Keahlian ini sudah ada di daftar Anda.');
       }
     }
 
@@ -69,7 +71,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
 
   // Menghapus skill dari state lokal
   function removeSkill(skillId) {
-    setMySkills(prev => prev.filter(s => s.id !== skillId));
+    setMySkills(prev => prev.filter(s => String(s.id) !== String(skillId)));
     setHasChanges(true);
   }
 
@@ -83,7 +85,9 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
     );
 
     if (alreadyMine) {
-      setSkillError(`Keahlian "${alreadyMine.nama_skill || alreadyMine.nama || alreadyMine.name || newSkillName.trim()}" sudah ada di daftar Anda.`);
+      const skillName = alreadyMine.nama_skill || alreadyMine.nama || alreadyMine.name || newSkillName.trim();
+      setSkillError(`Keahlian "${skillName}" sudah ada di daftar Anda.`);
+      toastWarning(`Keahlian "${skillName}" sudah ada di daftar Anda.`);
       setNewSkillName('');
       return;
     }
@@ -111,10 +115,11 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
 
         setMasterSkills(prev => [...prev, newSkill]);
 
-        const isAlreadyAdded = mySkills.find(s => s.id === newSkill.id);
+        const isAlreadyAdded = mySkills.find(s => String(s.id) === String(newSkill.id));
         if (!isAlreadyAdded) {
           setMySkills(prev => [...prev, newSkill]);
           setHasChanges(true);
+          toastSuccess(`Keahlian "${newSkill.nama_skill}" berhasil ditambahkan ke daftar`);
         }
       }
 
@@ -129,6 +134,13 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
 
   // Simpan perubahan skills (create atau update pending)
   async function handleSaveSkills() {
+    const confirmMessage = isEditingPending
+      ? "Apakah Anda yakin ingin menyimpan pembaruan pengajuan keahlian ini?"
+      : "Apakah Anda yakin ingin menyimpan perubahan keahlian ini?";
+
+    const confirm = await alertConfirm(confirmMessage);
+    if (!confirm.isConfirmed) return;
+
     try {
       setSaving(true);
       const skillIds = mySkills.map(s => s.id);
@@ -138,11 +150,11 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
       if (isEditingPending && pendingUpdate) {
         // Update existing pending
         await alumniApi.updatePendingSkills(pendingUpdate.id, skillIds);
-        onShowSuccess('Perubahan keahlian yang pending berhasil diperbarui');
+        toastSuccess('Perubahan keahlian yang pending berhasil diperbarui');
       } else {
         // Create new pending
         await alumniApi.updateSkills(skillIds);
-        onShowSuccess('Perubahan keahlian telah dikirim, menunggu persetujuan admin');
+        toastSuccess('Perubahan keahlian telah dikirim, menunggu persetujuan admin');
       }
 
       setHasChanges(false);
@@ -168,8 +180,6 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
     const pendingSkills = pendingSkillIds
       .map(id => {
         const skill = masterSkills.find(s =>
-          s.id === id ||
-          s.id_skills === id ||
           String(s.id) === String(id) ||
           String(s.id_skills) === String(id)
         );
@@ -196,7 +206,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
     try {
       setCancelingPending(true);
       await alumniApi.cancelPendingSkills(pendingUpdate.id);
-      onShowSuccess('Pengajuan perubahan keahlian berhasil dibatalkan');
+      toastSuccess('Pengajuan perubahan keahlian berhasil dibatalkan');
       setIsEditingPending(false);
       setShowSearch(false);
       onRefresh();
@@ -224,7 +234,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
   const dropdownOptions = masterSkills
     .filter(s => {
       const skillId = s.id || s.id_skills;
-      return !mySkills.find(ms => ms.id === skillId);
+      return !mySkills.find(ms => String(ms.id) === String(skillId));
     })
     .map(s => s.nama_skill || s.nama || s.name);
 
@@ -235,8 +245,6 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
     (pendingUpdates[0].new_data?.skill_ids || [])
       .map(id => {
         const skill = masterSkills.find(s =>
-          s.id === id ||
-          s.id_skills === id ||
           String(s.id) === String(id) ||
           String(s.id_skills) === String(id)
         );
@@ -312,7 +320,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${(!isVerified || pendingUpdates.length > 0)
                   ? 'bg-slate-100 text-slate-400' 
                   : (showSearch
-                      ? 'bg-primary text-white shadow-md hover:bg-[#2A3E3F]'
+                      ? 'bg-primary text-white shadow-md hover:bg-primary/80'
                       : 'bg-primary/10 text-primary hover:bg-primary hover:text-white')
                 }`}
             >
@@ -378,7 +386,7 @@ export default function TabKeahlian({ profile, onRefresh, onShowSuccess, isVerif
               <button
                 onClick={handleCreateSkill}
                 disabled={creatingSkill || !newSkillName.trim()}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creatingSkill ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Tambah <span className='hidden md:block'>Baru</span>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, X, Save, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { STORAGE_BASE_URL } from '../../../api/axios';
-import { alertConfirm, toastError } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastWarning } from '../../../utilitis/alert';
 
 export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVerified }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -51,6 +51,13 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validasi ukuran maksimal 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        toastWarning('Ukuran gambar maksimal 5MB');
+        e.target.value = null; // Reset input file
+        return;
+      }
+
       // Clean up previous preview URL
       if (formData.previewUrl) {
         URL.revokeObjectURL(formData.previewUrl);
@@ -83,14 +90,23 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
       try {
         const urlObj = new URL(formData.link_project);
         if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
-          toastError('Link proyek harus diawali dengan http:// atau https://');
+          toastWarning('Link proyek harus diawali dengan http:// atau https://');
           return;
         }
       } catch (_) {
-        toastError('Format link proyek tidak valid. Pastikan menyertakan http:// atau https://');
+        toastWarning('Format link proyek tidak valid. Pastikan menyertakan http:// atau https://');
         return;
       }
     }
+
+    const confirmMsg = formData.isPending
+      ? 'Apakah Anda yakin ingin menyimpan pembaruan pengajuan portofolio ini?'
+      : formData.id
+      ? 'Apakah Anda yakin ingin menyimpan perubahan portofolio ini?'
+      : 'Apakah Anda yakin ingin menambahkan portofolio baru ini?';
+
+    const confirm = await alertConfirm(confirmMsg);
+    if (!confirm.isConfirmed) return;
 
     setLoading(true);
     try {
@@ -104,16 +120,16 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
         // Update pending portfolio request
         fd.append('_method', 'PUT');
         await alumniApi.updatePendingPortofolio(formData.pendingId, fd);
-        onShowSuccess('Pengajuan portofolio berhasil diperbarui');
+        if(onShowSuccess) onShowSuccess('Pengajuan portofolio berhasil diperbarui');
       } else if (formData.id) {
         // Update approved portfolio (creates new pending update)
         fd.append('_method', 'PUT');
         await alumniApi.updatePortofolio(formData.id, fd);
-        onShowSuccess('Perubahan portofolio telah dikirim, menunggu persetujuan admin');
+        if(onShowSuccess) onShowSuccess('Perubahan portofolio telah dikirim, menunggu persetujuan admin');
       } else {
         // Create new portfolio (creates pending)
         await alumniApi.createPortofolio(fd);
-        onShowSuccess('Portofolio telah dikirim, menunggu persetujuan admin');
+        if(onShowSuccess) onShowSuccess('Portofolio telah dikirim, menunggu persetujuan admin');
       }
       resetForm();
       hasMutated.current = true;
@@ -152,8 +168,8 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
 
   const handleDelete = async (item) => {
     const confirmMsg = item.isPending
-      ? 'Batalkan pengajuan portofolio ini?'
-      : 'Hapus portofolio ini?';
+      ? 'Apakah Anda yakin ingin membatalkan pengajuan portofolio ini?'
+      : 'Apakah Anda yakin ingin menghapus portofolio ini?';
 
     const result = await alertConfirm(confirmMsg);
     if (!result.isConfirmed) return;
@@ -162,11 +178,11 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
       if (item.isPending && item.pendingId) {
         // Cancel pending request
         await alumniApi.cancelPendingPortofolio(item.pendingId);
-        onShowSuccess('Pengajuan portofolio berhasil dibatalkan');
+        if(onShowSuccess) onShowSuccess('Pengajuan portofolio berhasil dibatalkan');
       } else {
         // Delete approved portfolio (creates pending delete)
         await alumniApi.deletePortofolio(item.id);
-        onShowSuccess('Penghapusan portofolio telah dikirim, menunggu persetujuan admin');
+        if(onShowSuccess) onShowSuccess('Penghapusan portofolio telah dikirim, menunggu persetujuan admin');
       }
       hasMutated.current = true;
       onRefresh();
@@ -246,12 +262,12 @@ export default function TabPortofolio({ profile, onRefresh, onShowSuccess, isVer
 
       {/* --- FORM TAMBAH / EDIT --- */}
       {isEditing && (
-        <div className="pt-5 animate-in fade-in duration-300 border-t">
+        <div className="pt-5 pb-6 mb-10 animate-in fade-in duration-300 border-t border-b border-slate-100">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-lg text-slate-800">
               {formData.isPending ? 'Edit Pengajuan Portofolio' : formData.id ? 'Edit Proyek' : 'Tambah Proyek Baru'}
             </h3>
-            <button onClick={resetForm} className="cursor-pointer text-slate-400 hover:text-red-500">
+            <button onClick={resetForm} className="cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
               <X size={20} />
             </button>
           </div>
