@@ -222,7 +222,7 @@ function KuesionerModal() {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting || questions.length === 0}
-                        className="bg-primary text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#2a3f41] cursor-pointer transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary/80 cursor-pointer transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'Menyimpan...' : 'Simpan Jawaban'}
                         <ChevronRight size={18} />

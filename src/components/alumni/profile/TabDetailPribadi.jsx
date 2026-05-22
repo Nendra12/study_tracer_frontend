@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Save, X, ChevronDown, Loader2, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
-import { alertConfirm, toastError } from '../../../utilitis/alert';
+import { alertConfirm, toastError, toastSuccess } from '../../../utilitis/alert'; // Tambahkan toastSuccess
 import SelectInput from '../../admin/SelectInput';
 import DateOfBirthInput from '../../DateOfBirthInput';
 import YearsInput from '../../YearsInput';
@@ -187,11 +187,18 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
       return;
     }
 
+    // Tampilkan Alert Confirm sebelum menyimpan data
+    const confirm = await alertConfirm("Apakah Anda yakin ingin menyimpan perubahan data pribadi ini?");
+    if (!confirm.isConfirmed) return;
+
     try {
       setSaving(true);
       await alumniApi.updateProfile(editForm);
       setIsEditing(false);
-      onShowSuccess('Perubahan profil telah dikirim, menunggu persetujuan admin');
+      
+      // Tampilkan Toast Success setelah berhasil
+      toastSuccess('Perubahan profil telah dikirim, menunggu persetujuan admin');
+      
       onRefresh();
     } catch (err) {
       console.error('Failed to update profile:', err);
@@ -208,7 +215,7 @@ export default function TabDetailPribadi({ profile, onRefresh, onShowSuccess, tr
     try {
       setCanceling(true);
       await alumniApi.cancelPendingProfileUpdate(pendingUpdateId);
-      onShowSuccess('Pengajuan perubahan berhasil dibatalkan');
+      toastSuccess('Pengajuan perubahan berhasil dibatalkan');
       onRefresh();
     } catch (err) {
       toastError('Gagal membatalkan: ' + (err.response?.data?.message || err.message));

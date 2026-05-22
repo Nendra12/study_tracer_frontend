@@ -52,7 +52,7 @@ export default function InfoKarierSaatIni({
               <button
                 onClick={handleUpdateEndDate}
                 disabled={saving}
-                className="cursor-pointer flex items-center gap-1 px-3 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-[#2A3E3F] transition-all disabled:opacity-50"
+                className="cursor-pointer flex items-center gap-1 px-3 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/80 transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               </button>

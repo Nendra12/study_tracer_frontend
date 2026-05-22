@@ -505,7 +505,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
               disabled={savingFoto || !isVerified}
               title={!isVerified ? 'Akun belum diverifikasi dan belum mengisi kuesioner' : ''}
               className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors border-2 border-white shadow-sm disabled:opacity-50 ${
-                !isVerified ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary cursor-pointer hover:bg-[#2A3E3F]'
+                !isVerified ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary cursor-pointer hover:bg-primary/80'
               }`}
             >
               {savingFoto ? <Loader2 size={14} className="animate-spin" /> : (!isVerified ? <Lock size={14} /> : <Edit size={14} />)}
@@ -758,7 +758,7 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
                 <button
                   onClick={handleApplyCrop}
                   disabled={savingFoto}
-                  className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-[#2A3E3F] cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/80 cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   {savingFoto ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                   Gunakan Foto Ini
