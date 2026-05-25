@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { adminApi } from '../../api/admin';
@@ -28,7 +29,7 @@ export default function TambahLowonganPage() {
     alamat_perusahaan: '',
     tanggal_berakhir: '',
     deskripsi: '',
-    nomor_kontak: [''], // ARRAY UNTUK MULTIPLE CONTACTS
+    nomor_kontak: [''],
     tipe_pekerjaan: '',
     lokasi: '',
     foto: null,
@@ -242,7 +243,6 @@ export default function TambahLowonganPage() {
   };
 
   const addContact = () => {
-    // Pastikan maksimal hanya 3 kontak yang bisa ditambahkan
     if (formData.nomor_kontak.length < 3) {
       setFormData(prev => ({ ...prev, nomor_kontak: [...prev.nomor_kontak, ''] }));
     }
@@ -433,8 +433,7 @@ export default function TambahLowonganPage() {
   };
 
   // Standarisasi kelas Input CSS
-  const inputClass = (err) => `w-full h-[48px] px-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
-  const textareaClass = (err) => `w-full p-4 bg-slate-50 border ${err ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none min-h-[120px]`;
+  const inputClass = (err) => `w-full h-[48px] px-4 border ${err ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50'} rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all`;
   const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-semibold [&_button_span]:!text-slate-700";
 
   return (
@@ -498,7 +497,7 @@ export default function TambahLowonganPage() {
                 <button
                   type="button"
                   onClick={() => setCompanyDropdownOpen(!companyDropdownOpen)}
-                  className={`cursor-pointer w-full h-[48px] px-4 bg-slate-50 border ${errors.perusahaan ? 'border-red-400' : 'border-slate-200'} flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary/20`}
+                  className={`cursor-pointer w-full h-[48px] px-4 bg-slate-50 border ${errors.perusahaan ? 'border-red-400 bg-red-50/50' : 'border-slate-200'} flex items-center justify-between rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-primary/20`}
                 >
                   <span className={formData.perusahaan ? 'text-slate-700 font-semibold truncate' : 'text-gray-400 font-semibold truncate'}>
                     {formData.perusahaan || 'Pilih atau ketik nama perusahaan'}
@@ -636,27 +635,39 @@ export default function TambahLowonganPage() {
                   </div>
                 </div>
 
-                <div className="relative">
+                {/* MODIFIKASI DESAIN MAP SESUAI STEP 3 */}
+                <div className="relative md:col-span-2">
                   <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
                     Alamat Perusahaan Baru <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex gap-2 items-start">
-                    <input
-                      name="alamat_perusahaan"
-                      value={formData.alamat_perusahaan}
-                      onChange={handleInputChange}
-                      placeholder="Johnson Springs, Kabupaten Kotawaringin Timur"
-                      className={`${inputClass(errors.alamat_perusahaan)} flex-1`}
-                    />
+                  
+                  {(!formData.alamat_perusahaan && !formData.latitude_perusahaan) ? (
                     <button
                       type="button"
                       onClick={handleOpenMap}
-                      className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
+                      className="w-full flex items-center justify-center gap-2 py-4 bg-primary/5 border-2 border-dashed border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-bold cursor-pointer"
                     >
-                      <MapPin size={16} />
-                      <span className="hidden sm:inline">Pilih di Peta</span>
+                      <MapPin size={18} /> Buka Peta untuk Pilih Lokasi
                     </button>
-                  </div>
+                  ) : (
+                    <div className={`flex h-[48px] w-full items-center border ${errors.alamat_perusahaan ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50'} rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all`}>
+                      <input
+                        name="alamat_perusahaan"
+                        value={formData.alamat_perusahaan}
+                        onChange={handleInputChange}
+                        className="w-full h-full px-4 text-sm font-semibold outline-none bg-transparent"
+                        placeholder="Masukkan alamat lengkap perusahaan"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleOpenMap}
+                        className="h-full px-5 bg-primary text-white text-sm font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors cursor-pointer border-l border-transparent shrink-0"
+                      >
+                        <MapPin size={16} /> <span className="hidden sm:inline">Ubah Peta</span>
+                      </button>
+                    </div>
+                  )}
+                  
                   {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
                     <p className="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1">
                       <Check size={12} strokeWidth={3} /> Koordinat peta tersimpan
@@ -744,12 +755,15 @@ export default function TambahLowonganPage() {
               <div className={errors.deskripsi ? 'ring-2 ring-red-400 rounded-xl' : ''}>
                 <RichTextEditor
                   content={formData.deskripsi}
-                  onChange={(html) => setFormData(prev => ({ ...prev, deskripsi: html }))}
+                  onChange={(html) => {
+                    setFormData(prev => ({ ...prev, deskripsi: html }));
+                    if (errors.deskripsi) setErrors(prev => ({ ...prev, deskripsi: undefined }));
+                  }}
                   placeholder="Jelaskan peran, tanggung jawab, kualifikasi, syarat khusus, benefit tambahan..."
                   minHeight="200px"
                 />
               </div>
-              {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
+              {errors.deskripsi && <p className="text-xs text-red-500 font-bold mt-1.5">{errors.deskripsi}</p>}
             </div>
 
             {/* KOMPONEN INPUT NOMOR KONTAK DINAMIS */}
@@ -761,7 +775,7 @@ export default function TambahLowonganPage() {
                 {formData.nomor_kontak.map((kontak, idx) => (
                   <div key={idx} className="flex flex-col">
                     <div className="flex gap-2 items-start">
-                      <div className="flex-1">
+                      <div className="flex-1 relative">
                         <input 
                           value={kontak} 
                           onChange={(e) => handleContactChange(idx, e.target.value)} 
@@ -781,9 +795,8 @@ export default function TambahLowonganPage() {
                         </button>
                       )}
                     </div>
-                    {/* Pesan Error ditempatkan mengalir (relative) di bawah input */}
                     {errors[`nomor_kontak_${idx}`] && (
-                      <p className="text-xs text-red-500 font-medium mt-1.5 ml-1">
+                      <p className="text-xs text-red-500 font-bold mt-1.5 ml-1">
                         {errors[`nomor_kontak_${idx}`]}
                       </p>
                     )}
@@ -791,7 +804,6 @@ export default function TambahLowonganPage() {
                 ))}
               </div>
               
-              {/* Tombol hanya muncul jika jumlah kontak kurang dari 3 */}
               {formData.nomor_kontak.length < 3 && (
                 <div className="pt-3">
                   <button
