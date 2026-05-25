@@ -47,7 +47,21 @@ export default function ReverbEventBridge() {
 
     const onDashboardStatsUpdated = (event) => {
       const type = event?.detail?.type || 'dashboard';
-      toast(`Data ${type} diperbarui.`, { icon: '📊', id: 'reverb-dashboard-stats-updated' });
+      const summary = event?.detail?.summary;
+      if (type === 'profile_update' && summary) {
+        const sectionLabels = {
+          personal_info: 'detail pribadi',
+          social_media: 'tautan sosial',
+          skills: 'keahlian',
+          deskripsi_karier: 'deskripsi karier',
+          portofolio: 'portofolio',
+        };
+        const section = sectionLabels[summary.section] || summary.section;
+        const name = summary.alumni_name || 'Alumni';
+        toast(`${name} mengajukan perubahan ${section}.`, { icon: '👤', id: 'reverb-dashboard-stats-updated' });
+      } else {
+        toast(`Data ${type} diperbarui.`, { icon: '📊', id: 'reverb-dashboard-stats-updated' });
+      }
     };
 
     window.addEventListener('reverb:notification.received', onNotificationReceived);

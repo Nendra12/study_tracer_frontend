@@ -192,7 +192,13 @@ export default function Beranda() {
   const canAccessAll = berandaData?.can_access_all ?? false;
   const statusPengajuan = berandaData?.status_pengajuan;
   const kuesionerPending = berandaData?.kuesioner_pending || [];
-  const alumniTerbaru = berandaData?.alumni_terbaru || { locked: true, data: [] };
+  const rawAlumniTerbaru = berandaData?.alumni_terbaru || { locked: true, data: [] };
+  const alumniTerbaru = {
+    ...rawAlumniTerbaru,
+    data: (rawAlumniTerbaru.data || [])
+      .filter(alumni => String(alumni.id) !== String(profile?.id))
+      .filter(alumni => alumni.tags !== 'Siswa Aktif')
+  };
   const lowonganTerbaru = berandaData?.lowongan_terbaru || { locked: true, data: [] };
   const topPerusahaan = berandaData?.top_perusahaan || { locked: true, data: [] };
 

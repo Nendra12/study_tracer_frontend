@@ -364,25 +364,45 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       setSavingSocial(true);
       // Pastikan master data sudah dimuat
       let currentMaster = socialMediaList;
-      console.log(currentMaster)
       if (currentMaster.length === 0) {
         const res = await masterDataApi.getSocialMedia();
         currentMaster = res.data.data || res.data || [];
         setSocialMediaList(currentMaster);
       }
 
+      // Jika master data tetap kosong, tampilkan error
+      if (currentMaster.length === 0) {
+        toastError('Gagal memuat data platform sosial media. Silakan coba lagi.');
+        return;
+      }
+
       // Build array social_media untuk backend
       const socialMediaPayload = [];
+      const unmatchedPlatforms = [];
       for (const platform of SOCIAL_PLATFORMS) {
         const url = socialForm[platform.key]?.trim();
         if (url) {
-          const master = currentMaster.find(sm => (sm.nama_sosmed || sm.nama || '').toLowerCase().includes(platform.key));
+          const master = currentMaster.find(sm => {
+            const name = (sm.nama_sosmed || sm.nama || '').toLowerCase();
+            return name.includes(platform.key);
+          });
           if (master) {
             socialMediaPayload.push({
               id_sosmed: master.id_sosmed || master.id,
               url,
             });
+          } else {
+            unmatchedPlatforms.push(platform.label);
           }
+        }
+      }
+
+      // Jika ada platform yang tidak ditemukan di master data
+      if (unmatchedPlatforms.length > 0) {
+        toastWarning(`Platform ${unmatchedPlatforms.join(', ')} belum terdaftar di sistem. Hubungi admin untuk menambahkan.`);
+        // Tetap lanjutkan jika ada platform lain yang berhasil di-match
+        if (socialMediaPayload.length === 0) {
+          return;
         }
       }
 
@@ -405,7 +425,9 @@ export default function ProfileSidebar({ profile, onRefresh, onShowSuccess, isVe
       setShowAddSocial(false);
       onRefresh();
     } catch (err) {
-      toastError('Gagal menyimpan tautan sosial');
+      console.error('Gagal menyimpan tautan sosial:', err.response?.data || err.message);
+      const serverMsg = err.response?.data?.message;
+      toastError(serverMsg || 'Gagal menyimpan tautan sosial');
     } finally {
       setSavingSocial(false);
     }
