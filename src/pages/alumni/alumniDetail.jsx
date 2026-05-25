@@ -183,6 +183,7 @@ export default function AlumniDetail() {
     { url: alumni.instagram, icon: <FaInstagram size={16} />, text: 'text-pink-600' },
     { url: alumni.github, icon: <FaGithub size={16} />, text: 'text-black' },
     { url: alumni.facebook, icon: <FaFacebook size={16} />, text: 'text-[#1877F2]' },
+    { url: alumni.website, icon: <FaGlobe size={16} />, text: 'text-[#1877F2]' },
   ].filter(s => s.url);
 
   const riwayatColors = [
