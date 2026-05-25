@@ -5,6 +5,7 @@ import { ProtectedRoute } from "../utilitis/ProtectedRoute";
 import Loader from "../components/Loaders";
 import LandingPage from "../pages/LandingPage";
 import AlumniPortal from "../pages/alumni/PortalAlumni";
+import { Toaster } from 'react-hot-toast'; 
 
 const PublicLowonganDetail = lazy(() => import("../pages/PublicLowonganDetail"));
 
@@ -64,77 +65,83 @@ export default function AppRouter() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Login />} />
-      <Route path="/reset-password" element={<LupaPass />} />
-      <Route path="/logout" element={<Logout />} />
-      <Route path="/register" element={isAuthenticated ? <Navigate to="/alumni" /> : <Register />} />
-      <Route path="/wb-admin" element={
-        <ProtectedRoute isAllowed={isAuthenticated && isAdmin} redirectTo="/login" />
-      }>
-        <Route element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="sebaran-alumni" element={<SebaranAlumni />} />
-          <Route path="kelulusan" element={<Kelulusan />} />
-          <Route path="manage-user" >
-            <Route index element={<UserManagement />} />
-          </Route>
-          <Route path="jobs">
-            <Route index element={<JobsManagement />} />
-            <Route path="job-detail/:id" element={<JobDetail />} />
-          </Route>
-          <Route path="status-karir">
-            <Route index element={<StatusKarir />} />
-          </Route>
-          <Route path="master" element={<MasterTable />} />
-          <Route path="pengumuman">
-            <Route index element={<Pengumuman />} />
-            <Route path="detail/:id" element={<PengumumanDetail />} />
-          </Route>
-          <Route path="kuisoner">
-            <Route index element={<Kuesioner />} />
-            <Route path="tambah-kuesioner" element={<TambahKuisioner />} />
-            <Route path="preview-kuesioner/:id" element={<PreviewKuesioner />} />
-            <Route path="update-kuesioner/:id" element={<UpdateKuesioner />} />
-            <Route path="tinjau-jawaban/:jawabanid" >
-              <Route index element={<LihatJawaban />} />
-              <Route path="statistik" element={<StatistikKuesioner />} />
-              <Route path="detail/:detailid" element={<LihatJawabanDetail />} />
+    // 2. BUNGKUS DENGAN FRAGMENT (<>...</>) KARENA ADA 2 ELEMEN UTAMA SEKARANG
+    <>
+      {/* WADAH NOTIFIKASI TOAST */}
+      <Toaster /> 
+
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to={isAdmin ? "/wb-admin" : "/alumni"} /> : <Login />} />
+        <Route path="/reset-password" element={<LupaPass />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/alumni" /> : <Register />} />
+        <Route path="/wb-admin" element={
+          <ProtectedRoute isAllowed={isAuthenticated && isAdmin} redirectTo="/login" />
+        }>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="sebaran-alumni" element={<SebaranAlumni />} />
+            <Route path="kelulusan" element={<Kelulusan />} />
+            <Route path="manage-user" >
+              <Route index element={<UserManagement />} />
             </Route>
+            <Route path="jobs">
+              <Route index element={<JobsManagement />} />
+              <Route path="job-detail/:id" element={<JobDetail />} />
+            </Route>
+            <Route path="status-karir">
+              <Route index element={<StatusKarir />} />
+            </Route>
+            <Route path="master" element={<MasterTable />} />
+            <Route path="pengumuman">
+              <Route index element={<Pengumuman />} />
+              <Route path="detail/:id" element={<PengumumanDetail />} />
+            </Route>
+            <Route path="kuisoner">
+              <Route index element={<Kuesioner />} />
+              <Route path="tambah-kuesioner" element={<TambahKuisioner />} />
+              <Route path="preview-kuesioner/:id" element={<PreviewKuesioner />} />
+              <Route path="update-kuesioner/:id" element={<UpdateKuesioner />} />
+              <Route path="tinjau-jawaban/:jawabanid" >
+                <Route index element={<LihatJawaban />} />
+                <Route path="statistik" element={<StatistikKuesioner />} />
+                <Route path="detail/:detailid" element={<LihatJawabanDetail />} />
+              </Route>
+            </Route>
+            <Route path="tampilan" element={<PengaturanTampilan />} />
+
           </Route>
-          <Route path="tampilan" element={<PengaturanTampilan />} />
-
         </Route>
-      </Route>
 
-      <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} />}>
-        <Route element={<AlumniLayout />} >
-          <Route index element={<Beranda />} />
-          <Route path="pengumuman" element={<PengumumanAlumni />} />
-          <Route path="pengumuman/:id" element={<PengumumanDetailAlumni />} />
-          <Route path="daftar-alumni" element={<Alumni />} />
-          <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
-          <Route path="connections" element={<Connections />} />
-          <Route path="lowongan" element={<Lowongan />} />
-          <Route path="lowongan/tambah" element={<TambahLowonganPage />} />
-          <Route path="lowongan/:id" element={<LowonganDetail />} />
-          <Route path="kuesioner/:id" element={<KuesionerModal />} />
-          <Route path="profile" element={<Profil />} />
-          <Route path="notifikasi" element={<Notifikasi />} />
-          <Route path="pesan" element={<Message />} />
-          <Route path="postingan" element={<PostinganAlumni />} />
-          <Route path="riwayat-kuesioner" element={<RiwayatKuesioner />} />
+        <Route path="/alumni" element={<ProtectedRoute isAllowed={isAuthenticated && !isAdmin} redirectTo={"/login"} />}>
+          <Route element={<AlumniLayout />} >
+            <Route index element={<Beranda />} />
+            <Route path="pengumuman" element={<PengumumanAlumni />} />
+            <Route path="pengumuman/:id" element={<PengumumanDetailAlumni />} />
+            <Route path="daftar-alumni" element={<Alumni />} />
+            <Route path="daftar-alumni/:id" element={<AlumniDetail />} />
+            <Route path="connections" element={<Connections />} />
+            <Route path="lowongan" element={<Lowongan />} />
+            <Route path="lowongan/tambah" element={<TambahLowonganPage />} />
+            <Route path="lowongan/:id" element={<LowonganDetail />} />
+            <Route path="kuesioner/:id" element={<KuesionerModal />} />
+            <Route path="profile" element={<Profil />} />
+            <Route path="notifikasi" element={<Notifikasi />} />
+            <Route path="pesan" element={<Message />} />
+            <Route path="postingan" element={<PostinganAlumni />} />
+            <Route path="riwayat-kuesioner" element={<RiwayatKuesioner />} />
+          </Route>
+          
+          {/* Standalone Alumni Routes (Without Navbar/Footer) */}
+          <Route path="kelulusan" element={<KelulusanAlumni />} />
         </Route>
-        
-        {/* Standalone Alumni Routes (Without Navbar/Footer) */}
-        <Route path="kelulusan" element={<KelulusanAlumni />} />
-      </Route>
 
-      {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}
-      <Route path="/lowongan/:id" element={<PublicLowonganDetail />} />
+        {/* Public route: halaman lowongan yang bisa diakses tanpa login (untuk share) */}
+        <Route path="/lowongan/:id" element={<PublicLowonganDetail />} />
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 }

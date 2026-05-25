@@ -139,7 +139,7 @@ export default function FormBekerja({
               <button
                 type="button"
                 onClick={() => setShowBekerjaMap(true)}
-                className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-6 h-[48px] text-xs font-bold text-white transition hover:bg-[#2A3E3F] cursor-pointer shadow-sm"
+                className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-6 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
               >
                 <MapPin size={16} />
                 Pilih di Peta

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Plus, X, Loader2, Save, Clock, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
+import { Briefcase, Plus, X, Loader2, Save, Clock, Lock } from 'lucide-react';
 import { alumniApi } from '../../../api/alumni';
 import { masterDataApi } from '../../../api/masterData';
 import SmoothDropdown from '../../admin/SmoothDropdown';
 import LocationPicker from '../../common/LocationPicker';
-import { toastError, toastWarning } from '../../../utilitis/alert';
-
-// IMPORT KOMPONEN YANG TELAH DIPISAH
+import { toastError, toastWarning, alertConfirm, alertSuccess } from '../../../utilitis/alert'; 
 import FormBekerja from './FormBekerja';
 import FormKuliah from './FormKuliah';
 import FormWirausaha from './FormWirausaha';
@@ -112,7 +110,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     let derivedProvId = '';
 
     if (cityRaw) {
-      // Prioritas data kota: provinsi terdeteksi -> load kota provinsi tsb; else coba dari provinsi saat ini; terakhir fetch semua kota.
       let kotaData = [];
 
       if (nextProvId) {
@@ -141,7 +138,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
     const finalProvId = nextProvId || derivedProvId;
 
-    // Set state sekali dan jangan pernah mengisi id_kota/id_provinsi dengan string mentah.
     setState((prev) => {
       const prevProvId = String(prev.id_provinsi || '');
       const prevKotaId = String(prev.id_kota || '');
@@ -159,7 +155,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       };
     });
 
-    // Pastikan list kota sesuai provinsi baru.
     if (finalProvId && finalProvId !== String(current?.id_provinsi || '')) {
       void loadKota(finalProvId, target);
     }
@@ -315,10 +310,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             />
           ) : (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider">
-                Tahun Selesai (opsional)
+              <label className="text-[11px] font-bold text-primary/80 uppercase tracking-wider block mb-2.5">
+                Tahun Selesai
               </label>
-              <div className="w-full mt-3 bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
+              <div className="w-full bg-slate-50 border-2 border-fourth rounded-xl px-4 h-[48px] text-sm text-slate-400 font-medium cursor-not-allowed flex items-center">
                 Sedang Berlangsung
               </div>
             </div>
@@ -327,11 +322,13 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             <input
               type="checkbox"
               checked={data.is_saat_ini}
-              onChange={(e) => setData({
-                ...data,
-                is_saat_ini: e.target.checked,
-                tahun_selesai: e.target.checked ? "" : data.tahun_selesai
-              })}
+              onChange={(e) => {
+                setData({
+                  ...data,
+                  is_saat_ini: e.target.checked,
+                  tahun_selesai: e.target.checked ? "" : data.tahun_selesai
+                })
+              }}
               className="w-4 h-4 rounded border-gray-100 text-primary focus:ring-primary accent-primary cursor-pointer transition-all"
             />
             <span className="text-[11px] font-bold text-primary">Masih berlangsung (Saat ini)</span>
@@ -342,115 +339,123 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   };
 
   async function handleSave() {
+    const isBelum = statusName.includes('belum') || statusName.includes('mencari');
+
+    // 1. LAKUKAN VALIDASI TERLEBIH DAHULU
+    if (!form.id_status) {
+      toastWarning('Status karir wajib dipilih.');
+      return;
+    }
+
+    const payload = {
+      id_status: form.id_status,
+      tahun_mulai: form.tahun_mulai,
+      tahun_selesai: isSaatIni ? null : (form.tahun_selesai || null),
+    };
+
+    if (!isBelum) {
+      let activeData = null;
+
+      if (statusName.includes('kerja') || statusName.includes('bekerja')) {
+        activeData = pekerjaan;
+        if (!activeData.posisi?.trim()) return toastWarning('Posisi/Pekerjaan wajib diisi.');
+        if (!activeData.nama_perusahaan?.trim()) return toastWarning('Nama perusahaan wajib diisi.');
+        const isExisting = perusahaanOptions.some(p => p.toLowerCase() === activeData.nama_perusahaan.trim().toLowerCase());
+        if (!isExisting) {
+          if (!activeData.id_provinsi) return toastWarning('Provinsi perusahaan baru wajib dipilih.');
+          if (!activeData.id_kota) return toastWarning('Kota perusahaan baru wajib dipilih.');
+          if (!activeData.jalan?.trim()) return toastWarning('Alamat perusahaan baru wajib diisi.');
+        }
+
+        let finalJalan = activeData.jalan || '';
+        if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalJalan += `, ${activeData.id_kota}`;
+        if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalJalan += `, ${activeData.id_provinsi}`;
+
+        payload.tahun_mulai = activeData.tahun_mulai;
+        payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
+        payload.pekerjaan = {
+          posisi: activeData.posisi,
+          nama_perusahaan: activeData.nama_perusahaan,
+          id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
+          jalan: finalJalan,
+          latitude: form.latitude_perusahaan,
+          longitude: form.longitude_perusahaan
+        };
+
+      } else if (statusName.includes('kuliah')) {
+        activeData = universitas;
+        if (!activeData.nama_universitas?.trim()) return toastWarning('Nama universitas wajib diisi.');
+        if (!activeData.jenjang) return toastWarning('Jenjang kuliah wajib dipilih.');
+        if (!activeData.jalur_masuk) return toastWarning('Jalur masuk kuliah wajib dipilih.');
+
+        const isExisting = universitasOptions.some(u => u.toLowerCase() === activeData.nama_universitas.trim().toLowerCase());
+        if (!isExisting) {
+          if (!activeData.id_provinsi) return toastWarning('Provinsi universitas baru wajib dipilih.');
+          if (!activeData.id_kota) return toastWarning('Kota universitas baru wajib dipilih.');
+          if (!activeData.alamat?.trim()) return toastWarning('Alamat universitas baru wajib diisi.');
+        }
+
+        let finalAlamatUniv = activeData.alamat || '';
+        if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalAlamatUniv += `, ${activeData.id_kota}`;
+        if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalAlamatUniv += `, ${activeData.id_provinsi}`;
+
+        payload.tahun_mulai = activeData.tahun_mulai;
+        payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
+        payload.universitas = {
+          nama_universitas: activeData.nama_universitas,
+          alamat: finalAlamatUniv,
+          id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
+          latitude: form.latitude_universitas,
+          longitude: form.longitude_universitas,
+          id_jurusanKuliah: activeData.id_jurusanKuliah,
+          jalur_masuk: activeData.jalur_masuk,
+          jenjang: activeData.jenjang,
+        };
+
+      } else if (statusName.includes('wirausaha') || statusName.includes('usaha')) {
+        activeData = wirausaha;
+        if (!activeData.nama_usaha?.trim()) return toastWarning('Nama usaha wajib diisi.');
+        if (!activeData.id_bidang) return toastWarning('Bidang usaha wajib dipilih.');
+        if (!activeData.id_provinsi) return toastWarning('Provinsi usaha wajib dipilih.');
+        if (!activeData.id_kota) return toastWarning('Kota usaha wajib dipilih.');
+        if (!activeData.alamat?.trim()) return toastWarning('Alamat usaha wajib diisi.');
+
+        let finalAlamatUsaha = activeData.alamat || '';
+        if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalAlamatUsaha += `, ${activeData.id_kota}`;
+        if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalAlamatUsaha += `, ${activeData.id_provinsi}`;
+
+        payload.tahun_mulai = activeData.tahun_mulai;
+        payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
+        payload.wirausaha = {
+          id_bidang: activeData.id_bidang,
+          nama_usaha: activeData.nama_usaha,
+          alamat: finalAlamatUsaha,
+          id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
+          latitude: form.latitude_usaha,
+          longitude: form.longitude_usaha,
+        };
+      }
+
+      if (!payload.tahun_mulai) {
+        return toastWarning('Tahun mulai wajib diisi.');
+      }
+    } else {
+      if (!form.tahun_mulai) return toastWarning('Tahun mulai wajib diisi.');
+    }
+
+    // 2. JIKA VALIDASI LOLOS, TAMPILKAN ALERT KONFIRMASI
+    const confirm = await alertConfirm("Apakah Anda yakin ingin menyimpan status karier baru ini?");
+    if (!confirm.isConfirmed) return;
+
+    // 3. JIKA DIKONFIRMASI, LAKUKAN PROSES SIMPAN KE API
     try {
       setSaving(true);
-      const isBelum = statusName.includes('belum') || statusName.includes('mencari');
-
-      if (!form.id_status) {
-        toastWarning('Status karir wajib dipilih.');
-        return;
-      }
-
-      const payload = {
-        id_status: form.id_status,
-        tahun_mulai: form.tahun_mulai,
-        tahun_selesai: isSaatIni ? null : (form.tahun_selesai || null),
-      };
-
-      if (!isBelum) {
-        let activeData = null;
-
-        if (statusName.includes('kerja') || statusName.includes('bekerja')) {
-          activeData = pekerjaan;
-          if (!activeData.posisi?.trim()) return toastWarning('Posisi/Pekerjaan wajib diisi.');
-          if (!activeData.nama_perusahaan?.trim()) return toastWarning('Nama perusahaan wajib diisi.');
-          const isExisting = perusahaanOptions.some(p => p.toLowerCase() === activeData.nama_perusahaan.trim().toLowerCase());
-          if (!isExisting) {
-            if (!activeData.id_provinsi) return toastWarning('Provinsi perusahaan baru wajib dipilih.');
-            if (!activeData.id_kota) return toastWarning('Kota perusahaan baru wajib dipilih.');
-            if (!activeData.jalan?.trim()) return toastWarning('Alamat perusahaan baru wajib diisi.');
-          }
-
-          let finalJalan = activeData.jalan || '';
-          if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalJalan += `, ${activeData.id_kota}`;
-          if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalJalan += `, ${activeData.id_provinsi}`;
-
-          payload.tahun_mulai = activeData.tahun_mulai;
-          payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
-          payload.pekerjaan = {
-            posisi: activeData.posisi,
-            nama_perusahaan: activeData.nama_perusahaan,
-            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
-            jalan: finalJalan,
-            latitude: form.latitude_perusahaan,
-            longitude: form.longitude_perusahaan
-          };
-
-        } else if (statusName.includes('kuliah')) {
-          activeData = universitas;
-          if (!activeData.nama_universitas?.trim()) return toastWarning('Nama universitas wajib diisi.');
-          if (!activeData.jenjang) return toastWarning('Jenjang kuliah wajib dipilih.');
-          if (!activeData.jalur_masuk) return toastWarning('Jalur masuk kuliah wajib dipilih.');
-
-          const isExisting = universitasOptions.some(u => u.toLowerCase() === activeData.nama_universitas.trim().toLowerCase());
-          if (!isExisting) {
-            if (!activeData.id_provinsi) return toastWarning('Provinsi universitas baru wajib dipilih.');
-            if (!activeData.id_kota) return toastWarning('Kota universitas baru wajib dipilih.');
-            if (!activeData.alamat?.trim()) return toastWarning('Alamat universitas baru wajib diisi.');
-          }
-
-          let finalAlamatUniv = activeData.alamat || '';
-          if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalAlamatUniv += `, ${activeData.id_kota}`;
-          if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalAlamatUniv += `, ${activeData.id_provinsi}`;
-
-          payload.tahun_mulai = activeData.tahun_mulai;
-          payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
-          payload.universitas = {
-            nama_universitas: activeData.nama_universitas,
-            alamat: finalAlamatUniv,
-            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
-            latitude: form.latitude_universitas,
-            longitude: form.longitude_universitas,
-            id_jurusanKuliah: activeData.id_jurusanKuliah,
-            jalur_masuk: activeData.jalur_masuk,
-            jenjang: activeData.jenjang,
-          };
-
-        } else if (statusName.includes('wirausaha') || statusName.includes('usaha')) {
-          activeData = wirausaha;
-          if (!activeData.nama_usaha?.trim()) return toastWarning('Nama usaha wajib diisi.');
-          if (!activeData.id_bidang) return toastWarning('Bidang usaha wajib dipilih.');
-          if (!activeData.id_provinsi) return toastWarning('Provinsi usaha wajib dipilih.');
-          if (!activeData.id_kota) return toastWarning('Kota usaha wajib dipilih.');
-          if (!activeData.alamat?.trim()) return toastWarning('Alamat usaha wajib diisi.');
-
-          let finalAlamatUsaha = activeData.alamat || '';
-          if (isNaN(parseInt(activeData.id_kota)) && activeData.id_kota) finalAlamatUsaha += `, ${activeData.id_kota}`;
-          if (isNaN(parseInt(activeData.id_provinsi)) && activeData.id_provinsi) finalAlamatUsaha += `, ${activeData.id_provinsi}`;
-
-          payload.tahun_mulai = activeData.tahun_mulai;
-          payload.tahun_selesai = activeData.is_saat_ini ? null : (activeData.tahun_selesai || null);
-          payload.wirausaha = {
-            id_bidang: activeData.id_bidang,
-            nama_usaha: activeData.nama_usaha,
-            alamat: finalAlamatUsaha,
-            id_kota: (!isNaN(parseInt(activeData.id_kota)) && activeData.id_kota !== '') ? activeData.id_kota : null,
-            latitude: form.latitude_usaha,
-            longitude: form.longitude_usaha,
-          };
-        }
-
-        if (!payload.tahun_mulai) {
-          return toastWarning('Tahun mulai wajib diisi.');
-        }
-      } else {
-        if (!form.tahun_mulai) return toastWarning('Tahun mulai wajib diisi.');
-      }
-
-      // console.log("Payload : ", payload)
       await alumniApi.updateCareerStatus(payload);
       setShowForm(false);
-      onShowSuccess('Status karier berhasil dikirim, menunggu verifikasi admin');
+      
+      alertSuccess('Status karier berhasil dikirim, menunggu verifikasi admin');
+      if(onShowSuccess) onShowSuccess('Status karier berhasil dikirim, menunggu verifikasi admin');
+      
       onRefresh();
     } catch (err) {
       console.error('Failed to save career status:', err);
@@ -461,6 +466,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
   }
 
   async function handleUpdateEndDate() {
+    // 1. VALIDASI
     if (!endDateValue) {
       toastWarning('Mohon isi tahun selesai');
       return;
@@ -469,6 +475,12 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       toastWarning('Data karir tidak lengkap. Silakan refresh halaman.');
       return;
     }
+
+    // 2. ALERT KONFIRMASI
+    const confirm = await alertConfirm("Apakah Anda yakin ingin memperbarui tahun selesai untuk karir ini?");
+    if (!confirm.isConfirmed) return;
+
+    // 3. PROSES SIMPAN
     try {
       setSaving(true);
       const payload = {
@@ -509,7 +521,10 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
       await alumniApi.updateExistingCareerStatus(career.id_riwayat, payload);
       setEditingEndDate(false);
       setEndDateValue('');
-      onShowSuccess('Tahun selesai berhasil diperbarui');
+      
+      alertSuccess('Tahun selesai berhasil diperbarui');
+      if(onShowSuccess) onShowSuccess('Tahun selesai berhasil diperbarui');
+      
       onRefresh();
     } catch (err) {
       console.error('Failed to update end date:', err);
@@ -582,8 +597,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
     (career?.wirausaha && (!career.wirausaha.alamat || !(career.wirausaha.id_kota || career.wirausaha.kota?.id)))
   );
 
-  // console.log(pekerjaan)
-
   return (
     <div className="p-5 md:p-10 flex-1 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-6">
@@ -605,7 +618,6 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
             </button>
             <div className="invisible absolute bottom-full left-1/2 mb-2 w-max -translate-x-1/2 rounded bg-gray-800 px-3 py-2 text-xs text-white opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 z-10">
               Anda harus mengisi tanggal selesai terlebih dahulu!
-
               <div className="absolute left-1/2 top-full -translate-x-1/2 border-[6px] border-transparent border-t-gray-800"></div>
             </div>
           </div>
@@ -711,7 +723,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
 
           <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-primary/10">
             <button onClick={() => setShowForm(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer">Batal</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#2A3E3F] transition-all cursor-pointer disabled:opacity-50">
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-md hover:bg-primary/80 transition-all cursor-pointer disabled:opacity-50">
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Simpan <span className='hidden md:block'>Status</span>
             </button>
           </div>
