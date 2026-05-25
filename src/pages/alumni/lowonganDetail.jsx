@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   MapPin, Briefcase, Clock, Calendar, Building2,
   AlertCircle, Loader2, FileText, ArrowLeft, Share2,
-  Tag, Timer, Bookmark, Lightbulb, Eye, X
+  Tag, Timer, Bookmark, Lightbulb, Eye, X, Phone
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
@@ -37,8 +37,17 @@ export default function LowonganDetail() {
   const [isShareOptionsOpen, setIsShareOptionsOpen] = useState(false);
   const [isShareChatOpen, setIsShareChatOpen] = useState(false);
 
-  // State untuk Pratinjau Gambar
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // FUNGSI UNTUK MENANGANI TAG HTML AGAR RAPI
+  const renderHTML = (htmlString) => {
+    if (!htmlString) return { __html: '' };
+    
+    // Decode HTML jika data dari backend dikirim dalam bentuk entitas (&lt;p&gt; menjadi <p>)
+    const txt = document.createElement("textarea");
+    txt.innerHTML = htmlString;
+    return { __html: txt.value };
+  };
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -106,17 +115,22 @@ export default function LowonganDetail() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col selection:bg-primary/20">
 
-      <main className="flex-1 w-full max-w-300 mx-auto px-4 sm:px-7 xl:px-0 pt-28 pb-20">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-7 xl:px-0 pt-28 pb-20">
+
+        {/* TOMBOL KEMBALI */}
+        <div className="mb-6">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-primary font-semibold hover:underline cursor-pointer w-fit">
+            <ArrowLeft size={18} strokeWidth={2.5} />
+            Kembali
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
 
           {/* --- KONTEN KIRI (Header & Deskripsi) --- */}
           <div className="lg:col-span-8 space-y-6">
 
-            {/* AREA HEADER BARU */}
             <div className="bg-white rounded-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group">
-
-              {/* --- BAGIAN POSTER HEADER (Bisa Diklik Untuk Pratinjau) --- */}
               <div
                 onClick={() => setShowPreviewModal(true)}
                 className="w-full h-55 md:h-70 bg-slate-50 flex items-center justify-center border-b border-slate-100 relative overflow-hidden cursor-pointer"
@@ -125,19 +139,14 @@ export default function LowonganDetail() {
                 <img
                   src={fotoUrl}
                   alt={job.judul}
-                  // object-cover object-center akan membuat gambar memotong pas di tengah tanpa ada area kosong
                   className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                   onError={(e) => { e.target.src = bannerDefault; }}
                 />
-                {/* Gradient overlay opsional agar perpindahan ke area putih di bawahnya lebih mulus */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
               </div>
 
-              {/* Box Info Utama */}
               <div className="p-6 md:p-8 relative bg-white">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 mb-5">
-
-                  {/* Perusahaan & Lokasi */}
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center border border-primary/10 shrink-0">
                       <Building2 size={24} className="text-primary" />
@@ -152,7 +161,6 @@ export default function LowonganDetail() {
                     </div>
                   </div>
 
-                  {/* Tombol Aksi: Share, Simpan & Pratinjau */}
                   <div className="flex items-center gap-3 sm:flex-col lg:flex-row shrink-0 mt-2 sm:mt-0">
                     <button
                       onClick={() => setIsShareOptionsOpen(true)}
@@ -190,7 +198,6 @@ export default function LowonganDetail() {
                   {job.judul}
                 </h1>
 
-                {/* Tags Tipe & Deadline */}
                 <div className="flex flex-wrap gap-3 items-center">
                   <span className="px-4 py-2 bg-fourth text-slate-600 text-[11px] font-black uppercase tracking-widest rounded-xl">
                     {job.tipe_pekerjaan || 'Tipe Tidak Ditentukan'}
@@ -213,8 +220,12 @@ export default function LowonganDetail() {
                 </div>
                 <h2 className="text-xl font-black text-primary tracking-tight">Deskripsi Pekerjaan</h2>
               </div>
-              <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-primary/80 font-medium leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: job.deskripsi }}>
-              </div>
+              
+              {/* PENERAPAN FUNGSI HTML & HAPUS whitespace-pre-line */}
+              <div 
+                className="prose prose-slate prose-sm sm:prose-base max-w-none text-primary/80 font-medium leading-relaxed" 
+                dangerouslySetInnerHTML={renderHTML(job.deskripsi)} 
+              />
             </div>
 
           </div>
@@ -234,6 +245,7 @@ export default function LowonganDetail() {
                     { icon: Building2, label: "Perusahaan", value: job.perusahaan?.nama },
                     { icon: MapPin, label: "Lokasi", value: job.lokasi || job.perusahaan?.kota?.nama },
                     { icon: Briefcase, label: "Tipe", value: job.tipe_pekerjaan },
+                    { icon: Phone, label: "Kontak", value: job.nomor_kontak || '-' },
                     { icon: Calendar, label: "Batas Melamar", value: job.lowongan_selesai ? new Date(job.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' },
                     { icon: Timer, label: "Jam Kerja", value: (job.jam_mulai && job.jam_berakhir) ? `${job.jam_mulai.substring(0, 5)} - ${job.jam_berakhir.substring(0, 5)} WIB` : '-' },
                   ].map((item, i) => (
@@ -270,7 +282,6 @@ export default function LowonganDetail() {
               {/* TIPS MELAMAR */}
               <div className="bg-primary rounded-md p-7 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
                 <div className="relative z-10 space-y-4">
-
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 text-amber-300 shadow-sm">
                       <Lightbulb size={20} />
@@ -292,10 +303,8 @@ export default function LowonganDetail() {
                       <span>Segera daftar sebelum <strong>batas waktu pendaftaran</strong> ditutup.</span>
                     </li>
                   </ul>
-
                 </div>
 
-                {/* Hiasan Lingkaran Background */}
                 <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
                 <div className="absolute -left-8 -top-8 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
               </div>
@@ -306,7 +315,7 @@ export default function LowonganDetail() {
         </div>
       </main>
 
-      {/* ================= MODAL PRATINJAU POSTER ================= */}
+      {/* MODAL PRATINJAU POSTER */}
       <AnimatePresence>
         {showPreviewModal && (
           <motion.div
@@ -321,10 +330,9 @@ export default function LowonganDetail() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()} // Mencegah modal tutup saat gambar diklik
+              onClick={(e) => e.stopPropagation()}
               className="relative max-w-4xl w-auto max-h-[90vh] bg-white rounded-md overflow-hidden shadow-2xl p-2 flex flex-col items-center justify-center min-h-75"
             >
-              {/* Tombol Tutup Modal */}
               <button
                 onClick={() => setShowPreviewModal(false)}
                 className="absolute top-4 right-4 z-10 bg-white/90 p-2.5 rounded-full shadow-lg text-primary hover:bg-white transition-all cursor-pointer backdrop-blur-md border border-slate-100"
@@ -332,7 +340,6 @@ export default function LowonganDetail() {
                 <X size={20} />
               </button>
 
-              {/* Gambar Poster Penuh (Tidak terpotong sama sekali) */}
               <div className="w-full h-full overflow-y-auto rounded-xl custom-scrollbar flex items-center justify-center bg-slate-50">
                 <img
                   src={fotoUrl}
