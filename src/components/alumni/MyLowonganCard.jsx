@@ -17,8 +17,8 @@ export function ApprovalBadge({ status }) {
   const c = config[status] || config.pending;
   const Icon = c.icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${c.bg} ${c.text} border ${c.border}`}>
-      <Icon size={13} />
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.bg} ${c.text} border ${c.border}`}>
+      <Icon size={12} />
       {c.label}
     </span>
   );
@@ -46,10 +46,10 @@ export function TimelineProgress({ timeline }) {
   };
 
   const getStepIcon = (status) => {
-    if (status === 'completed') return <CheckCircle2 size={20} className="text-emerald-500" />;
-    if (status === 'rejected') return <XCircle size={20} className="text-red-500" />;
-    if (status === 'in_progress') return <Loader2 size={20} className="text-amber-500 animate-spin" />;
-    return <Circle size={20} className="text-slate-300" />;
+    if (status === 'completed') return <CheckCircle2 size={18} className="text-emerald-500" />;
+    if (status === 'rejected') return <XCircle size={18} className="text-red-500" />;
+    if (status === 'in_progress') return <Loader2 size={18} className="text-amber-500 animate-spin" />;
+    return <Circle size={18} className="text-slate-300" />;
   };
 
   const getLineColor = (status) => {
@@ -59,7 +59,7 @@ export function TimelineProgress({ timeline }) {
   };
 
   return (
-    <div className="flex items-start w-full relative pt-2">
+    <div className="flex items-start w-full relative pt-1">
       {timeline.map((step, idx) => {
         // Gunakan status yang sudah melewati filter "Auto-Complete"
         const effectiveStatus = getEffectiveStatus(idx);
@@ -69,19 +69,19 @@ export function TimelineProgress({ timeline }) {
             
             {/* Garis Penghubung Lurus */}
             {idx < timeline.length - 1 && (
-              <div 
-                className={`absolute top-3 left-1/2 w-full h-[3px] -translate-y-1/2 z-0 transition-colors duration-300 ${getLineColor(effectiveStatus)}`} 
+              <div
+                className={`absolute top-2.5 left-1/2 w-full h-[2px] -translate-y-1/2 z-0 transition-colors duration-300 ${getLineColor(effectiveStatus)}`}
               />
             )}
 
             {/* Ikon Step */}
-            <div className="relative z-10 flex items-center justify-center bg-white w-6 h-6 rounded-full">
+            <div className="relative z-10 flex items-center justify-center bg-white w-5 h-5 rounded-full">
                {getStepIcon(effectiveStatus)}
             </div>
 
             {/* Label Teks dan Tanggal */}
-            <div className="flex flex-col items-center justify-center min-h-[32px] mt-1.5">
-              <span className={`text-[10px] font-bold text-center leading-tight px-1 transition-colors duration-300 ${
+            <div className="flex flex-col items-center justify-center min-h-[28px] mt-1">
+              <span className={`text-[9px] font-bold text-center leading-tight px-1 transition-colors duration-300 ${
                 effectiveStatus === 'completed' ? 'text-emerald-600' :
                 effectiveStatus === 'rejected' ? 'text-red-500' :
                 effectiveStatus === 'in_progress' ? 'text-amber-600' :
@@ -90,7 +90,7 @@ export function TimelineProgress({ timeline }) {
                 {step.label}
               </span>
               {step.date && (
-                <span className="text-[9px] text-slate-400 mt-0.5">
+                <span className="text-[8px] text-slate-400 mt-0.5">
                   {new Date(step.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                 </span>
               )}
@@ -106,11 +106,11 @@ export default function MyLowonganCard({ data }) {
   const fotoUrl = getImageUrl(data.foto_thumbnail || data.foto);
   const fotoOriginal = getImageUrl(data.foto);
   const perusahaanNama = data.perusahaan?.nama || '-';
-
+d
   return (
-    <div className="bg-white rounded-md border border-primary/5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="bg-white rounded-lg border border-primary/5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
       <div className="flex flex-col sm:flex-row">
-        <div className="sm:w-32 sm:h-auto h-40 bg-slate-100 shrink-0 overflow-hidden">
+        <div className="sm:w-28 sm:h-auto h-28 bg-slate-100 shrink-0 overflow-hidden">
           <img
             src={fotoUrl || '/Desain Poster Job.jpg'}
             alt="Lowongan"
@@ -119,32 +119,32 @@ export default function MyLowonganCard({ data }) {
           />
         </div>
 
-        <div className="flex-1 p-5 flex flex-col gap-3">
-          <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex-1 p-4 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-black text-primary text-base leading-tight truncate">{data.judul}</h3>
-              <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
-                <Building2 size={14} className="shrink-0" />
+              <h3 className="font-black text-primary text-[14px] leading-snug truncate">{data.judul}</h3>
+              <div className="flex items-center gap-2 mt-0.5 text-[12px] text-slate-500">
+                <Building2 size={13} className="shrink-0 text-slate-400" />
                 <span className="font-medium truncate">{perusahaanNama}</span>
               </div>
             </div>
             <ApprovalBadge status={data.approval_status} />
           </div>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500">
             {data.tipe_pekerjaan && (
               <span className="flex items-center gap-1">
-                <Briefcase size={12} /> {data.tipe_pekerjaan}
+                <Briefcase size={11} /> {data.tipe_pekerjaan}
               </span>
             )}
             {data.lokasi && (
               <span className="flex items-center gap-1">
-                <MapPin size={12} /> {data.lokasi}
+                <MapPin size={11} /> {data.lokasi}
               </span>
             )}
             {data.lowongan_selesai && (
               <span className="flex items-center gap-1">
-                <Clock size={12} /> Berakhir: {new Date(data.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                <Clock size={11} /> Berakhir: {new Date(data.lowongan_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             )}
           </div>

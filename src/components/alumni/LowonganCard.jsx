@@ -42,13 +42,13 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
       <motion.div
         whileHover={locked ? {} : { y: -6 }}
         onClick={() => !locked && navigate(`/alumni/lowongan/${data.id}`)}
-        className={`bg-white rounded-md overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer h-full
+        className={`bg-white rounded-lg overflow-hidden border border-slate-100 shadow-sm flex flex-col transition-all duration-300 group cursor-pointer h-full
           ${locked ? '' : 'hover:shadow-xl hover:border-primary/20'}`}
       >
 
         {/* poster image */}
         <div
-          className={`relative h-[200px] shrink-0 w-full bg-slate-100 overflow-hidden rounded-t-md
+          className={`relative h-[200px] shrink-0 w-full bg-slate-100 overflow-hidden rounded-t-lg
             ${locked ? '' : 'cursor-pointer'}`}
           onClick={(e) => {
             if (locked || !onImageClick) return;
@@ -90,30 +90,30 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
         </div>
 
         {/* content */}
-        <div className="px-5 pt-1 pb-5 flex flex-col flex-1 relative z-10 bg-white">
-          <h3 className="font-black text-primary text-[16px] leading-snug line-clamp-2 mb-3">
+        <div className="px-4 py-4 flex flex-col flex-1 relative z-10 bg-white">
+          <h3 className="font-black text-primary text-[15px] leading-snug line-clamp-2 mb-2">
             {data.judul}
           </h3>
 
           {/* company */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
               <Building2 size={17} className="text-slate-400" />
             </div>
             <span className="font-bold text-[13px] text-primary/80 line-clamp-1">{perusahaanNama}</span>
           </div>
 
           {/* location */}
-          <div className={`inline-flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[11px] text-slate-500 font-semibold w-fit ${skills.length > 0 ? 'mb-3' : 'mb-4'}`}>
+          <div className={`inline-flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-500 font-semibold w-fit ${skills.length > 0 ? 'mb-2.5' : 'mb-3.5'}`}>
             <MapPin size={12} className="text-slate-400 shrink-0" />
             <span className="line-clamp-1">{lokasi}</span>
           </div>
 
           {/* SKILLS TAGS */}
           {skills.length > 0 && (
-            <div className="mt-auto mb-4">
+            <div className="mt-auto mb-3">
               {/* Tambahan Teks Pelabelan Skill */}
-              <p className="text-[10px] text-slate-400 font-bold mb-2">Skill yang dibutuhkan:</p>
+              <p className="text-[10px] text-slate-400 font-bold mb-1.5">Skill yang dibutuhkan:</p>
               
               <div className="flex flex-wrap gap-1.5">
                 {skills.slice(0, 3).map((skill, index) => (
@@ -134,7 +134,7 @@ export default function LowonganCard({ data, onImageClick, onToggleSave, savingI
           )}
 
           {/* footer */}
-          <div className={`pt-4 border-t border-slate-50 flex items-center justify-between ${skills.length === 0 ? 'mt-auto' : ''}`}>
+          <div className={`pt-3 border-t border-slate-50 flex items-center justify-between ${skills.length === 0 ? 'mt-auto' : ''}`}>
             <span className="text-[11px] text-slate-400 font-bold italic">{data.tipe_pekerjaan || ''}</span>
             {!locked && (
               <div className="flex gap-2">
