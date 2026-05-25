@@ -100,51 +100,53 @@ export default function FormBekerja({
             />
           </div>
 
-          {/* PERBAIKAN: Tombol kembali dipisah di sebelah kanan */}
           <div className="md:col-span-2 mt-2">
-            <label className="text-[11px] font-bold text-primary uppercase tracking-widest mb-2.5 block">
+            <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2.5 block">
               Alamat Perusahaan <span className="text-red-500">*</span>
             </label>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div className="flex-1 w-full">
-                <textarea
+            
+            {(!pekerjaan.jalan && !form.latitude_perusahaan) ? (
+              <button
+                type="button"
+                onClick={() => setShowBekerjaMap(true)}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-primary/5 border-2 border-dashed border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-bold cursor-pointer"
+              >
+                <MapPin size={18} /> Buka Peta untuk Pilih Lokasi
+              </button>
+            ) : (
+              <div className="flex h-[48px] w-full items-center border border-slate-200 bg-slate-50 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                <input
+                  name="alamat_perusahaan"
                   value={pekerjaan.jalan || ''}
                   onChange={(e) => setPekerjaan(prev => ({ ...prev, jalan: e.target.value }))}
-                  rows={3}
-                  className="w-full px-4 py-3 bg-white border-2 border-fourth rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all resize-y min-h-[100px] leading-relaxed"
+                  className="w-full h-full px-4 text-sm font-semibold outline-none bg-transparent"
                   placeholder="Masukkan alamat lengkap perusahaan..."
                   onKeyDown={(e) => {
-                    // Menggunakan Ctrl+Enter (atau Cmd+Enter) untuk membuka peta 
-                    // agar tombol Enter biasa bisa digunakan untuk baris baru (newline)
                     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                       e.preventDefault();
                       setShowBekerjaMap(true);
                     }
                   }}
                 />
-
-                {/* Pesan Bantuan atau Keterangan Shortcut */}
-                <p className="mt-1 text-[10px] text-slate-400 font-medium italic">
-                  Tekan <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">Enter</kbd> untuk membuka peta
-                </p>
-
-                {form.latitude_perusahaan !== null && form.longitude_perusahaan !== null && (
-                  <p className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1.5">
-                    <Check size={14} strokeWidth={3} /> Koordinat tersimpan
-                  </p>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowBekerjaMap(true)}
+                  className="h-full px-5 bg-primary text-white text-sm font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors cursor-pointer border-l border-transparent shrink-0"
+                >
+                  <MapPin size={16} /> <span className="hidden sm:inline">Ubah Peta</span>
+                </button>
               </div>
+            )}
 
-              {/* Tombol Map tetap berada di kanan atas mengikuti sm:items-start */}
-              <button
-                type="button"
-                onClick={() => setShowBekerjaMap(true)}
-                className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-6 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
-              >
-                <MapPin size={16} />
-                Pilih di Peta
-              </button>
-            </div>
+            <p className="mt-1.5 text-[10px] text-slate-400 font-medium italic">
+              Tekan <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">Enter</kbd> pada kolom input untuk membuka peta
+            </p>
+
+            {form.latitude_perusahaan !== null && form.longitude_perusahaan !== null && (
+              <p className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1.5">
+                <Check size={14} strokeWidth={3} /> Koordinat peta tersimpan
+              </p>
+            )}
           </div>
         </div>
       )}
