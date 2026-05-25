@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X } from "lucide-react";
+import { FileText, Heart, Image as ImageIcon, Loader2, MessageCircle, MoreHorizontal, Flag, Trash2, Search, Send, Video, X, Share2, Repeat2, Globe, ThumbsUp } from "lucide-react";
 import { STORAGE_BASE_URL } from "../../../api/axios";
 import { useAuth } from "../../../context/AuthContext";
 import { useMiniMedsos } from "../../../hooks/useMiniMedsos";
@@ -55,16 +55,15 @@ function Avatar({ url, name, size = "w-11 h-11", textSize = "text-sm", onClick }
   );
 }
 
-function StatButton({ icon: Icon, label, count, active, onClick, variant }) {
-  const iconClass = active ? (variant === "like" ? "text-red-500" : "text-primary") : "text-slate-500";
+function LinkedInActionButton({ icon: Icon, label, active, onClick, variant }) {
+  const baseClass = "flex-1 inline-flex items-center justify-center gap-2 py-3 text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer rounded-md";
+  let colorClass = "text-slate-600 hover:bg-slate-100";
+  if (active && variant === "like") colorClass = "text-red-500 hover:bg-red-50";
+  else if (active) colorClass = "text-primary hover:bg-primary/5";
   return (
-    <button type="button" onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
-        variant === "like" ? "text-slate-600 hover:bg-slate-50" : active ? "bg-primary/10 text-primary" : "text-slate-600 hover:bg-slate-50"
-      }`}>
-      <Icon size={16} className={iconClass} fill={variant === "like" ? (active ? "currentColor" : "none") : "none"} />
-      <span className={active ? "" : "text-slate-600"}>{label}</span>
-      <span className="text-slate-400 font-black">{count}</span>
+    <button type="button" onClick={onClick} className={`${baseClass} ${colorClass}`}>
+      <Icon size={20} className={active && variant === "like" ? "text-red-500" : active ? "text-primary" : "text-slate-500"} fill={variant === "like" && active ? "currentColor" : "none"} strokeWidth={variant === "like" && active ? 0 : 1.8} />
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }
@@ -78,7 +77,7 @@ function CommentItem({ comment, onReplyClick, onDelete, isOwnComment, isPostOwne
     <div className="flex items-start gap-3 w-full">
       <Avatar url={avatarUrl} name={authorName} size="w-9 h-9" textSize="text-xs" onClick={() => onAuthorClick?.(author.id_alumni)} />
       <div className="flex-1 min-w-0">
-        <div className="bg-slate-50 border border-slate-100 rounded-md px-4 py-3 w-full">
+         <div className="bg-slate-50/80 border border-slate-100 rounded-xl px-4 py-3 w-full">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <p className="text-xs font-black text-slate-800 truncate cursor-pointer hover:text-primary transition-colors" onClick={() => onAuthorClick?.(author.id_alumni)}>{authorName}</p>
@@ -120,7 +119,7 @@ function AddCommentRow({ avatarUrl, displayName, placeholder = "Tambahkan koment
   };
   
   return (
-    <div className="w-full flex items-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-3">
+    <div className="w-full flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5">
       <Avatar url={avatarUrl} name={displayName} size="w-8 h-8" textSize="text-xs" />
       <div className="flex-1 flex items-center justify-between gap-3 min-w-0">
         <input value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={handleKeyDown}
@@ -148,14 +147,14 @@ function PostImages({ images }) {
 
   if (count === 1) {
     return (
-      <div className="mt-4 rounded-md overflow-hidden w-full bg-slate-50 flex justify-center">
+      <div className="overflow-hidden w-full bg-slate-50 flex justify-center">
         <img src={getSrc(validImages[0])} alt="Postingan" className="w-full max-h-[500px] object-cover" onError={(e) => e.target.style.display = 'none'} />
       </div>
     );
   }
 
   return (
-    <div className={`mt-4 grid gap-1 rounded-md overflow-hidden w-full ${count === 2 ? "grid-cols-2" : count === 3 ? "grid-cols-2" : "grid-cols-2"}`}>
+    <div className={`grid gap-0.5 overflow-hidden w-full ${count === 2 ? "grid-cols-2" : count === 3 ? "grid-cols-2" : "grid-cols-2"}`}>
       {validImages.slice(0, 4).map((img, i) => (
         <div key={img.id_post_image || img.id || i} className={`relative ${count === 3 && i === 0 ? "row-span-2" : ""} bg-slate-50`}>
           <img src={getSrc(img)} alt={`Postingan ${i+1}`} className="w-full h-full min-h-[150px] max-h-60 object-cover" onError={(e) => e.target.style.display = 'none'} />
@@ -172,19 +171,23 @@ function PostImages({ images }) {
 
 function StartPostComposer({ avatarUrl, displayName, onStartPost }) {
   return (
-    <div className="w-full rounded-md border border-slate-100 bg-white shadow-sm p-4 sm:p-5 md:p-6">
-      <div className="flex items-center gap-3">
+    <div className="w-full rounded-lg border border-slate-200/80 bg-white shadow-sm">
+      <div className="flex items-center gap-3 p-4">
         <Avatar url={avatarUrl} name={displayName} size="w-12 h-12" />
         <button type="button" onClick={onStartPost}
-          className="flex-1 h-12 rounded-full border border-slate-200 bg-white px-5 text-left text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer w-full">
+          className="flex-1 h-12 rounded-full border border-slate-300 bg-white px-5 text-left text-sm font-medium text-slate-500 hover:bg-slate-100 transition-all duration-200 cursor-pointer w-full">
           Mulai postingan...
         </button>
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-2 w-full">
-        {[{ icon: Video, label: "Video" }, { icon: ImageIcon, label: "Foto" }, { icon: FileText, label: "Tulis artikel" }].map(({ icon: Icon, label }) => (
+      <div className="border-t border-slate-100 px-2 py-1 grid grid-cols-3 gap-0 w-full">
+        {[
+          { icon: ImageIcon, label: "Foto", color: "text-blue-500" },
+          { icon: Video, label: "Video", color: "text-green-600" },
+          { icon: FileText, label: "Artikel", color: "text-orange-500" },
+        ].map(({ icon: Icon, label, color }) => (
           <button key={label} type="button" onClick={onStartPost}
-            className="h-10 rounded-md hover:bg-slate-50 transition-colors cursor-pointer inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-600">
-            <Icon size={18} className="text-slate-500" fill="none" /> {label}
+            className="h-12 rounded-md hover:bg-slate-100 transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2 text-sm font-semibold text-slate-600">
+            <Icon size={20} className={color} fill="none" /> {label}
           </button>
         ))}
       </div>
@@ -401,48 +404,72 @@ export default function MiniMedsosBeranda() {
             const hasReplyTarget = replyTarget !== null && replyTarget !== undefined;
 
             return (
-              <article key={postId} className="w-full rounded-md border border-slate-100 bg-white shadow-sm overflow-hidden">
-                <div className="p-5 md:p-6 w-full">
-                  <header className="flex items-start justify-between gap-4 w-full">
+              <article key={postId} className="w-full rounded-lg border border-slate-200/80 bg-white shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md">
+                <div className="w-full">
+                  {/* Post Header */}
+                  <header className="flex items-start justify-between gap-3 px-4 pt-4 pb-2 w-full">
                     <div className="flex items-start gap-3 min-w-0">
-                      <Avatar url={authorAvatar} name={authorName} onClick={() => handleNavigateToProfile(author.id_alumni)} />
+                      <Avatar url={authorAvatar} name={authorName} size="w-12 h-12" onClick={() => handleNavigateToProfile(author.id_alumni)} />
                       <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3
-                            className="text-sm font-black text-slate-800 truncate cursor-pointer hover:text-primary transition-colors"
-                            onClick={() => handleNavigateToProfile(author.id_alumni)}
-                          >{authorName}</h3>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h3 className="text-sm font-bold text-slate-900 truncate cursor-pointer hover:text-primary hover:underline transition-colors" onClick={() => handleNavigateToProfile(author.id_alumni)}>{authorName}</h3>
                           {(() => {
                             if (isOwnPost) return null;
                             const isConnection = post.is_connection ?? post.author?.is_connected;
                             if (isConnection === true) {
-                              return <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">Koneksi</span>;
+                              return <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">• Koneksi</span>;
                             }
                             return null;
                           })()}
                         </div>
-                        <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{author.jurusan || ""}</p>
+                        <p className="text-xs text-slate-500 font-normal truncate mt-0.5 leading-tight">{author.jurusan || ""}</p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-xs text-slate-400">{timeAgo(post.created_at)}</span>
+                          <span className="text-slate-300">•</span>
+                          <Globe size={12} className="text-slate-400" />
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-none">
-                      <span className="text-[11px] text-slate-400 font-bold">{timeAgo(post.created_at)}</span>
-                      <PostMenuDropdown isOwnPost={isOwnPost} onDelete={() => handleDeletePost(postId)} onReport={() => handleReport(postId)} />
-                    </div>
+                    <PostMenuDropdown isOwnPost={isOwnPost} onDelete={() => handleDeletePost(postId)} onReport={() => handleReport(postId)} />
                   </header>
 
-                  <div className="mt-4 w-full">
-                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line break-words w-full">{post.content}</p>
+                  {/* Post Content */}
+                  <div className="px-4 pb-3 w-full">
+                    <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-line break-words w-full">{post.content}</p>
                   </div>
 
+                  {/* Post Images - full width, no padding */}
                   <PostImages images={post.images || post.post_images || post.media} />
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-2 w-full">
-                    <StatButton icon={Heart} label="Suka" count={post.likes_count ?? 0} active={Boolean(post.is_liked)} onClick={() => medsos.toggleLike(postId)} variant="like" />
-                    <StatButton icon={MessageCircle} label="Komentar" count={post.comments_count ?? 0} active={isCommentsOpen} onClick={() => toggleComments(postId)} />
+                  {/* Engagement Summary */}
+                  {((post.likes_count ?? 0) > 0 || (post.comments_count ?? 0) > 0) && (
+                    <div className="px-4 py-2.5 flex items-center justify-between text-xs text-slate-500">
+                      <div className="flex items-center gap-1.5">
+                        {(post.likes_count ?? 0) > 0 && (
+                          <>
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500"><ThumbsUp size={10} className="text-white" fill="white" /></span>
+                            <span>{post.likes_count} suka</span>
+                          </>
+                        )}
+                      </div>
+                      {(post.comments_count ?? 0) > 0 && (
+                        <button type="button" onClick={() => toggleComments(postId)} className="hover:text-primary hover:underline cursor-pointer transition-colors">{post.comments_count} komentar</button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* LinkedIn-style Action Buttons */}
+                  <div className="border-t border-slate-100 mx-4 flex gap-0 w-auto">
+                    <LinkedInActionButton icon={Heart} label="Suka" active={Boolean(post.is_liked)} onClick={() => medsos.toggleLike(postId)} variant="like" />
+                    <LinkedInActionButton icon={MessageCircle} label="Komentar" active={isCommentsOpen} onClick={() => toggleComments(postId)} />
+                    <LinkedInActionButton icon={Send} label="Kirim" active={false} onClick={() => {
+                      if (navigator.share) { navigator.share({ title: authorName, text: post.content?.substring(0, 100), url: window.location.href }).catch(() => {}); }
+                      else { navigator.clipboard?.writeText(window.location.href); alertSuccess('Link disalin!'); }
+                    }} />
                   </div>
 
                   {isCommentsOpen && (
-                    <div className="mt-5 space-y-4 w-full">
+                    <div className="px-4 pb-4 pt-2 space-y-4 w-full">
                       {isCommentsLoading ? (
                         <div className="flex justify-center py-4 w-full"><Loader2 size={20} className="text-slate-400 animate-spin" /></div>
                       ) : (
@@ -545,9 +572,9 @@ export default function MiniMedsosBeranda() {
         </div>
 
         {medsos.pagination.currentPage < medsos.pagination.lastPage && (
-          <div className="flex justify-center pt-8 w-full">
+          <div className="flex justify-center pt-4 w-full">
             <button type="button" onClick={() => medsos.loadMorePosts()} disabled={medsos.loadingMore}
-              className="h-11 px-8 rounded-md text-sm font-bold text-white bg-primary hover:bg-primary/80 transition-colors cursor-pointer inline-flex items-center gap-2 shadow-sm">
+              className="w-full h-12 rounded-lg text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2 shadow-sm">
               {medsos.loadingMore && <Loader2 size={16} className="animate-spin" />}
               {medsos.loadingMore ? "Memuat..." : "Muat Lebih Banyak"}
             </button>
