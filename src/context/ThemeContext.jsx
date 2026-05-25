@@ -44,7 +44,18 @@ const fixStorageUrl = (url) => {
 
 // 3. Provider Component
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(DEFAULT_THEME);
+  const [theme, setTheme] = useState(() => {
+    const cached = localStorage.getItem('theme_settings');
+    const initialTheme = cached ? JSON.parse(cached) : DEFAULT_THEME;
+    
+    // Apply colors immediately to DOM on initial render to prevent flickering
+    const root = document.documentElement;
+    root.style.setProperty('--color-primary', initialTheme.primaryColor);
+    root.style.setProperty('--color-secondary', initialTheme.secondaryColor);
+    root.style.setProperty('--color-third', initialTheme.thirdColor);
+    
+    return initialTheme;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   // Fungsi "Sakti" untuk menginjeksi warna ke CSS Variables
@@ -89,6 +100,7 @@ export const ThemeProvider = ({ children }) => {
         if (apiData) {
           const mapped = mapApiToTheme(apiData);
           setTheme(mapped);
+          localStorage.setItem('theme_settings', JSON.stringify(mapped));
           applyColorsToDOM(mapped);
         } else {
           applyColorsToDOM(DEFAULT_THEME);
@@ -108,6 +120,7 @@ export const ThemeProvider = ({ children }) => {
   const updateSettings = (newSettings) => {
     const updatedTheme = { ...theme, ...newSettings };
     setTheme(updatedTheme);
+    localStorage.setItem('theme_settings', JSON.stringify(updatedTheme));
     applyColorsToDOM(updatedTheme);
   };
 
@@ -119,6 +132,7 @@ export const ThemeProvider = ({ children }) => {
       if (apiData) {
         const mapped = mapApiToTheme(apiData);
         setTheme(mapped);
+        localStorage.setItem('theme_settings', JSON.stringify(mapped));
         applyColorsToDOM(mapped);
       }
     } catch (error) {

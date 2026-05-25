@@ -1,12 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useThemeSettings } from '../context/ThemeContext';
 
 const Loader = () => {
+  const { theme } = useThemeSettings();
+  const primary = theme?.primaryColor || '#3c5759';
+  const secondary = theme?.secondaryColor || '#526061';
+
   // Pisahkan teks menjadi array huruf
   const text = "STUDY TRACER".split("");
 
   return (
-    <StyledWrapper>
+    <StyledWrapper style={{ '--loader-primary': primary, '--loader-secondary': secondary }}>
       {/* Container untuk Teks */}
       <div className="text-container">
         {text.map((char, index) => (
@@ -22,12 +27,6 @@ const Loader = () => {
           </span>
         ))}
       </div>
-
-      {/* Container untuk animasi garis "Tracer" di bawah teks
-      <div className="tracer-container">
-        <div className="tracer-line"></div>
-      </div> */}
-      {/* <div className="Buttons w-[2px] md:w-5"  /> */}
       <div className="loader">
         <div className="dot dot-1" />
         <div className="dot dot-2" />
@@ -42,6 +41,7 @@ const Loader = () => {
 };
 
 const StyledWrapper = styled.div`
+
   /* Menyusun teks dan bar agar berada di tengah dan berurutan atas-bawah */
   display: flex;
   flex-direction: column;
@@ -68,7 +68,7 @@ const StyledWrapper = styled.div`
     font-family: 'Arial Black', sans-serif;
     font-size: clamp(1.5rem, 6vw, 4rem);
     font-weight: bold;
-    color: var(--color-primary);
+    color: var(--loader-primary);
     display: inline-block;
     
     transform: translateY(1.5em);
@@ -103,42 +103,50 @@ const StyledWrapper = styled.div`
     height: 10px;
     margin-right: 6px;
     border-radius: 50%;
-    background-color: var(--color-primary);
+    /* Default color (will be overridden) */
+    background-color: var(--loader-primary);
     -webkit-animation: dot-pulse2 1.5s ease-in-out infinite;
     animation: dot-pulse2 1.5s ease-in-out infinite;
   }
 
   .dot-1 {
+    background-color: var(--loader-primary);
     -webkit-animation-delay: 0s;
     animation-delay: 0s;
   }
 
   .dot-2 {
+    background-color: var(--loader-secondary);
     -webkit-animation-delay: 0.3s;
     animation-delay: 0.3s;
   }
 
   .dot-3 {
+    background-color: var(--loader-primary);
     -webkit-animation-delay: 0.6s;
     animation-delay: 0.6s;
   }
 
   .dot-4 {
+    background-color: var(--loader-secondary);
     -webkit-animation-delay: 0.9s;
     animation-delay: 0.9s;
   }
 
   .dot-5 {
+    background-color: var(--loader-primary);
     -webkit-animation-delay: 1.2s;
     animation-delay: 1.2s;
   }
 
   .dot-6 {
+    background-color: var(--loader-secondary);
     -webkit-animation-delay: 1.5s;
     animation-delay: 1.5s;
   }
 
   .dot-7 {
+    background-color: var(--loader-primary);
     -webkit-animation-delay: 1.8s;
     animation-delay: 1.8s;
   }
