@@ -12,7 +12,8 @@ import {
   FileText,
   ArrowLeft,
   Tag,
-  Timer
+  Timer,
+  Phone // PERBAIKAN: Import icon Phone untuk kontak
 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
@@ -25,6 +26,16 @@ const JobDetail = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // PERBAIKAN: Fungsi untuk menangani tag HTML agar rapi
+  const renderHTML = (htmlString) => {
+    if (!htmlString) return { __html: '' };
+    
+    // Decode HTML jika data dari backend dikirim dalam bentuk entitas (&lt;p&gt; menjadi <p>)
+    const txt = document.createElement("textarea");
+    txt.innerHTML = htmlString;
+    return { __html: txt.value };
+  };
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -84,17 +95,14 @@ const JobDetail = () => {
     : banner;
 
   return (
-    // Tambahkan relative agar layout anak bisa diatur
     <div className="min-h-screen bg-[#F8FAFC] relative">
-
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
 
-        {/* 1. TOMBOL KEMBALI - Diperbaiki */}
-        {/* Tidak menggunakan fixed, tapi diletakkan di awal flow konten agar tidak tertutup sidebar */}
+        {/* 1. TOMBOL KEMBALI */}
         <div>
           <Link
             to="/wb-admin/jobs"
-            className="flex items-center gap-2 text-third hover:text-primary transition-colors mb-8 text-sm font-medium group"
+            className="flex items-center gap-2 text-third hover:text-primary transition-colors mb-8 text-sm font-medium group w-fit"
           >
             <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             Kembali
@@ -164,9 +172,12 @@ const JobDetail = () => {
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">Deskripsi Pekerjaan</h2>
               </div>
-              <div className="prose prose-slate prose-sm max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                {job.deskripsi || 'Tidak ada deskripsi yang tersedia.'}
-              </div>
+              
+              {/* PERBAIKAN: Menggunakan fungsi renderHTML seperti di versi alumni */}
+              <div 
+                className="prose prose-slate prose-sm max-w-none text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={job.deskripsi ? renderHTML(job.deskripsi) : { __html: '<p>Tidak ada deskripsi yang tersedia.</p>' }}
+              />
             </div>
           </div>
 
@@ -184,10 +195,11 @@ const JobDetail = () => {
                   {[
                     { icon: MapPin, label: "Lokasi", value: job.lokasi || job.perusahaan?.kota?.nama },
                     { icon: Clock, label: "Tipe Pekerjaan", value: job.tipe_pekerjaan },
+                    { icon: Phone, label: "Kontak", value: job.nomor_kontak || '-' }, // PERBAIKAN: Tambah kontak
                     { icon: Calendar, label: "Batas Melamar", value: job.lowongan_selesai },
                     { icon: Briefcase, label: "Perusahaan", value: job.perusahaan?.nama },
-                    { icon: Timer, label: "Jam Mulai", value: job.jam_mulai || '-' },
-                    { icon: Timer, label: "Jam Berakhir", value: job.jam_berakhir || '-' },
+                    { icon: Timer, label: "Jam Mulai", value: job.jam_mulai ? `${job.jam_mulai.substring(0, 5)} WIB` : '-' },
+                    { icon: Timer, label: "Jam Berakhir", value: job.jam_berakhir ? `${job.jam_berakhir.substring(0, 5)} WIB` : '-' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-3 text-gray-600 group/item">
                       <div className="p-2 bg-gray-50 rounded-lg text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors shrink-0 mt-0.5">

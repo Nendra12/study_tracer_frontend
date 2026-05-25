@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom'; // PERBAIKAN: Import createPortal
-import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Send, Image as ImageIcon, Loader2, Search, Plus, ChevronDown, Check, MapPin, Trash2 } from 'lucide-react'; // Tambah Trash2
 import { adminApi } from '../../api/admin';
 import { masterDataApi } from '../../api/masterData';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +25,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     alamat_perusahaan: '',
     tanggal_berakhir: '',
     deskripsi: '',
+    nomor_kontak: [''], // Tambahan state nomor_kontak
     tipe_pekerjaan: '',
     lokasi: '',
     foto: null,
@@ -65,7 +66,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
 
   const skillDropdownRef = useRef(null);
 
-  // PERBAIKAN: Efek untuk mengunci scroll body saat modal terbuka
+  // Efek untuk mengunci scroll body saat modal terbuka
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -159,6 +160,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         alamat_perusahaan: editJob.alamat_perusahaan || editJob.perusahaan?.jalan || '',
         tanggal_berakhir: editJob.lowongan_selesai || '',
         deskripsi: editJob.deskripsi || '',
+        nomor_kontak: editJob.nomor_kontak ? editJob.nomor_kontak.split(',').map(s => s.trim()) : [''], // Parsing kontak untuk edit
         tipe_pekerjaan: editJob.tipe_pekerjaan || '',
         lokasi: editJob.lokasi || '',
         foto: null,
@@ -180,7 +182,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       setSubmitError(null);
     } else if (!editJob && isOpen) {
       setFormData({
-        judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '',
+        judul: '', perusahaan: '', tanggal_berakhir: '', deskripsi: '', nomor_kontak: [''],
         id_perusahaan: '', alamat_perusahaan: '', tipe_pekerjaan: '', lokasi: '', foto: null, id_provinsi: '', id_kota: '',
         latitude_perusahaan: null, longitude_perusahaan: null,
         jam_mulai: '', jam_berakhir: '',
@@ -224,12 +226,38 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
       ...prev,
       perusahaan: companySearchTerm.trim(),
       id_perusahaan: '', 
-      latitude_perusahaan: null, // Reset map jika perusahaan baru
+      latitude_perusahaan: null, 
       longitude_perusahaan: null,
     }));
     setCompanyDropdownOpen(false);
     setCompanySearchTerm('');
     if (errors.perusahaan) setErrors(prev => ({ ...prev, perusahaan: undefined }));
+  };
+
+  // --- HANDLER NOMOR KONTAK ---
+  const handleContactChange = (index, value) => {
+    const newContacts = [...formData.nomor_kontak];
+    newContacts[index] = value;
+    setFormData(prev => ({ ...prev, nomor_kontak: newContacts }));
+    if (errors[`nomor_kontak_${index}`]) {
+      setErrors(prev => ({ ...prev, [`nomor_kontak_${index}`]: undefined }));
+    }
+  };
+
+  const addContact = () => {
+    if (formData.nomor_kontak.length < 3) {
+      setFormData(prev => ({ ...prev, nomor_kontak: [...prev.nomor_kontak, ''] }));
+    }
+  };
+
+  const removeContact = (index) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      nomor_kontak: prev.nomor_kontak.filter((_, i) => i !== index) 
+    }));
+    if (errors[`nomor_kontak_${index}`]) {
+      setErrors(prev => ({ ...prev, [`nomor_kontak_${index}`]: undefined }));
+    }
   };
 
 
@@ -310,6 +338,36 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
     }
     if (!formData.deskripsi.trim()) newErrors.deskripsi = 'Deskripsi wajib diisi';
 
+    // VALIDASI ARRAY NOMOR KONTAK
+    const validContacts = [];
+    formData.nomor_kontak.forEach((kontak, idx) => {
+      const trimmed = kontak.trim();
+      if (!trimmed) {
+        if (idx === 0 && formData.nomor_kontak.length === 1) {
+          newErrors[`nomor_kontak_${idx}`] = 'Nomor kontak wajib diisi';
+        }
+        return;
+      }
+      
+      if (!/^[\d\s+\-()]+$/.test(trimmed)) {
+        newErrors[`nomor_kontak_${idx}`] = 'Format tidak valid (hanya angka dan simbol +, -, ())';
+        return;
+      }
+      
+      const digits = trimmed.replace(/\D/g, '');
+      if (digits.length < 10) {
+        newErrors[`nomor_kontak_${idx}`] = 'Minimal 10 angka';
+      } else if (digits.length > 13) {
+        newErrors[`nomor_kontak_${idx}`] = 'Maksimal 13 angka';
+      } else {
+        validContacts.push(trimmed);
+      }
+    });
+
+    if (Object.keys(newErrors).length === 0 && validContacts.length === 0 && !newErrors['nomor_kontak_0']) {
+      newErrors['nomor_kontak_0'] = 'Minimal ada satu nomor kontak yang diisi';
+    }
+
     if (!isEditMode && !formData.foto) {
       newErrors.foto = 'Gambar/Banner wajib diunggah';
     } else if (isEditMode && !previewUrl) {
@@ -343,6 +401,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         }
       }
       fd.append('deskripsi', formData.deskripsi);
+      fd.append('nomor_kontak', validContacts.join(', ')); // Mengirimkan kontak 
       fd.append('tipe_pekerjaan', formData.tipe_pekerjaan);
       fd.append('lowongan_selesai', formData.tanggal_berakhir);
       fd.append('jam_mulai', formData.jam_mulai);
@@ -384,6 +443,7 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         if (validationErrors.jam_mulai) mapped.jam_mulai = validationErrors.jam_mulai[0];
         if (validationErrors.jam_berakhir) mapped.jam_berakhir = validationErrors.jam_berakhir[0];
         if (validationErrors.foto_lowongan) mapped.foto = validationErrors.foto_lowongan[0];
+        if (validationErrors.nomor_kontak) mapped.nomor_kontak_0 = validationErrors.nomor_kontak[0];
         
         setErrors(mapped);
         document.querySelector('.custom-modal-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -401,7 +461,6 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
   
   const dropdownWrapperClass = "relative focus-within:z-[100] [&>div]:!space-y-0 [&_label]:!block [&_label]:!mb-2.5 [&_label]:!text-[11px] [&_label]:!font-black [&_label]:!text-primary [&_label]:!uppercase [&_label]:!tracking-widest [&_button]:!mt-0 [&_button]:!h-[48px] [&_button]:!px-4 [&_button]:!py-0 [&_button]:!bg-slate-50 [&_button]:!border [&_button]:!border-slate-200 [&_button]:!rounded-xl [&_button_span]:!font-normal [&_button_span]:!text-slate-700";
 
-  // PERBAIKAN: Menggunakan createPortal dan z-[99999] bg-black/50 backdrop-blur
   return createPortal(
     <>
       <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur p-4 animate-in fade-in duration-200">
@@ -613,30 +672,40 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                     </div>
                   </div>
 
-                  <div className="relative">
+                  <div className="relative md:col-span-2">
                     <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
                       Alamat Perusahaan Baru <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex gap-2 items-start">
-                      <input
-                        name="alamat_perusahaan"
-                        value={formData.alamat_perusahaan}
-                        onChange={handleInputChange}
-                        placeholder="Johnson Springs, Kabupaten Kotawaringin Timur"
-                        className={`${inputClass(errors.alamat_perusahaan)} flex-1`}
-                      />
+                    {(!formData.alamat_perusahaan && !formData.latitude_perusahaan) ? (
                       <button
                         type="button"
                         onClick={handleOpenMap}
-                        className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 h-[48px] text-xs font-bold text-white transition hover:bg-primary/80 cursor-pointer shadow-sm"
+                        className="w-full flex items-center justify-center gap-2 py-4 bg-primary/5 border-2 border-dashed border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-bold cursor-pointer"
                       >
-                        <MapPin size={16} />
-                        <span className="hidden sm:inline">Pilih di Peta</span>
+                        <MapPin size={18} /> Buka Peta untuk Pilih Lokasi
                       </button>
-                    </div>
+                    ) : (
+                      <div className={`flex h-[48px] w-full items-center border ${errors.alamat_perusahaan ? 'border-red-400 bg-red-50/50' : 'border-slate-200 bg-slate-50'} rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all`}>
+                        <input
+                          name="alamat_perusahaan"
+                          value={formData.alamat_perusahaan}
+                          onChange={handleInputChange}
+                          className="w-full h-full px-4 text-sm font-semibold outline-none bg-transparent"
+                          placeholder="Masukkan alamat lengkap perusahaan"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleOpenMap}
+                          className="h-full px-5 bg-primary text-white text-sm font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors cursor-pointer border-l border-transparent shrink-0"
+                        >
+                          <MapPin size={16} /> <span className="hidden sm:inline">Ubah Peta</span>
+                        </button>
+                      </div>
+                    )}
+                    
                     {formData.latitude_perusahaan !== null && formData.longitude_perusahaan !== null && (
                       <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center gap-1">
-                        <Check size={12} /> Koordinat peta tersimpan
+                        <Check size={12} strokeWidth={3} /> Koordinat peta tersimpan
                       </p>
                     )}
                     {errors.alamat_perusahaan && <p className="text-xs text-red-500 font-medium mt-1">{errors.alamat_perusahaan}</p>}
@@ -722,6 +791,57 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
                 {errors.deskripsi && <p className="text-xs text-red-500 font-medium mt-1">{errors.deskripsi}</p>}
               </div>
 
+              {/* KOMPONEN INPUT NOMOR KONTAK DINAMIS */}
+              <div className="relative z-[5]">
+                <label className="text-[11px] font-black text-primary uppercase tracking-widest mb-2 block">
+                  Nomor Kontak <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-4">
+                  {formData.nomor_kontak.map((kontak, idx) => (
+                    <div key={idx} className="flex flex-col">
+                      <div className="flex gap-2 items-start">
+                        <div className="flex-1 relative">
+                          <input 
+                            value={kontak} 
+                            onChange={(e) => handleContactChange(idx, e.target.value)} 
+                            placeholder="Contoh: 08123456789" 
+                            className={inputClass(errors[`nomor_kontak_${idx}`])} 
+                          />
+                        </div>
+                        
+                        {formData.nomor_kontak.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeContact(idx)}
+                            className="flex shrink-0 items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors cursor-pointer h-[48px] w-[48px]"
+                            title="Hapus Nomor Kontak"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
+                      {errors[`nomor_kontak_${idx}`] && (
+                        <p className="text-xs text-red-500 font-bold mt-1.5 ml-1">
+                          {errors[`nomor_kontak_${idx}`]}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {formData.nomor_kontak.length < 3 && (
+                  <div className="pt-3">
+                    <button
+                      type="button"
+                      onClick={addContact}
+                      className="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer px-1"
+                    >
+                      <Plus size={14} strokeWidth={3} /> Tambah Nomor Kontak Lain
+                    </button>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
 
@@ -737,7 +857,6 @@ export default function TambahLowongan({ isOpen, onClose, onSuccess, editJob = n
         </div>
       </div>
 
-      {/* Komponen Location Picker diluar kotak Modal utama, tapi tetap di dalam portal yang sama */}
       <LocationPicker
         isOpen={showLocationPicker}
         onClose={() => setShowLocationPicker(false)}
