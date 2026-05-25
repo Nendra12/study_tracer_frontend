@@ -188,28 +188,29 @@ export default function Connection({
             </button>
 
             {dropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-full min-w-[140px] bg-white border border-slate-100 shadow-xl rounded-xl p-1.5 z-999 animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute top-full left-0 mt-2 w-max min-w-[110px] bg-white border border-slate-100 shadow-xl rounded-xl p-1.5 z-[99] animate-in fade-in zoom-in-95 duration-200">
                 <button
                   onClick={() => {
                     setDropdownOpen(false);
                     navigate('/alumni/pesan', { state: { targetAlumniId: alumniId } });
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[11px] sm:text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-primary rounded-lg transition-colors text-left mb-1"
+                  className="w-full flex items-center gap-2 px-2.5 py-2 text-[10px] sm:text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-primary rounded-lg transition-colors text-left mb-0.5"
                 >
-                  <MessageSquare size={14} /> Kirim Pesan
+                  <MessageSquare size={13} /> Kirim Pesan
                 </button>
                 <button
                   onClick={() => {
                     setDropdownOpen(false);
                     withConfirm('Yakin ingin putuskan koneksi dengan alumni ini?', () => onRemove?.(alumniId), 'Koneksi berhasil dihapus.');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[11px] sm:text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-colors text-left mb-1"
+                  className="w-full flex items-center gap-2 px-2.5 py-2 text-[10px] sm:text-[11px] font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-colors text-left"
                 >
-                  <UserX size={14} /> Putuskan
+                  <UserX size={13} /> Putuskan
                 </button>
               </div>
             )}
           </div>
+          
           <button
             type="button"
             disabled={isActionLoading}
