@@ -361,26 +361,69 @@ export default function MessagePage() {
     messaging.togglePin(convId);
   };
 
-  const handleDeleteChat = async (convId) => {
-    const targetId = convId || activeChat?.id_conversation;
+  const handleDeleteChat = async (conv, e) => {
+    if (e) e.stopPropagation();
+    const isObj = typeof conv === 'object' && conv !== null;
+    const targetId = isObj ? conv?.id_conversation : conv;
     if (!targetId) return;
-    const ok = await confirmThen('Chat ini akan dihapus. Lanjutkan?', async () => {
-      const success = await messaging.deleteConversation(targetId);
-      if (success && activeChat?.id_conversation === targetId) setShowChatArea(false);
-    });
-    if (!ok) return;
+
+    let name = '';
+    if (isObj) {
+      name = getDisplayName(conv);
+    } else {
+      const found = messaging.conversations.find(c => String(c.id_conversation) === String(conv));
+      name = found ? getDisplayName(found) : 'Percakapan';
+    }
+
+    await confirmThen(
+      `Apakah Anda yakin ingin menghapus percakapan dengan ${name}? Seluruh riwayat obrolan akan terhapus dan percakapan akan disembunyikan.`,
+      async () => {
+        const success = await messaging.deleteConversation(targetId);
+        if (success && activeChat?.id_conversation === targetId) {
+          setShowChatArea(false);
+        }
+      }
+    );
+  };
+
+  const handleClearChat = async (conv, e) => {
+    if (e) e.stopPropagation();
+    const isObj = typeof conv === 'object' && conv !== null;
+    const targetId = isObj ? conv?.id_conversation : conv;
+    if (!targetId) return;
+
+    let name = '';
+    if (isObj) {
+      name = getDisplayName(conv);
+    } else {
+      const found = messaging.conversations.find(c => String(c.id_conversation) === String(conv));
+      name = found ? getDisplayName(found) : 'Percakapan';
+    }
+
+    await confirmThen(
+      `Apakah Anda yakin ingin menghapus semua pesan dalam percakapan dengan ${name}? Percakapan akan tetap ada tetapi riwayat pesan akan dibersihkan secara permanen.`,
+      async () => {
+        const success = await messaging.clearMessages(targetId);
+        if (success) {
+          setIsChatMenuOpen(false);
+        }
+      }
+    );
   };
 
   const handleDeleteSelectedChats = async () => {
     if (!selectedContacts?.length) return;
-    const ok = await confirmThen(`Hapus ${selectedContacts.length} chat yang dipilih?`, async () => {
-      for (const id of selectedContacts) {
-        await messaging.deleteConversation(id);
+    await confirmThen(
+      `Apakah Anda yakin ingin menghapus ${selectedContacts.length} percakapan yang terpilih? Tindakan ini tidak dapat dibatalkan.`,
+      async () => {
+        for (const id of selectedContacts) {
+          await messaging.deleteConversation(id);
+        }
+        setIsSelectionMode(false);
+        setSelectedContacts([]);
+        toastSuccess('Percakapan terpilih berhasil dihapus.');
       }
-    });
-    if (!ok) return;
-    setIsSelectionMode(false);
-    setSelectedContacts([]);
+    );
   };
 
   const handleDeleteMessage = async (msgId) => {
@@ -713,12 +756,14 @@ export default function MessagePage() {
 
                                     <div className="h-px bg-gray-100 my-1.5 mx-3"></div>
 
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleDeleteChat(cId); setActiveSidebarMenuId(null); }}
-                                      className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
-                                    >
-                                      <Trash2 size={16} /> Hapus chat
-                                    </button>
+                                    {(contact.type !== 'group' || contact.created_by === currentUserId) && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteChat(contact); setActiveSidebarMenuId(null); }}
+                                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
+                                      >
+                                        <Trash2 size={16} /> Hapus Percakapan
+                                      </button>
+                                    )}
                                   </div>
                                 </>
                               )}
@@ -851,10 +896,11 @@ export default function MessagePage() {
                             setIsChatMenuOpen={setIsChatMenuOpen}
                             setIsMessageSelectionMode={setIsMessageSelectionMode}
                             activeChat={activeChat}
+                            currentUserId={currentUserId}
                             onOpenGroupInfo={handleOpenGroupInfo}
                             onTogglePin={() => messaging.togglePin(activeChat.id_conversation)}
                             onToggleMute={() => messaging.toggleMute(activeChat.id_conversation)}
-                            onDeleteChat={() => handleDeleteChat(activeChat.id_conversation)}
+                            onDeleteChat={() => handleClearChat(activeChat)}
                             onLeaveGroup={() => confirmThen('Keluar dari grup ini?', () => messaging.leaveGroup(activeChat.id_conversation))}
                           />
                         )}
@@ -1325,6 +1371,7 @@ export default function MessagePage() {
                   conversation={activeChat}
                   onSubmit={handleSubmitGroupInfo}
                   saving={isSavingGroupInfo}
+                  currentUserId={currentUserId}
                 />
               </>
             ) : (

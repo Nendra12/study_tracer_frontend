@@ -275,6 +275,30 @@ export function useMessaging(currentUserId) {
     }
   }, [activeConversation]);
 
+  const clearMessages = useCallback(async (convId) => {
+    try {
+      await alumniApi.clearMessages(convId);
+      if (activeConversation?.id_conversation === convId) {
+        setMessages([]);
+      }
+      setConversations(prev => prev.map(c => {
+        if (c.id_conversation === convId) {
+          return {
+            ...c,
+            latest_message: null,
+            unread_count: 0
+          };
+        }
+        return c;
+      }));
+      toast.success('Pesan dibersihkan');
+      return true;
+    } catch (err) {
+      toast.error('Gagal membersihkan pesan');
+      return false;
+    }
+  }, [activeConversation]);
+
   const leaveGroup = useCallback(async (convId) => {
     try {
       await alumniApi.leaveConversation(convId);
@@ -311,7 +335,9 @@ export function useMessaging(currentUserId) {
         if (prev.find(m => m.id_message === msg.id_message)) return prev;
         return [...prev, msg];
       });
-      alumniApi.markConversationAsRead(convId).catch(() => {});
+      alumniApi.markConversationAsRead(convId).then(() => {
+        window.dispatchEvent(new CustomEvent('local:message.read_cleared'));
+      }).catch(() => {});
     }
 
     // Update conversation list
@@ -377,7 +403,7 @@ export function useMessaging(currentUserId) {
     conversations, messages, activeConversation, loadingConversations, loadingMessages, sending, msgPagination,
     fetchConversations, fetchMessages, selectConversation, sendMessage, deleteMessage,
     createGroupConversation, updateGroupConversation, refreshConversationDetail,
-    togglePin, toggleMute, deleteConversation, leaveGroup, handleTypingInput,
+    togglePin, toggleMute, deleteConversation, clearMessages, leaveGroup, handleTypingInput,
     handleRealtimeMessage, handleRealtimeDelete, handleRealtimeRead,
     setActiveConversation, setMessages, setConversations,
   };

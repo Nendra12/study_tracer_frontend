@@ -616,7 +616,7 @@ export default function TabStatusKarier({ profile, onRefresh, onShowSuccess, isV
               {!isVerified ? <Lock size={14} /> : hasPendingCareer ? <Clock size={14} /> : <Plus size={14} />}
               <span className='hidden md:block'>{!isVerified ? 'Terkunci' : hasPendingCareer ? 'Menunggu Approval' : 'Tambahkan status baru'}</span>
             </button>
-            <div className="invisible absolute bottom-full left-1/2 mb-2 w-max -translate-x-1/2 rounded bg-gray-800 px-3 py-2 text-xs text-white opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 z-10">
+            <div className={`${!isVerified ? 'invisible absolute' : 'hidden'} bottom-full left-1/2 mb-2 w-max -translate-x-1/2 rounded bg-gray-800 px-3 py-2 text-xs text-white opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 z-10`}>
               Anda harus mengisi tanggal selesai terlebih dahulu!
               <div className="absolute left-1/2 top-full -translate-x-1/2 border-[6px] border-transparent border-t-gray-800"></div>
             </div>

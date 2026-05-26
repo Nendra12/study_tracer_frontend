@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { X, Users, Save, Loader2, ImagePlus } from 'lucide-react';
+import { X, Users, Save, Loader2, ImagePlus, Crown } from 'lucide-react';
 import { getAvatarUrl, getDisplayName, getImageUrl } from '../../hooks/useMessaging';
 
 function getParticipantInfo(participant) {
@@ -10,17 +10,29 @@ function getParticipantInfo(participant) {
     avatar: getImageUrl(user?.foto),
     jurusan: user?.jurusan,
     tahun_lulus: user?.tahun_lulus,
+    role: participant?.role,
   };
 }
 
-export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit, saving }) {
+export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit, saving, currentUserId }) {
   const [groupName, setGroupName] = useState(conversation?.group_name || '');
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(conversation?.group_avatar ? getImageUrl(conversation.group_avatar) : '');
 
+  const creatorId = conversation?.created_by;
+  const isCreator = currentUserId && creatorId && currentUserId === creatorId;
+
   const participants = useMemo(() => {
-    return (conversation?.participants || []).map(getParticipantInfo);
-  }, [conversation]);
+    const list = (conversation?.participants || []).map(getParticipantInfo);
+    // Sort: creator first, then admins, then members
+    return list.sort((a, b) => {
+      if (a.id === creatorId && b.id !== creatorId) return -1;
+      if (b.id === creatorId && a.id !== creatorId) return 1;
+      if (a.role === 'admin' && b.role !== 'admin') return -1;
+      if (b.role === 'admin' && a.role !== 'admin') return 1;
+      return 0;
+    });
+  }, [conversation, creatorId]);
 
   React.useEffect(() => {
     setGroupName(conversation?.group_name || '');
@@ -69,8 +81,8 @@ export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit
 
         <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
           <div className="flex items-center gap-4">
-            <label className="relative cursor-pointer">
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            <label className={`relative ${isCreator ? 'cursor-pointer' : 'cursor-default'}`}>
+              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} disabled={!isCreator} />
               {avatarPreview || fallbackAvatar ? (
                 <img
                   src={avatarPreview || fallbackAvatar}
@@ -89,7 +101,8 @@ export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit
                 type="text"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
-                className="mt-1 w-full bg-gray-50 border border-gray-200 text-sm rounded-xl py-2.5 px-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none"
+                disabled={!isCreator}
+                className="mt-1 w-full bg-gray-50 border border-gray-200 text-sm rounded-xl py-2.5 px-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -104,11 +117,26 @@ export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit
                 <p className="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-3">Data anggota belum tersedia.</p>
               ) : participants.map((member) => {
                 const avatar = member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=e0e7ff&color=4f46e5`;
+                const isMemberCreator = member.id === creatorId;
                 return (
-                  <div key={member.id || member.name} className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 bg-white">
-                    <img src={avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{member.name}</p>
+                  <div key={member.id || member.name} className={`flex items-center gap-3 p-2.5 rounded-xl border ${isMemberCreator ? 'border-amber-200 bg-amber-50/50' : 'border-gray-100 bg-white'}`}>
+                    <div className="relative">
+                      <img src={avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
+                      {isMemberCreator && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm border-2 border-white">
+                          <Crown size={10} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{member.name}</p>
+                        {isMemberCreator && (
+                          <span className="shrink-0 text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                            Pembuat
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500">{[member.jurusan, member.tahun_lulus].filter(Boolean).join(' · ') || 'Alumni'}</p>
                     </div>
                   </div>
@@ -118,22 +146,34 @@ export default function GroupInfoModal({ isOpen, onClose, conversation, onSubmit
           </div>
         </div>
 
-        <div className="px-5 py-4 border-t border-gray-100 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
-          >
-            Tutup
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || !groupName.trim()}
-            className={`px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors ${saving || !groupName.trim() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 cursor-pointer'}`}
-          >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            Simpan Perubahan
-          </button>
-        </div>
+        {isCreator && (
+          <div className="px-5 py-4 border-t border-gray-100 flex justify-end gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+            >
+              Tutup
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving || !groupName.trim()}
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors ${saving || !groupName.trim() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 cursor-pointer'}`}
+            >
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              Simpan Perubahan
+            </button>
+          </div>
+        )}
+        {!isCreator && (
+          <div className="px-5 py-4 border-t border-gray-100 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+            >
+              Tutup
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
