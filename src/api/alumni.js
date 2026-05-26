@@ -328,6 +328,10 @@ export const alumniApi = {
     return api.delete(`/alumni/messages/conversations/${id}`);
   },
 
+  clearMessages(id) {
+    return api.post(`/alumni/messages/conversations/${id}/clear`);
+  },
+
   // Conversation Settings
   togglePinConversation(id) {
     return api.post(`/alumni/messages/conversations/${id}/pin`);

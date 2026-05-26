@@ -6,6 +6,7 @@ export default function ChatMenuOptions({
   setIsChatMenuOpen,
   setIsMessageSelectionMode,
   activeChat,
+  currentUserId,
   onTogglePin,
   onToggleMute,
   onDeleteChat,
@@ -17,6 +18,7 @@ export default function ChatMenuOptions({
   const isMuted = activeChat?.settings?.is_muted;
   const isGroup = activeChat?.type === 'group';
   const contactId = activeChat?.contact?.id_alumni;
+  const isGroupCreator = isGroup && currentUserId && activeChat?.created_by === currentUserId;
 
   return (
     <>
@@ -59,7 +61,7 @@ export default function ChatMenuOptions({
 
         <div className="h-px bg-gray-100 my-1.5 mx-3"></div>
 
-        {isGroup && (
+        {isGroup && !isGroupCreator && (
           <button
             onClick={() => { onLeaveGroup?.(); setIsChatMenuOpen(false); }}
             className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
@@ -67,12 +69,30 @@ export default function ChatMenuOptions({
             <LogOut size={16} /> Keluar grup
           </button>
         )}
-        <button
-          onClick={() => { onDeleteChat?.(); setIsChatMenuOpen(false); }}
-          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
-        >
-          <Trash2 size={16} /> Hapus chat
-        </button>
+        {isGroup && isGroupCreator && (
+          <>
+            <button
+              onClick={() => { onLeaveGroup?.(); setIsChatMenuOpen(false); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer"
+            >
+              <LogOut size={16} /> Keluar grup
+            </button>
+            <button
+              onClick={() => { onDeleteChat?.(); setIsChatMenuOpen(false); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
+            >
+              <Trash2 size={16} /> Hapus chat
+            </button>
+          </>
+        )}
+        {!isGroup && (
+          <button
+            onClick={() => { onDeleteChat?.(); setIsChatMenuOpen(false); }}
+            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 cursor-pointer font-medium"
+          >
+            <Trash2 size={16} /> Hapus chat
+          </button>
+        )}
       </div>
     </>
   );
