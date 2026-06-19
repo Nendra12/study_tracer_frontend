@@ -29,6 +29,9 @@ const LihatJawabanDetail = lazy(() => import("../pages/admin/LihatJawabanDetail"
 const UpdateKuesioner = lazy(() => import("../pages/admin/UpdateKuesioner"));
 const StatistikKuesioner = lazy(() => import("../pages/admin/StatistikKuesioner"));
 const PengaturanTampilan = lazy(() => import("../pages/admin/PengaturanTampilan"));
+const GrafikBidang = lazy(() => import("../pages/admin/GrafikBidang"));
+const LamaranManagement = lazy(() => import("../pages/admin/LamaranManagement"));
+const ExportData = lazy(() => import("../pages/admin/ExportData"));
 
 
 const LupaPass = lazy(() => import("../pages/LupaPass"));
@@ -52,6 +55,7 @@ const Message = lazy(() => import("../pages/alumni/MessagePage"));
 const PostinganAlumni = lazy(() => import("../pages/alumni/postingan"));
 const KelulusanAlumni = lazy(() => import("../pages/alumni/Kelulusan"));
 const RiwayatKuesioner = lazy(() => import("../pages/alumni/RiwayatKuesioner"));
+const RiwayatLamaran = lazy(() => import("../pages/alumni/RiwayatLamaran"));
 
 export default function AppRouter() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -110,6 +114,9 @@ export default function AppRouter() {
               </Route>
             </Route>
             <Route path="tampilan" element={<PengaturanTampilan />} />
+            <Route path="grafik-bidang" element={<GrafikBidang />} />
+            <Route path="lamaran" element={<LamaranManagement />} />
+            <Route path="export" element={<ExportData />} />
 
           </Route>
         </Route>
@@ -131,6 +138,7 @@ export default function AppRouter() {
             <Route path="pesan" element={<Message />} />
             <Route path="postingan" element={<PostinganAlumni />} />
             <Route path="riwayat-kuesioner" element={<RiwayatKuesioner />} />
+            <Route path="riwayat-lamaran" element={<RiwayatLamaran />} />
           </Route>
           
           {/* Standalone Alumni Routes (Without Navbar/Footer) */}

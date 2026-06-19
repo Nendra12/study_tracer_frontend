@@ -429,5 +429,76 @@ export const adminApi = {
   },
   exportKelulusan(params = {}) {
     return api.get('/admin/kelulusan/export', { params, responseType: 'blob' });
-  }
+  },
+
+  // ── Grafik Kesesuaian Bidang ─────────────────
+  getGrafikStats(filters = {}) {
+    return api.get('/admin/grafik-bidang/stats', { params: filters });
+  },
+
+  getGrafikByJurusan(filters = {}) {
+    return api.get('/admin/grafik-bidang/by-jurusan', { params: filters });
+  },
+
+  getGrafikByTahun(filters = {}) {
+    return api.get('/admin/grafik-bidang/by-tahun', { params: filters });
+  },
+
+  getGrafikDetail(filters = {}, perPage = 15) {
+    return api.get('/admin/grafik-bidang/detail', { params: { ...filters, per_page: perPage } });
+  },
+
+  exportGrafikBidang(filters = {}) {
+    return api.get('/admin/grafik-bidang/export', { params: filters, responseType: 'blob' });
+  },
+
+  recomputeKesesuaian(jurusanId) {
+    return api.post(`/admin/grafik-bidang/recompute/${jurusanId}`);
+  },
+
+  // ── Manajemen Lamaran (Admin) ────────────────
+  getAllLamaran(filters = {}, perPage = 15) {
+    return api.get('/admin/lamaran', { params: { ...filters, per_page: perPage } });
+  },
+
+  getLamaranByLowongan(lowonganId, filters = {}, perPage = 15) {
+    return api.get(`/admin/lamaran/lowongan/${lowonganId}`, { params: { ...filters, per_page: perPage } });
+  },
+
+  terimaLamaran(id, catatan = '') {
+    return api.post(`/admin/lamaran/${id}/terima`, { catatan_admin: catatan });
+  },
+
+  tolakLamaran(id, catatan = '') {
+    return api.post(`/admin/lamaran/${id}/tolak`, { catatan_admin: catatan });
+  },
+
+  getLamaranStats() {
+    return api.get('/admin/lamaran/stats');
+  },
+
+  exportLamaran(filters = {}) {
+    return api.get('/admin/lamaran/export', { params: filters, responseType: 'blob' });
+  },
+
+  // ── Export Semua Data ────────────────────────
+  exportAlumniComplete(filters = {}) {
+    return api.get('/admin/export/alumni', { params: filters, responseType: 'blob' });
+  },
+
+  exportLamaranData(filters = {}) {
+    return api.get('/admin/export/lamaran', { params: filters, responseType: 'blob' });
+  },
+
+  exportKesesuaianBidang(filters = {}) {
+    return api.get('/admin/export/kesesuaian-bidang', { params: filters, responseType: 'blob' });
+  },
+
+  exportLowonganData(filters = {}) {
+    return api.get('/admin/export/lowongan', { params: filters, responseType: 'blob' });
+  },
+
+  exportAllData() {
+    return api.get('/admin/export/all', { responseType: 'blob' });
+  },
 };

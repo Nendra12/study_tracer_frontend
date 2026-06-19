@@ -49,7 +49,7 @@ export default function UpButton() {
       </button>
 
       {/* Custom CSS untuk animasi ikon */}
-      <style jsx global>{`
+      <style>{`
         /* Animasi default (opsional, bisa dihapus jika hanya ingin animasi saat hover) */
         @keyframes float-up {
           0%, 100% {

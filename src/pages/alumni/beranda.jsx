@@ -28,6 +28,7 @@ import HeroBeranda from "../../components/alumni/beranda/HeroBeranda";
 import SummaryInfoBeranda from "../../components/alumni/beranda/SummaryInfoBeranda";
 import AlertBeranda from "../../components/alumni/beranda/AlertBeranda";
 import JejaringBeranda from "../../components/alumni/beranda/JejaringBeranda";
+import AlertLowonganBaru from "../../components/alumni/beranda/AlertLowonganBaru";
 
 
 // Helpers
@@ -270,6 +271,9 @@ export default function Beranda() {
               isVerified={isVerified} hasCompletedKuesioner={hasCompletedKuesioner} 
               kuesionerPending={kuesionerPending} setIsStatusOpen={setIsStatusOpen} navigate={navigate} 
             />
+
+            {/* ALERT LOWONGAN BARU */}
+            {profile && <AlertLowonganBaru statusAlumni={statusNew} />}
 
 
             {/* 5. JEJARING ALUMNI */}

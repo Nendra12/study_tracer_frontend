@@ -32,7 +32,14 @@ export default function ProfileHeader({ profile, onPerbarui }) {
             onClick={() => navigate('/alumni/riwayat-kuesioner')}
             className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer shadow-sm"
           >
-            <ClipboardList size={16} className="text-primary" /> Lihat Riwayat Kuesioner
+            <ClipboardList size={16} className="text-primary" /> Riwayat Kuesioner
+          </button>
+          
+          <button
+            onClick={() => navigate('/alumni/riwayat-lamaran')}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer shadow-sm"
+          >
+            <ClipboardList size={16} className="text-emerald-600" /> Riwayat Lamaran
           </button>
         </div>
       </div>

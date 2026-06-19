@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   MapPin, Briefcase, Clock, Calendar, Building2,
   AlertCircle, Loader2, FileText, ArrowLeft, Share2,
-  Tag, Timer, Bookmark, Lightbulb, Eye, X, Phone
+  Tag, Timer, Bookmark, Lightbulb, Eye, X, Phone,
+  Send, CheckCircle2, XCircle, ClockIcon
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
@@ -11,6 +12,8 @@ import { STORAGE_BASE_URL } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { shareLowongan } from '../../utils/share';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 import Navbar from '../../components/alumni/Navbar';
 import { LowonganDetailSkeleton } from '../../components/alumni/skeleton';
@@ -39,6 +42,12 @@ export default function LowonganDetail() {
 
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
+  // Lamaran (Apply) States
+  const [lamaranStatus, setLamaranStatus] = useState(null); // null, 'pending', 'diterima', 'ditolak'
+  const [applying, setApplying] = useState(false);
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [catatan, setCatatan] = useState('');
+
   // FUNGSI UNTUK MENANGANI TAG HTML AGAR RAPI
   const renderHTML = (htmlString) => {
     if (!htmlString) return { __html: '' };
@@ -64,6 +73,17 @@ export default function LowonganDetail() {
         } catch (e) { /* Abaikan jika error fetch saved */ }
 
         setJob({ ...jobData, is_saved: isSaved });
+
+        // Check if already applied
+        try {
+          const lamaranRes = await alumniApi.getRiwayatLamaran({ per_page: 100 });
+          const allLamaran = lamaranRes.data?.data?.data || lamaranRes.data?.data || [];
+          const existing = allLamaran.find(l => String(l.id_lowongan) === String(id));
+          if (existing) {
+            setLamaranStatus(existing.status);
+          }
+        } catch { /* ignore */ }
+
       } catch (err) {
         setError('Lowongan tidak ditemukan atau telah dihapus.');
       } finally {
@@ -82,6 +102,40 @@ export default function LowonganDetail() {
       console.error('Toggle save failed:', err);
     } finally {
       setSavingId(null);
+    }
+  };
+
+  // Apply to job
+  const handleApply = async () => {
+    setApplying(true);
+    try {
+      await alumniApi.applyLamaran(job.id || job.id_lowongan, catatan);
+      setLamaranStatus('pending');
+      setShowApplyConfirm(false);
+      setCatatan('');
+      toast.success('Lamaran berhasil dikirim!');
+
+      // Show SweetAlert popup redirecting to WhatsApp if contact number is available
+      const contactNumber = job.nomor_kontak || job.perusahaan?.nomor_telepon;
+      if (contactNumber) {
+        // Format number to international format if it starts with 0
+        let waNumber = contactNumber.replace(/\D/g, '');
+        if (waNumber.startsWith('0')) {
+          waNumber = '62' + waNumber.substring(1);
+        }
+
+        const message = `Halo Bapak/Ibu HRD dari ${job?.perusahaan?.nama || 'Perusahaan'},\n\nSaya ${authUser?.profile?.nama || 'Alumni'}, melamar untuk posisi *${job?.judul}* yang saya temukan melalui sistem Bursa Kerja Khusus (BKK). Saya sudah men-submit data lamaran saya di sistem.\n\nBerikut saya lampirkan berkas-berkas lamaran kerja saya.`;
+        const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+
+        toast.success('Membuka WhatsApp...');
+        window.open(waLink, '_blank');
+      }
+
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Gagal mengirim lamaran';
+      toast.error(msg);
+    } finally {
+      setApplying(false);
     }
   };
 
@@ -309,6 +363,62 @@ export default function LowonganDetail() {
                 <div className="absolute -left-8 -top-8 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
               </div>
 
+              {/* TOMBOL LAMAR */}
+              <div className="bg-white rounded-md p-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                {lamaranStatus === 'pending' ? (
+                  <div className="text-center">
+                    <div className="w-14 h-14 mx-auto bg-amber-50 rounded-2xl flex items-center justify-center mb-3 border border-amber-100">
+                      <Clock size={24} className="text-amber-500" />
+                    </div>
+                    <h3 className="font-bold text-primary text-sm mb-1">Lamaran Terkirim</h3>
+                    <p className="text-[11px] text-slate-500 font-medium">Lamaran Anda sedang diproses oleh perusahaan</p>
+                    <div className="mt-3 px-4 py-2 bg-amber-50 text-amber-600 text-[11px] font-bold rounded-lg border border-amber-100 inline-flex items-center gap-1.5">
+                      <Clock size={12} /> Menunggu Respon
+                    </div>
+                  </div>
+                ) : lamaranStatus === 'diterima' ? (
+                  <div className="text-center">
+                    <div className="w-14 h-14 mx-auto bg-emerald-50 rounded-2xl flex items-center justify-center mb-3 border border-emerald-100">
+                      <CheckCircle2 size={24} className="text-emerald-500" />
+                    </div>
+                    <h3 className="font-bold text-primary text-sm mb-1">Selamat! 🎉</h3>
+                    <p className="text-[11px] text-slate-500 font-medium">Lamaran Anda telah diterima oleh perusahaan</p>
+                    <div className="mt-3 px-4 py-2 bg-emerald-50 text-emerald-600 text-[11px] font-bold rounded-lg border border-emerald-100 inline-flex items-center gap-1.5">
+                      <CheckCircle2 size={12} /> Diterima
+                    </div>
+                  </div>
+                ) : lamaranStatus === 'ditolak' ? (
+                  <div className="text-center">
+                    <div className="w-14 h-14 mx-auto bg-red-50 rounded-2xl flex items-center justify-center mb-3 border border-red-100">
+                      <XCircle size={24} className="text-red-400" />
+                    </div>
+                    <h3 className="font-bold text-primary text-sm mb-1">Lamaran Ditolak</h3>
+                    <p className="text-[11px] text-slate-500 font-medium">Jangan menyerah, coba lowongan lainnya!</p>
+                    <button
+                      onClick={() => navigate('/alumni/lowongan')}
+                      className="mt-3 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all cursor-pointer w-full"
+                    >
+                      Cari Lowongan Lain
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setShowApplyConfirm(true)}
+                      disabled={applying}
+                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-white text-sm font-bold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 shadow-lg shadow-primary/20"
+                    >
+                      {applying ? (
+                        <><Loader2 size={18} className="animate-spin" /> Mengirim...</>
+                      ) : (
+                        <><Send size={18} /> Lamar Sekarang</>
+                      )}
+                    </button>
+                    <p className="text-[10px] text-slate-400 text-center mt-2 font-medium">Lamaran akan dikirim ke perusahaan untuk ditinjau</p>
+                  </>
+                )}
+              </div>
+
             </div>
           </div>
 
@@ -379,6 +489,66 @@ export default function LowonganDetail() {
           setIsShareOptionsOpen(false);
         }}
       />
+
+      {/* MODAL KONFIRMASI LAMAR */}
+      <AnimatePresence>
+        {showApplyConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowApplyConfirm(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 bg-primary/10 rounded-xl">
+                  <Send size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-primary text-base">Konfirmasi Lamaran</h3>
+                  <p className="text-xs text-slate-500">Kirim lamaran ke {job?.perusahaan?.nama || 'perusahaan'}</p>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="text-xs font-bold text-primary mb-1.5 block">Catatan (Opsional)</label>
+                <textarea
+                  value={catatan}
+                  onChange={(e) => setCatatan(e.target.value)}
+                  placeholder="Tulis catatan atau pesan untuk perusahaan..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-primary placeholder:text-slate-300 focus:outline-none focus:border-primary/50 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowApplyConfirm(false)}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-sm font-semibold text-third rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleApply}
+                  disabled={applying}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {applying ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  Kirim Lamaran
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

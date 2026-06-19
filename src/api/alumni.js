@@ -458,6 +458,27 @@ export const alumniApi = {
   reportPost(postId, data) {
     return api.post(`/alumni/posts/${postId}/report`, data);
   },
+
+  // ── Lamaran (Job Applications) ───────────────
+  applyLamaran(lowonganId, catatan = '') {
+    return api.post(`/alumni/lamaran/${lowonganId}`, { catatan });
+  },
+
+  getRiwayatLamaran(filters = {}, perPage = 15) {
+    return api.get('/alumni/lamaran', { params: { ...filters, per_page: perPage } });
+  },
+
+  updateLamaranProgress(id, data) {
+    return api.put(`/alumni/lamaran/${id}/progress`, data);
+  },
+
+  getLamaranStats() {
+    return api.get('/alumni/lamaran/stats');
+  },
+
+  cancelLamaran(id) {
+    return api.delete(`/alumni/lamaran/${id}`);
+  },
 };
 
 // Public endpoints

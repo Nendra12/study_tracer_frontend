@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, Database,
   FileText, LogOut, X, Map,
-  IdCardLanyard, Megaphone, Palette, GraduationCap
+  IdCardLanyard, Megaphone, Palette, GraduationCap,
+  BarChart3, ClipboardList, Download
 } from 'lucide-react';
 import DefaultLogo from '../../assets/icon.png';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
@@ -30,6 +31,9 @@ export default function SideBar({ active, setActive }) {
 
     { name: 'Kuesioner', icon: <FileText size={20} />, path: '/wb-admin/kuisoner' },
     { name: 'Pengumuman', icon: <Megaphone size={20} />, path: '/wb-admin/pengumuman' }, 
+    { name: 'Grafik Kesesuaian', icon: <BarChart3 size={20} />, path: '/wb-admin/grafik-bidang' },
+    { name: 'Manajemen Lamaran', icon: <ClipboardList size={20} />, path: '/wb-admin/lamaran' },
+    { name: 'Export Data', icon: <Download size={20} />, path: '/wb-admin/export' },
     { name: 'Pengaturan Tampilan', icon: <Palette size={20} />, path: '/wb-admin/tampilan' },
   ];
 
@@ -65,6 +69,9 @@ export default function SideBar({ active, setActive }) {
     { path: "/wb-admin/kuisoner/tinjau-jawaban/:jawabanid/detail/:detailid", title: "Kuesioner" },
     { path: "/wb-admin/kuisoner/update-kuesioner/:id", title: "Kuesioner" },
     { path: "/wb-admin/pengumuman", title: "Pengumuman" },
+    { path: "/wb-admin/grafik-bidang", title: "Grafik Kesesuaian" },
+    { path: "/wb-admin/lamaran", title: "Manajemen Lamaran" },
+    { path: "/wb-admin/export", title: "Export Data" },
     { path: "/wb-admin/tampilan", title: "Pengaturan Tampilan" },
   ];
 
